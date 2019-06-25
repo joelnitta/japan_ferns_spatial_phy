@@ -2,6 +2,11 @@
 .Rhistory
 .RData
 .Ruserdata
-*.Rproj
+.drake
 data
 drafts
+temp
+*.Rproj
+*.docx
+*.doc
+*.pdf
