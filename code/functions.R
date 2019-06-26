@@ -127,7 +127,58 @@ avg_lat_by_repro <- function(lat_by_repro) {
     sd = sd(lat_breadth)
   )
 }
+
+# Taxonomy ----
+
+#' Modify Pteridophyte Phylogeny Group I taxonomy
+#' to match the version used for Pteridophytes of Japan
+#'
+#' @param ppgi Original PPGI taxonomy
+#'
+#' @return tibble
+modify_ppgi <- function (ppgi) {
   
+  # Use normal "e" for Isoetes
+  ppgi_mod <- 
+    ppgi %>%
+    mutate_all(~str_replace_all(., "ë", "e"))
+  
+  # Add genera missing in PPGI that are included in Japan pteridophyte checklist
+  # Use the sister (or encompassing) genus for each, so other higher-order
+  # taxonomy will be correct
+  anisocampium_dat <-
+    ppgi_mod %>% filter(genus == "Athyrium") %>%
+    mutate(genus = "Anisocampium")
+  
+  humata_dat <-
+    ppgi_mod %>% filter(genus == "Davallia") %>%
+    mutate(genus = "Humata")
+  
+  drynaria_dat <-
+    ppgi_mod %>% filter(genus == "Aglaomorpha") %>%
+    mutate(genus = "Drynaria")
+  
+  bind_rows(ppgi_mod, anisocampium_dat, humata_dat, drynaria_dat) %>%
+    select(genus, family, order, class)
+  
+}
+
+#' Add taxonomy data to occurrence data
+#'
+#' @param occ_data Occurence data, including
+#' at least one column called "taxon_name" where
+#' the first word separated by spaces is the genus name.
+#' @param taxonomy_data Taxonomy data at the
+#' genus level and higher
+#'
+#' @return tibble
+add_taxonomy <- function(occ_data, taxonomy_data) {
+  occ_data %>%
+    mutate(genus = str_split(taxon_name, " ") %>% map_chr(1)) %>%
+    filter(!is.na(genus)) %>%
+    left_join(taxonomy_data)
+}
+
 # Community diversity ----
 
 #' Calculate species richness for all grid cells

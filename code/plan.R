@@ -1,17 +1,21 @@
 # Define analysis plan
 plan <- drake_plan (
   
-  # Load and process data ----
-  # - Electronic Supp. Mat. 1 contains data on reproductive
-  # mode and GenBank accession number in one row per species.
-  repro_data_raw = read_excel(file_in("data/ESM1.xlsx")),
+  # Load and process raw data ----
   
+  # Pteridophyte Phylogeny Group I (PPGI) taxonomy
+  # - original version
+  ppgi_raw = read_csv(file_in("data/ppgi_taxonomy.csv")),
+  # - modify slightly for Pteridophytes of Japan
+  ppgi = modify_ppgi(ppgi_raw),
+  
+  # Reproductive mode data, with one row per species.
+  repro_data_raw = read_excel(file_in("data/ESM1.xlsx")),
   repro_data = process_repro_data(repro_data_raw),
   
-  # - Electronic Supp. Mat. 2 contains occurrence data
-  # with multiple rows per species. Occurrences are presences
-  # in a set of 1km2 grid cells across Japan, not actual
-  # occurrence points of specimens.
+  # Occurrence data, with multiple rows per species.
+  # Occurrences are presences in a set of 1km2 grid 
+  # cells across Japan, not actual occurrence points of specimens.
   occ_data_raw = read_excel(
     file_in("data/ESM2.xlsx"),
     col_types = c("numeric", "text", "numeric", 
@@ -19,17 +23,21 @@ plan <- drake_plan (
                   "text", "text")
   ),
   
-  occ_data = clean_names(occ_data_raw),
+  occ_data = clean_names(occ_data_raw) %>%
+    add_taxonomy(ppgi),
   
   # Phylogenetic tree of all non-hybrid pteridophyte
   # taxa built from rbcL gene.
   japan_pterido_tree_raw = read.nexus("data/PD170708Bayes2.nxs"),
-  
   japan_pterido_tree = format_tip_labels(japan_pterido_tree_raw),
   
-  # Basic world map
+  # Basic world map.
   world_map = ggplot2::map_data("world") %>%
     rename(longitude = long, latitude = lat),
+  
+  # List of all 1km2 grid cells across Japan.
+  all_cells = read_excel(file_in("data/2_grid_cells_all.xlsx")) %>%
+    rename(longitude = x, latitude = y, secondary_grid_code = id),
   
   # Analyze basic statistics ----
   
@@ -49,7 +57,7 @@ plan <- drake_plan (
     cps_by_repro
   ),
   
-  # Run analysis of variance on CPS by reproductive mode.
+  # Run analysis of variance (AOV) on CPS by reproductive mode.
   cps_by_repro_model_summary = aov(
     n_grids ~ reproductive_mode, 
     data = cps_by_repro) %>% tidy,
@@ -61,7 +69,7 @@ plan <- drake_plan (
   # Calculate mean latitudinal breadth per species by reproductive mode.
   lat_by_repro_means = avg_lat_by_repro(lat_by_repro),
   
-  # Run analysis of variance on 
+  # Run analysis of variance (AOV) on 
   # latitudinal breadth by reproductive mode.
   lat_by_repro_model = aov(
     lat_breadth ~ reproductive_mode, 
@@ -69,7 +77,9 @@ plan <- drake_plan (
   
   lat_by_repro_model_summary = tidy(lat_by_repro_model),
   
-  # At least one mean is different, so run Tukey HSD test.
+  # AOV of latidudinal breadth by reproductive mode 
+  # showed a significant difference, so
+  # run Tukey HSD test on results.
   lat_by_repro_tukey = TukeyHSD(lat_by_repro_model) %>% tidy,
   
   # Analyze community diversity ----
