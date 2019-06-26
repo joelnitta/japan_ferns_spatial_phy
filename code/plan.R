@@ -28,7 +28,8 @@ plan <- drake_plan (
   japan_pterido_tree = format_tip_labels(japan_pterido_tree_raw),
   
   # Basic world map
-  world_map = ggplot2::map_data("world"),
+  world_map = ggplot2::map_data("world") %>%
+    rename(longitude = long, latitude = lat),
   
   # Analyze basic statistics ----
   
@@ -118,11 +119,30 @@ plan <- drake_plan (
     transform = combine(pd)
   ),
   
-  # Plots ----
-  richness_map = make_richness_plot(
-    richness, 
-    occ_data, 
-    world_map
-  )
+  # Combine PD and richness into single dataframe.
+  alpha_div = merge_metrics(all_pd, richness),
   
+  # Plots ----
+  
+  richness_map = make_diversity_map(
+    div_data = all_alpha_div, 
+    world_map = world_map, 
+    occ_data = occ_data, 
+    div_metric = "richness", 
+    metric_title = "Richness"
+  ),
+  
+  ses_pd_map = make_diversity_map(
+    div_data = all_alpha_div, 
+    world_map = world_map, 
+    occ_data = occ_data, 
+    div_metric = "ses_pd", 
+    metric_title = "SES of PD"
+  ),
+  
+  ses_pd_highlight_map = make_pd_highlight_map(
+    div_data = alpha_div, 
+    world_map = world_map, 
+    occ_data = occ_data
+  )
 )

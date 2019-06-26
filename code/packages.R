@@ -9,6 +9,7 @@ library(viridis)
 library(scales)
 library(jntools)
 library(broom)
+library(gghighlight)
 library(tidyverse)
 
 conflict_prefer("map", "purrr")

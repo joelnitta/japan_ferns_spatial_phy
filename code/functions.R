@@ -310,6 +310,21 @@ ses_pd <- function (comm, phy, n_reps) {
   
 }
 
+#' Merge diversity metrics
+#'
+#' @param all_pd Phylogenetic diversity metrics including
+#' observed PD, SES of PD, etc.
+#' @param richness Species richness of communities (1km2 grid
+#' cells)
+#'
+#' @return Tibble
+merge_metrics <- function (all_pd, richness) {
+  all_pd %>%
+    rename(secondary_grid_code = site) %>%
+    mutate(secondary_grid_code = as.numeric(secondary_grid_code)) %>%
+    left_join(richness)
+}
+
 #' Match community data and tree
 #' 
 #' Order of species in comm will be rearranged to match the
@@ -357,7 +372,6 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
   
 }
 
-
 # Plotting ----
 
 #' Make a plot showing species richness on a map of Japan
@@ -368,12 +382,28 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
 #' @param world_map Background world map
 #'
 #' @return ggplot object
-make_richness_plot <- function (richness, occ_data, world_map) {
+
+#' Make a plot showing selected alpha diversity metric on a map of Japan
+#'
+#' @param div_data Alpha diversity matrix; rows are communities
+#' (1km2 grid cells), and columns are various alpha diversity metrics.
+#' @param world_map Background world mapp
+#' @param occ_data Occurrence data, with one row per
+#' grid cell per taxon, including hybrids.
+#' @param div_metric Selected diversity metric to plot.
+#' Must one of the column names of div_dat.
+#' @param metric_title Character: title to use for legend for
+#' diversity metric.
+#'
+#' @return ggplot object
+make_diversity_map <- function (div_data, world_map, occ_data, div_metric, metric_title, highlight = FALSE) {
+  
+  div_metric <- sym(div_metric)
   
   ggplot(world_map, aes(x = long, y = lat)) +
     geom_polygon(aes(group = group), fill = "light grey") +
-    geom_tile(data = richness,
-              aes(x = longitude, y = latitude, fill = richness)) + 
+    geom_tile(data = div_data,
+              aes(x = longitude, y = latitude, fill = !!div_metric)) + 
     coord_quickmap(
       xlim = c(pull(occ_data, longitude) %>% min %>% floor, 
                pull(occ_data, longitude) %>% max %>% ceiling),
@@ -390,7 +420,54 @@ make_richness_plot <- function (richness, occ_data, world_map) {
       plot.background = element_rect(fill = "transparent", colour = NA)
     ) +
     labs(
-      fill = "Richness"
+      fill = metric_title
+    )
+  
+}
+
+#' Make a plot showing selected SES of PD on map of Japan with
+#' only significant communities colored.
+#'
+#' @param div_data Alpha diversity matrix; rows are communities
+#' (1km2 grid cells), and columns are various alpha diversity metrics.
+#' @param world_map Background world mapp
+#' @param occ_data Occurrence data, with one row per
+#' grid cell per taxon, including hybrids.
+#'
+#' @return ggplot object
+make_pd_highlight_map <- function (div_data, world_map, occ_data) {
+  
+  # gghighlight only "knows about" data in the most recent layer
+  # So make plot with world map on top of highlighted SES of PD,
+  # then rearrange layers.
+  plot <-
+    ggplot(alpha_div, aes(x = longitude, y = latitude)) +
+    geom_tile(aes(fill = ses_pd)) +
+    gghighlight(pd_obs_p > 0.975 | pd_obs_p < 0.025) +
+    coord_quickmap(
+      xlim = c(pull(occ_data, longitude) %>% min %>% floor, 
+               pull(occ_data, longitude) %>% max %>% ceiling),
+      ylim = c(pull(occ_data, latitude) %>% min %>% floor, 
+               pull(occ_data, latitude) %>% max %>% ceiling)
+    ) +
+    geom_polygon(data = world_map, aes(group = group), fill = "light grey")
+  
+  # See
+  # https://stackoverflow.com/questions/20249653/insert-layer-underneath-existing-layers-in-ggplot2-object
+  plot$layers <- plot$layers[c(1,3,2)]
+  
+  plot +
+    scale_fill_viridis_c(na.value="transparent") +
+    jntools::blank_x_theme() +
+    jntools::blank_y_theme() +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_rect(fill = "transparent", colour = NA),
+      plot.background = element_rect(fill = "transparent", colour = NA)
+    ) +
+    labs(
+      fill = "SES of PD"
     )
   
 }
