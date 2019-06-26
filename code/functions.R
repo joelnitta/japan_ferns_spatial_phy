@@ -372,7 +372,6 @@ ses_pd <- function (comm, phy, n_reps) {
 merge_metrics <- function (all_pd, richness) {
   all_pd %>%
     rename(secondary_grid_code = site) %>%
-    mutate(secondary_grid_code = as.numeric(secondary_grid_code)) %>%
     left_join(richness)
 }
 
@@ -492,7 +491,7 @@ make_pd_highlight_map <- function (div_data, world_map, occ_data) {
   # So make plot with world map on top of highlighted SES of PD,
   # then rearrange layers.
   plot <-
-    ggplot(alpha_div, aes(x = longitude, y = latitude)) +
+    ggplot(div_data, aes(x = longitude, y = latitude)) +
     geom_tile(aes(fill = ses_pd)) +
     gghighlight(pd_obs_p > 0.975 | pd_obs_p < 0.025) +
     coord_quickmap(

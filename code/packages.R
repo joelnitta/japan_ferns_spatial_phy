@@ -10,6 +10,7 @@ library(scales)
 library(jntools)
 library(broom)
 library(gghighlight)
+library(assertr)
 library(tidyverse)
 
 conflict_prefer("map", "purrr")
