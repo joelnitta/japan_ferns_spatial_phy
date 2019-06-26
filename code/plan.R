@@ -1,10 +1,12 @@
 # Define analysis plan
 plan <- drake_plan (
   
-  # Load data ----
+  # Load and process data ----
   # - Electronic Supp. Mat. 1 contains data on reproductive
   # mode and GenBank accession number in one row per species.
   repro_data_raw = read_excel(file_in("data/ESM1.xlsx")),
+  
+  repro_data = process_repro_data(repro_data_raw),
   
   # - Electronic Supp. Mat. 2 contains occurrence data
   # with multiple rows per species. Occurrences are presences
@@ -17,17 +19,16 @@ plan <- drake_plan (
                   "text", "text")
   ),
   
+  occ_data = clean_names(occ_data_raw),
+  
   # Phylogenetic tree of all non-hybrid pteridophyte
   # taxa built from rbcL gene.
-  japan_pterido_tree = read.nexus("data/PD170708Bayes2.nxs"),
+  japan_pterido_tree_raw = read.nexus("data/PD170708Bayes2.nxs"),
+  
+  japan_pterido_tree = format_tip_labels(japan_pterido_tree_raw),
   
   # Basic world map
   world_map = ggplot2::map_data("world"),
-  
-  # Process data ----
-  repro_data = process_repro_data(repro_data_raw),
-
-  occ_data = clean_names(occ_data_raw),
   
   # Analyze basic statistics ----
   
@@ -75,6 +76,47 @@ plan <- drake_plan (
   # Make richness matrix (number of species per
   # 1km2 grid cell).
   richness = make_richness_matrix(occ_data),
+  
+  # Make community matrix (presence/absence of each species in
+  # 1km2 grid cells), trim to only species in tree.
+  comm_matrix = make_comm_matrix(occ_data) %>% 
+    match_comm_and_tree(japan_pterido_tree, "comm"),
+  
+  ### Calculate phylogenetic diversity
+  #
+  # Calculating standard effect size (SES) involves generating
+  # hundreds of null communities per each observed community, and
+  # takes a long time (4-5 hours for 999 reps per community).
+  #
+  # So we will slice up the dataset into chunks and run each in parallel
+  # to speed things up.
+  #
+  # First convert the community matrix to a dataframe
+  # with species as rownames so it can be sliced up by columns and
+  # keep the same rownames in each slice.
+  comm_df = column_to_rownames(comm_matrix, "species"),
+  
+  # Split the dataset into 4 chunks (number of CPUs on my laptop)
+  comm_split = target(
+    drake_slice(comm_df, slices = 4, index = i, margin = 2),
+    transform = map(i = !!seq_len(4))
+  ),
+  
+  # Caclulate standard effect size of Faith's phylogenetic
+  # diversity on each slice of the dataset.
+  pd = target(
+    ses_pd(
+      # convert community matrix back to tibble
+      comm = comm_split %>% rownames_to_column("species") %>% as_tibble, 
+      phy = japan_pterido_tree, n_reps = 499),
+    transform = map(i = !!seq_len(4), comm_split)
+  ),
+  
+  # Combine sliced results into single dataframe.
+  all_pd = target(
+    bind_rows(pd),
+    transform = combine(pd)
+  ),
   
   # Plots ----
   richness_map = make_richness_plot(

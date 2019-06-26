@@ -7,6 +7,9 @@
 
 # Setup ----
 
+# For reproducibility
+set.seed(9130)
+
 # Set working directory
 setwd(here::here())
 
@@ -21,4 +24,19 @@ source("code/functions.R")
 source("code/plan.R")
 
 # Run analyses ----
-make(plan)
+
+# Set backend for running steps in parallel
+future::plan(future::multiprocess) 
+
+tictoc::tic()
+make(
+  plan, 
+  parallelism = "future", 
+  jobs = 4,
+  prework = list(
+    quote(conflict_prefer("map", "purrr")),
+    quote(conflict_prefer("select", "dplyr")),
+    quote(conflict_prefer("filter", "dplyr")),
+    quote(conflict_prefer("gather", "tidyr"))
+  ))
+tictoc::toc()

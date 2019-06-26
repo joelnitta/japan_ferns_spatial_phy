@@ -136,64 +136,137 @@ avg_lat_by_repro <- function(lat_by_repro) {
 #' are already cell centroids, so it is trivial
 #' to compute species richness.
 #'
-#' @param data Occurrence data, where each row is the 
+#' @param occ_data Occurrence data, where each row is the 
 #' occurrence of a species in a grid cell
 #' @return tibble
-make_richness_matrix <- function (data) {
-  data %>%
-  group_by(latitude, longitude) %>%
-  summarize(
-    richness = n()
-  )
+make_richness_matrix <- function (occ_data) {
+  occ_data %>%
+    group_by(secondary_grid_code) %>%
+    summarize(
+      richness = n()
+    ) %>%
+    left_join(
+      select(occ_data, latitude, longitude, secondary_grid_code) %>% unique
+    )
 }
 
-#' Calculate Faith's PD for a single community in the community matrix
-#' 
-#' Does not include the root when summing branch lengths. At least two taxa in the 
-#' community must be present in the tree
-#' 
-#' @param single_comm row of a community matrix
-#' @param phy phylogenetic tree
-#' 
-#' @return a number -- Faith's index for that community
-calc_faithsPD_single <- function(single_comm, phy) {
-  # use ape::drop.tip directly without geiger::treedata()
-  phy <- ape::drop.tip(phy, phy$tip.label[!(phy$tip.label %in% names(single_comm[single_comm > 0]))])
+
+#' Format tip labels in Japanese pteridophytes rbcL tree
+#'
+#' The tips in original phylogeny file are coded with two numbers 
+#' separated by an underscore,
+#' e.g., 601_14.
+#' The second part is the taxon_id in occurrence and reproductive 
+#' mode data. Keep only this as the tip label.
+#'
+#' @param phy Phylogeny of Japanese pteridophytes with tip labels
+#' formatted as two numbers separated by an underscore
+#'
+#' @return List of class "phylo"
+format_tip_labels <- function (phy) {
   
-  # get sum of branches remaining
+  phy$tip.label <- str_split(phy$tip.label, "_") %>% map_chr(2)
+  
+  phy
+
+}
+
+#' Make a community matrix
+#'
+#' @param occ_data Occurrence data, with one row per
+#' grid cell per taxon, including hybrids.
+#' 
+#' @return tibble. One column for species then the rest
+#' of the columns are presence/absence of that species in 
+#' each site, where a "site" is a 1km2 grid cell. Names
+#' of sites are grid-cell codes.
+#' Species are stored as taxon_id values.
+make_comm_matrix <- function (occ_data) {
+  occ_data %>%
+    select(species = taxon_id, site = secondary_grid_code) %>%
+    mutate(
+      abundance = 1,
+      site = as.character(site)) %>%
+    spread(site, abundance) %>%
+    mutate_at(vars(-species), ~replace_na(., 0)) %>%
+    mutate(species = as.character(species))
+}
+
+#' Calculate Faith's PD for a single community
+#' 
+#' Does not include the root when summing branch lengths.
+#' 
+#' At least two taxa in the community must be present in the tree; otherwise,
+#' communities with 0 species will return 0,
+#' communities with 1 species will return NA.
+#' 
+#' @param single_comm Single community, formatted as tibble with
+#' two columns: 'species' (character) and 'abundance' (numeric)
+#' @param phy Phylogenetic tree
+#' @param shuffle_tips Logical; should tips of the phylogeny be
+#' randomized? Used for generating null distributions.
+#' 
+#' @return a number: phylogenetic diversity (sum of branch lengths)
+#' for that community
+calc_pd <- function(single_comm, phy, shuffle_tips = FALSE) {
+  
+  # Filter to only species present in the focal community
+  single_comm <- filter(single_comm, abundance > 0)
+  
+  # Return 0 if there are zero species present
+  if(nrow(single_comm) == 0) return (0)
+  
+  # The phylogenetic distance for a single species without using the root is
+  # undefined.
+  if(nrow(single_comm) == 1) return (NA)
+  
+  # Optionally shuffle tips when generating null distributions
+  if(isTRUE(shuffle_tips)) phy <- picante::tipShuffle(phy)
+  
+  # Prune tree to only species present in the community
+  phy <- ape::keep.tip(phy, single_comm$species)
+  
+  # Get sum of branches remaining
   sum(phy$edge.length)
 }
 
-#' Calculate Faith's PD for all communities in the community matrix
+#' Generate random values of phylogenetic diversity
+#' for a single community.
 #' 
-#' Does not include the root when summing branch lengths. At least two taxa in the 
-#' community must be present in the tree.
+#' Used for generating null distributions. Randomization
+#' done by shuffling the tips of the tree.
 #' 
-#' @param comm community matrix, with species as columns and communities as rows.
-#' @param phy phylogenetic tree
+#' @param n_reps Number of times to repeat the randomization.
+#' @param single_comm Single community, formatted as tibble with
+#' two columns: 'species' (character) and 'abundance' (numeric)
+#' @param phy Phylogenetic tree
 #' 
-#' @return a numeric vector -- Faith's index for each community in the matrix.
-calc_faithsPD <- function (comm, phy) {
-  apply(comm, MARGIN = 1, FUN = calc_faithsPD_single, phy = phy)
+#' @return numeric vector: randomized phylogenetic diversity values 
+#' for that community
+run_pd_rnd <- function(n_reps, single_comm, phy) {
+  map_dbl(1:n_reps, ~calc_pd(single_comm = single_comm, phy = phy, shuffle_tips = TRUE))
 }
 
-#' Calculates Faith's PD for all communities in the community matrix 
-#' after shuffling the tips of the phylogeny
-#' 
-#' Does not include the root when summing branch lengths. At least two taxa in the 
-#' community must be present in the tree. This function is meant to be used 
-#' to produce null distributions of communities.
-#' 
-#' @param comm community matrix, with species as columns and communities as rows.
-#' @param phy phylogenetic tree
-#' 
-#' @return a numeric vector -- Faith's index for each community in the matrix, 
-#' after randomly shuffling the tips of the tree.
-pd_shuffle <- function (comm, phy) {
-  calc_faithsPD(comm, picante::tipShuffle(phy))
+#' Get the rank of a value amongst other numbers
+#'
+#' @param value The value of interest
+#' @param other_nums The other guys
+#'
+#' @return Number: the rank of our value of
+#' interest compared to the other numbers
+#'
+#' @examples
+#' # Should be near 20
+#' get_rank(20, runif(100) * 100)
+#' get_rank(NA, runif(100) * 100)
+get_rank <- function(value, other_nums) {
+  if(is.na(value) | is.null(value)) return(NA)
+  if(any(is.na(other_nums)) | is.null(other_nums)) return(NA)
+  assert_that(assertthat::is.number(value))
+  assert_that(is.numeric(other_nums))
+  combined <- c(value, other_nums) %>% set_names(c("value", other_nums))
+  which(names(sort(combined)) == "value")
 }
-
-# ses_pd_shuffle
 
 #' Calculate the standard effect size (SES) of Faith's PD across multiple communities.
 #' 
@@ -201,34 +274,89 @@ pd_shuffle <- function (comm, phy) {
 #' community must be present in the tree. Null communities are simulated by randomly shuffling 
 #' taxon names at the tips of the tree.
 #' 
-#' @param comm community matrix, with species as columns and communities as rows.
+#' @param comm community matrix. One column must be named
+#' 'species', and the rest should correspond to presence or absence of species
+#' in communities (sites).
 #' @param phy phylogenetic tree
-#' @param runs number of null communities to simulate
+#' @param n_reps number of null communities to simulate for each real community
 #' 
-#' @return a data frame -- including number of taxa (ntaxa), observed Faith's PD (pd_obs), 
-#' mean value of PD across all simulated communities (pd_rand_mean), standard deviation of PD 
-#' across all simulated communities (pd_rand_sd), rank of the observed PD relative to simulated 
-#' values (pd_obs_rank), standard effect size of PD (ses_pd), and probability of the observed value (pd_obs_p).
-ses_pd_shuffle <- function (comm, phy, runs) {
-  pd_obs <- calc_faithsPD(comm, phy)
-  pd_rand <- replicate(runs, pd_shuffle(comm, phy))
-  pd_rand_mean <- apply(pd_rand, 1, mean, na.rm = TRUE)
-  pd_rand_sd <- apply(pd_rand, 1, sd, na.rm = TRUE)
-  ses_pd <- (pd_obs - pd_rand_mean) / pd_rand_sd
-  pd_obs_rank <- apply(cbind(pd_obs, pd_rand), 1, function (x) rank(x)["pd_obs"])
-  pd_obs_p <- pd_obs_rank/(runs + 1)
-  ntaxa <- apply(comm, 1, function (x) sum(x > 0))
-  HUC <- comm$HUC
-  tibble(HUC = HUC, 
-         ntaxa = ntaxa, 
-         pd_obs = pd_obs,
-         pd_rand_mean = pd_rand_mean, 
-         pd_rand_sd = pd_rand_sd, 
-         pd_obs_rank = pd_obs_rank, 
-         ses_pd = ses_pd,
-         pd_obs_p = pd_obs_p,
-         runs = runs)
+#' @return a data frame -- observed Faith's PD (pd_obs), 
+#' mean value of PD across all simulated communities (pd_rand_mean),
+#' standard deviation of PD across all simulated communities (pd_rand_sd),
+#' rank of the observed PD relative to simulated 
+#' values (pd_obs_rank), standard effect size of PD (ses_pd), and 
+#' probability of the observed value (pd_obs_p).
+ses_pd <- function (comm, phy, n_reps) {
+  
+  assert_that(isTRUE(all.equal(
+  sort(comm$species), sort(phy$tip.label) )),
+  msg = "Species don't match exactly between 'comm' and 'phy'"
+  )
+  
+  # Nest by community, then calculate PD for each
+  comm %>%
+    gather(site, abundance, -species) %>%
+    nest(-site) %>%
+    mutate(
+      pd_obs = map_dbl(data, ~ calc_pd(., phy = phy)),
+      pd_rnd = map(data, ~ run_pd_rnd(single_comm = ., phy = phy, n_reps = n_reps)),
+      pd_rand_mean = map_dbl(pd_rnd, ~ mean(., na.rm = TRUE)),
+      pd_rand_sd = map_dbl(pd_rnd, ~ sd(., na.rm = TRUE)),
+      ses_pd = (pd_obs - pd_rand_mean) / pd_rand_sd,
+      pd_obs_rank = map2_dbl(pd_obs, pd_rnd, ~ get_rank(.x, .y)),
+      pd_obs_p = pd_obs_rank/(n_reps + 1)
+      ) %>%
+    select(-data, -pd_rnd)
+  
 }
+
+#' Match community data and tree
+#' 
+#' Order of species in comm will be rearranged to match the
+#' phylogeny.
+#'
+#' @param comm Community data frame, with one column for sites and
+#' the rest for species.
+#' @param phy Phylogeny (list of class "phylo")
+#' @param return Type of object to return
+#'
+#' @return Either a dataframe or a list of class "phylo"; the tree or
+#' the community, pruned so that only species occurring in both datasets
+#' are included.
+#' @export
+#'
+#' @examples
+match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
+  
+  assert_that("species" %in% colnames(comm))
+  
+  # Keep only species in phylogeny
+  comm <- comm %>%
+    filter(species %in% phy$tip.label) 
+  
+  # Trim to only species with trait data
+  phy <- drop.tip(phy, setdiff(phy$tip.label, comm$species))
+  
+  # Get comm in same order as tips
+  comm <- left_join(
+    tibble(species = phy$tip.label),
+    comm
+  )
+  
+  # Make sure that worked
+  assert_that(isTRUE(all.equal(comm$species, phy$tip.label)))
+  
+  # Return comm or tree
+  assert_that(return %in% c("tree", "comm"))
+  
+  if(return == "tree") { 
+    return (phy) 
+  } else {
+    return (comm)
+  }
+  
+}
+
 
 # Plotting ----
 
