@@ -25,18 +25,22 @@ source("code/plan.R")
 
 # Run analyses ----
 
-# Set backend for running steps in parallel
-future::plan(future::multiprocess) 
+# If not running in parallel, just call make(plan)
+make(plan) 
 
-tictoc::tic()
-make(
-  plan, 
-  parallelism = "future", 
-  jobs = 4,
-  prework = list(
-    quote(conflict_prefer("map", "purrr")),
-    quote(conflict_prefer("select", "dplyr")),
-    quote(conflict_prefer("filter", "dplyr")),
-    quote(conflict_prefer("gather", "tidyr"))
-  ))
-tictoc::toc()
+# OR, uncomment out the below lines to run in parallel.
+
+# future::plan(future::multiprocess) 
+# 
+# tictoc::tic()
+# make(
+#   plan, 
+#   parallelism = "future", 
+#   jobs = 4,
+#   prework = list(
+#     quote(conflict_prefer("map", "purrr")),
+#     quote(conflict_prefer("select", "dplyr")),
+#     quote(conflict_prefer("filter", "dplyr")),
+#     quote(conflict_prefer("gather", "tidyr"))
+#   ))
+# tictoc::toc()

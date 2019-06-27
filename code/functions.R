@@ -367,12 +367,19 @@ ses_pd <- function (comm, phy, n_reps) {
 #' observed PD, SES of PD, etc.
 #' @param richness Species richness of communities (1km2 grid
 #' cells)
+#' @param all_cells Longitude, latitude, and elevation of all 
+#' grid cells (including those not in `all_pd` or `richness`)
 #'
-#' @return Tibble
-merge_metrics <- function (all_pd, richness) {
+#' @return Tibble including rows for all grid cells in 1km2 grid cells
+#' of Japan dataset. NA (pd values) or 0 (richness) will be entered
+#' for grid cells that weren't in `all_pd` or `richness`.
+merge_metrics <- function (all_pd, richness, all_cells) {
   all_pd %>%
     rename(secondary_grid_code = site) %>%
-    left_join(richness)
+    left_join(richness) %>%
+    select(-latitude, -longitude) %>%
+    right_join(all_cells) %>%
+    mutate(richness = replace_na(richness, 0))
 }
 
 #' Match community data and tree
@@ -424,6 +431,46 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
 
 # Plotting ----
 
+#' Get the lower, upper, or absolute maximum value
+#' of a variable in a dataframe
+#' 
+#' For setting plotting limits manually
+#'
+#' @param data Dataframe
+#' @param var Name of variable (column) in dataframe
+#' @param digits Number of digits desired in output
+#' @param type Type of limit to calculate: "min" is lower,
+#' "max" is upper, and "abs" is the absolute greatest value.
+#'
+#' @return Number
+#'
+#' @examples
+#' get_limit(mtcars, disp, "max")
+get_limit <- function (data, var, type = c("min", "max", "abs"), digits = 2) {
+  
+  var <- enquo(var)
+  
+  switch(type,
+         
+         max = data %>% 
+           pull(!!var) %>% 
+           max(na.rm = TRUE) %>% 
+           multiply_by(10^digits) %>% ceiling %>% divide_by(10^digits),
+         
+         min = data %>% 
+           pull(!!var) %>% 
+           min(na.rm = TRUE) %>% 
+           multiply_by(10^digits) %>% floor %>% divide_by(10^digits),
+         
+         abs = c(
+           data %>% pull(!!var) %>% max(na.rm = TRUE),
+           data %>% pull(!!var) %>% min(na.rm = TRUE)) %>% 
+           abs %>% max %>%
+           multiply_by(10^digits) %>% ceiling %>% divide_by(10^digits)
+  )
+  
+}
+
 #' Make a plot showing species richness on a map of Japan
 #'
 #' @param richness Species richness in 1km grid cells, 
@@ -446,21 +493,22 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
 #' diversity metric.
 #'
 #' @return ggplot object
-make_diversity_map <- function (div_data, world_map, occ_data, div_metric, metric_title, highlight = FALSE) {
+make_diversity_map <- function (div_data, world_map, occ_data, div_metric, metric_title) {
   
   div_metric <- sym(div_metric)
   
-  ggplot(world_map, aes(x = long, y = lat)) +
+  ggplot(world_map, aes(x = longitude, y = latitude)) +
     geom_polygon(aes(group = group), fill = "light grey") +
     geom_tile(data = div_data,
-              aes(x = longitude, y = latitude, fill = !!div_metric)) + 
+              aes(fill = !!div_metric),
+              color = "black") + 
     coord_quickmap(
       xlim = c(pull(occ_data, longitude) %>% min %>% floor, 
                pull(occ_data, longitude) %>% max %>% ceiling),
       ylim = c(pull(occ_data, latitude) %>% min %>% floor, 
                pull(occ_data, latitude) %>% max %>% ceiling)
     ) +
-    scale_fill_viridis_c(na.value="transparent") +
+    # scale_fill_viridis_c(na.value="transparent") +
     jntools::blank_x_theme() +
     jntools::blank_y_theme() +
     theme(
@@ -492,8 +540,8 @@ make_pd_highlight_map <- function (div_data, world_map, occ_data) {
   # then rearrange layers.
   plot <-
     ggplot(div_data, aes(x = longitude, y = latitude)) +
-    geom_tile(aes(fill = ses_pd)) +
-    gghighlight(pd_obs_p > 0.975 | pd_obs_p < 0.025) +
+    geom_tile(aes(fill = ses_pd), color = "black") +
+    gghighlight( (pd_obs_p > 0.975 | pd_obs_p < 0.025) & !is.na(ses_pd) ) +
     coord_quickmap(
       xlim = c(pull(occ_data, longitude) %>% min %>% floor, 
                pull(occ_data, longitude) %>% max %>% ceiling),
@@ -507,7 +555,7 @@ make_pd_highlight_map <- function (div_data, world_map, occ_data) {
   plot$layers <- plot$layers[c(1,3,2)]
   
   plot +
-    scale_fill_viridis_c(na.value="transparent") +
+    scale_fill_scico(palette = "vik", na.value="transparent") +
     jntools::blank_x_theme() +
     jntools::blank_y_theme() +
     theme(

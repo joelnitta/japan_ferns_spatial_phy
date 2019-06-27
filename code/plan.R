@@ -39,6 +39,13 @@ plan <- drake_plan (
     assert(not_na, class) %>%
     filter(class == "Polypodiopsida"),
   
+  # - occurrence data including ferns north of 30.1° lat
+  # (Yakushima and northward) only. There are 16 genera that only
+  # occur south of 30.1 lat, which I think may be skewing the
+  # SES PD metric, so try it without them.
+  occ_data_ferns_north = occ_data_ferns %>%
+    filter(latitude > 30.1),
+  
   # Read in raw phylogenetic tree of all non-hybrid pteridophyte
   # taxa based on rbcL gene.
   japan_pterido_tree_raw = read.nexus("data/PD170708Bayes2.nxs"),
@@ -53,13 +60,20 @@ plan <- drake_plan (
     setdiff(japan_pterido_tree$tip.lab, occ_data_ferns$taxon_id)
   ),
   
+  # - tree including ferns north of 30.1 lat only.
+  japan_fern_tree_north = drop.tip(
+    japan_pterido_tree, 
+    setdiff(japan_pterido_tree$tip.lab, occ_data_ferns_north$taxon_id)
+  ),
+  
   # Basic world map.
   world_map = ggplot2::map_data("world") %>%
     rename(longitude = long, latitude = lat),
   
-  # List of all 1km2 grid cells across Japan.
-  all_cells = read_excel(file_in("data/2_grid_cells_all.xlsx")) %>%
-    rename(longitude = x, latitude = y, secondary_grid_code = id),
+  # List of all 1km2 grid cells across Japan with elevation.
+  all_cells = read_csv(
+    file_in("data/all_cells_el.csv"),
+    col_types = "nncc?"),
   
   # Analyze basic statistics ----
   
@@ -112,6 +126,8 @@ plan <- drake_plan (
   
   richness_ferns = make_richness_matrix(occ_data_ferns),
   
+  richness_ferns_north = make_richness_matrix(occ_data_ferns_north),
+  
   # Make community matrix (presence/absence of each species in
   # 1km2 grid cells), trim to only species in tree.
   comm_pteridos = make_comm_matrix(occ_data_pteridos) %>% 
@@ -119,6 +135,9 @@ plan <- drake_plan (
   
   comm_ferns = make_comm_matrix(occ_data_ferns) %>% 
     match_comm_and_tree(japan_fern_tree, "comm"),
+  
+  comm_ferns_north = make_comm_matrix(occ_data_ferns_north) %>% 
+    match_comm_and_tree(japan_fern_tree_north, "comm"),
   
   ### Calculate phylogenetic diversity
   #
@@ -147,6 +166,12 @@ plan <- drake_plan (
     transform = map(i = !!seq_len(4))
   ),
   
+  comm_ferns_north_split = target(
+    drake_slice(column_to_rownames(comm_ferns_north, "species"), 
+                slices = 4, index = i, margin = 2),
+    transform = map(i = !!seq_len(4))
+  ),
+  
   # Caclulate standard effect size of Faith's phylogenetic
   # diversity on each slice of the dataset.
   pd_pteridos = target(
@@ -165,6 +190,14 @@ plan <- drake_plan (
     transform = map(i = !!seq_len(4), comm_ferns_split)
   ),
   
+  pd_ferns_north = target(
+    ses_pd(
+      # convert community matrix back to tibble
+      comm = comm_ferns_north_split %>% rownames_to_column("species") %>% as_tibble, 
+      phy = japan_fern_tree_north, n_reps = 999),
+    transform = map(i = !!seq_len(4), comm_ferns_north_split)
+  ),
+  
   # Combine sliced results into single dataframe.
   all_pd_pteridos = target(
     bind_rows(pd_pteridos),
@@ -176,9 +209,17 @@ plan <- drake_plan (
     transform = combine(pd_ferns)
   ),
   
+  all_pd_ferns_north = target(
+    bind_rows(pd_ferns_north),
+    transform = combine(pd_ferns_north)
+  ),
+  
   # Combine PD and richness into single dataframe.
-  alpha_div_pteridos = merge_metrics(all_pd_pteridos, richness_pteridos),
-  alpha_div_ferns = merge_metrics(all_pd_ferns, richness_ferns),
+  # Add elevation and lat/longs for all 1km2 grid cells, even for those
+  # that didn't have any species.
+  alpha_div_pteridos = merge_metrics(all_pd_pteridos, richness_pteridos, all_cells),
+  alpha_div_ferns = merge_metrics(all_pd_ferns, richness_ferns, all_cells),
+  alpha_div_ferns_north = merge_metrics(all_pd_ferns_north, richness_ferns_north, all_cells),
   
   # Plots ----
   
@@ -188,19 +229,77 @@ plan <- drake_plan (
     occ_data = occ_data_pteridos, 
     div_metric = "richness", 
     metric_title = "Richness"
-  ),
+  ) + scale_fill_scico(palette = "bilbao", na.value="white"),
   
-  ses_pd_fern_map = make_diversity_map(
+  ses_pd_pteridos_map = make_diversity_map(
+    div_data = alpha_div_pteridos, 
+    world_map = world_map, 
+    occ_data = occ_data_pteridos, 
+    div_metric = "ses_pd", 
+    metric_title = "PD"
+  ) + scale_fill_scico(
+    palette = "vik", 
+    na.value="white",
+    limits = c(
+      -get_limit(alpha_div_pteridos, ses_pd, "abs", 3), 
+      get_limit(alpha_div_pteridos, ses_pd, "abs", 3)
+    )),
+  
+  ses_pd_ferns_map = make_diversity_map(
     div_data = alpha_div_ferns, 
     world_map = world_map, 
     occ_data = occ_data_pteridos, 
     div_metric = "ses_pd", 
-    metric_title = "SES of PD"
-  ),
+    metric_title = "PD"
+  ) + scale_fill_scico(
+    palette = "vik", 
+    na.value="white",
+    limits = c(
+      -get_limit(alpha_div_ferns, ses_pd, "abs", 3), 
+      get_limit(alpha_div_ferns, ses_pd, "abs", 3)
+    )) ,
   
   ses_pd_highlight_fern_map = make_pd_highlight_map(
     div_data = alpha_div_ferns, 
     world_map = world_map, 
     occ_data = occ_data_pteridos
-  )
+  ) + scale_fill_scico(
+    palette = "vik", 
+    na.value="white",
+    limits = c(
+      -get_limit(alpha_div_ferns, ses_pd, "abs", 3), 
+      get_limit(alpha_div_ferns, ses_pd, "abs", 3)
+    )),
+  
+  ses_pd_ferns_north_map = make_diversity_map(
+    div_data = alpha_div_ferns_north, 
+    world_map = world_map, 
+    occ_data = occ_data_ferns_north, 
+    div_metric = "ses_pd", 
+    metric_title = "SES of PD"
+  ) + scale_fill_scico(
+    palette = "vik", 
+    na.value="white",
+    limits = c(
+      -get_limit(alpha_div_ferns_north, ses_pd, "abs", 3), 
+      get_limit(alpha_div_ferns_north, ses_pd, "abs", 3)
+    )),
+  
+  ses_pd_highlight_fern_north_map = make_pd_highlight_map(
+    div_data = alpha_div_ferns_north, 
+    world_map = world_map, 
+    occ_data = occ_data_ferns_north
+  ) + scale_fill_scico(
+    palette = "vik", 
+    na.value="white",
+    limits = c(
+      -get_limit(alpha_div_ferns_north, ses_pd, "abs", 3), 
+      get_limit(alpha_div_ferns_north, ses_pd, "abs", 3)
+    )),
+  
+  # Write out report
+  report = rmarkdown::render(
+    knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),
+    output_file = file_out(here::here("reports/japan_pteridos_biodiv.html")),
+    quiet = TRUE)
 )
