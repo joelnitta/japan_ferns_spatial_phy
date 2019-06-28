@@ -29,13 +29,13 @@ source("code/plan.R")
 make(plan) 
 
 # OR, uncomment out the below lines to run in parallel.
-
-# future::plan(future::multiprocess) 
+# 
+# future::plan(future::multiprocess)
 # 
 # tictoc::tic()
 # make(
-#   plan, 
-#   parallelism = "future", 
+#   plan,
+#   parallelism = "future",
 #   jobs = 4,
 #   prework = list(
 #     quote(conflict_prefer("map", "purrr")),

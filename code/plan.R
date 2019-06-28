@@ -46,6 +46,9 @@ plan <- drake_plan (
   occ_data_ferns_north = occ_data_ferns %>%
     filter(latitude > 30.1),
   
+  occ_data_ferns_south = occ_data_ferns %>%
+    filter(latitude < 30.1),
+  
   # Read in raw phylogenetic tree of all non-hybrid pteridophyte
   # taxa based on rbcL gene.
   japan_pterido_tree_raw = read.nexus("data/PD170708Bayes2.nxs"),
@@ -64,6 +67,11 @@ plan <- drake_plan (
   japan_fern_tree_north = drop.tip(
     japan_pterido_tree, 
     setdiff(japan_pterido_tree$tip.lab, occ_data_ferns_north$taxon_id)
+  ),
+  
+  japan_fern_tree_south = drop.tip(
+    japan_pterido_tree, 
+    setdiff(japan_pterido_tree$tip.lab, occ_data_ferns_south$taxon_id)
   ),
   
   # Basic world map.
@@ -128,6 +136,8 @@ plan <- drake_plan (
   
   richness_ferns_north = make_richness_matrix(occ_data_ferns_north),
   
+  richness_ferns_south = make_richness_matrix(occ_data_ferns_south),
+  
   # Make community matrix (presence/absence of each species in
   # 1km2 grid cells), trim to only species in tree.
   comm_pteridos = make_comm_matrix(occ_data_pteridos) %>% 
@@ -138,6 +148,9 @@ plan <- drake_plan (
   
   comm_ferns_north = make_comm_matrix(occ_data_ferns_north) %>% 
     match_comm_and_tree(japan_fern_tree_north, "comm"),
+  
+  comm_ferns_south = make_comm_matrix(occ_data_ferns_south) %>% 
+    match_comm_and_tree(japan_fern_tree_south, "comm"),
   
   ### Calculate phylogenetic diversity
   #
@@ -172,6 +185,13 @@ plan <- drake_plan (
     transform = map(i = !!seq_len(4))
   ),
   
+  comm_ferns_south_split = target(
+    drake_slice(column_to_rownames(comm_ferns_south, "species"), 
+                slices = 4, index = i, margin = 2),
+    transform = map(i = !!seq_len(4))
+  ),
+  
+  
   # Caclulate standard effect size of Faith's phylogenetic
   # diversity on each slice of the dataset.
   pd_pteridos = target(
@@ -198,6 +218,14 @@ plan <- drake_plan (
     transform = map(i = !!seq_len(4), comm_ferns_north_split)
   ),
   
+  pd_ferns_south = target(
+    ses_pd(
+      # convert community matrix back to tibble
+      comm = comm_ferns_south_split %>% rownames_to_column("species") %>% as_tibble, 
+      phy = japan_fern_tree_south, n_reps = 999),
+    transform = map(i = !!seq_len(4), comm_ferns_south_split)
+  ),
+  
   # Combine sliced results into single dataframe.
   all_pd_pteridos = target(
     bind_rows(pd_pteridos),
@@ -214,90 +242,27 @@ plan <- drake_plan (
     transform = combine(pd_ferns_north)
   ),
   
+  all_pd_ferns_south = target(
+    bind_rows(pd_ferns_south),
+    transform = combine(pd_ferns_south)
+  ),
+  
   # Combine PD and richness into single dataframe.
   # Add elevation and lat/longs for all 1km2 grid cells, even for those
   # that didn't have any species.
   alpha_div_pteridos = merge_metrics(all_pd_pteridos, richness_pteridos, all_cells),
   alpha_div_ferns = merge_metrics(all_pd_ferns, richness_ferns, all_cells),
   alpha_div_ferns_north = merge_metrics(all_pd_ferns_north, richness_ferns_north, all_cells),
+  alpha_div_ferns_south = merge_metrics(all_pd_ferns_south, richness_ferns_south, all_cells),
   
-  # Plots ----
+  # Combine alpha diversity for SES of PD measured
+  # in North and South regions separately
+  alpha_div_ferns_north_south = bind_rows(
+    filter(alpha_div_ferns_north, secondary_grid_code %in% all_pd_ferns_north$site),
+    filter(alpha_div_ferns_south, secondary_grid_code %in% all_pd_ferns_south$site)
+  ),
   
-  richness_pteridos_map = make_diversity_map(
-    div_data = alpha_div_pteridos, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "richness", 
-    metric_title = "Richness"
-  ) + scale_fill_scico(palette = "bilbao", na.value="white"),
-  
-  ses_pd_pteridos_map = make_diversity_map(
-    div_data = alpha_div_pteridos, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "ses_pd", 
-    metric_title = "PD"
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="white",
-    limits = c(
-      -get_limit(alpha_div_pteridos, ses_pd, "abs", 3), 
-      get_limit(alpha_div_pteridos, ses_pd, "abs", 3)
-    )),
-  
-  ses_pd_ferns_map = make_diversity_map(
-    div_data = alpha_div_ferns, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "ses_pd", 
-    metric_title = "PD"
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="white",
-    limits = c(
-      -get_limit(alpha_div_ferns, ses_pd, "abs", 3), 
-      get_limit(alpha_div_ferns, ses_pd, "abs", 3)
-    )) ,
-  
-  ses_pd_highlight_fern_map = make_pd_highlight_map(
-    div_data = alpha_div_ferns, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="white",
-    limits = c(
-      -get_limit(alpha_div_ferns, ses_pd, "abs", 3), 
-      get_limit(alpha_div_ferns, ses_pd, "abs", 3)
-    )),
-  
-  ses_pd_ferns_north_map = make_diversity_map(
-    div_data = alpha_div_ferns_north, 
-    world_map = world_map, 
-    occ_data = occ_data_ferns_north, 
-    div_metric = "ses_pd", 
-    metric_title = "SES of PD"
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="white",
-    limits = c(
-      -get_limit(alpha_div_ferns_north, ses_pd, "abs", 3), 
-      get_limit(alpha_div_ferns_north, ses_pd, "abs", 3)
-    )),
-  
-  ses_pd_highlight_fern_north_map = make_pd_highlight_map(
-    div_data = alpha_div_ferns_north, 
-    world_map = world_map, 
-    occ_data = occ_data_ferns_north
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="white",
-    limits = c(
-      -get_limit(alpha_div_ferns_north, ses_pd, "abs", 3), 
-      get_limit(alpha_div_ferns_north, ses_pd, "abs", 3)
-    )),
-  
-  # Write out report
+  # Write out report ----
   report = rmarkdown::render(
     knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),
     output_file = file_out(here::here("reports/japan_pteridos_biodiv.html")),
