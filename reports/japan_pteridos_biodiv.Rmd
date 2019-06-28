@@ -32,32 +32,31 @@ Richness of pteridophytes in Japan roughly follows the latitudinal species gradi
 
 # Two ways to fit the model:
 # GLM
-glm_sum <- glm(pd_obs + 0.0001 ~ richness, data=alpha_div_pteridos, family=Gamma(link="log")) %>%
-  summary
+pd_by_rich_glm_mod <- glm(pd_obs + 0.0001 ~ richness, data=alpha_div_pteridos, family=Gamma(link="log"))
+summary(pd_by_rich_glm_mod)
 
 # Linear model after log transform. This one gives us an R-squared.
-lm_sum <- lm(-log(pd_obs + 0.0001) ~ richness, data = alpha_div_pteridos) %>% summary
+pd_by_rich_lm_mod <- lm(-log(pd_obs + 0.0001) ~ richness, data = alpha_div_pteridos)
 
 # Extract R-squared.
-pd_by_rich_r2 <- lm_sum[['adj.r.squared']] %>% round(2)
+pd_by_rich_r2 <- pd_by_rich_lm_mod %>% glance %>% pull(r.squared) %>% round(3)
 
+# P is very very small, effectively 0
+pd_by_rich_lm_mod %>% glance
 ```
-
 
 ```{r ses_pd-by-rich-summary}
 # Run linear model of ses PD vs. richness across all pteridophytes and
 # extract R2 and pvalue for mentioning in text.
-
-# Linear model after log transform. This one gives us an R-squared.
-ses_pd_rich_sum <- lm(ses_pd ~ richness, data = alpha_div_pteridos) %>% summary
+ses_pd_rich_mod <- lm(ses_pd ~ richness, data = alpha_div_pteridos)
 
 # Extract R-squared.
-ses_pd_by_rich_r2 <- ses_pd_rich_sum[['adj.r.squared']] %>% round(2)
+ses_pd_by_rich_r2 <- ses_pd_rich_mod %>% glance %>% pull(r.squared) %>% round(3)
 
 # P is very very small
-tidy(ses_pd_rich_sum)
-
+ses_pd_rich_mod %>% glance
 ```
+
 ### Phylogenetic diversity (PD) calculations
 
 Phylogenetic diversity (PD) is the total phylogenetic branch length of all species in a community  (a "community" is defined here as co-occurring taxa within a 1 km^2^ grid cell). Observed PD is highly correlated with species richness (Fig. \@ref(fig:compare-obs-pd-richness), exponential model; *R*^2^ = `r pd_by_rich_r2`, *P* << 0.05), as has been demonstrated in many other studies, and by itself is not very informative.
@@ -78,14 +77,13 @@ When these lineages are included in the randomization procedure to calculate SES
 
 ```{r pd-by-el-summary}
 # Run linear model of SES of PD vs. elevation in northern ferns dataset
-pd_by_el_summary <- lm(ses_pd ~ elevation, alpha_div_ferns_north_south) %>% summary
+pd_by_el_mod<- lm(ses_pd ~ elevation, alpha_div_ferns_north_south)
 
 # Extract R2 and pvalue for mentioning in text.
-pd_by_el_r2 <- pd_by_el_summary[['adj.r.squared']] %>% round(2)
+pd_by_el_r2 <- pd_by_el_mod %>% glance %>% pull(r.squared) %>% round(3)
 
 # P is very very small
-pd_by_el_summary %>% tidy %>% filter(term == "elevation") %>% pull(p.value)
-
+pd_by_el_mod %>% glance
 ```
 
 ### SES of PD: ferns only, calculated separately in N and S
@@ -93,6 +91,23 @@ pd_by_el_summary %>% tidy %>% filter(term == "elevation") %>% pull(p.value)
 Standard effect size of PD is less skewed in the ferns dataset when N and S regions are calculated separately (median `r median(alpha_div_ferns_north_south$ses_pd, na.rm = TRUE) %>% round(2)`, Fig. \@ref(fig:pd-ferns-north-hist)). A similar overall pattern is observed in the spatial distribution of SES of PD for all pteridophytes, but the number of clustered cells is fewer (Fig. \@ref(fig:pd-ferns-ns)). 
 
 Significantly clustered areas include Aomori prefecture near Misawa, Yamaguchi prefecture, and many other mountainous areas; significantly overdispersed areas include the southern tip of Kyushu, Wakayama prefecture near Tanabe, and the Ogasawara islands (Fig. \@ref(fig:pd-ferns-ns-highlight)). Standard effect size of PD decreases significantly with elevation (Fig. \@ref(fig:pd-ferns-ns-el), linear model; *R*^2^ = `r pd_by_el_r2`, *P* << 0.05).
+
+### Breeding system
+
+```{r ses-pd-vs-perc-sex-dip-summary}
+# Run linear model of SES of PD vs. percentage of sexual diploid ferns
+ses_pd_vs_repro_ferns_mod <- lm(ses_pd ~ percent_sex_dip, ses_pd_vs_repro_ferns)
+
+# Extract R2 and pvalue for mentioning in text.
+ses_pd_vs_repro_ferns_r2 <- ses_pd_vs_repro_ferns_mod %>% glance %>% pull(r.squared) %>% round(3)
+
+# P is very very small
+ses_pd_vs_repro_ferns_mod %>% glance
+```
+
+Sexual diploid taxa tend to be distributed in northern latitudes (Fig. \@ref(fig:sex-dip-ferns-map)).
+
+Somewhat surprisingly, SES of PD shows a negative relationship with the percentage of sexual diploid taxa (Fig. \@ref(fig:ses-pd-vs-perc-sex-dip); *R*^2^ = `r ses_pd_vs_repro_ferns_r2`, *P* << 0.05). We expected that since many apogamous (non-sexual) taxa have identical or very similar DNA sequences to their sexual relatives that communities with more apogamous taxa would be more clustered and communities with more sexual diploids would be overdispersed. It seems that communities with many non-sexual taxa actually tend to include distantly related taxa rather than sister pairs of sexual and non-sexual species.
 
 ## Figures
 
