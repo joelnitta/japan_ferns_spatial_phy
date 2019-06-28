@@ -262,6 +262,27 @@ plan <- drake_plan (
     filter(alpha_div_ferns_south, secondary_grid_code %in% all_pd_ferns_south$site)
   ),
   
+  # Analyze percentage of sexual diploid ferns.
+  percent_sex_dip_ferns =
+    right_join(
+      occ_data_ferns, 
+      select(repro_data, -taxon_name),
+      by = "taxon_id") %>%
+    group_by(secondary_grid_code, latitude, longitude) %>%
+    summarize(
+      num_sex_dip = sum(sexual_diploid),
+      num_total = n()
+    ) %>%
+    ungroup %>%
+    mutate(percent_sex_dip = num_sex_dip / num_total),
+  
+  # Compare SES PD vs. percentage of sexual diploid ferns.
+  ses_pd_vs_repro_ferns =
+    left_join(
+      select(alpha_div_ferns_north_south, secondary_grid_code, latitude, longitude, ses_pd),
+      select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)
+    ),
+  
   # Write out report ----
   report = rmarkdown::render(
     knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),

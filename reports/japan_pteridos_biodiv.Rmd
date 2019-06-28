@@ -20,6 +20,8 @@ loadd(occ_data_ferns)
 loadd(alpha_div_pteridos)
 loadd(alpha_div_ferns_north)
 loadd(alpha_div_ferns_north_south)
+loadd(percent_sex_dip_ferns)
+loadd(ses_pd_vs_repro_ferns)
 ```
 
 ### Richness
@@ -255,5 +257,36 @@ lm(ses_pd ~ elevation, alpha_div_ferns_north_south) %>% augment %>%
     x = "Elevation (m)"
   )
 
+```
+
+```{r sex-dip-ferns-map, fig.cap = "Percentage of sexual diploid fern taxa, excluding hybrids."}
+make_diversity_map(
+  div_data = percent_sex_dip_ferns, 
+  world_map = world_map, 
+  occ_data = occ_data_ferns, 
+  div_metric = "percent_sex_dip",
+  metric_title = "% sex. diploid"
+) + scale_fill_scico(palette = "bilbao", na.value="white")
+```
+
+```{r ses-pd-vs-perc-sex-dip, fig.cap = "Correlation between percentage of sexual diploid fern taxa (excluding hybrids) and standard effect size (SES) of phylogenetic diversity (PD)."}
+ggplot(ses_pd_vs_repro_ferns, aes(percent_sex_dip, ses_pd)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(
+    method = "lm",
+    size = 0.5,
+    fill = "pink"
+  ) +
+  annotate("text", 
+           x = Inf, y = Inf, 
+           label = glue::glue("italic(R) ^ 2 == {ses_pd_vs_repro_ferns_r2}"),
+           parse = TRUE,
+           hjust = 1.2,
+           vjust = 1.2) +
+  labs(
+    x = "% sexual diploid taxa",
+    y = "SES PD"
+  ) +
+  jntools::standard_theme()
 ```
 
