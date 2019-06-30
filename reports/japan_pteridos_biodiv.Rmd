@@ -21,7 +21,7 @@ loadd(alpha_div_pteridos)
 loadd(alpha_div_ferns_north)
 loadd(alpha_div_ferns_north_south)
 loadd(percent_sex_dip_ferns)
-loadd(ses_pd_vs_repro_ferns)
+loadd(alpha_div_vs_repro_ferns)
 ```
 
 ### Richness
@@ -98,18 +98,18 @@ Significantly clustered areas include Aomori prefecture near Misawa, Yamaguchi p
 
 ```{r ses-pd-vs-perc-sex-dip-summary}
 # Run linear model of SES of PD vs. percentage of sexual diploid ferns
-ses_pd_vs_repro_ferns_mod <- lm(ses_pd ~ percent_sex_dip, ses_pd_vs_repro_ferns)
+alpha_div_vs_repro_ferns_mod <- lm(ses_pd ~ percent_sex_dip, alpha_div_vs_repro_ferns)
 
 # Extract R2 and pvalue for mentioning in text.
-ses_pd_vs_repro_ferns_r2 <- ses_pd_vs_repro_ferns_mod %>% glance %>% pull(r.squared) %>% round(3)
+alpha_div_vs_repro_ferns_r2 <- alpha_div_vs_repro_ferns_mod %>% glance %>% pull(r.squared) %>% round(3)
 
 # P is very very small
-ses_pd_vs_repro_ferns_mod %>% glance
+alpha_div_vs_repro_ferns_mod %>% glance
 ```
 
 Sexual diploid taxa tend to be distributed in northern latitudes (Fig. \@ref(fig:sex-dip-ferns-map)).
 
-Somewhat surprisingly, SES of PD shows a negative relationship with the percentage of sexual diploid taxa (Fig. \@ref(fig:ses-pd-vs-perc-sex-dip); *R*^2^ = `r ses_pd_vs_repro_ferns_r2`, *P* << 0.05). We expected that since many apogamous (non-sexual) taxa have identical or very similar DNA sequences to their sexual relatives that communities with more apogamous taxa would be more clustered and communities with more sexual diploids would be overdispersed. It seems that communities with many non-sexual taxa actually tend to include distantly related taxa rather than sister pairs of sexual and non-sexual species.
+Somewhat surprisingly, SES of PD shows a negative relationship with the percentage of sexual diploid taxa (Fig. \@ref(fig:ses-pd-vs-perc-sex-dip); *R*^2^ = `r alpha_div_vs_repro_ferns_r2`, *P* << 0.05). We expected that since many apogamous (non-sexual) taxa have identical or very similar DNA sequences to their sexual relatives that communities with more apogamous taxa would be more clustered and communities with more sexual diploids would be overdispersed. It seems that communities with many non-sexual taxa actually tend to include distantly related taxa rather than sister pairs of sexual and non-sexual species.
 
 ## Figures
 
@@ -270,7 +270,7 @@ make_diversity_map(
 ```
 
 ```{r ses-pd-vs-perc-sex-dip, fig.cap = "Correlation between percentage of sexual diploid fern taxa (excluding hybrids) and standard effect size (SES) of phylogenetic diversity (PD)."}
-ggplot(ses_pd_vs_repro_ferns, aes(percent_sex_dip, ses_pd)) +
+ggplot(alpha_div_vs_repro_ferns, aes(percent_sex_dip, ses_pd)) +
   geom_point(alpha = 0.4) +
   geom_smooth(
     method = "lm",
@@ -279,7 +279,7 @@ ggplot(ses_pd_vs_repro_ferns, aes(percent_sex_dip, ses_pd)) +
   ) +
   annotate("text", 
            x = Inf, y = Inf, 
-           label = glue::glue("italic(R) ^ 2 == {ses_pd_vs_repro_ferns_r2}"),
+           label = glue::glue("italic(R) ^ 2 == {alpha_div_vs_repro_ferns_r2}"),
            parse = TRUE,
            hjust = 1.2,
            vjust = 1.2) +
@@ -290,3 +290,118 @@ ggplot(ses_pd_vs_repro_ferns, aes(percent_sex_dip, ses_pd)) +
   jntools::standard_theme()
 ```
 
+```{r mntd-ferns-ns, fig.cap = "Standard effect size (SES) of MNTD of native Japanese fern taxa north of 30.1 degrees latitude, excluding hybrids."}
+make_diversity_map(
+    div_data = alpha_div_ferns_north_south, 
+    world_map = world_map, 
+    occ_data = occ_data_ferns, 
+    div_metric = "mntd.obs.z", 
+    metric_title = "MNTD"
+  ) + scale_fill_scico(
+    palette = "vik", 
+    na.value="white",
+    limits = c(
+      -get_limit(alpha_div_ferns_north_south, mntd.obs.z, "abs", 3), 
+      get_limit(alpha_div_ferns_north_south, mntd.obs.z, "abs", 3)
+    ))
+```
+
+```{r mpd-ferns-ns, fig.cap = "Standard effect size (SES) of MPD of native Japanese fern taxa north of 30.1 degrees latitude, excluding hybrids."}
+make_diversity_map(
+    div_data = alpha_div_ferns_north_south, 
+    world_map = world_map, 
+    occ_data = occ_data_ferns, 
+    div_metric = "mpd.obs.z", 
+    metric_title = "mpd"
+  ) + scale_fill_scico(
+    palette = "vik", 
+    na.value="white",
+    limits = c(
+      -get_limit(alpha_div_ferns_north_south, mpd.obs.z, "abs", 3), 
+      get_limit(alpha_div_ferns_north_south, mpd.obs.z, "abs", 3)
+    ))
+```
+
+```{r mntd-vs-perc-sex-dip, fig.cap = "Correlation between percentage of sexual diploid fern taxa (excluding hybrids) and MNTD."}
+
+# Run linear model of SES of PD vs. percentage of sexual diploid ferns
+mtnd_vs_percent_sex_mod <- lm(mntd.obs.z ~ percent_sex_dip, alpha_div_vs_repro_ferns)
+
+# Extract R2 and pvalue for mentioning in text.
+mtnd_vs_percent_sex_mod_r2 <- mtnd_vs_percent_sex_mod %>% glance %>% pull(r.squared) %>% round(3)
+
+ggplot(alpha_div_vs_repro_ferns, aes(percent_sex_dip, mntd.obs.z)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(
+    method = "lm",
+    size = 0.5,
+    fill = "pink"
+  ) +
+  annotate("text",
+           x = Inf, y = Inf,
+           label = glue::glue("italic(R) ^ 2 == {mtnd_vs_percent_sex_mod_r2}"),
+           parse = TRUE,
+           hjust = 1.2,
+           vjust = 1.2) +
+  labs(
+    x = "% sexual diploid taxa",
+    y = "mntd.obs.z"
+  ) +
+  jntools::standard_theme()
+```
+
+```{r mntd-vs-el, fig.cap = "Correlation between elevation and MNTD."}
+
+# Run linear model of SES of PD vs. percentage of sexual diploid ferns
+mtnd_vs_el_mod <- lm(mntd.obs.z ~ elevation, alpha_div_vs_repro_ferns)
+
+# Extract R2 and pvalue for mentioning in text.
+mtnd_vs_el_r2 <- mtnd_vs_el_mod %>% glance %>% pull(r.squared) %>% round(3)
+
+ggplot(alpha_div_vs_repro_ferns, aes(elevation, mntd.obs.z)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(
+    method = "lm",
+    size = 0.5,
+    fill = "pink"
+  ) +
+  annotate("text",
+           x = Inf, y = Inf,
+           label = glue::glue("italic(R) ^ 2 == {mtnd_vs_el_r2}"),
+           parse = TRUE,
+           hjust = 1.2,
+           vjust = 1.2) +
+  labs(
+    x = "Elevation (m)",
+    y = "mntd.obs.z"
+  ) +
+  jntools::standard_theme()
+```
+
+```{r mpd-vs-el, fig.cap = "Correlation between elevation and mpd."}
+
+# Run linear model of SES of PD vs. percentage of sexual diploid ferns
+mtnd_vs_el_mod <- lm(mpd.obs.z ~ elevation, alpha_div_vs_repro_ferns)
+
+# Extract R2 and pvalue for mentioning in text.
+mtnd_vs_el_r2 <- mtnd_vs_el_mod %>% glance %>% pull(r.squared) %>% round(3)
+
+ggplot(alpha_div_vs_repro_ferns, aes(elevation, mpd.obs.z)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(
+    method = "lm",
+    size = 0.5,
+    fill = "pink"
+  ) +
+  annotate("text",
+           x = Inf, y = Inf,
+           label = glue::glue("italic(R) ^ 2 == {mtnd_vs_el_r2}"),
+           parse = TRUE,
+           hjust = 1.2,
+           vjust = 1.2) +
+  labs(
+    x = "Elevation (m)",
+    y = "mpd.obs.z"
+  ) +
+  jntools::standard_theme()
+```

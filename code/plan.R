@@ -286,22 +286,22 @@ plan <- drake_plan (
   ),
   
   all_mpd_ferns_north = target(
-    bind_rows(mpd_ferns_north),
+    rbind(mpd_ferns_north),
     transform = combine(mpd_ferns_north)
   ),
   
   all_mpd_ferns_south = target(
-    bind_rows(mpd_ferns_south),
+    rbind(mpd_ferns_south),
     transform = combine(mpd_ferns_south)
   ),
   
   all_mntd_ferns_north = target(
-    bind_rows(mntd_ferns_north),
+    rbind(mntd_ferns_north),
     transform = combine(mntd_ferns_north)
   ),
   
   all_mntd_ferns_south = target(
-    bind_rows(mntd_ferns_south),
+    rbind(mntd_ferns_south),
     transform = combine(mntd_ferns_south)
   ),
   
@@ -311,9 +311,11 @@ plan <- drake_plan (
   alpha_div_pteridos = merge_metrics(all_pd_pteridos, richness_pteridos, all_cells),
   alpha_div_ferns = merge_metrics(all_pd_ferns, richness_ferns, all_cells),
   alpha_div_ferns_north = merge_metrics(all_pd_ferns_north, richness_ferns_north, all_cells) %>%
-    left_join(rownames_to_column(all_mntd_ferns_north, "secondary_grid_code")),
+    left_join(rownames_to_column(all_mntd_ferns_north, "secondary_grid_code") %>% select(-ntaxa, -runs)) %>%
+    left_join(rownames_to_column(all_mpd_ferns_north, "secondary_grid_code") %>% select(-ntaxa, -runs)),
   alpha_div_ferns_south = merge_metrics(all_pd_ferns_south, richness_ferns_south, all_cells)  %>%
-    left_join(rownames_to_column(all_mntd_ferns_south, "secondary_grid_code")),
+    left_join(rownames_to_column(all_mntd_ferns_south, "secondary_grid_code") %>% select(-ntaxa, -runs)) %>%
+    left_join(rownames_to_column(all_mpd_ferns_south, "secondary_grid_code") %>% select(-ntaxa, -runs)),
   
   # Combine alpha diversity for SES of PD measured
   # in North and South regions separately
@@ -337,9 +339,9 @@ plan <- drake_plan (
     mutate(percent_sex_dip = num_sex_dip / num_total),
   
   # Compare SES PD vs. percentage of sexual diploid ferns.
-  ses_pd_vs_repro_ferns =
+  alpha_div_vs_repro_ferns =
     left_join(
-      select(alpha_div_ferns_north_south, secondary_grid_code, latitude, longitude, ses_pd),
+      alpha_div_ferns_north_south,
       select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)
     ),
   
