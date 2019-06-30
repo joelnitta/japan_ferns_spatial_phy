@@ -191,7 +191,6 @@ plan <- drake_plan (
     transform = map(i = !!seq_len(4))
   ),
   
-  
   # Caclulate standard effect size of Faith's phylogenetic
   # diversity on each slice of the dataset.
   pd_pteridos = target(
@@ -226,6 +225,45 @@ plan <- drake_plan (
     transform = map(i = !!seq_len(4), comm_ferns_south_split)
   ),
   
+  # MPD 
+  mpd_ferns_north = target(
+    ses.mpd(
+      # transpose community matrix, keeping as dataframe
+      samp = comm_ferns_north_split %>% t, 
+      dis = cophenetic(japan_fern_tree_north),
+      null.model = "phylogeny.pool",
+      runs = 999),
+    transform = map(i = !!seq_len(4), comm_ferns_north_split)
+  ),
+  
+  mpd_ferns_south = target(
+    ses.mpd(
+      samp = comm_ferns_south_split %>% t, 
+      dis = cophenetic(japan_fern_tree_south),
+      null.model = "phylogeny.pool",
+      runs = 999),
+    transform = map(i = !!seq_len(4), comm_ferns_south_split)
+  ),
+  
+  # MNTD
+  mntd_ferns_north = target(
+    picante::ses.mntd(
+      samp = comm_ferns_north_split %>% t, 
+      dis = cophenetic(japan_fern_tree_north),
+      null.model = "phylogeny.pool",
+      runs = 999),
+    transform = map(i = !!seq_len(4), comm_ferns_north_split)
+  ),
+  
+  mntd_ferns_south = target(
+    picante::ses.mntd(
+      samp = comm_ferns_south_split %>% t, 
+      dis = cophenetic(japan_fern_tree_south),
+      null.model = "phylogeny.pool",
+      runs = 999),
+    transform = map(i = !!seq_len(4), comm_ferns_south_split)
+  ),
+  
   # Combine sliced results into single dataframe.
   all_pd_pteridos = target(
     bind_rows(pd_pteridos),
@@ -247,13 +285,35 @@ plan <- drake_plan (
     transform = combine(pd_ferns_south)
   ),
   
+  all_mpd_ferns_north = target(
+    bind_rows(mpd_ferns_north),
+    transform = combine(mpd_ferns_north)
+  ),
+  
+  all_mpd_ferns_south = target(
+    bind_rows(mpd_ferns_south),
+    transform = combine(mpd_ferns_south)
+  ),
+  
+  all_mntd_ferns_north = target(
+    bind_rows(mntd_ferns_north),
+    transform = combine(mntd_ferns_north)
+  ),
+  
+  all_mntd_ferns_south = target(
+    bind_rows(mntd_ferns_south),
+    transform = combine(mntd_ferns_south)
+  ),
+  
   # Combine PD and richness into single dataframe.
   # Add elevation and lat/longs for all 1km2 grid cells, even for those
   # that didn't have any species.
   alpha_div_pteridos = merge_metrics(all_pd_pteridos, richness_pteridos, all_cells),
   alpha_div_ferns = merge_metrics(all_pd_ferns, richness_ferns, all_cells),
-  alpha_div_ferns_north = merge_metrics(all_pd_ferns_north, richness_ferns_north, all_cells),
-  alpha_div_ferns_south = merge_metrics(all_pd_ferns_south, richness_ferns_south, all_cells),
+  alpha_div_ferns_north = merge_metrics(all_pd_ferns_north, richness_ferns_north, all_cells) %>%
+    left_join(rownames_to_column(all_mntd_ferns_north, "secondary_grid_code")),
+  alpha_div_ferns_south = merge_metrics(all_pd_ferns_south, richness_ferns_south, all_cells)  %>%
+    left_join(rownames_to_column(all_mntd_ferns_south, "secondary_grid_code")),
   
   # Combine alpha diversity for SES of PD measured
   # in North and South regions separately
