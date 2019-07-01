@@ -126,6 +126,20 @@ plan <- drake_plan (
   # run Tukey HSD test on results.
   lat_by_repro_tukey = TukeyHSD(lat_by_repro_model) %>% tidy,
   
+  # Analyze percentage of sexual diploid ferns.
+  percent_sex_dip_ferns =
+    right_join(
+      occ_data_ferns, 
+      select(repro_data, -taxon_name),
+      by = "taxon_id") %>%
+    group_by(secondary_grid_code, latitude, longitude) %>%
+    summarize(
+      num_sex_dip = sum(sexual_diploid),
+      num_total = n()
+    ) %>%
+    ungroup %>%
+    mutate(percent_sex_dip = num_sex_dip / num_total),
+  
   # Analyze community diversity ----
   
   # Make richness matrix (number of species per
@@ -133,10 +147,6 @@ plan <- drake_plan (
   richness_pteridos = make_richness_matrix(occ_data_pteridos),
   
   richness_ferns = make_richness_matrix(occ_data_ferns),
-  
-  richness_ferns_north = make_richness_matrix(occ_data_ferns_north),
-  
-  richness_ferns_south = make_richness_matrix(occ_data_ferns_south),
   
   # Make community matrix (presence/absence of each species in
   # 1km2 grid cells), trim to only species in tree.
@@ -152,202 +162,110 @@ plan <- drake_plan (
   comm_ferns_south = make_comm_matrix(occ_data_ferns_south) %>% 
     match_comm_and_tree(japan_fern_tree_south, "comm"),
   
-  ### Calculate phylogenetic diversity
-  #
-  # Calculating standard effect size (SES) involves generating
-  # hundreds of null communities per each observed community, and
-  # takes a long time (4-5 hours for 999 reps per community).
-  #
-  # So we will slice up the dataset into chunks and run each in parallel
-  # to speed things up.
-  #
-  # Do for both all pteridophytes together, and ferns only.
+  ### Calculate phylogenetic diversity for ferns in N and S areas separately
   
-  # Split the dataset into 4 chunks (number of CPUs on my laptop).
-  # (convert the community matrix to a dataframe
-  # with species as rownames so it can be sliced up by columns and
-  # keep the same rownames in each slice)
-  comm_pteridos_split = target(
-    drake_slice(column_to_rownames(comm_pteridos, "species"), 
-                slices = 4, index = i, margin = 2),
-    transform = map(i = !!seq_len(4))
-  ),
+  # Convert to dataframe with rows as communities, columns as species
+  # for picante
+  comm_pteridos_df = column_to_rownames(comm_pteridos, "species") %>% t(),
+  comm_ferns_df = column_to_rownames(comm_ferns, "species") %>% t(),
+  comm_ferns_north_df = column_to_rownames(comm_ferns_north, "species") %>% t(),
+  comm_ferns_south_df = column_to_rownames(comm_ferns_south, "species") %>% t(),
   
-  comm_ferns_split = target(
-    drake_slice(column_to_rownames(comm_ferns, "species"), 
-                slices = 4, index = i, margin = 2),
-    transform = map(i = !!seq_len(4))
-  ),
+  mpd_pteridos = picante::ses.mpd(
+    samp = comm_pteridos_df, 
+    dis = cophenetic(japan_pterido_tree),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
-  comm_ferns_north_split = target(
-    drake_slice(column_to_rownames(comm_ferns_north, "species"), 
-                slices = 4, index = i, margin = 2),
-    transform = map(i = !!seq_len(4))
-  ),
+  mpd_ferns = picante::ses.mpd(
+    samp = comm_ferns_df, 
+    dis = cophenetic(japan_fern_tree),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
-  comm_ferns_south_split = target(
-    drake_slice(column_to_rownames(comm_ferns_south, "species"), 
-                slices = 4, index = i, margin = 2),
-    transform = map(i = !!seq_len(4))
-  ),
-  
-  # Caclulate standard effect size of Faith's phylogenetic
-  # diversity on each slice of the dataset.
-  pd_pteridos = target(
-    ses_pd(
-      # convert community matrix back to tibble
-      comm = comm_pteridos_split %>% rownames_to_column("species") %>% as_tibble, 
-      phy = japan_pterido_tree, n_reps = 999),
-    transform = map(i = !!seq_len(4), comm_pteridos_split)
-  ),
-  
-  pd_ferns = target(
-    ses_pd(
-      # convert community matrix back to tibble
-      comm = comm_ferns_split %>% rownames_to_column("species") %>% as_tibble, 
-      phy = japan_fern_tree, n_reps = 999),
-    transform = map(i = !!seq_len(4), comm_ferns_split)
-  ),
-  
-  pd_ferns_north = target(
-    ses_pd(
-      # convert community matrix back to tibble
-      comm = comm_ferns_north_split %>% rownames_to_column("species") %>% as_tibble, 
-      phy = japan_fern_tree_north, n_reps = 999),
-    transform = map(i = !!seq_len(4), comm_ferns_north_split)
-  ),
-  
-  pd_ferns_south = target(
-    ses_pd(
-      # convert community matrix back to tibble
-      comm = comm_ferns_south_split %>% rownames_to_column("species") %>% as_tibble, 
-      phy = japan_fern_tree_south, n_reps = 999),
-    transform = map(i = !!seq_len(4), comm_ferns_south_split)
-  ),
-  
-  # MPD 
-  mpd_ferns_north = target(
-    ses.mpd(
-      # transpose community matrix, keeping as dataframe
-      samp = comm_ferns_north_split %>% t, 
+  mpd_ferns_north = picante::ses.mpd(
+      samp = comm_ferns_north_df, 
       dis = cophenetic(japan_fern_tree_north),
-      null.model = "phylogeny.pool",
+      null.model = "independentswap",
+      iterations = 10000,
       runs = 999),
-    transform = map(i = !!seq_len(4), comm_ferns_north_split)
-  ),
   
-  mpd_ferns_south = target(
-    ses.mpd(
-      samp = comm_ferns_south_split %>% t, 
-      dis = cophenetic(japan_fern_tree_south),
-      null.model = "phylogeny.pool",
-      runs = 999),
-    transform = map(i = !!seq_len(4), comm_ferns_south_split)
-  ),
+  mpd_ferns_south = picante::ses.mpd(
+    samp = comm_ferns_south_df, 
+    dis = cophenetic(japan_fern_tree_south),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
-  # MNTD
-  mntd_ferns_north = target(
-    picante::ses.mntd(
-      samp = comm_ferns_north_split %>% t, 
-      dis = cophenetic(japan_fern_tree_north),
-      null.model = "phylogeny.pool",
-      runs = 999),
-    transform = map(i = !!seq_len(4), comm_ferns_north_split)
-  ),
+  mntd_pteridos = picante::ses.mntd(
+    samp = comm_pteridos_df, 
+    dis = cophenetic(japan_pterido_tree),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
-  mntd_ferns_south = target(
-    picante::ses.mntd(
-      samp = comm_ferns_south_split %>% t, 
-      dis = cophenetic(japan_fern_tree_south),
-      null.model = "phylogeny.pool",
-      runs = 999),
-    transform = map(i = !!seq_len(4), comm_ferns_south_split)
-  ),
+  mntd_ferns = picante::ses.mntd(
+    samp = comm_ferns_df, 
+    dis = cophenetic(japan_fern_tree),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
-  # Combine sliced results into single dataframe.
-  all_pd_pteridos = target(
-    bind_rows(pd_pteridos),
-    transform = combine(pd_pteridos)
-  ),
+  mntd_ferns_north = picante::ses.mntd(
+    samp = comm_ferns_north_df, 
+    dis = cophenetic(japan_fern_tree_north),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
-  all_pd_ferns = target(
-    bind_rows(pd_ferns),
-    transform = combine(pd_ferns)
-  ),
-  
-  all_pd_ferns_north = target(
-    bind_rows(pd_ferns_north),
-    transform = combine(pd_ferns_north)
-  ),
-  
-  all_pd_ferns_south = target(
-    bind_rows(pd_ferns_south),
-    transform = combine(pd_ferns_south)
-  ),
-  
-  all_mpd_ferns_north = target(
-    rbind(mpd_ferns_north),
-    transform = combine(mpd_ferns_north)
-  ),
-  
-  all_mpd_ferns_south = target(
-    rbind(mpd_ferns_south),
-    transform = combine(mpd_ferns_south)
-  ),
-  
-  all_mntd_ferns_north = target(
-    rbind(mntd_ferns_north),
-    transform = combine(mntd_ferns_north)
-  ),
-  
-  all_mntd_ferns_south = target(
-    rbind(mntd_ferns_south),
-    transform = combine(mntd_ferns_south)
-  ),
+  mntd_ferns_south = picante::ses.mntd(
+    samp = comm_ferns_south_df, 
+    dis = cophenetic(japan_fern_tree_south),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
   # Combine PD and richness into single dataframe.
   # Add elevation and lat/longs for all 1km2 grid cells, even for those
   # that didn't have any species.
-  alpha_div_pteridos = merge_metrics(all_pd_pteridos, richness_pteridos, all_cells),
-  alpha_div_ferns = merge_metrics(all_pd_ferns, richness_ferns, all_cells),
-  alpha_div_ferns_north = merge_metrics(all_pd_ferns_north, richness_ferns_north, all_cells) %>%
-    left_join(rownames_to_column(all_mntd_ferns_north, "secondary_grid_code") %>% select(-ntaxa, -runs)) %>%
-    left_join(rownames_to_column(all_mpd_ferns_north, "secondary_grid_code") %>% select(-ntaxa, -runs)),
-  alpha_div_ferns_south = merge_metrics(all_pd_ferns_south, richness_ferns_south, all_cells)  %>%
-    left_join(rownames_to_column(all_mntd_ferns_south, "secondary_grid_code") %>% select(-ntaxa, -runs)) %>%
-    left_join(rownames_to_column(all_mpd_ferns_south, "secondary_grid_code") %>% select(-ntaxa, -runs)),
+  mpd_ferns_ns <- rbind(mpd_ferns_north, mpd_ferns_south) %>% 
+    rownames_to_column("secondary_grid_code") %>%
+    as_tibble %>%
+    clean_names %>%
+    select(-ntaxa, -runs),
   
-  # Combine alpha diversity for SES of PD measured
-  # in North and South regions separately
-  alpha_div_ferns_north_south = bind_rows(
-    filter(alpha_div_ferns_north, secondary_grid_code %in% all_pd_ferns_north$site),
-    filter(alpha_div_ferns_south, secondary_grid_code %in% all_pd_ferns_south$site)
-  ),
+  mntd_ferns_ns <- rbind(mpd_ferns_north, mpd_ferns_south) %>% 
+    rownames_to_column("secondary_grid_code") %>%
+    as_tibble %>%
+    clean_names %>%
+    select(-ntaxa, -runs),
   
-  # Analyze percentage of sexual diploid ferns.
-  percent_sex_dip_ferns =
-    right_join(
-      occ_data_ferns, 
-      select(repro_data, -taxon_name),
-      by = "taxon_id") %>%
-    group_by(secondary_grid_code, latitude, longitude) %>%
-    summarize(
-      num_sex_dip = sum(sexual_diploid),
-      num_total = n()
-    ) %>%
-    ungroup %>%
-    mutate(percent_sex_dip = num_sex_dip / num_total),
+  # Combine all diversity metrics into single df by site
+  alpha_div_ferns_ns = select(all_cells, secondary_grid_code, latitude, longitude) %>%
+    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
+    left_join(mpd_ferns_ns) %>%
+    left_join(mntd_ferns_ns) %>%
+    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
+    mutate(richness = replace_na(richness, 0)),
   
-  # Compare SES PD vs. percentage of sexual diploid ferns.
-  alpha_div_vs_repro_ferns =
-    left_join(
-      alpha_div_ferns_north_south,
-      select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)
-    ),
+  alpha_div_ferns = select(all_cells, secondary_grid_code, latitude, longitude) %>%
+    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
+    left_join(mpd_ferns) %>%
+    left_join(mntd_ferns) %>%
+    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
+    mutate(richness = replace_na(richness, 0)),
+  
+  alpha_div_pteridos = select(all_cells, secondary_grid_code, latitude, longitude) %>%
+    left_join(select(richness_pteridos, secondary_grid_code, richness)) %>%
+    left_join(mpd_pteridos) %>%
+    left_join(mntd_pteridos) %>%
+    mutate(richness = replace_na(richness, 0))
   
   # Write out report ----
-  report = rmarkdown::render(
-    knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),
-    output_file = file_out(here::here("reports/japan_pteridos_biodiv.html")),
-    quiet = TRUE)
+  # report = rmarkdown::render(
+  #   knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),
+  #   output_file = file_out(here::here("reports/japan_pteridos_biodiv.html")),
+  #   quiet = TRUE)
 )
