@@ -5,8 +5,8 @@ plan <- drake_plan (
   
   # Pteridophyte Phylogeny Group I (PPGI) taxonomy
   # - original version
-  ppgi_raw = read_csv(
-    file_in("data/ppgi_taxonomy.csv")),
+  # IMPORTANT: check encoding on local machine
+  ppgi_raw = data.table::fread(file_in("data/ppgi_taxonomy.csv"), encoding = "Latin-1"),
   
   # - modify slightly for Pteridophytes of Japan
   ppgi = modify_ppgi(ppgi_raw),
