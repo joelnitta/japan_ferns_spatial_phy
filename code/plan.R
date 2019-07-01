@@ -230,13 +230,13 @@ plan <- drake_plan (
   # Combine PD and richness into single dataframe.
   # Add elevation and lat/longs for all 1km2 grid cells, even for those
   # that didn't have any species.
-  mpd_ferns_ns <- rbind(mpd_ferns_north, mpd_ferns_south) %>% 
+  mpd_ferns_ns = rbind(mpd_ferns_north, mpd_ferns_south) %>% 
     rownames_to_column("secondary_grid_code") %>%
     as_tibble %>%
     clean_names %>%
     select(-ntaxa, -runs),
   
-  mntd_ferns_ns <- rbind(mpd_ferns_north, mpd_ferns_south) %>% 
+  mntd_ferns_ns = rbind(mntd_ferns_north, mntd_ferns_south) %>% 
     rownames_to_column("secondary_grid_code") %>%
     as_tibble %>%
     clean_names %>%
