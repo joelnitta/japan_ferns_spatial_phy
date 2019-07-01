@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .drake
+.Rprofile
 data
 drafts
 temp
@@ -11,3 +12,5 @@ temp
 *.doc
 *.pdf
 *.html
+packrat/*
+!packrat/packrat.lock
