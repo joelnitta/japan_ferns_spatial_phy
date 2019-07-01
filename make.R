@@ -23,10 +23,13 @@ pkgconfig::set_config("drake::strings_in_dots" = "literals")
 source("code/functions.R")
 source("code/plan.R")
 
+# Load cache
+ja_fern_cache <- new_cache("ja_fern_cache")
+
 # Run analyses ----
 
 # If not running in parallel, just call make(plan)
-make(plan) 
+make(plan, cache = ja_fern_cache) 
 
 # OR, uncomment out the below lines to run in parallel.
 # 
