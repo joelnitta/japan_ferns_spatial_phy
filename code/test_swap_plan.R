@@ -68,7 +68,7 @@ test_swap_plan <- drake_plan (
   mpd_ferns = 
     ses.mpd(
       samp = t(comm_ferns_df)[1,], 
-      dis = cophenetic(japan_fern_tree_north),
+      dis = cophenetic(japan_fern_tree),
       null.model = "independentswap",
       iterations = 10,
       runs = 10)
