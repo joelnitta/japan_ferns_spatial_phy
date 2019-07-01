@@ -252,15 +252,27 @@ plan <- drake_plan (
   
   alpha_div_ferns = select(all_cells, secondary_grid_code, latitude, longitude) %>%
     left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
-    left_join(mpd_ferns) %>%
-    left_join(mntd_ferns) %>%
+    left_join(mpd_ferns %>% rownames_to_column("secondary_grid_code") %>%
+                as_tibble %>%
+                clean_names %>%
+                select(-ntaxa, -runs)) %>%
+    left_join(mntd_ferns %>% rownames_to_column("secondary_grid_code") %>%
+                as_tibble %>%
+                clean_names %>%
+                select(-ntaxa, -runs)) %>%
     left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
   
   alpha_div_pteridos = select(all_cells, secondary_grid_code, latitude, longitude) %>%
     left_join(select(richness_pteridos, secondary_grid_code, richness)) %>%
-    left_join(mpd_pteridos) %>%
-    left_join(mntd_pteridos) %>%
+    left_join(mpd_pteridos %>% rownames_to_column("secondary_grid_code") %>%
+                as_tibble %>%
+                clean_names %>%
+                select(-ntaxa, -runs)) %>%
+    left_join(mntd_pteridos %>% rownames_to_column("secondary_grid_code") %>%
+                as_tibble %>%
+                clean_names %>%
+                select(-ntaxa, -runs)) %>%
     mutate(richness = replace_na(richness, 0))
   
   # Write out report ----
