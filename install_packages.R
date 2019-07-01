@@ -33,6 +33,7 @@ cran_packages <- c(
   "assertr",
   "assertthat",
   "conflicted",
+  "clustermq", # For running in parallel on the cluster
   "drake",
   "gghighlight",
   "janitor",
@@ -52,7 +53,7 @@ install.packages(cran_packages)
 
 ### Install bioconductor packages ###
 bioc_packages <- c(
-  "Biobase", # ecostructure dep
+  "Biobase" # ecostructure dep
 )
 
 BiocManager::install(bioc_packages)
