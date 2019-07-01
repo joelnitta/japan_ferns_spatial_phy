@@ -5,8 +5,6 @@ test_swap_plan <- drake_plan (
   
   # Pteridophyte Phylogeny Group I (PPGI) taxonomy
   # - original version
-  ppgi_raw = read_csv(
-    file_in("data/ppgi_taxonomy.csv")),
   
   ppgi_raw = data.table::fread(file_in("data/ppgi_taxonomy.csv"), encoding = "Latin-1"),
   
