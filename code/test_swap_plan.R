@@ -67,10 +67,10 @@ test_swap_plan <- drake_plan (
   # Test on first community (now communities are rows) only
   mpd_ferns = 
     ses.mpd(
-      samp = t(comm_ferns_df)[2,], 
+      samp = t(comm_ferns_df)[1:2,], 
       dis = cophenetic(japan_fern_tree),
       null.model = "independentswap",
-      iterations = 10,
-      runs = 10)
+      iterations = 100,
+      runs = 100)
   
 )
