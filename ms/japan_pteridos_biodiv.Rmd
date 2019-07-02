@@ -9,10 +9,10 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide")
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = TRUE)
 ```
 
-```{r load-data}
+```{r load-data, cache = FALSE}
 loadd(list = c("world_map",
   "occ_data_pteridos",
   "occ_data_ferns_north",
@@ -28,13 +28,13 @@ loadd(list = c("world_map",
 
 ### Phylogenetic diversity
 
-We measured phylogenetic diversity using mean phylogenetic distance (MPD), the mean distance between all co-occurring taxa in a community, and mean nearest taxon distance (MNTD), the mean distance between co-occurring sister taxa in a community [@Webb2000; @Webb2002]. A "community" is defined here as co-occurring taxa within a 1 km^2^ grid cell. Since observed values of MPD and MNTD are known to correlate with species richness, we determined whether communities are phylogenetically overdispersed (i.e., diverse) or clustered (i.e., depauperate), by calculating the standard effect size (SES) of MPD and MNTD. We compared observed values to those of a null distribution of 999 random communities with the `ses.pd` function in the `picante` R package [@Kembel2010]. Random communities were each generated using 10,000 iterations of the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities. Positive values of SES of MPD and MNTD (hereafter referred to simply as "MPD" or "MTND" respectively unless indicated otherwise) indicate phylogenetic overdispersion, and negative values indicate phylogenetic clustering. Values at the 2.5% lower or upper extremes of the null distribution were considered statistically significant.
+We measured phylogenetic diversity using mean phylogenetic distance (MPD), the mean distance between all co-occurring taxa in a community, and mean nearest taxon distance (MNTD), the mean distance between co-occurring sister taxa in a community [@Webb2000; @Webb2002]. A "community" is defined here as co-occurring taxa within a 1 km^2^ grid cell. Since observed values of MPD and MNTD are known to correlate with species richness, we determined whether communities are phylogenetically overdispersed (i.e., diverse) or clustered (i.e., depauperate), by calculating the standard effect size (SES) of MPD and MNTD. We compared observed values to those of a null distribution of 999 random communities with the "ses.pd" function in the "picante" R package [@Kembel2010]. Random communities were each generated using 10,000 iterations of the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities. Positive values of SES of MPD and MNTD (hereafter referred to simply as "MPD" or "MTND" respectively unless indicated otherwise) indicate phylogenetic overdispersion, and negative values indicate phylogenetic clustering. Values at the 2.5% lower or upper extremes of the null distribution were considered statistically significant.
 
 ### Datasets
 
 A large number of primarily tropical fern lineages only occur in the far-southern islands of Japan: `r setdiff(occ_data_ferns$genus, occ_data_ferns_north$genus) %>% length` genera and `r setdiff(occ_data_ferns$family, occ_data_ferns_north$family) %>% length` families (`r setdiff(occ_data_ferns$family, occ_data_ferns_north$family) %>% paste(collapse = ", ")`) do not occur north of 30.1 degrees latitude. 
 
-When these lineages are included in the randomization procedure to calculate SES of MPD and MNTD, they likely contribute long branches that bias the northern communities towards clustering. Lycophytes, which occur on long branches, may have a similar effect. Therefore, we calculated phylogenetic diversity for three datasets: pteridophytes (ferns and lycophytes), ferns, and ferns separately north and south of 30.1 degrees latitude (corresponding to the Tokara strait, hereafter referred to as "ferns_ns").
+When these lineages are included in the randomization procedure to calculate SES of MPD and MNTD, they likely contribute long branches that bias the northern communities towards clustering. Lycophytes, which occur on long branches, may have a similar effect. Therefore, we calculated phylogenetic diversity for three datasets: pteridophytes (ferns and lycophytes), ferns, and ferns separately north and south of 30.1 degrees latitude (corresponding to the Tokara strait, hereafter referred to as "ferns_NS").
 
 ## Results
 
@@ -60,7 +60,7 @@ Somewhat surprisingly, MPD and MNTD show a weak negative relationship with the p
 
 ## Figures
 
-```{r richness-pteridos, fig.cap = "Richness of native Japanese pteridophyte taxa."}
+```{r richness-pteridos, fig.cap = "Richness of native Japanese pteridophyte taxa, excluding hybrids."}
 make_diversity_map(
     div_data = alpha_div_pteridos, 
     world_map = world_map, 
@@ -122,7 +122,7 @@ a + b + plot_layout(ncol = 1) + plot_annotation(tag_levels = "a")
 
 ```
 
-```{r mpd, fig.cap = "Standard effect size (SES) of mean phylogenetic distance (MPD) of native Japanese pteridophytes (ferns and lycophytes), excluding hybrids: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude."}
+```{r mpd, fig.asp = 2.0, fig.cap = "Standard effect size (SES) of mean phylogenetic distance (MPD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
 a <- make_diversity_map(
     div_data = alpha_div_pteridos, 
     world_map = world_map, 
@@ -136,7 +136,8 @@ a <- make_diversity_map(
       -get_limit(alpha_div_pteridos, mpd_obs_z, "abs", 3), 
       get_limit(alpha_div_pteridos, mpd_obs_z, "abs", 3)
     )) +
-  theme(legend.position = "bottom")
+  labs(title = "a, pteridophytes") +
+  theme(legend.position = c(0.1, 0.80))
 
 b <- make_diversity_map(
     div_data = alpha_div_ferns, 
@@ -151,7 +152,8 @@ b <- make_diversity_map(
       -get_limit(alpha_div_ferns, mpd_obs_z, "abs", 3), 
       get_limit(alpha_div_ferns, mpd_obs_z, "abs", 3)
     )) +
-  theme(legend.position = "bottom")
+  labs(title = "b, ferns") +
+  theme(legend.position = c(0.1, 0.80))
 
 c <- make_diversity_map(
     div_data = alpha_div_ferns_ns, 
@@ -166,18 +168,19 @@ c <- make_diversity_map(
       -get_limit(alpha_div_ferns_ns, mpd_obs_z, "abs", 3), 
       get_limit(alpha_div_ferns_ns, mpd_obs_z, "abs", 3)
     )) +
-  theme(legend.position = "bottom")
+  labs(title = "c, ferns (NS separate)") +
+  theme(legend.position = c(0.1, 0.80))
 
-a + b + c + plot_layout(nrow = 1) + plot_annotation(tag_levels = "a")
+a + b + c + plot_layout(ncol = 1)
 ```
 
-```{r mntd, fig.cap = "Standard effect size (SES) of mean nearest taxon distance (MNTD) of native Japanese pteridophytes (ferns and lycophytes), excluding hybrids: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude."}
+```{r mntd, fig.asp = 2.0, fig.cap = "Standard effect size (SES) of mean nearest taxon distance (MNTD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
 a <- make_diversity_map(
     div_data = alpha_div_pteridos, 
     world_map = world_map, 
     occ_data = occ_data_pteridos, 
     div_metric = "mntd_obs_z", 
-    metric_title = "mntd"
+    metric_title = "MNTD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
@@ -185,14 +188,15 @@ a <- make_diversity_map(
       -get_limit(alpha_div_pteridos, mntd_obs_z, "abs", 3), 
       get_limit(alpha_div_pteridos, mntd_obs_z, "abs", 3)
     )) +
-  theme(legend.position = "none")
+  labs(title = "a, pteridophytes") +
+  theme(legend.position = c(0.1, 0.80))
 
 b <- make_diversity_map(
     div_data = alpha_div_ferns, 
     world_map = world_map, 
     occ_data = occ_data_ferns, 
     div_metric = "mntd_obs_z", 
-    metric_title = "mntd"
+    metric_title = "MNTD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
@@ -200,14 +204,15 @@ b <- make_diversity_map(
       -get_limit(alpha_div_ferns, mntd_obs_z, "abs", 3), 
       get_limit(alpha_div_ferns, mntd_obs_z, "abs", 3)
     )) +
-  theme(legend.position = "none")
+  labs(title = "b, ferns") +
+  theme(legend.position = c(0.1, 0.80))
 
 c <- make_diversity_map(
     div_data = alpha_div_ferns_ns, 
     world_map = world_map, 
     occ_data = occ_data_ferns, 
     div_metric = "mntd_obs_z", 
-    metric_title = "mntd"
+    metric_title = "MNTD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
@@ -215,9 +220,10 @@ c <- make_diversity_map(
       -get_limit(alpha_div_ferns_ns, mntd_obs_z, "abs", 3), 
       get_limit(alpha_div_ferns_ns, mntd_obs_z, "abs", 3)
     )) +
-  theme(legend.position = "none")
+  labs(title = "c, ferns (NS separate)") +
+  theme(legend.position = c(0.1, 0.80))
 
-a + b + c + plot_layout(nrow = 1)
+a + b + c + plot_layout(ncol = 1)
 ```
 
 ```{r compare-pd-el, fig.cap = "Relationship between standard effect size (SES) of mean phylogenetic distance (MPD) and mean nearest taxon distance (MNTD) of native Japanese pteridophytes and elevation (m). Blue trendline shows significant linear model fit with confidence interval in pink."}
@@ -259,3 +265,5 @@ f <- make_scatter_with_lm(alpha_div_ferns_ns, "percent_sex_dip", "mntd_obs_z", "
   labs(y = "")
 a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
 ```
+
+## References

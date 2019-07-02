@@ -288,11 +288,11 @@ plan <- drake_plan (
                 clean_names %>%
                 select(-ntaxa, -runs)) %>%
     left_join(select(percent_sex_dip_pteridos, secondary_grid_code, percent_sex_dip)) %>%
-    mutate(richness = replace_na(richness, 0))
+    mutate(richness = replace_na(richness, 0)),
   
   # Write out manuscript ----
   ms = rmarkdown::render(
-    knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),
-    output_file = file_out(here::here("reports/japan_pteridos_biodiv.html")),
+    knitr_in(here::here("ms/japan_pteridos_biodiv.Rmd")),
+    output_file = file_out(here::here("ms/japan_pteridos_biodiv.html")),
     quiet = TRUE)
 )
