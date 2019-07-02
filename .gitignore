@@ -15,4 +15,5 @@ temp
 packrat/*
 !packrat/packrat.lock
 *_cache/
+*_files/
 references_raw.bib
