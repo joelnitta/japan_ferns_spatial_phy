@@ -14,6 +14,8 @@ library(gghighlight)
 library(assertr)
 library(scico)
 library(magrittr)
+library(patchwork)
+library(ggridges)
 library(tidyverse)
 
 conflict_prefer("map", "purrr")

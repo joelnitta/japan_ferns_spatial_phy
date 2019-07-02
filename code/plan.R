@@ -140,6 +140,20 @@ plan <- drake_plan (
     ungroup %>%
     mutate(percent_sex_dip = num_sex_dip / num_total),
   
+  # Analyze percentage of sexual diploid pteridophytes.
+  percent_sex_dip_pteridos =
+    right_join(
+      occ_data_pteridos, 
+      select(repro_data, -taxon_name),
+      by = "taxon_id") %>%
+    group_by(secondary_grid_code, latitude, longitude) %>%
+    summarize(
+      num_sex_dip = sum(sexual_diploid),
+      num_total = n()
+    ) %>%
+    ungroup %>%
+    mutate(percent_sex_dip = num_sex_dip / num_total),
+  
   # Analyze community diversity ----
   
   # Make richness matrix (number of species per
@@ -243,14 +257,14 @@ plan <- drake_plan (
     select(-ntaxa, -runs),
   
   # Combine all diversity metrics into single df by site
-  alpha_div_ferns_ns = select(all_cells, secondary_grid_code, latitude, longitude) %>%
+  alpha_div_ferns_ns = select(all_cells, secondary_grid_code, latitude, longitude, elevation) %>%
     left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
     left_join(mpd_ferns_ns) %>%
     left_join(mntd_ferns_ns) %>%
     left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
   
-  alpha_div_ferns = select(all_cells, secondary_grid_code, latitude, longitude) %>%
+  alpha_div_ferns = select(all_cells, secondary_grid_code, latitude, longitude, elevation) %>%
     left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
     left_join(mpd_ferns %>% rownames_to_column("secondary_grid_code") %>%
                 as_tibble %>%
@@ -263,7 +277,7 @@ plan <- drake_plan (
     left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
   
-  alpha_div_pteridos = select(all_cells, secondary_grid_code, latitude, longitude) %>%
+  alpha_div_pteridos = select(all_cells, secondary_grid_code, latitude, longitude, elevation) %>%
     left_join(select(richness_pteridos, secondary_grid_code, richness)) %>%
     left_join(mpd_pteridos %>% rownames_to_column("secondary_grid_code") %>%
                 as_tibble %>%
@@ -273,11 +287,12 @@ plan <- drake_plan (
                 as_tibble %>%
                 clean_names %>%
                 select(-ntaxa, -runs)) %>%
+    left_join(select(percent_sex_dip_pteridos, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0))
   
-  # Write out report ----
-  # report = rmarkdown::render(
-  #   knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),
-  #   output_file = file_out(here::here("reports/japan_pteridos_biodiv.html")),
-  #   quiet = TRUE)
+  # Write out manuscript ----
+  ms = rmarkdown::render(
+    knitr_in(here::here("reports/japan_pteridos_biodiv.Rmd")),
+    output_file = file_out(here::here("reports/japan_pteridos_biodiv.html")),
+    quiet = TRUE)
 )

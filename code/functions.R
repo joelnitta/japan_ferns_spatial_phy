@@ -533,15 +533,18 @@ make_diversity_map <- function (div_data, world_map, occ_data, div_metric, metri
 #' grid cell per taxon, including hybrids.
 #'
 #' @return ggplot object
-make_pd_highlight_map <- function (div_data, world_map, occ_data) {
+make_highlight_map <- function (div_data, world_map, occ_data, div_metric, sig_metric, metric_title) {
+  
+  div_metric <- sym(div_metric)
+  sig_metric <- sym(sig_metric)
   
   # gghighlight only "knows about" data in the most recent layer
   # So make plot with world map on top of highlighted SES of PD,
   # then rearrange layers.
   plot <-
     ggplot(div_data, aes(x = longitude, y = latitude)) +
-    geom_tile(aes(fill = ses_pd), color = "black") +
-    gghighlight( (pd_obs_p > 0.975 | pd_obs_p < 0.025) & !is.na(ses_pd) ) +
+    geom_tile(aes(fill = !!div_metric), color = "black") +
+    gghighlight( (!!sig_metric > 0.975 | !!sig_metric < 0.025) & !is.na(!!sig_metric) ) +
     coord_quickmap(
       xlim = c(pull(occ_data, longitude) %>% min %>% floor, 
                pull(occ_data, longitude) %>% max %>% ceiling),
@@ -565,7 +568,62 @@ make_pd_highlight_map <- function (div_data, world_map, occ_data) {
       plot.background = element_rect(fill = "transparent", colour = NA)
     ) +
     labs(
-      fill = "SES of PD"
+      fill = metric_title
     )
+  
+}
+
+
+#' Make scatter plot with linear model
+#'
+#' @param data Input data
+#' @param resp_var Name of response variable in data
+#' @param indep_var Name of independent variable in data
+#' @param resp_var_print Label to print on y axis
+#' @param indep_var_print Label to print on x axis
+#' @param digits_p Number of digits to output for p value
+#' @param digits_r2 Number of digits to output for R-squared
+#'
+#' @return ggplot object
+#' 
+#' @examples
+#' make_scatter_with_lm(mtcars, "mpg", "disp")
+make_scatter_with_lm <- function(data, indep_var, resp_var,
+                                 indep_var_print = indep_var,
+                                 resp_var_print = resp_var,
+                                 digits_p = 3, digits_r2 = 3) {
+  
+  resp_var_sym <- sym(resp_var)
+  indep_var_sym <- sym(indep_var)
+  
+  model <- lm(formula(glue::glue("{resp_var} ~ {indep_var}")), data = data)
+  
+  p <- model %>% glance %>% pull(p.value) %>% round(digits_p)
+  r2 <- model %>% glance %>% pull(r.squared) %>% round(digits_r2)
+  
+  plot <- ggplot(data, aes(!!indep_var_sym, !!resp_var_sym)) +
+    geom_point(alpha = 0.2) +
+    jntools::standard_theme() +
+    labs(
+      y = resp_var_print,
+      x = indep_var_print
+    )
+  
+  if(p < 0.05) {
+    plot <- plot +
+      geom_smooth(
+        method = "lm",
+        size = 0.5,
+        fill = "pink"
+      ) +
+      annotate("text", 
+               x = Inf, y = Inf, 
+               label = glue::glue("italic(R) ^ 2 == {r2}"),
+               parse = TRUE,
+               hjust = 1.2,
+               vjust = 1.2)
+  }
+  
+  plot
   
 }
