@@ -141,7 +141,14 @@ modify_ppgi <- function (ppgi) {
   # Use normal "e" for Isoetes
   ppgi_mod <- 
     ppgi %>%
-    mutate_all(~str_replace_all(., "ë", "e"))
+    select_if(is.character) %>%
+    mutate_all(
+      ~snakecase::to_any_case(
+        ., 
+        case = "none", 
+        transliterations = c("Latin-ASCII"), 
+        parsing_option = 0)
+    )
   
   # Add genera missing in PPGI that are included in Japan pteridophyte checklist
   # Use the sister (or encompassing) genus for each, so other higher-order
