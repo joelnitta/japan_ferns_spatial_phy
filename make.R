@@ -30,20 +30,20 @@ ja_fern_cache <- new_cache("ja_fern_cache")
 # Run analyses ----
 
 # If not running in parallel, just call make(plan)
-# make(plan, cache = ja_fern_cache) 
+make(plan, cache = ja_fern_cache) 
 
 # OR, uncomment out the below lines to run in parallel.
 
-future::plan(future::multiprocess)
-
-make(
-  plan,
-  parallelism = "future",
-  jobs = 4,
-  cache = ja_fern_cache,
-  prework = list(
-    quote(conflict_prefer("map", "purrr")),
-    quote(conflict_prefer("select", "dplyr")),
-    quote(conflict_prefer("filter", "dplyr")),
-    quote(conflict_prefer("gather", "tidyr"))
-  ))
+# future::plan(future::multiprocess)
+# 
+# make(
+#   plan,
+#   parallelism = "future",
+#   jobs = 4,
+#   cache = ja_fern_cache,
+#   prework = list(
+#     quote(conflict_prefer("map", "purrr")),
+#     quote(conflict_prefer("select", "dplyr")),
+#     quote(conflict_prefer("filter", "dplyr")),
+#     quote(conflict_prefer("gather", "tidyr"))
+#   ))
