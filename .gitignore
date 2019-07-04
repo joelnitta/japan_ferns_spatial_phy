@@ -13,6 +13,7 @@ temp
 *.pdf
 *.html
 *.png
+*.log
 packrat/*
 !packrat/packrat.lock
 *_cache/
