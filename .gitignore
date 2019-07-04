@@ -12,8 +12,10 @@ temp
 *.doc
 *.pdf
 *.html
+*.png
 packrat/*
 !packrat/packrat.lock
 *_cache/
 *_files/
+wc*/
 references_raw.bib
