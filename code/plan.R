@@ -294,13 +294,23 @@ plan <- drake_plan (
     mutate(richness = replace_na(richness, 0)),
   
   # Ecostructure ----
-  # Make input matrix
+  # Make input matrix. Species and geographic motifs don't
+  # care about phylogeny, so use all pteridophytes together.
   comm_for_ecos_pteridos = make_ecos_matrix(comm_pteridos, all_cells),
   
-  # Analyze motifs using ecostructure
+  # Analyze motifs using ecostructure:
+  # - species motifs
   species_motifs_pteridos = target(
     ecostructure::ecos_fit(
       comm_for_ecos_pteridos, 
+      K = K, tol = 0.1, num_trials = 1),
+    transform = map(K = !!k_vals)
+  ),
+  
+  # - transposed species motifs
+  species_motifs_trans_pteridos = target(
+    ecostructure::ecos_fit(
+      t(comm_for_ecos_pteridos), 
       K = K, tol = 0.1, num_trials = 1),
     transform = map(K = !!k_vals)
   ),
