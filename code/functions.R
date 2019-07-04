@@ -436,6 +436,56 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
   
 }
 
+# Ecostructure ----
+
+#' Convert community tibble into matrix for ecostructure
+#'
+#' @param comm_pteridos Tibble of community data, with one
+#' column for species names, the rest sites, and rows
+#' as species.
+#' @param all_cells Tibble with one column corresponding to
+#' site names, one for longitude, and one for latitude
+#'
+#' @return Matrix with rows as sites and columns as species.
+#' Rownames are longitude, latitude separated by underscore.
+#' 
+make_ecos_matrix <- function (comm_pteridos, all_cells) {
+  
+  # Get vector of site names
+  pterido_sites <-
+    comm_pteridos %>% 
+    gather(secondary_grid_code, abundance, -species) %>%
+    pull(secondary_grid_code) %>%
+    unique
+  
+  # Make tibble of all longitudes and latitudes by
+  # site name (here, secondary_grid_code) for renaming
+  # rows in matrix
+  long_lats <-
+    all_cells %>%
+    transmute(secondary_grid_code, long_lat = paste(longitude, latitude, sep = "_")) %>%
+    unique %>%
+    # Only use those actually in the community data so we
+    # don't end up with a bunch of NA values after joining.
+    filter(secondary_grid_code %in% pterido_sites)
+  
+  comm_pteridos %>% 
+    gather(secondary_grid_code, abundance, -species) %>%
+    spread(species, abundance) %>%
+    # Remove grid cell flagged as missing until get fixed data
+    filter(secondary_grid_code != "513613") %>%
+    # Check for grid cells in comm data but missing from all_cells data
+    verify(secondary_grid_code %in% long_lats$secondary_grid_code) %>%
+    # Check that grid cells in comm data are unique
+    assert(is_uniq, secondary_grid_code) %>%
+    left_join(long_lats) %>%
+    select(-secondary_grid_code) %>%
+    column_to_rownames("long_lat") %>%
+    as.matrix
+  
+}
+
+
 # Plotting ----
 
 #' Get the lower, upper, or absolute maximum value

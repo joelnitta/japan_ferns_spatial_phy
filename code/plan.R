@@ -1,3 +1,6 @@
+# Set vector of k-values to use for ecostructure
+k_vals <- 2:10
+
 # Define analysis plan
 plan <- drake_plan (
   
@@ -200,11 +203,11 @@ plan <- drake_plan (
     runs = 999),
   
   mpd_ferns_north = picante::ses.mpd(
-      samp = comm_ferns_north_df, 
-      dis = cophenetic(japan_fern_tree_north),
-      null.model = "independentswap",
-      iterations = 10000,
-      runs = 999),
+    samp = comm_ferns_north_df, 
+    dis = cophenetic(japan_fern_tree_north),
+    null.model = "independentswap",
+    iterations = 10000,
+    runs = 999),
   
   mpd_ferns_south = picante::ses.mpd(
     samp = comm_ferns_south_df, 
@@ -289,6 +292,18 @@ plan <- drake_plan (
                 select(-ntaxa, -runs)) %>%
     left_join(select(percent_sex_dip_pteridos, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
+  
+  # Ecostructure ----
+  # Make input matrix
+  comm_for_ecos_pteridos = make_ecos_matrix(comm_pteridos, all_cells),
+  
+  # Analyze motifs using ecostructure
+  species_motifs_pteridos = target(
+    ecostructure::ecos_fit(
+      comm_for_ecos_pteridos, 
+      K = K, tol = 0.1, num_trials = 1),
+    transform = map(K = !!k_vals)
+  ),
   
   # Write out manuscript ----
   ms = rmarkdown::render(

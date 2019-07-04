@@ -16,6 +16,7 @@ library(scico)
 library(magrittr)
 library(patchwork)
 library(ggridges)
+library(ecostructure)
 library(tidyverse)
 
 conflict_prefer("map", "purrr")
