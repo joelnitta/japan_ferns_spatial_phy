@@ -9,27 +9,24 @@ plan <- drake_plan (
   # Pteridophyte Phylogeny Group I (PPGI) taxonomy
   # - original version
   # IMPORTANT: check encoding on local machine
-  ppgi_raw = read_csv(file_in("data/ppgi_taxonomy.csv")),
+  ppgi_raw = read_csv(file_in("data_raw/ppgi_taxonomy.csv")),
   
   # - modify slightly for Pteridophytes of Japan
   ppgi = modify_ppgi(ppgi_raw),
   
   # Reproductive mode data, with one row per species.
-  repro_data_raw = read_excel(
-    file_in("data/ESM1.xlsx"),
-    col_types = c("text", "text", "text", "text", "text", 
-                  "numeric", "numeric", "numeric")),
+  repro_data_raw = read_csv(
+    file_in("data_raw/ESM1.csv"),
+    col_types = "cccccnnnnn"),
   
   repro_data = process_repro_data(repro_data_raw),
   
   # Occurrence data, with multiple rows per species.
   # Occurrences are presences in a set of 1km2 grid 
   # cells across Japan, not actual occurrence points of specimens.
-  occ_data_raw = read_excel(
-    file_in("data/ESM2.xlsx"),
-    col_types = c("text", "text", "text", 
-                  "numeric", "numeric", "text", 
-                  "text", "text")
+  occ_data_raw = read_csv(
+    file_in("data_raw/ESM2.csv"),
+    col_types = "cccnnccc"
   ),
   
   # - occurrence data including ferns and lycophytes
@@ -56,7 +53,9 @@ plan <- drake_plan (
   
   # Read in raw phylogenetic tree of all non-hybrid pteridophyte
   # taxa based on rbcL gene.
-  japan_pterido_tree_raw = read.nexus("data/PD170708Bayes2.nxs"),
+  japan_pterido_tree_raw = read_nexus_in_zip(
+    file_in("data_raw/japan_pterido_rbcl_cipres.zip"), 
+    "infile.nex.con.tre")[[2]],
   
   # Process trees.
   # - tree including ferns and lycophtyes
