@@ -34,7 +34,9 @@ plan <- drake_plan (
   
   # - occurrence data including ferns and lycophytes
   occ_data_pteridos = clean_names(occ_data_raw) %>%
-    add_taxonomy(ppgi),
+    add_taxonomy(ppgi) %>%
+    # There is one grid code not in all_cells. Remove this.
+    filter(secondary_grid_code %in% all_cells$secondary_grid_code),
   
   # - occurrence data including ferns only
   occ_data_ferns = 
@@ -82,9 +84,11 @@ plan <- drake_plan (
     rename(longitude = long, latitude = lat),
   
   # List of all 1km2 grid cells across Japan with elevation.
+  # There are two duplicate cells, remove these.
   all_cells = read_csv(
     file_in("data/all_cells_el.csv"),
-    col_types = "nncc?"),
+    col_types = "nncc?") %>%
+    unique,
   
   # Analyze basic statistics ----
   
