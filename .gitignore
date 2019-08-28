@@ -14,6 +14,7 @@ temp
 *.html
 *.png
 *.log
+*.tar.gz
 packrat/*
 !packrat/packrat.lock
 *_cache/
