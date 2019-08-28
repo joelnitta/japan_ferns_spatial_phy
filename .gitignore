@@ -5,6 +5,7 @@
 .drake
 .Rprofile
 data
+data_raw
 drafts
 temp
 *.Rproj
