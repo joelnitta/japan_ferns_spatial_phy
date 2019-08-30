@@ -30,6 +30,11 @@ FernGreenListV1.01.xls: List of Japanese ferns and lycophytes species including
 scientific name, endemic status, conservation status, and other taxonomic data. 
 Downloaded from http://www.rdplants.org/gl/FernGreenListV1.01.xls on 2019-07-17.
 
+gbif_clean_no_obs.csv: Geographic coordinates of ferns and lycophytes from GBIF.
+All species names resolved to Catalog of Life, and coordinates have been cleaned
+using coordinate cleaner. Based on vouchered specimens only (no occurrence records). 
+Produced by pacific_ferns_biogeo project.
+
 japan_pterido_rbcl_cipres.zip: Output of Bayesian analysis of Japanese pteridophyte
 rbcL data matrix (rbcl_mrbayes.nex) downloaded from the CIPRES cluster. The resulting
 tree file is "infile.nex.con.tre" within the zip folder. Tips named with two numbers

@@ -19,6 +19,7 @@ library(ggridges)
 library(ecostructure)
 library(taxastand)
 library(data.table)
+library(sf)
 library(tidyverse)
 
 conflict_prefer("map", "purrr")

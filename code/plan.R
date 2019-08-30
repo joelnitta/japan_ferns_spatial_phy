@@ -64,8 +64,8 @@ plan <- drake_plan (
   # - occurrence data including ferns and lycophytes
   occ_data_pteridos = clean_names(occ_data_raw) %>%
     add_taxonomy(ppgi) %>%
-    # There is one grid code not in all_cells. Remove this.
-    filter(secondary_grid_code %in% all_cells$secondary_grid_code),
+    # Verify that all secondary_grid_code values are in the all_cells data
+    assert(in_set(all_cells$id), secondary_grid_code),
   
   # - occurrence data including ferns only
   occ_data_ferns = 
@@ -82,6 +82,10 @@ plan <- drake_plan (
   
   occ_data_ferns_south = occ_data_ferns %>%
     filter(latitude < 30.1),
+  
+  # GBIF data: cleaned points for all pteridophytes globally,
+  # with names standardized to COL to species level (no infrasp. taxa)
+  gbif_points_global = read_csv(file_in("data_raw/gbif_clean_no_obs.csv")),
   
   # Read in raw phylogenetic tree of all non-hybrid pteridophyte
   # taxa based on rbcL gene.
@@ -118,7 +122,7 @@ plan <- drake_plan (
   # There are two duplicate cells, remove these.
   all_cells = read_csv(
     file_in("data_raw/2_grid_cells_all.csv"),
-    col_types = "nccc") %>%
+    col_types = "ncnn") %>%
     unique,
   
   # Analyze basic statistics ----
@@ -349,6 +353,80 @@ plan <- drake_plan (
     mutate(richness = replace_na(richness, 0)),
   
   # Ecostructure ----
+  
+  ### Global analysis (dispersion fields) ###
+  
+  # Rename pteridophyte species to match World Ferns (same as GBIF)
+  occ_data_pteridos_renamed = 
+    left_join(
+      select(occ_data_pteridos, taxon_id, latitude, longitude), 
+      select(green_list, taxon_id, scientific_name)
+    ) %>%
+    inner_join(
+    resolved_names,
+    by = c(scientific_name = "query")) %>%
+    filter(is.na(genus)) %>%
+    assert(not_na, genus) %>%
+    assert(not_na, specificEpithet) %>%
+    mutate(species = paste(genus, specificEpithet)) %>%
+    mutate(site = paste(longitude, latitude, sep = "_")) %>%
+    select(species, site),
+  
+  # Make community data matrix for renamed pteriphytes of Japan
+  comm_pteridos_renamed = occ_data_pteridos_renamed %>%
+    mutate(
+      abundance = 1,
+      site = as.character(site)) %>%
+    spread(site, abundance) %>%
+    mutate_at(vars(-species), ~replace_na(., 0)) %>%
+    mutate(species = as.character(species)),
+  
+  # Crop global species records from GBIF to exclude Japan
+  gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells),
+  
+  # Make a global presence/absence matrix (excluding Japan)
+  # based on GBFIF occurrence records
+  comm_for_ecos_global_cropped = comm_from_points(
+    species_coods = gbif_points_no_japan,
+    resol = 1,
+    rownames = TRUE
+  ),
+  
+  # Make a combined presence/absence matrix
+  # 1-degree grid cells outside of Japan,
+  # 10-km grid cells inside Japan
+  # NEED TO WRITE FUNCTION
+  comm_for_ecos_global_combined = combine_presabs_mat(
+    comm_for_ecos_global_cropped,
+    comm_pteridos_renamed),
+  
+  # Make dispersion fields list
+  dispersion_fields_list = pres_ab_to_disp(
+    comm_for_ecos_global_combined
+  ),
+  
+  # Make dispersion fields matrix
+  dispersion_fields_matrix = dsp_to_matrix2(
+    dispersion_fields_list,
+    drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
+  ),
+  
+  # Keep only sites in Japan
+  # NEED TO WRITE FUNCTION
+  dispersion_fields_matrix_japan = select_disp_fields(
+    dispersion_fields_matrix
+  ),
+  
+  # Analyze geographical motifs using ecostructure
+  geo_motifs_pteridos = target(
+    ecostructure::ecos_fit(
+      dispersion_fields_matrix_japan, 
+      K = K, tol = 0.1, num_trials = 1),
+    transform = map(K = !!k_vals)
+  ),
+  
+  ### Regional analysis (species matrix) ###
+  
   # Make input matrix. Species and geographic motifs don't
   # care about phylogeny, so use all pteridophytes together.
   comm_for_ecos_pteridos = make_ecos_matrix(comm_pteridos, all_cells),

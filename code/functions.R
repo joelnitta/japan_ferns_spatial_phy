@@ -840,7 +840,195 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
   
 }
 
+# Geospatial ----
+
+
+#' Exclude points in Japan from GBIF data
+#'
+#' @param gbif_points_global Dataframe; global occurrences of pteridophytes,
+#' with species, latitude, and longitude
+#' @param all_cells Dataframe; centroids of 10km grid cells in Japan
+#'
+#' @return Tibble; global occurrences of pteridophytes, excluding any that
+#' fall in the 10km grid cells in Japan
+#' 
+exclude_japan_points <- function (gbif_points_global, all_cells) {
+  
+  # Convert global occurrence points to sf object.
+  gbif_points_global_sf <-
+    purrr::map2(
+      gbif_points_global$decimallongitude,
+      gbif_points_global$decimallatitude,
+      ~ sf::st_point(c(.x, .y))) %>%
+    sf::st_sfc(crs = 4326) %>%
+    sf::st_sf(gbif_points_global, .)
+  
+  # Reformat names of Japan 10 km grid cell centroids
+  # to match GBIF format
+  all_cells <-
+    all_cells %>%
+    rename(decimallongitude = x, decimallatitude = y)
+  
+  # Convert Japan 10 km grid cell centroids to sf object
+  all_cells_sf <- purrr::map2(
+    all_cells$decimallongitude,
+    all_cells$decimallatitude,
+    ~ sf::st_point(c(.x, .y))) %>%
+    sf::st_sfc(crs = 4326) %>%
+    sf::st_sf(all_cells, .)
+  
+  # Find all points within 10 km of centers of grid cells in Japan
+  points_within_japan <- sf::st_is_within_distance(
+    gbif_points_global_sf, all_cells_sf, 10)
+  
+  # Make logical vector of all points outside of Japan
+  is_outside_of_japan <- lengths(points_within_japan) == 0
+  
+  # Exclude points inside Japan
+  dplyr::filter(gbif_points_global, is_outside_of_japan)
+  
+}
+
+
+
+
 # Ecostructure ----
+
+#' Make community matrix from species' occurrences
+#' 
+#' A grid is defined according to xmn, xmx, ymn, ymx, and reso of square
+#' cells where x and y values correspond to latitude and longitude. This
+#' is then filled in with the species occurrences, and converted to a 
+#' community matrix where the rows are cells and columns are species.
+#'
+#' @param species_coods Dataframe of species occurrences. Must include
+#' columns "species", "decimallongitude", and "decimallatitude". 
+#' No missing values allowed.
+#' @param xmn Minimum longitude used to construct the presence-absence grid.
+#' @param xmx Maximum longitude used to construct the presence-absence grid.
+#' @param ymn Minimum latitude used to construct the presence-absence grid.
+#' @param ymx Maximum latitude used to construct the presence-absence grid.
+#' @param reso Degree of spatial resolution used to construct the presence-absence grid.
+#' @param crs Character or object of class CRS. PROJ.4 type description of a 
+#' Coordinate Reference System (map projection) used to construct the 
+#' presence-absence grid.
+#' @param rownames Logical; should the rownames of the matrix be the
+#' coordinates of each grid cell? If FALSE, separate columns will be 
+#' created for grid cell coordinates. Warning: setting rownames on a large
+#' matrix may require a large amount of memory and is not recommended.
+#' @param abun Logical; should the cells of the matrix be species' abundances?
+#' If false, values of the cell will indicate presence (1) or absence (0) of
+#' each species.
+#'
+#' @return Matrix
+#' 
+#' @examples
+#' # Make test data set of 10 species with 100 occurrences total.
+#' test_data <- data.frame(species = letters[1:10],
+#'   decimallongitude = runif(100, -2, 2),
+#'   decimallatitude = runif(100, -2, 2),
+#'   stringsAsFactors = FALSE)
+#' # Presence/absence
+#' comm_from_points(test_data)
+#' # Abundance
+#' comm_from_points(test_data, abun = TRUE)
+
+comm_from_points <- function(species_coods, 
+                             xmn = -180, xmx = 180, 
+                             ymn = -90, ymx = 90, 
+                             resol = 1,
+                             crs = sp::CRS("+proj=longlat +datum=WGS84"),
+                             rownames = FALSE,
+                             abun = FALSE) {
+  
+  checkr::check_data(
+    species_coods,
+    values = list(
+      species = "a",
+      decimallongitude = 1,
+      decimallatitude = 1
+    )
+  )
+  
+  assertr::verify(species_coods, decimallongitude <= 180, success_logical)
+  
+  assertr::verify(species_coods, decimallatitude <= 90, success_logical)
+  
+  assertthat::assert_that(!is.factor(species_coods$species))
+  
+  # Create empty raster
+  r <- raster::raster(
+    resolution = resol, 
+    xmn = xmn, 
+    xmx = xmx, 
+    ymn = ymn, 
+    ymx = ymx,
+    crs = crs)
+  
+  ### Extract cell IDs from points by species
+  
+  # Coordinates must be long, lat for raster 
+  # (which assumes x, y position in that order)
+  species_coods <- species_coods[,c("species", "decimallongitude", "decimallatitude")]
+  
+  # Extract cell IDs from points by species
+  species_coods <- tidyr::nest(species_coods, -species)
+  
+  # raster::cellFromXY needs data to be data.frame, not tibble
+  species_coods <- dplyr::mutate(species_coods, data = purrr::map(data, as.data.frame))
+  
+  cells_occur <- purrr::map(
+    species_coods$data, 
+    ~ raster::cellFromXY(xy = ., object = r)
+  )
+  
+  names(cells_occur) <- species_coods$species
+  
+  rm(species_coods)
+  
+  # Get vector of non-empty cells
+  non_empty_cells <- sort(unique(unlist(cells_occur)))
+  
+  # Convert list of cell occurrences from cell IDs to vector
+  # the length of non_empty_cells with 1 (or number of times for abundance)
+  # for each cell where that species occurs.
+  
+  if(isTRUE(abun)) {
+    # abudance
+    cells_occur <- purrr::map(cells_occur, count_abun, all_cells = non_empty_cells)
+  } else {
+    # presence/absence
+    cells_occur <- purrr::map(cells_occur, ~as.numeric(non_empty_cells %in% .))
+  }
+  
+  # Combine these into a matrix
+  pres_abs_mat <- t(do.call(rbind, cells_occur))
+  
+  rm(cells_occur)
+  
+  # Add coordinates
+  
+  # Make vector of xy (lat/long) coordinates in raster,
+  # named by cell ID.
+  
+  # When setting names, assumes cell ID naming order goes 
+  # from upper-left most cell
+  # to bottom right-most cell (as in raster docs).
+  cell_xy <- raster::xyFromCell(r, 1:raster::ncell(r))
+  cell_xy <- cell_xy[non_empty_cells,]
+  
+  if(isTRUE(rownames)) {
+    cell_xy <- paste(cell_xy[,"x"], cell_xy[,"y"], sep = "_")
+    rownames(pres_abs_mat) <- cell_xy
+  } else {
+    colnames(cell_xy) <- c("Longitude(x)", "Latitude(y)")
+    pres_abs_mat <- cbind(cell_xy, pres_abs_mat)
+  }
+  
+  return(pres_abs_mat)
+  
+}
+
 
 #' Convert community tibble into matrix for ecostructure
 #'
@@ -965,6 +1153,144 @@ ecos_plot_pie2 <- function (
                                                                                                                  1], y = coords[r, 2], labels = c("", "", ""), radius = radius, 
                                                                     col = sapply(color, scales::alpha, intensity)), pie_control))))
   invisible(dev.off())
+}
+
+#' Convert a presence/absence matrix to a list of
+#' dispersion fields.
+#' 
+#' A dispersion field is the global richness for the species from 
+#' one particular site.
+#'
+#' @param pres_ab_matrix Presence/absence matrix. Must be formatted
+#' with species as columns and sites as rows. Rownames must be formatted
+#' as the longitude and latitude of the centroid of the site separated
+#' by an underscore, e.g. '160_20'.
+#' @param proj Coordinate reference system
+#' @param xmin Minimum longitude to use when projecting the dispersion fields
+#' @param xmax Maximum longitude to use when projecting the dispersion fields
+#' @param ymin Minimum latitude to use when projecting the dispersion fields
+#' @param ymax Maximum latitude to use when projecting the dispersion fields
+#'
+#' @return List, of length equal to the number of sites (rows) in the
+#' input presence/absence matrix. 
+#' Each item in the list is a raster -- the dispersion field for that site.
+#' 
+#' @examples
+#' test_matrix <- matrix(data = rbinom(100, 1, 0.5), 10, 10)
+#' longs <- sample(c(1:5), replace=TRUE, size=10)
+#' lats <- sample(c(1:5), replace=TRUE, size=10)
+#' rownames(test_matrix) <- paste(longs, lats, sep = "_")
+#' colnames(test_matrix) <- letters[1:10]
+#' disp_list <- pres_ab_to_disp(test_matrix, 1,5,1,5, res = 1)
+#' test_matrix
+#' plot(disp_list[[1]])
+pres_ab_to_disp <- function (pres_ab_matrix,
+                             xmin = -180, xmax = 180,
+                             ymin = -90, ymax = 90,
+                             proj = sp::CRS(' +proj=longlat +ellps=WGS84'),
+                             res = 1) {
+  
+  assertthat::assert_that(is.matrix(pres_ab_matrix))
+  
+  # Make empty raster
+  ras <- raster::raster(xmn=xmin, xmx=xmax, ymn=ymin, ymx=ymax, crs=proj, resolution = res)
+  
+  # Prepare loop to get cell IDs
+  idx <- c()
+  site_names <- rownames(pres_ab_matrix)
+  
+  # `idx` is a vector of cell IDs in the raster, only including cells in the
+  # pres/abs matrix
+  for (i in 1:length(site_names)){
+    idx[i] <- raster::cellFromXY(ras, as.numeric(unlist(strsplit(site_names[i], "[_]"))))
+  }
+  
+  # Prepare loop for species rasters
+  species_rasters <- list()
+  k <- length(colnames(pres_ab_matrix))
+  
+  # `species_rasters` is a list of rasters, one for each species in the
+  # pres/abs matrix
+  for (i in 1:k){
+    ras <- raster::raster(xmn=xmin, xmx=xmax, ymn=ymin, ymx=ymax, crs=proj, resolution = res)
+    ras[idx] <- pres_ab_matrix[,i]
+    species_rasters[[i]] <- ras
+  }
+  
+  names(species_rasters) <- colnames(pres_ab_matrix)
+  
+  # Prepare loop for dispersion fields
+  disp_rasters <- list()
+  k <- length(site_names)
+  
+  # `disp_rasters` is a list of rasters; each one is the dispersion field
+  # of a site in the pres-abs matrix, i.e., the global richness of species
+  # at that site.
+  for (i in 1:k){
+    spec_in_cell <- names(pres_ab_matrix[i,][pres_ab_matrix[i,] > 0])
+    if (length(spec_in_cell) < 2){
+      disp_rasters[[i]] <- species_rasters[spec_in_cell][[1]]
+    } else {
+      disp_rasters[[i]] <- sum(raster::stack(species_rasters[names(pres_ab_matrix[i,][pres_ab_matrix[i,] > 0])]))
+    }
+  }
+  
+  names(disp_rasters) <- rownames(pres_ab_matrix)
+  
+  return(disp_rasters)
+  
+}
+
+#' Convert a list of dispersion fields to a matrix
+#'
+#' @param dispersion.field List of dispersion fields, 
+#' where each dispersion field is a raster.
+#' @param 
+#'
+#' @return Matrix of with number of rows equal to the length
+#' of `dispersion.field` and number of columns equal to the 
+#' number of rows x the number of columns of each dispersion
+#' field in the list.
+#' 
+#' @examples
+#' test_matrix <- matrix(data = rbinom(100, 1, 0.5), 10, 10)
+#' longs <- sample(c(1:5), replace=TRUE, size=10)
+#' lats <- sample(c(1:5), replace=TRUE, size=10)
+#' rownames(test_matrix) <- paste(longs, lats, sep = "_")
+#' colnames(test_matrix) <- letters[1:10]
+#' disp_list <- pres_ab_to_disp(test_matrix, 1,5,1,5, res = 1)
+#' dsp_to_matrix2(disp_list, drop_zero = TRUE)
+dsp_to_matrix2 <- function (dispersion.field, drop_zero = FALSE) {
+  
+  # Set up results matrix: number of rows equal to length of dispersion
+  # field list, with number of columns equal to the total number of cells
+  # in each dispersion field.
+  map_data <- matrix(
+    ncol = dim(dispersion.field[[1]])[1] * dim(dispersion.field[[1]])[2], 
+    nrow=length(dispersion.field))
+  
+  # Convert dispersion field list to matrix.
+  for (l in 1:length(dispersion.field)) {
+    temp_data <- dispersion.field[[l]]
+    temp_data[is.na(temp_data)] <- 0
+    map_data[l,] <- as.vector(temp_data)
+  }
+  
+  # Set row and column names.
+  rownames(map_data) <- names(dispersion.field)
+  
+  lat_long_names <- c()
+  for (i in 1:dim(map_data)[2]){
+    lat_long_names[i] <- paste0(raster::xyFromCell(temp_data,i), collapse = "_")
+  }
+  colnames(map_data) <- lat_long_names
+  
+  # Optionally drop columns that are all zeros
+  if (isTRUE(drop_zero)) {
+    map_data <- map_data[,colSums(map_data) != 0]
+  }
+  
+  return(map_data)
 }
 
 # Plotting ----
