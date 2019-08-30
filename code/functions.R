@@ -863,12 +863,6 @@ exclude_japan_points <- function (gbif_points_global, all_cells) {
     sf::st_sfc(crs = 4326) %>%
     sf::st_sf(gbif_points_global, .)
   
-  # Reformat names of Japan 10 km grid cell centroids
-  # to match GBIF format
-  all_cells <-
-    all_cells %>%
-    rename(decimallongitude = x, decimallatitude = y)
-  
   # Convert Japan 10 km grid cell centroids to sf object
   all_cells_sf <- purrr::map2(
     all_cells$decimallongitude,
@@ -888,9 +882,6 @@ exclude_japan_points <- function (gbif_points_global, all_cells) {
   dplyr::filter(gbif_points_global, is_outside_of_japan)
   
 }
-
-
-
 
 # Ecostructure ----
 

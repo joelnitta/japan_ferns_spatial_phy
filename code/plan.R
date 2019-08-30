@@ -118,12 +118,9 @@ plan <- drake_plan (
   world_map = ggplot2::map_data("world") %>%
     rename(longitude = long, latitude = lat),
   
-  # List of all 1km2 grid cells across Japan with elevation.
-  # There are two duplicate cells, remove these.
-  all_cells = read_csv(
-    file_in("data_raw/2_grid_cells_all.csv"),
-    col_types = "ncnn") %>%
-    unique,
+  # List of all 10 km grid cells across Japan with elevation
+  all_cells = read_csv(file_in("data/all_cells_el.csv")) %>%
+    assert(is_uniq, secondary_grid_code),
   
   # Analyze basic statistics ----
   
@@ -301,7 +298,7 @@ plan <- drake_plan (
     dis = trait_distance_matrix,
     null.model = "independentswap",
     iterations = 1000,
-    runs = 999),
+    runs = 99),
   
   # Combine PD and richness into single dataframe.
   # Add elevation and lat/longs for all 1km2 grid cells, even for those

@@ -1,6 +1,6 @@
-# Data
+# data_raw
 
-Data files used in analysis.
+Raw data files used in analysis.
 
 2_grid_cells_all.csv: List of 10km grid cells for Japan ("secondary
 grid cells"). Columns include: "id", secondary grid cell code; 
