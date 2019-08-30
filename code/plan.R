@@ -85,8 +85,8 @@ plan <- drake_plan (
   # List of all 1km2 grid cells across Japan with elevation.
   # There are two duplicate cells, remove these.
   all_cells = read_csv(
-    file_in("data/all_cells_el.csv"),
-    col_types = "nncc?") %>%
+    file_in("data_raw/2_grid_cells_all.csv"),
+    col_types = "nccc") %>%
     unique,
   
   # Analyze basic statistics ----
