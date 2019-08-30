@@ -1,5 +1,23 @@
 # Data processing ----
 
+#' Read in a nexus file contained in a zipped archive
+#'
+#' @param zip_folder Path to zip file
+#' @param nexus_file Name of nexus file within zip file
+#'
+#' @return List
+#' 
+read_nexus_in_zip <- function (zip_folder, nexus_file) {
+  
+  temp_dir <- tempdir()
+  
+  unzip(zip_folder, exdir = temp_dir)
+  
+  ape::read.nexus(fs::path(temp_dir, nexus_file))
+  
+}
+
+
 #' Clean up reproductive mode data for pteridophytes of Japan
 #'
 #' @param data Tibble. Raw data read-in from Electronic Supp. Mat. 1
@@ -798,8 +816,8 @@ merge_metrics <- function (all_pd, richness, all_cells) {
 #' Order of species in comm will be rearranged to match the
 #' phylogeny.
 #'
-#' @param comm Community data frame, with one column for sites and
-#' the rest for species.
+#' @param comm Community data frame, with one column for species and
+#' the rest for sites (i.e., rows as species and columns as sites).
 #' @param phy Phylogeny (list of class "phylo")
 #' @param return Type of object to return
 #'
@@ -809,9 +827,21 @@ merge_metrics <- function (all_pd, richness, all_cells) {
 #' @export
 #'
 #' @examples
+#' library(picante)
+#' data(phylocom)
+#' phylo <- phylocom$phylo
+#' comm_small <- phylocom$sample[,sample(1:ncol(phylocom$sample), 10, replace = FALSE)]
+#' comm_small <- comm_small %>% t %>% as.data.frame %>% rownames_to_column("species")
+#' phylo_small <- ape::drop.tip(phylo, phylo$tip.label[sample(1:length(phylo$tip.label), 10, replace = FALSE)])
+#' match_comm_and_tree(comm_small, phylo_small, "comm")
+#' match_comm_and_tree(comm_small, phylo_small, "tree")
+#' 
 match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
   
   assert_that("species" %in% colnames(comm))
+  
+  comm_original <- comm
+  phy_original <- phy
   
   # Keep only species in phylogeny
   comm <- comm %>%
@@ -823,11 +853,20 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
   # Get comm in same order as tips
   comm <- left_join(
     tibble(species = phy$tip.label),
-    comm
+    comm,
+    by = "species"
   )
   
   # Make sure that worked
   assert_that(isTRUE(all.equal(comm$species, phy$tip.label)))
+  
+  if(nrow(comm_original) != nrow(comm)) {
+    print(glue::glue("Dropped {nrow(comm_original) - nrow(comm)} species not in phy from comm"))
+  }
+  
+  if(ape::Ntip(phy_original) != ape::Ntip(phy)) {
+    print(glue::glue("Dropped {Ntip(phy_original) - Ntip(phy)} species not in comm from phy"))
+  }
   
   # Return comm or tree
   assert_that(return %in% c("tree", "comm"))
@@ -840,8 +879,97 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
   
 }
 
-# Geospatial ----
+#' Analyze Standard Effect Size (SES) of mean phylogenetic distance (MPD)
+#' 
+#' Although at least >3 species must match between comm and tree, any non-matching
+#' species will be dropped before running the analysis.
+#'
+#' @param comm Community data frame, with one column for species and
+#' the rest for sites (i.e., rows as species and columns as sites).
+#' @param tree Phylogeny (list of class "phylo")
+#' @param species_col Name of column with species names
+#' @param null.model Type of null model to use for picante::ses.mpd
+#' @param iterations Number of iterations to use for "independentswap"
+#' null model
+#' @param runs Number of times to perform the randomization
+#'
+#' @return Dataframe. Results of ape::ses.mpd
+#' 
+ses_phy_mpd <- function(comm, tree, species_col = "species",
+                    null.model = "independentswap",
+                    iterations = 10000,
+                    runs = 999) {
+  
+  assertthat::assert_that(
+    species_col %in% colnames(comm),
+    msg = "value for 'species_col' not one of the columns of comm")
+  
+  # Drop species not matching between community and tree
+  comm <- match_comm_and_tree(comm, tree, "comm")
+  tree <- match_comm_and_tree(comm, tree, "tree")
+  
+  # Make sure that worked
+  assert_that(isTRUE(all.equal(comm$species, phy$tip.label)))
+  
+  # Convert community to dataframe with rows as sites and columns as species
+  comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
+  
+  # Run ses mpd
+  picante::ses.mpd(
+    samp = comm_df, 
+    dis = cophenetic(tree),
+    null.model = null.model,
+    iterations = iterations,
+    runs = runs)
+  
+}
 
+#' Analyze Standard Effect Size (SES) of mean nearest taxon distance (MNTD)
+#' 
+#' Although at least >3 species must match between comm and tree, any non-matching
+#' species will be dropped before running the analysis.
+#'
+#' @param comm Community data frame, with one column for species and
+#' the rest for sites (i.e., rows as species and columns as sites).
+#' @param tree Phylogeny (list of class "phylo")
+#' @param species_col Name of column with species names
+#' @param null.model Type of null model to use for picante::ses.mpd
+#' @param iterations Number of iterations to use for "independentswap"
+#' null model
+#' @param runs Number of times to perform the randomization
+#'
+#' @return Dataframe. Results of ape::ses.mpd
+#' 
+ses_phy_mntd <- function(comm, tree, species_col = "species",
+                        null.model = "independentswap",
+                        iterations = 10000,
+                        runs = 999) {
+  
+  assertthat::assert_that(
+    species_col %in% colnames(comm),
+    msg = "value for 'species_col' not one of the columns of comm")
+  
+  # Drop species not matching between community and tree
+  comm <- match_comm_and_tree(comm, tree, "comm")
+  tree <- match_comm_and_tree(comm, tree, "tree")
+  
+  # Make sure that worked
+  assert_that(isTRUE(all.equal(comm$species, phy$tip.label)))
+  
+  # Convert community to dataframe with rows as sites and columns as species
+  comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
+  
+  # Run ses mpd
+  picante::ses.mntd(
+    samp = comm_df, 
+    dis = cophenetic(tree),
+    null.model = null.model,
+    iterations = iterations,
+    runs = runs)
+  
+}
+
+# Geospatial ----
 
 #' Exclude points in Japan from GBIF data
 #'

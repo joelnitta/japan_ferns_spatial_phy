@@ -65,7 +65,7 @@ plan <- drake_plan (
   occ_data_pteridos = clean_names(occ_data_raw) %>%
     add_taxonomy(ppgi) %>%
     # Verify that all secondary_grid_code values are in the all_cells data
-    assert(in_set(all_cells$id), secondary_grid_code),
+    assert(in_set(all_cells$secondary_grid_code), secondary_grid_code),
   
   # - occurrence data including ferns only
   occ_data_ferns = 
