@@ -253,6 +253,26 @@ plan <- drake_plan (
     iterations = 10000,
     runs = 999),
   
+  ### Analyze functional trait diversity
+  taxon_id_map = make_taxon_id_map(occ_data_pteridos),
+  
+  trait_distance_matrix = make_traits_dist_matrix(
+    file_in("data_raw/JpFernLUCID_forJoel.xlsx"),
+    taxon_id_map),
+  
+  # Subset community dataframe to only those species with trait data
+  comm_pteridos_df_traits =
+    comm_pteridos_df[
+      ,
+      colnames(comm_pteridos_df) %in% attributes(trait_distance_matrix)[["Labels"]]],
+  
+  mpd_func_pteridos = picante::ses.mpd(
+    samp = comm_pteridos_df_traits, 
+    dis = trait_distance_matrix,
+    null.model = "independentswap",
+    iterations = 1000,
+    runs = 999),
+  
   # Combine PD and richness into single dataframe.
   # Add elevation and lat/longs for all 1km2 grid cells, even for those
   # that didn't have any species.

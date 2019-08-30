@@ -186,6 +186,334 @@ add_taxonomy <- function(occ_data, taxonomy_data) {
     left_join(taxonomy_data)
 }
 
+#' Make a tibble for mapping taxon IDs to taxon names
+#'
+#' @param occ_data_pteridos All occurrence data of pteridophytes in Japan
+#'
+#' @return tibble
+#' 
+make_taxon_id_map <- function(occ_data_pteridos) {
+  occ_data_pteridos %>% select(taxon_id, taxon = taxon_name) %>% unique %>%
+  mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
+  mutate(taxon = str_remove_all(taxon, "\\.")) %>%
+  mutate(taxon = str_remove_all(taxon, "_var")) %>%
+  mutate(taxon = str_remove_all(taxon, "_subsp")) %>%
+  mutate(taxon = str_remove_all(taxon, "_x"))
+}
+
+# Traits ----
+
+#' Get the mean value of a numeric trait from data formatted for lucid
+#'
+#' @param x Vector of values with numeric trait data formatted for lucid
+#'
+#' @return Means of each trait value
+#' 
+get_lucid_mean <- function (x) {
+  if(isTRUE(is.na(x))) return (NA)
+  assertthat::assert_that(is.character(x))
+  num_colons <- stringr::str_count(x, ":")
+  assertthat::assert_that(num_colons == 3)
+  vals <- stringr::str_split(x, ":") %>%
+    map(as.numeric) %>%
+    unlist
+  mean(c(vals[[2]], vals[[3]]))
+}
+
+
+#' Transform traits
+#'
+#' @param traits dataframe; trait data with one column per trait.
+#' @param log_trans logical; should log-transform be applied?
+#' @param scale_traits logical; should traits be scaled?
+#' @param small_number Arbitrarily small number to use in place
+#' of 0 before log-transform
+#' @param trans_select Character vector of trait names to log
+#' transform.
+#' @param scale_select Character vector of trait names to rescale.
+#'
+#' @return dataframe
+#' 
+transform_traits <- function (traits, 
+                              log_trans = TRUE, 
+                              scale_traits = TRUE, 
+                              small_number = 0.1, 
+                              trans_select = c("dissection", "stipe", "length", "width", 
+                                               "rhizome", "pinna"), 
+                              scale_select = c("sla", "dissection", "stipe", "length", 
+                                               "width", "rhizome", "pinna")
+) {
+  
+  # Log-transform
+  if (log_trans == TRUE) {
+    traits <-
+      traits %>%
+      assertr::verify(trans_select %in% colnames(traits)) %>%
+      assertr::assert(is.numeric, trans_select) %>%
+      # Replace zeros with arbitrarily small number
+      dplyr::mutate_at(trans_select, ~ifelse(. == 0, small_number, .)) %>%
+      dplyr::mutate_at(trans_select, log)
+  }
+  
+  # Rescale by dividing original value by range of 
+  # that value (max - min) across the dataset
+  if (scale_traits == TRUE) {
+    traits <-
+      traits %>% 
+      assertr::verify(scale_select %in% colnames(traits)) %>%
+      assertr::assert(is.numeric, scale_select) %>%
+      dplyr::mutate_at(
+        scale_select, ~ . / (max(., na.rm = TRUE) - min(., na.rm = TRUE))
+      )
+  }
+  
+  traits
+  
+}
+
+#' Make a traits distance matrix
+#' 
+#' Use raw fern and lycophyte trait data
+#' formatted for lucid
+#'
+#' @param path_to_lucid_traits Path to raw trait data
+#'
+#' @return Distance matrix
+#' 
+make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
+  
+  # Read in raw trait data for pteridophytes of Japan.
+  # These were originally formatted for lucid dichotomous key software.
+  # So they are mostly quantitative traits that have been converted to binary format,
+  # or numeric traits. There are a lot of traits. One row per taxon.
+  traits <- read_excel("data_raw/JpFernLUCID_forJoel.xlsx", skip = 1) %>%
+    clean_names() %>%
+    select(-x1, -x222) %>%
+    rename(taxon = x2) %>%
+    mutate(taxon = str_replace_all(taxon, ":", "_"))
+  
+  # Check for NA values: nope
+  traits %>% map(is.na) %>% unlist %>% any
+  
+  # Separate out into numeric and binary traits
+  # (numeric container "number" in name, assume binary otherwise)
+  traits_numeric <- select(traits, taxon, contains("number"))
+  traits_binary <-  select(traits, -contains("number"))
+  
+  ### Cleanup binary traits ###
+  
+  # Check what are the unique values in the "binary" traits:
+  # Almost all 0 and 1s, a few other values
+  traits_binary %>%
+    select(-taxon) %>%
+    map(~unique(.) %>% sort) %>%
+    unlist %>%
+    table
+  
+  # These are what the values mean according to the lucid manual
+  # "common and misinterpreted" means that the user may incorrectly think the trait is
+  # absent when it's actually frequently present.
+  # 
+  # 0=absent
+  # 1=common
+  # 2=rare
+  # 3=uncertain
+  # 4=common and misinterpreted
+  # 5=rare and misinterpreted
+  # 6=not scoped
+  
+  # Reformat so all traits are either present (1), absent (0), or NA
+  traits_binary <-
+    traits_binary %>%
+    mutate_at(vars(-taxon), as.numeric) %>%
+    mutate_if(is.numeric, ~case_when(
+      . == 2 ~ 1,
+      . == 3 ~ NaN,
+      . == 4 ~ 1,
+      . == 5 ~ 1,
+      TRUE ~ .
+    )) 
+  
+  traits_binary %>%
+    select(-taxon) %>%
+    map(~unique(.) %>% sort) %>%
+    unlist %>%
+    table
+  
+  traits_binary %>% map(is.na) %>% unlist %>% sum
+  
+  # Reformat presence/absence traits. These have one column each for "presence" (0 or 1),
+  # "absence" (also 0 or 1), and sometimes another related state ("caducous" etc).
+  # Combine these into a single "present" column.
+  
+  # Check names of presence/absence columns
+  traits_binary %>% select(contains("abs"), contains("pres")) %>%
+    colnames %>% sort
+  
+  traits_binary <- 
+    traits_binary %>%
+    # - pseudo_veinlet
+    mutate(
+      leaf_lamina_pseudo_veinlet_present = case_when(
+        leaf_lamina_pseudo_veinlet_absent == 1 ~ 0,
+        TRUE ~ leaf_lamina_pseudo_veinlet_present
+      )) %>%
+    select(-leaf_lamina_pseudo_veinlet_absent) %>%
+    # - rhachis_adaxial_side_grooved
+    mutate(
+      leaf_lamina_rhachis_adaxial_side_grooved_present = case_when(
+        leaf_lamina_rhachis_adaxial_side_grooved_absent == 1 ~ 0,
+        leaf_lamina_rhachis_adaxial_side_grooved_present_continuous_to_costa_groove == 1 ~ 1,
+        leaf_lamina_rhachis_adaxial_side_grooved_present_not_continuous_to_costa_groove == 1 ~ 1,
+        TRUE ~ 0
+      )) %>%
+    select(-leaf_lamina_rhachis_adaxial_side_grooved_absent,
+           -leaf_lamina_rhachis_adaxial_side_grooved_present_continuous_to_costa_groove,
+           -leaf_lamina_rhachis_adaxial_side_grooved_present_not_continuous_to_costa_groove) %>%
+    # - terminal_pinna
+    mutate(
+      leaf_lamina_terminal_pinna_present = case_when(
+        leaf_lamina_terminal_pinna_absent == 1 ~ 0,
+        leaf_lamina_terminal_pinna_absent == 0 ~ 1
+      )
+    ) %>%
+    select(-leaf_lamina_terminal_pinna_absent) %>%
+    # - indusium
+    mutate(
+      leaf_sorus_indusium_present = case_when(
+        leaf_sorus_indusium_presence_absence_absent == 1 ~ 0,
+        leaf_sorus_indusium_presence_absence_present_caducous == 1 ~ 1,
+        TRUE ~ leaf_sorus_indusium_presence_absence_present
+      )) %>%
+    select(-contains("leaf_sorus_indusium_presence_absence")) %>%
+    rename(leaf_sorus_false_indusium_present = leaf_sorus_false_indusium)
+  
+  # Check names of presence/absence columns
+  traits_binary %>% select(contains("abs"), contains("pres")) %>%
+    colnames %>% sort
+  
+  #### Clean up numeric traits ###
+  # Replace missing (0 or 3) with NA,
+  # take the mean of the range of normal values otherwise
+  traits_numeric <-
+    traits_numeric %>%
+    # All numeric traits are preceded with '1:', but this doesn't mean anything
+    mutate_at(vars(-taxon), ~str_remove(., "^1\\:")) %>%
+    mutate_at(vars(-taxon), ~na_if(., "0")) %>%
+    mutate_at(vars(-taxon), ~na_if(., "3")) %>%
+    mutate_at(vars(-taxon), ~map_dbl(., get_lucid_mean))
+  
+  # Split numeric traits into those measured on sterile vs fertile plants
+  # (i.e., with or without spores)
+  
+  traits_numeric_sterile <- select(traits_numeric, taxon, contains("sterile")) %>%
+    rename_all(~str_remove(., "sterile_")) %>%
+    gather(trait, value, -taxon) %>%
+    mutate(type = "sterile")
+  
+  traits_numeric_fertile <- select(traits_numeric, taxon, contains("fertile")) %>%
+    rename_all(~str_remove(., "fertile_")) %>%
+    gather(trait, value, -taxon) %>%
+    mutate(type = "fertile")
+  
+  # Combine these, taking the maximum value regardless of sterile or fertile
+  traits_numeric_combined <-
+    bind_rows(traits_numeric_sterile, traits_numeric_fertile) %>%
+    group_by(taxon, trait) %>%
+    summarize(
+      value = max(value, na.rm = TRUE)
+    ) %>%
+    ungroup %>%
+    mutate(value = na_if(value, -Inf)) %>%
+    spread(trait, value) %>%
+    rename_all(~str_remove(., "_number"))
+  
+  # Log-transform and scale numeric traits
+  num_trait_names <- select(traits_numeric_combined, -taxon) %>% colnames()
+  
+  traits_numeric_combined_trans <- transform_traits(
+    traits_numeric_combined,
+    trans_select = num_trait_names,
+    scale_select = num_trait_names
+  )
+  
+  # Subset to only completely sampled species
+  traits_numeric_combined_trans_complete <- 
+    filter(traits_numeric_combined_trans, complete.cases(traits_numeric_combined_trans))
+  
+  ### Distance matrix
+  
+  # Combine all numeric and categorical traits
+  traits_for_dist <- left_join(traits_numeric_combined_trans, traits_binary)
+  
+  # Convert species names to taxon id codes
+  missing_taxon_id <-
+    traits_for_dist %>% left_join(taxon_id_map) %>%
+    select(taxon_id, everything()) %>%
+    select(taxon_id, taxon) %>%
+    filter(is.na(taxon_id))
+  
+  assertthat::validate_that(
+    nrow(missing_taxon_id) == 0,
+    msg = glue::glue("{nrow(missing_taxon_id)} taxa missing taxa IDs and dropped")
+  )
+  
+  traits_for_dist <-
+    traits_for_dist %>% inner_join(taxon_id_map) %>%
+    select(-taxon) 
+  
+  # Set up weighting.
+  trait_categories <-
+    traits_for_dist %>%
+    select(-taxon_id) %>%
+    colnames %>%
+    tibble(trait = .) %>%
+    mutate(value_type = case_when(
+      trait %in% colnames(traits_binary) ~ "binary",
+      trait %in% colnames(traits_numeric_combined_trans) ~ "numeric"
+    )) %>%
+    mutate(comp_trait = case_when(
+      str_detect(trait, "leaf_sorus_shape") ~ "sorus_shape",
+      str_detect(trait, "leaf_sorus_indusium_shape") ~ "indusium_shape",
+      str_detect(trait, "leaf_sorus_indusium_margin") ~ "indusium_margin",
+      str_detect(trait, "leaf_sorus_false_indusium_present") ~ "false_indusium_present",
+      str_detect(trait, "leaf_sorus_indusium_present") ~ "indusium_present",
+      str_detect(trait, "leaf_lamina_shape_sterile_frond") ~ "shape_sterile_frond",
+      str_detect(trait, "leaf_lamina_texture") ~ "leaf_lamina_texture",
+      str_detect(trait, "leaf_lamina_color") ~ "leaf_lamina_color",
+      str_detect(trait, "leaf_lamina_vennation") ~ "leaf_lamina_vennation",
+      str_detect(trait, "leaf_lamina_pseudo_veinlet_present") ~ "pseudo_veinlet_present",
+      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
+      str_detect(trait, "leaf_lamina_lateral_pinna_shape") ~ "lateral_pinna_shape",
+      str_detect(trait, "leaf_lamina_lateral_pinna_stalk") ~ "lateral_pinna_stalk",
+      str_detect(trait, "leaf_lamina_margin") ~ "leaf_lamina_margin",
+      str_detect(trait, "leaf_lamina_rhachis_adaxial_side_grooved") ~ "rhachis_adaxial_side_grooved",
+      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
+      TRUE ~ trait
+    )) %>%
+    add_count(comp_trait) %>%
+    mutate(weight_by_comp_trait = 1 / n) %>%
+    add_count(value_type) %>%
+    mutate(weight_by_type = 1 / n) %>%
+    mutate(final_weight = weight_by_comp_trait * weight_by_type)
+  
+  trait_categories$weight_by_comp_trait %>% sum
+  trait_categories$weight_by_type %>% sum
+  trait_categories$final_weight %>% sum
+  
+  # Make sure traits for calculating the distance matrix are in correct
+  # order for weighting
+  traits_for_dist <- select(traits_for_dist, taxon_id, trait_categories$trait)
+  
+  # Convert to dataframe for gowdis
+  traits_df <- traits_for_dist %>%
+    column_to_rownames("taxon_id")
+  
+  # Run gowdis with trait weightings
+  dist_mat <- FD::gowdis(traits_df, w = trait_categories$final_weight) 
+  
+}
+
 # Community diversity ----
 
 #' Calculate species richness for all grid cells
