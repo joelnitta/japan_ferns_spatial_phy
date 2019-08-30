@@ -371,6 +371,7 @@ transform_traits <- function (traits,
 #' formatted for lucid
 #'
 #' @param path_to_lucid_traits Path to raw trait data
+#' @param taxon_id_map Tibble mapping taxon IDs to taxon names
 #'
 #' @return Distance matrix
 #' 
@@ -892,14 +893,13 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
 #' @return Either a dataframe or a list of class "phylo"; the tree or
 #' the community, pruned so that only species occurring in both datasets
 #' are included.
-#' @export
 #'
 #' @examples
 #' library(picante)
+#' library(tidyverse)
 #' data(phylocom)
-#' phylo <- phylocom$phylo
-#' comm_small <- phylocom$sample[,sample(1:ncol(phylocom$sample), 10, replace = FALSE)]
-#' comm_small <- comm_small %>% t %>% as.data.frame %>% rownames_to_column("species")
+#' comm_small <- phylocom$sample[,sample(1:ncol(phylocom$sample), 10, replace = FALSE)] %>%
+#'   t %>% as.data.frame %>% rownames_to_column("species")
 #' traits_small <- phylocom$traits[sample(1:nrow(phylocom$traits), 10, replace = FALSE) ,]
 #' dist_mat <- FD::gowdis(traits_small) 
 #' match_comm_and_traits(comm_small, dist_mat, "comm")
@@ -1040,6 +1040,97 @@ ses_phy_mntd <- function(comm, tree, species_col = "species",
     runs = runs)
   
 }
+
+#' Analyze Standard Effect Size (SES) of functional mean phylogenetic distance (MPD)
+#' 
+#' Although at least >3 species must match between comm and tree, any non-matching
+#' species will be dropped before running the analysis.
+#'
+#' @param comm Community data frame, with one column for species and
+#' the rest for sites (i.e., rows as species and columns as sites).
+#' @param traits Distance matrix of traits
+#' @param species_col Name of column with species names
+#' @param null.model Type of null model to use for picante::ses.mpd
+#' @param iterations Number of iterations to use for "independentswap"
+#' null model
+#' @param runs Number of times to perform the randomization
+#'
+#' @return Dataframe. Results of ape::ses.mpd
+#' 
+ses_func_mpd <- function(comm, traits, species_col = "species",
+                         null.model = "independentswap",
+                         iterations = 10000,
+                         runs = 999) {
+  
+  assertthat::assert_that(
+    species_col %in% colnames(comm),
+    msg = "value for 'species_col' not one of the columns of comm")
+  
+  # Drop species not matching between community and traits
+  comm <- match_comm_and_traits(comm, traits, "comm")
+  traits <- match_comm_and_traits(comm, traits, "traits")
+  
+  # Make sure that worked
+  assert_that(isTRUE(all.equal(comm$species, attributes(traits)[["Labels"]])))
+  
+  # Convert community to dataframe with rows as sites and columns as species
+  comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
+  
+  # Run ses mpd
+  picante::ses.mpd(
+    samp = comm_df, 
+    dis = traits,
+    null.model = null.model,
+    iterations = iterations,
+    runs = runs)
+  
+}
+
+#' Analyze Standard Effect Size (SES) of functional nearest mean taxonomic distance (MNTD)
+#' 
+#' Although at least >3 species must match between comm and tree, any non-matching
+#' species will be dropped before running the analysis.
+#'
+#' @param comm Community data frame, with one column for species and
+#' the rest for sites (i.e., rows as species and columns as sites).
+#' @param traits Distance matrix of traits
+#' @param species_col Name of column with species names
+#' @param null.model Type of null model to use for picante::ses.mpd
+#' @param iterations Number of iterations to use for "independentswap"
+#' null model
+#' @param runs Number of times to perform the randomization
+#'
+#' @return Dataframe. Results of ape::ses.mpd
+#' 
+ses_func_mntd <- function(comm, traits, species_col = "species",
+                         null.model = "independentswap",
+                         iterations = 10000,
+                         runs = 999) {
+  
+  assertthat::assert_that(
+    species_col %in% colnames(comm),
+    msg = "value for 'species_col' not one of the columns of comm")
+  
+  # Drop species not matching between community and traits
+  comm <- match_comm_and_traits(comm, traits, "comm")
+  traits <- match_comm_and_traits(comm, traits, "traits")
+  
+  # Make sure that worked
+  assert_that(isTRUE(all.equal(comm$species, attributes(traits)[["Labels"]])))
+  
+  # Convert community to dataframe with rows as sites and columns as species
+  comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
+  
+  # Run ses mpd
+  picante::ses.mntd(
+    samp = comm_df, 
+    dis = traits,
+    null.model = null.model,
+    iterations = iterations,
+    runs = runs)
+  
+}
+
 
 # Geospatial ----
 

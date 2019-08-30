@@ -221,24 +221,39 @@ plan <- drake_plan (
   ),
   
   ### Analyze functional trait diversity ###
+  
+  # Make trait distance matrix
+  # - first make tibble mapping taxon IDs to species names
   taxon_id_map = make_taxon_id_map(occ_data_pteridos),
   
+  # - make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_traits_dist_matrix(
     file_in("data_raw/JpFernLUCID_forJoel.xlsx"),
     taxon_id_map),
   
-  # Subset community dataframe to only those species with trait data
-  comm_pteridos_df_traits =
-    comm_pteridos_df[
-      ,
-      colnames(comm_pteridos_df) %in% attributes(trait_distance_matrix)[["Labels"]]],
+  func_mpd = target(
+    ses_func_mpd(
+      comm,
+      trait_distance_matrix,
+      null.model = "independentswap",
+      iterations = 10000,
+      runs = 999
+    ),
+    transform = map(comm = c(comm_pteridos, comm_ferns, 
+                             comm_ferns_north, comm_ferns_south))
+  ),
   
-  mpd_func_pteridos = picante::ses.mpd(
-    samp = comm_pteridos_df_traits, 
-    dis = trait_distance_matrix,
-    null.model = "independentswap",
-    iterations = 1000,
-    runs = 99),
+  func_mntd = target(
+    ses_func_mntd(
+      comm,
+      trait_distance_matrix,
+      null.model = "independentswap",
+      iterations = 10000,
+      runs = 999
+    ),
+    transform = map(comm = c(comm_pteridos, comm_ferns, 
+                             comm_ferns_north, comm_ferns_south))
+  ),
   
   # Combine PD and richness into single dataframe.
   # Add elevation and lat/longs for all 1km2 grid cells, even for those
