@@ -17,6 +17,8 @@ library(magrittr)
 library(patchwork)
 library(ggridges)
 library(ecostructure)
+library(taxastand)
+library(data.table)
 library(tidyverse)
 
 conflict_prefer("map", "purrr")

@@ -6,13 +6,45 @@ plan <- drake_plan (
   
   # Load and process raw data ----
   
+  ### Taxonomy data ###
+  
   # Pteridophyte Phylogeny Group I (PPGI) taxonomy
   # - original version
-  # IMPORTANT: check encoding on local machine
   ppgi_raw = read_csv(file_in("data_raw/ppgi_taxonomy.csv")),
   
   # - modify slightly for Pteridophytes of Japan
   ppgi = modify_ppgi(ppgi_raw),
+  
+  # Catalog of Life (COL) plants taxonomic data
+  col_plants_raw = data.table::fread(here::here(
+    "data_raw/archive-kingdom-plantae-phylum-tracheophyta-bl3/taxa.txt"
+    ), encoding = "Latin-1") %>%
+    as_tibble(),
+  
+  # Extract World Ferns database contained within COL, only use simple set of columns
+  world_ferns = filter(
+    col_plants_raw,
+    str_detect(datasetName, "World Ferns")
+  ) %>%
+    select(c(
+      "taxonID", "acceptedNameUsageID",
+      "taxonomicStatus", "taxonRank",
+      "scientificName", "genus", 
+      "specificEpithet", "infraspecificEpithet"
+    )),
+  
+  # Load Fern Green List, with conservation status for each species.
+  green_list = read_excel(file_in("data_raw/FernGreenListV1.01.xls")) %>%
+    select(taxon_id = ID20160331, scientific_name = `GreenList学名`,
+           endemic = `固有`, conservation_status = `RL2012`) %>%
+    mutate(taxon_id = as.character(taxon_id)),
+  
+  # Match fern and pteridophyte names to COL.
+  gnr_results = match_with_gnr(green_list$scientific_name),
+  
+  # Resolve synonyms, drop any names that couldn't be resolved.
+  resolved_names = resolve_synonyms(gnr_results, world_ferns) %>% 
+    filter(!is.na(scientificName)),
   
   # Reproductive mode data, with one row per species.
   repro_data_raw = read_csv(
@@ -20,12 +52,6 @@ plan <- drake_plan (
     col_types = "cccccnnnnn"),
   
   repro_data = process_repro_data(repro_data_raw),
-  
-  # Load Fern Green List, with conservation status for each species.
-  green_list = read_excel(file_in("data_raw/FernGreenListV1.01.xls")) %>%
-    select(taxon_id = ID20160331, scientific_name = `GreenList学名`,
-           endemic = `固有`, conservation_status = `RL2012`) %>%
-    mutate(taxon_id = as.character(taxon_id)),
   
   # Occurrence data, with multiple rows per species.
   # Occurrences are presences in a set of 1km2 grid 
