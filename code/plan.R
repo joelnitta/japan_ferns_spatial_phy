@@ -18,7 +18,7 @@ plan <- drake_plan (
   # Catalog of Life (COL) plants taxonomic data
   col_plants_raw = data.table::fread(here::here(
     "data_raw/archive-kingdom-plantae-phylum-tracheophyta-bl3/taxa.txt"
-    ), encoding = "Latin-1") %>%
+  ), encoding = "Latin-1") %>%
     as_tibble(),
   
   # Extract World Ferns database contained within COL, only use simple set of columns
@@ -87,32 +87,12 @@ plan <- drake_plan (
   # with names standardized to COL to species level (no infrasp. taxa)
   gbif_points_global = read_csv(file_in("data_raw/gbif_clean_no_obs.csv")),
   
-  # Read in raw phylogenetic tree of all non-hybrid pteridophyte
+  # Read in phylogenetic tree of all non-hybrid pteridophyte
   # taxa based on rbcL gene.
-  japan_pterido_tree_raw = read_nexus_in_zip(
+  japan_pterido_tree = read_nexus_in_zip(
     file_in("data_raw/japan_pterido_rbcl_cipres.zip"), 
-    "infile.nex.con.tre")[[2]],
-  
-  # Process trees.
-  # - tree including ferns and lycophtyes
-  japan_pterido_tree = format_tip_labels(japan_pterido_tree_raw),
-  
-  # - tree including ferns only
-  japan_fern_tree = drop.tip(
-    japan_pterido_tree, 
-    setdiff(japan_pterido_tree$tip.lab, occ_data_ferns$taxon_id)
-  ),
-  
-  # - tree including ferns north of 30.1 lat only.
-  japan_fern_tree_north = drop.tip(
-    japan_pterido_tree, 
-    setdiff(japan_pterido_tree$tip.lab, occ_data_ferns_north$taxon_id)
-  ),
-  
-  japan_fern_tree_south = drop.tip(
-    japan_pterido_tree, 
-    setdiff(japan_pterido_tree$tip.lab, occ_data_ferns_south$taxon_id)
-  ),
+    "infile.nex.con.tre")[[2]] %>%
+    format_tip_labels,
   
   # Basic world map.
   world_map = ggplot2::map_data("world") %>%
@@ -207,80 +187,40 @@ plan <- drake_plan (
     match_comm_and_tree(japan_pterido_tree, "comm"),
   
   comm_ferns = make_comm_matrix(occ_data_ferns) %>% 
-    match_comm_and_tree(japan_fern_tree, "comm"),
+    match_comm_and_tree(japan_pterido_tree, "comm"),
   
   comm_ferns_north = make_comm_matrix(occ_data_ferns_north) %>% 
-    match_comm_and_tree(japan_fern_tree_north, "comm"),
+    match_comm_and_tree(japan_pterido_tree, "comm"),
   
   comm_ferns_south = make_comm_matrix(occ_data_ferns_south) %>% 
-    match_comm_and_tree(japan_fern_tree_south, "comm"),
+    match_comm_and_tree(japan_pterido_tree, "comm"),
   
-  ### Calculate phylogenetic diversity for ferns in N and S areas separately
+  ### Calculate phylogenetic diversity ###
+  phy_mpd = target(
+    ses_phy_mpd(
+      comm,
+      japan_pterido_tree,
+      null.model = "independentswap",
+      iterations = 10000,
+      runs = 999
+    ),
+    transform = map(comm = c(comm_pteridos, comm_ferns, 
+                             comm_ferns_north, comm_ferns_south))
+  ),
   
-  # Convert to dataframe with rows as communities, columns as species
-  # for picante
-  comm_pteridos_df = column_to_rownames(comm_pteridos, "species") %>% t(),
-  comm_ferns_df = column_to_rownames(comm_ferns, "species") %>% t(),
-  comm_ferns_north_df = column_to_rownames(comm_ferns_north, "species") %>% t(),
-  comm_ferns_south_df = column_to_rownames(comm_ferns_south, "species") %>% t(),
+  phy_mntd = target(
+    ses_phy_mntd(
+      comm,
+      japan_pterido_tree,
+      null.model = "independentswap",
+      iterations = 10000,
+      runs = 999
+    ),
+    transform = map(comm = c(comm_pteridos, comm_ferns, 
+                             comm_ferns_north, comm_ferns_south))
+  ),
   
-  mpd_pteridos = picante::ses.mpd(
-    samp = comm_pteridos_df, 
-    dis = cophenetic(japan_pterido_tree),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  mpd_ferns = picante::ses.mpd(
-    samp = comm_ferns_df, 
-    dis = cophenetic(japan_fern_tree),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  mpd_ferns_north = picante::ses.mpd(
-    samp = comm_ferns_north_df, 
-    dis = cophenetic(japan_fern_tree_north),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  mpd_ferns_south = picante::ses.mpd(
-    samp = comm_ferns_south_df, 
-    dis = cophenetic(japan_fern_tree_south),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  mntd_pteridos = picante::ses.mntd(
-    samp = comm_pteridos_df, 
-    dis = cophenetic(japan_pterido_tree),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  mntd_ferns = picante::ses.mntd(
-    samp = comm_ferns_df, 
-    dis = cophenetic(japan_fern_tree),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  mntd_ferns_north = picante::ses.mntd(
-    samp = comm_ferns_north_df, 
-    dis = cophenetic(japan_fern_tree_north),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  mntd_ferns_south = picante::ses.mntd(
-    samp = comm_ferns_south_df, 
-    dis = cophenetic(japan_fern_tree_south),
-    null.model = "independentswap",
-    iterations = 10000,
-    runs = 999),
-  
-  ### Analyze functional trait diversity
+  ### Analyze functional trait diversity ###
   taxon_id_map = make_taxon_id_map(occ_data_pteridos),
   
   trait_distance_matrix = make_traits_dist_matrix(
@@ -360,8 +300,8 @@ plan <- drake_plan (
       select(green_list, taxon_id, scientific_name)
     ) %>%
     inner_join(
-    resolved_names,
-    by = c(scientific_name = "query")) %>%
+      resolved_names,
+      by = c(scientific_name = "query")) %>%
     filter(is.na(genus)) %>%
     assert(not_na, genus) %>%
     assert(not_na, specificEpithet) %>%
