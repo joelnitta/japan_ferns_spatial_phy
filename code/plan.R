@@ -21,6 +21,12 @@ plan <- drake_plan (
   
   repro_data = process_repro_data(repro_data_raw),
   
+  # Load Fern Green List, with conservation status for each species.
+  green_list = read_excel(file_in("data_raw/FernGreenListV1.01.xls")) %>%
+    select(taxon_id = ID20160331, scientific_name = `GreenList学名`,
+           endemic = `固有`, conservation_status = `RL2012`) %>%
+    mutate(taxon_id = as.character(taxon_id)),
+  
   # Occurrence data, with multiple rows per species.
   # Occurrences are presences in a set of 1km2 grid 
   # cells across Japan, not actual occurrence points of specimens.
