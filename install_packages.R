@@ -43,6 +43,7 @@ cran_packages <- c(
   "scales",
   "scico",
   "tidyverse",
+  "usedist",
   "viridis",
   "boot", # ecostructure dependency that doesn't get detected automatically
   "slam", # ecostructure dep

@@ -814,7 +814,7 @@ merge_metrics <- function (all_pd, richness, all_cells) {
 #' Match community data and tree
 #' 
 #' Order of species in comm will be rearranged to match the
-#' phylogeny.
+#' phylogeny. Species missing from either will be dropped.
 #'
 #' @param comm Community data frame, with one column for species and
 #' the rest for sites (i.e., rows as species and columns as sites).
@@ -873,6 +873,78 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
   
   if(return == "tree") { 
     return (phy) 
+  } else {
+    return (comm)
+  }
+  
+}
+
+#' Match community data and traits
+#' 
+#' Order of species in comm will be rearranged to match the
+#' phylogeny. Species missing from either will be dropped.
+#'
+#' @param comm Community data frame, with one column for species and
+#' the rest for sites (i.e., rows as species and columns as sites).
+#' @param traits Traits distances matrix
+#' @param return Type of object to return
+#'
+#' @return Either a dataframe or a list of class "phylo"; the tree or
+#' the community, pruned so that only species occurring in both datasets
+#' are included.
+#' @export
+#'
+#' @examples
+#' library(picante)
+#' data(phylocom)
+#' phylo <- phylocom$phylo
+#' comm_small <- phylocom$sample[,sample(1:ncol(phylocom$sample), 10, replace = FALSE)]
+#' comm_small <- comm_small %>% t %>% as.data.frame %>% rownames_to_column("species")
+#' traits_small <- phylocom$traits[sample(1:nrow(phylocom$traits), 10, replace = FALSE) ,]
+#' dist_mat <- FD::gowdis(traits_small) 
+#' match_comm_and_traits(comm_small, dist_mat, "comm")
+#' match_comm_and_traits(comm_small, dist_mat, "traits")
+match_comm_and_traits <- function (comm, traits, return = c("comm", "traits")) {
+  
+  assert_that("species" %in% colnames(comm))
+  
+  comm_original <- comm
+  traits_original <- traits
+  
+  # Keep only species in traits
+  comm <- comm %>%
+    filter(species %in% attributes(traits)[["Labels"]]) 
+  
+  # Trim traits matrix to only species in comm
+  in_both <- base::intersect(attributes(traits)[["Labels"]], comm$species)
+  traits <- usedist::dist_subset(traits, in_both)
+  
+  # Get comm in same order as traits
+  comm <- left_join(
+    tibble(species = attributes(traits)[["Labels"]]),
+    comm,
+    by = "species"
+  )
+  
+  # Make sure that worked
+  assert_that(isTRUE(all.equal(comm$species, attributes(traits)[["Labels"]])))
+  
+  if(nrow(comm_original) != nrow(comm)) {
+    print(glue::glue("Dropped {nrow(comm_original) - nrow(comm)} species not in traits from comm"))
+  }
+  
+  traits_labels_original <- attributes(traits_original)[["Labels"]]
+  traits_labels <- attributes(traits)[["Labels"]]
+  
+  if(length(traits_labels_original) != length(traits_labels)) {
+    print(glue::glue("Dropped {length(traits_labels_original) - length(traits_labels)} species not in comm from traits"))
+  }
+  
+  # Return comm or tree
+  assert_that(return %in% c("traits", "comm"))
+  
+  if(return == "traits") { 
+    return (traits) 
   } else {
     return (comm)
   }
