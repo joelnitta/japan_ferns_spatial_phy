@@ -1644,15 +1644,6 @@ get_limit <- function (data, var, type = c("min", "max", "abs"), digits = 2) {
   
 }
 
-#' Make a plot showing species richness on a map of Japan
-#'
-#' @param richness Species richness in 1km grid cells, 
-#' with longitude and latitude
-#' @param occ_data Occurrence data used to generate species richness matrix
-#' @param world_map Background world map
-#'
-#' @return ggplot object
-
 #' Make a plot showing selected alpha diversity metric on a map of Japan
 #'
 #' @param div_data Alpha diversity matrix; rows are communities
@@ -1666,34 +1657,39 @@ get_limit <- function (data, var, type = c("min", "max", "abs"), digits = 2) {
 #' diversity metric.
 #'
 #' @return ggplot object
-make_diversity_map <- function (div_data, world_map, occ_data, div_metric, metric_title) {
+make_diversity_map <- function (div_data, world_map, occ_data, div_metric, metric_title, label) {
   
   div_metric <- sym(div_metric)
   
   ggplot(world_map, aes(x = longitude, y = latitude)) +
     geom_polygon(aes(group = group), fill = "light grey") +
     geom_tile(data = div_data,
-              aes(fill = !!div_metric),
-              color = "black") + 
+              aes(fill = !!div_metric)) + 
     coord_quickmap(
       xlim = c(pull(occ_data, longitude) %>% min %>% floor, 
                pull(occ_data, longitude) %>% max %>% ceiling),
       ylim = c(pull(occ_data, latitude) %>% min %>% floor, 
                pull(occ_data, latitude) %>% max %>% ceiling)
+    )  +
+    labs(
+      fill = metric_title
     ) +
-    # scale_fill_viridis_c(na.value="transparent") +
+    annotate(
+      "text", label = label, size = 12/.pt, fontface = "bold",
+      x = -Inf, 
+      y = Inf,
+      vjust = 1.2, hjust = -0.5) +
     jntools::blank_x_theme() +
     jntools::blank_y_theme() +
     theme(
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       panel.background = element_rect(fill = "transparent", colour = NA),
-      plot.background = element_rect(fill = "transparent", colour = NA)
-    ) +
-    labs(
-      fill = metric_title
-    )
-  
+      plot.background = element_rect(fill = "transparent", colour = NA),
+      legend.title = element_text(size = 20/.pt),
+      legend.text = element_text(size = 16/.pt),
+      legend.justification=c(1,0), 
+      legend.position=c(1.1,0))
 }
 
 #' Make a plot showing selected SES of PD on map of Japan with
@@ -1745,7 +1741,6 @@ make_highlight_map <- function (div_data, world_map, occ_data, div_metric, sig_m
     )
   
 }
-
 
 #' Make scatter plot with linear model
 #'
