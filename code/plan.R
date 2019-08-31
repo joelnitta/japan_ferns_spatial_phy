@@ -402,7 +402,7 @@ plan <- drake_plan (
 
   # Write out manuscript ----
   ms = rmarkdown::render(
-    knitr_in(here::here("ms/japan_pteridos_biodiv.Rmd")),
-    output_file = file_out(here::here("ms/japan_pteridos_biodiv.html")),
+    knitr_in(here::here("report/japan_pteridos_biodiv.Rmd")),
+    output_file = file_out(here::here("report/japan_pteridos_biodiv.html")),
     quiet = TRUE)
 )
