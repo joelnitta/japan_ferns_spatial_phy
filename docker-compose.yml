@@ -1,0 +1,11 @@
+version: "3"
+services:
+  rmd:
+    image: joelnitta/rmd:3.6.0
+    ports:
+      - "8787:8787"
+    volumes:
+      - ".:/home/rstudio/japan_ferns_biogeo"
+    environment:
+      DISABLE_AUTH: "true"
+    working_dir: /home/rstudio/japan_ferns_biogeo
