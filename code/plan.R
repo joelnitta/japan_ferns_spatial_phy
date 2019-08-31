@@ -53,6 +53,12 @@ plan <- drake_plan (
   
   repro_data = process_repro_data(repro_data_raw),
   
+  # List of all 10 km grid cells across Japan with elevation
+  all_cells = read_csv(
+    file_in("data/all_cells_el.csv"),
+    col_types = "nnccn") %>%
+    assert(is_uniq, secondary_grid_code),
+  
   # Occurrence data, with multiple rows per species.
   # Occurrences are presences in a set of 1km2 grid 
   # cells across Japan, not actual occurrence points of specimens.
@@ -97,10 +103,6 @@ plan <- drake_plan (
   # Basic world map.
   world_map = ggplot2::map_data("world") %>%
     rename(longitude = long, latitude = lat),
-  
-  # List of all 10 km grid cells across Japan with elevation
-  all_cells = read_csv(file_in("data/all_cells_el.csv")) %>%
-    assert(is_uniq, secondary_grid_code),
   
   # Analyze basic statistics ----
   
@@ -255,154 +257,140 @@ plan <- drake_plan (
                              comm_ferns_north, comm_ferns_south))
   ),
   
-  # Combine PD and richness into single dataframe.
-  # Add elevation and lat/longs for all 1km2 grid cells, even for those
-  # that didn't have any species.
-  mpd_ferns_ns = rbind(mpd_ferns_north, mpd_ferns_south) %>% 
-    rownames_to_column("secondary_grid_code") %>%
-    as_tibble %>%
-    clean_names %>%
-    select(-ntaxa, -runs),
-  
-  mntd_ferns_ns = rbind(mntd_ferns_north, mntd_ferns_south) %>% 
-    rownames_to_column("secondary_grid_code") %>%
-    as_tibble %>%
-    clean_names %>%
-    select(-ntaxa, -runs),
-  
-  # Combine all diversity metrics into single df by site
-  alpha_div_ferns_ns = select(all_cells, secondary_grid_code, latitude, longitude, elevation) %>%
-    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
-    left_join(mpd_ferns_ns) %>%
-    left_join(mntd_ferns_ns) %>%
-    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
-    mutate(richness = replace_na(richness, 0)),
-  
-  alpha_div_ferns = select(all_cells, secondary_grid_code, latitude, longitude, elevation) %>%
-    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
-    left_join(mpd_ferns %>% rownames_to_column("secondary_grid_code") %>%
-                as_tibble %>%
-                clean_names %>%
-                select(-ntaxa, -runs)) %>%
-    left_join(mntd_ferns %>% rownames_to_column("secondary_grid_code") %>%
-                as_tibble %>%
-                clean_names %>%
-                select(-ntaxa, -runs)) %>%
-    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
-    mutate(richness = replace_na(richness, 0)),
-  
-  alpha_div_pteridos = select(all_cells, secondary_grid_code, latitude, longitude, elevation) %>%
+  # Combine alpha diversity metrics
+  alpha_div_pteridos = 
+    all_cells %>%
     left_join(select(richness_pteridos, secondary_grid_code, richness)) %>%
-    left_join(mpd_pteridos %>% rownames_to_column("secondary_grid_code") %>%
-                as_tibble %>%
-                clean_names %>%
-                select(-ntaxa, -runs)) %>%
-    left_join(mntd_pteridos %>% rownames_to_column("secondary_grid_code") %>%
-                as_tibble %>%
-                clean_names %>%
-                select(-ntaxa, -runs)) %>%
+    left_join(clean_phy_mpd(phy_mpd_comm_pteridos, prefix = "phy_")) %>%
+    left_join(clean_phy_mpd(func_mntd_comm_pteridos, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
     left_join(select(percent_sex_dip_pteridos, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
   
-  # Ecostructure ----
+  alpha_div_ferns = 
+    all_cells %>%
+    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
+    left_join(clean_phy_mpd(phy_mpd_comm_ferns, prefix = "phy_")) %>%
+    left_join(clean_phy_mpd(func_mntd_comm_ferns, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
+    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
+    mutate(richness = replace_na(richness, 0)),
   
-  ### Global analysis (dispersion fields) ###
+  alpha_div_ferns_north = 
+    all_cells %>%
+    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
+    left_join(clean_phy_mpd(phy_mpd_comm_ferns_north, prefix = "phy_")) %>%
+    left_join(clean_phy_mpd(func_mntd_comm_ferns_north, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
+    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
+    mutate(richness = replace_na(richness, 0)),
   
-  # Rename pteridophyte species to match World Ferns (same as GBIF)
-  occ_data_pteridos_renamed = 
-    left_join(
-      select(occ_data_pteridos, taxon_id, latitude, longitude), 
-      select(green_list, taxon_id, scientific_name)
-    ) %>%
-    inner_join(
-      resolved_names,
-      by = c(scientific_name = "query")) %>%
-    filter(is.na(genus)) %>%
-    assert(not_na, genus) %>%
-    assert(not_na, specificEpithet) %>%
-    mutate(species = paste(genus, specificEpithet)) %>%
-    mutate(site = paste(longitude, latitude, sep = "_")) %>%
-    select(species, site),
+  alpha_div_ferns_south = 
+    all_cells %>%
+    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
+    left_join(clean_phy_mpd(phy_mpd_comm_ferns_south, prefix = "phy_")) %>%
+    left_join(clean_phy_mpd(func_mntd_comm_ferns_south, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
+    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
+    mutate(richness = replace_na(richness, 0))
   
-  # Make community data matrix for renamed pteriphytes of Japan
-  comm_pteridos_renamed = occ_data_pteridos_renamed %>%
-    mutate(
-      abundance = 1,
-      site = as.character(site)) %>%
-    spread(site, abundance) %>%
-    mutate_at(vars(-species), ~replace_na(., 0)) %>%
-    mutate(species = as.character(species)),
-  
-  # Crop global species records from GBIF to exclude Japan
-  gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells),
-  
-  # Make a global presence/absence matrix (excluding Japan)
-  # based on GBFIF occurrence records
-  comm_for_ecos_global_cropped = comm_from_points(
-    species_coods = gbif_points_no_japan,
-    resol = 1,
-    rownames = TRUE
-  ),
-  
-  # Make a combined presence/absence matrix
-  # 1-degree grid cells outside of Japan,
-  # 10-km grid cells inside Japan
-  # NEED TO WRITE FUNCTION
-  comm_for_ecos_global_combined = combine_presabs_mat(
-    comm_for_ecos_global_cropped,
-    comm_pteridos_renamed),
-  
-  # Make dispersion fields list
-  dispersion_fields_list = pres_ab_to_disp(
-    comm_for_ecos_global_combined
-  ),
-  
-  # Make dispersion fields matrix
-  dispersion_fields_matrix = dsp_to_matrix2(
-    dispersion_fields_list,
-    drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
-  ),
-  
-  # Keep only sites in Japan
-  # NEED TO WRITE FUNCTION
-  dispersion_fields_matrix_japan = select_disp_fields(
-    dispersion_fields_matrix
-  ),
-  
-  # Analyze geographical motifs using ecostructure
-  geo_motifs_pteridos = target(
-    ecostructure::ecos_fit(
-      dispersion_fields_matrix_japan, 
-      K = K, tol = 0.1, num_trials = 1),
-    transform = map(K = !!k_vals)
-  ),
-  
-  ### Regional analysis (species matrix) ###
-  
-  # Make input matrix. Species and geographic motifs don't
-  # care about phylogeny, so use all pteridophytes together.
-  comm_for_ecos_pteridos = make_ecos_matrix(comm_pteridos, all_cells),
-  
-  # Analyze motifs using ecostructure:
-  # - species motifs
-  species_motifs_pteridos = target(
-    ecostructure::ecos_fit(
-      comm_for_ecos_pteridos, 
-      K = K, tol = 0.1, num_trials = 1),
-    transform = map(K = !!k_vals)
-  ),
-  
-  # - transposed species motifs
-  species_motifs_trans_pteridos = target(
-    ecostructure::ecos_fit(
-      t(comm_for_ecos_pteridos), 
-      K = K, tol = 0.1, num_trials = 1),
-    transform = map(K = !!k_vals)
-  ),
-  
-  # Write out manuscript ----
-  ms = rmarkdown::render(
-    knitr_in(here::here("ms/japan_pteridos_biodiv.Rmd")),
-    output_file = file_out(here::here("ms/japan_pteridos_biodiv.html")),
-    quiet = TRUE)
+  # ,
+  # 
+  # # Ecostructure ----
+  # 
+  # ### Global analysis (dispersion fields) ###
+  # 
+  # # Rename pteridophyte species to match World Ferns (same as GBIF)
+  # occ_data_pteridos_renamed = 
+  #   left_join(
+  #     select(occ_data_pteridos, taxon_id, latitude, longitude), 
+  #     select(green_list, taxon_id, scientific_name)
+  #   ) %>%
+  #   inner_join(
+  #     resolved_names,
+  #     by = c(scientific_name = "query")) %>%
+  #   filter(is.na(genus)) %>%
+  #   assert(not_na, genus) %>%
+  #   assert(not_na, specificEpithet) %>%
+  #   mutate(species = paste(genus, specificEpithet)) %>%
+  #   mutate(site = paste(longitude, latitude, sep = "_")) %>%
+  #   select(species, site),
+  # 
+  # # Make community data matrix for renamed pteriphytes of Japan
+  # comm_pteridos_renamed = occ_data_pteridos_renamed %>%
+  #   mutate(
+  #     abundance = 1,
+  #     site = as.character(site)) %>%
+  #   spread(site, abundance) %>%
+  #   mutate_at(vars(-species), ~replace_na(., 0)) %>%
+  #   mutate(species = as.character(species)),
+  # 
+  # # Crop global species records from GBIF to exclude Japan
+  # gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells),
+  # 
+  # # Make a global presence/absence matrix (excluding Japan)
+  # # based on GBFIF occurrence records
+  # comm_for_ecos_global_cropped = comm_from_points(
+  #   species_coods = gbif_points_no_japan,
+  #   resol = 1,
+  #   rownames = TRUE
+  # ),
+  # 
+  # # Make a combined presence/absence matrix
+  # # 1-degree grid cells outside of Japan,
+  # # 10-km grid cells inside Japan
+  # # NEED TO WRITE FUNCTION
+  # comm_for_ecos_global_combined = combine_presabs_mat(
+  #   comm_for_ecos_global_cropped,
+  #   comm_pteridos_renamed),
+  # 
+  # # Make dispersion fields list
+  # dispersion_fields_list = pres_ab_to_disp(
+  #   comm_for_ecos_global_combined
+  # ),
+  # 
+  # # Make dispersion fields matrix
+  # dispersion_fields_matrix = dsp_to_matrix2(
+  #   dispersion_fields_list,
+  #   drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
+  # ),
+  # 
+  # # Keep only sites in Japan
+  # # NEED TO WRITE FUNCTION
+  # dispersion_fields_matrix_japan = select_disp_fields(
+  #   dispersion_fields_matrix
+  # ),
+  # 
+  # # Analyze geographical motifs using ecostructure
+  # geo_motifs_pteridos = target(
+  #   ecostructure::ecos_fit(
+  #     dispersion_fields_matrix_japan, 
+  #     K = K, tol = 0.1, num_trials = 1),
+  #   transform = map(K = !!k_vals)
+  # ),
+  # 
+  # ### Regional analysis (species matrix) ###
+  # 
+  # # Make input matrix. Species and geographic motifs don't
+  # # care about phylogeny, so use all pteridophytes together.
+  # comm_for_ecos_pteridos = make_ecos_matrix(comm_pteridos, all_cells),
+  # 
+  # # Analyze motifs using ecostructure:
+  # # - species motifs
+  # species_motifs_pteridos = target(
+  #   ecostructure::ecos_fit(
+  #     comm_for_ecos_pteridos, 
+  #     K = K, tol = 0.1, num_trials = 1),
+  #   transform = map(K = !!k_vals)
+  # ),
+  # 
+  # # - transposed species motifs
+  # species_motifs_trans_pteridos = target(
+  #   ecostructure::ecos_fit(
+  #     t(comm_for_ecos_pteridos), 
+  #     K = K, tol = 0.1, num_trials = 1),
+  #   transform = map(K = !!k_vals)
+  # ),
+  # 
+  # # Write out manuscript ----
+  # ms = rmarkdown::render(
+  #   knitr_in(here::here("ms/japan_pteridos_biodiv.Rmd")),
+  #   output_file = file_out(here::here("ms/japan_pteridos_biodiv.html")),
+  #   quiet = TRUE)
 )

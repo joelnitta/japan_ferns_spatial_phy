@@ -981,7 +981,7 @@ ses_phy_mpd <- function(comm, tree, species_col = "species",
   tree <- match_comm_and_tree(comm, tree, "tree")
   
   # Make sure that worked
-  assert_that(isTRUE(all.equal(comm$species, phy$tip.label)))
+  assert_that(isTRUE(all.equal(comm$species, tree$tip.label)))
   
   # Convert community to dataframe with rows as sites and columns as species
   comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
@@ -1026,7 +1026,7 @@ ses_phy_mntd <- function(comm, tree, species_col = "species",
   tree <- match_comm_and_tree(comm, tree, "tree")
   
   # Make sure that worked
-  assert_that(isTRUE(all.equal(comm$species, phy$tip.label)))
+  assert_that(isTRUE(all.equal(comm$species, tree$tip.label)))
   
   # Convert community to dataframe with rows as sites and columns as species
   comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
@@ -1131,6 +1131,35 @@ ses_func_mntd <- function(comm, traits, species_col = "species",
   
 }
 
+#' Clean up output from ses.mpd and ses.mntd
+#'
+#' @param ses_mpd_results Dataframe; output of picante::ses.mpd or
+#' picante::ses.mntd
+#' @param id Name of column to assign for rownames
+#' @param cols_keep Column names from original output to keep
+#' @param prefix String to append to column names
+#'
+#' @return Tibble
+#' 
+clean_phy_mpd <- function (
+  ses_mpd_results, 
+  id = "secondary_grid_code", 
+  cols_keep = c("mpd.obs", "mpd.obs.z"),
+  prefix = "phy_"
+) {
+  
+  ses_mpd_results <-
+    ses_mpd_results %>% 
+    select(cols_keep)
+  
+  colnames(ses_mpd_results) <- paste0(prefix, colnames(ses_mpd_results))
+  
+  ses_mpd_results %>%
+    rownames_to_column(id) %>%
+    as_tibble %>%
+    clean_names
+  
+}
 
 # Geospatial ----
 
