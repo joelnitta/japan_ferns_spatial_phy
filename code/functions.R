@@ -1141,16 +1141,14 @@ ses_func_mntd <- function(comm, traits, species_col = "species",
 #'
 #' @return Tibble
 #' 
-clean_phy_mpd <- function (
+clean_ses <- function (
   ses_mpd_results, 
-  id = "secondary_grid_code", 
-  cols_keep = c("mpd.obs", "mpd.obs.z"),
-  prefix = "phy_"
+  prefix = "phy_",
+  id = "secondary_grid_code"
 ) {
   
   ses_mpd_results <-
-    ses_mpd_results %>% 
-    select(cols_keep)
+    select(ses_mpd_results, contains("obs.p"))
   
   colnames(ses_mpd_results) <- paste0(prefix, colnames(ses_mpd_results))
   

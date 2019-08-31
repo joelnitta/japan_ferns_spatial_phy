@@ -257,36 +257,48 @@ plan <- drake_plan (
                              comm_ferns_north, comm_ferns_south))
   ),
   
-  # Combine alpha diversity metrics
+  ### Combine alpha diversity metrics ###
+  
+  # First combine metrics that were calculated separately for
+  # ferns in north and south back together
+  phy_mpd_comm_ferns_ns = bind_rows(phy_mpd_comm_ferns_north, phy_mpd_comm_ferns_south),
+  
+  phy_mntd_comm_ferns_ns = bind_rows(phy_mntd_comm_ferns_north, phy_mntd_comm_ferns_south),
+  
+  func_mpd_comm_ferns_ns = bind_rows(func_mpd_comm_ferns_north, func_mpd_comm_ferns_south),
+  
+  func_mntd_comm_ferns_ns = bind_rows(func_mntd_comm_ferns_north, func_mntd_comm_ferns_south),
+  
+  # Combine all measures of alpha diversity by data set.
+  # Start with all_cells so that every grid cell is included,
+  # even if there are 0 species there.
   alpha_div_pteridos = 
     all_cells %>%
     left_join(select(richness_pteridos, secondary_grid_code, richness)) %>%
-    left_join(clean_phy_mpd(phy_mpd_comm_pteridos, prefix = "phy_")) %>%
-    left_join(clean_phy_mpd(func_mntd_comm_pteridos, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
+    left_join(clean_ses(phy_mpd_comm_pteridos)) %>%
+    left_join(clean_ses(phy_mntd_comm_pteridos)) %>%
+    left_join(clean_ses(func_mpd_comm_pteridos, "func_")) %>%
+    left_join(clean_ses(func_mntd_comm_pteridos, "func_")) %>%
     left_join(select(percent_sex_dip_pteridos, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
   
   alpha_div_ferns = 
     all_cells %>%
     left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
-    left_join(clean_phy_mpd(phy_mpd_comm_ferns, prefix = "phy_")) %>%
-    left_join(clean_phy_mpd(func_mntd_comm_ferns, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
+    left_join(clean_ses(phy_mpd_comm_ferns)) %>%
+    left_join(clean_ses(phy_mntd_comm_ferns)) %>%
+    left_join(clean_ses(func_mpd_comm_ferns, "func_")) %>%
+    left_join(clean_ses(func_mntd_comm_ferns, "func_")) %>%
     left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
   
-  alpha_div_ferns_north = 
+  alpha_div_ferns_ns = 
     all_cells %>%
     left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
-    left_join(clean_phy_mpd(phy_mpd_comm_ferns_north, prefix = "phy_")) %>%
-    left_join(clean_phy_mpd(func_mntd_comm_ferns_north, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
-    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
-    mutate(richness = replace_na(richness, 0)),
-  
-  alpha_div_ferns_south = 
-    all_cells %>%
-    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
-    left_join(clean_phy_mpd(phy_mpd_comm_ferns_south, prefix = "phy_")) %>%
-    left_join(clean_phy_mpd(func_mntd_comm_ferns_south, cols_keep = c("mntd.obs", "mntd.obs.z"), prefix = "func_")) %>%
+    left_join(clean_ses(phy_mpd_comm_ferns_ns)) %>%
+    left_join(clean_ses(phy_mntd_comm_ferns_ns)) %>%
+    left_join(clean_ses(func_mpd_comm_ferns_ns, "func_")) %>%
+    left_join(clean_ses(func_mntd_comm_ferns_ns, "func_")) %>%
     left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0))
   
