@@ -261,13 +261,13 @@ plan <- drake_plan (
   
   # First combine metrics that were calculated separately for
   # ferns in north and south back together
-  phy_mpd_comm_ferns_ns = bind_rows(phy_mpd_comm_ferns_north, phy_mpd_comm_ferns_south),
+  phy_mpd_comm_ferns_ns = rbind(phy_mpd_comm_ferns_north, phy_mpd_comm_ferns_south),
   
-  phy_mntd_comm_ferns_ns = bind_rows(phy_mntd_comm_ferns_north, phy_mntd_comm_ferns_south),
+  phy_mntd_comm_ferns_ns = rbind(phy_mntd_comm_ferns_north, phy_mntd_comm_ferns_south),
   
-  func_mpd_comm_ferns_ns = bind_rows(func_mpd_comm_ferns_north, func_mpd_comm_ferns_south),
+  func_mpd_comm_ferns_ns = rbind(func_mpd_comm_ferns_north, func_mpd_comm_ferns_south),
   
-  func_mntd_comm_ferns_ns = bind_rows(func_mntd_comm_ferns_north, func_mntd_comm_ferns_south),
+  func_mntd_comm_ferns_ns = rbind(func_mntd_comm_ferns_north, func_mntd_comm_ferns_south),
   
   # Combine all measures of alpha diversity by data set.
   # Start with all_cells so that every grid cell is included,
@@ -302,7 +302,7 @@ plan <- drake_plan (
     left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0))
   
-  # ,
+  ,
   # 
   # # Ecostructure ----
   # 
@@ -399,10 +399,10 @@ plan <- drake_plan (
   #     K = K, tol = 0.1, num_trials = 1),
   #   transform = map(K = !!k_vals)
   # ),
-  # 
-  # # Write out manuscript ----
-  # ms = rmarkdown::render(
-  #   knitr_in(here::here("ms/japan_pteridos_biodiv.Rmd")),
-  #   output_file = file_out(here::here("ms/japan_pteridos_biodiv.html")),
-  #   quiet = TRUE)
+
+  # Write out manuscript ----
+  ms = rmarkdown::render(
+    knitr_in(here::here("ms/japan_pteridos_biodiv.Rmd")),
+    output_file = file_out(here::here("ms/japan_pteridos_biodiv.html")),
+    quiet = TRUE)
 )

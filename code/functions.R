@@ -1148,7 +1148,7 @@ clean_ses <- function (
 ) {
   
   ses_mpd_results <-
-    select(ses_mpd_results, contains("obs.p"))
+    select(ses_mpd_results, contains("obs.z"))
   
   colnames(ses_mpd_results) <- paste0(prefix, colnames(ses_mpd_results))
   

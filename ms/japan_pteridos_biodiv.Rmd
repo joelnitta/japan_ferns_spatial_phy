@@ -44,13 +44,13 @@ Richness of pteridophytes in Japan roughly follows the latitudinal species gradi
 
 ### Phylogenetic diversity
 
-Standard effect sizes of mean phylogenetic diversity (MPD) and mean nearest taxon distance (MNTD) were either not correlated or only very weakly correlated with species richness (SI Fig. \@ref(fig:compare-pd-richness)), indicating that our null models successfully decoupled measures of phylogenetic diversity and richness. The distribution of MPD and MNTD values were very similar across datasets (SI Fig. \@ref(fig:alpha-div-ridge)).
+Standard effect sizes of mean phylogenetic diversity (MPD) and mean nearest taxon distance (MNTD) were either not correlated or only very weakly correlated with species richness (SI Fig. \@ref(fig:compare-phylo-div-richness)), indicating that our null models successfully decoupled measures of phylogenetic diversity and richness. The distribution of MPD and MNTD values were very similar across datasets (SI Fig. \@ref(fig:alpha-div-ridge)).
 
-Values of MPD are clustered in mountainous areas and overdispersed along the coasts of the main islands of Japan, with similar patterns between pteridophytes and ferns (Fig. \@ref(fig:mpd)a, b). The pattern is similar in the "ferns_NS" dataset, except that the strength of both clustering and overdispersion is weaker in the main islands of Japan, and the pattern of overdispresion on the islands of Amami-oshima in sourthern Japan reverses to clustering (Fig. \@ref(fig:mpd)c).
+Values of MPD are clustered in mountainous areas and overdispersed along the coasts of the main islands of Japan, with similar patterns between pteridophytes and ferns (Fig. \@ref(fig:phy-mpd)a, b). The pattern is similar in the "ferns_NS" dataset, except that the strength of both clustering and overdispersion is weaker in the main islands of Japan, and the pattern of overdispresion on the islands of Amami-oshima in sourthern Japan reverses to clustering (Fig. \@ref(fig:phy-mpd)c).
 
-The signal of clustering is much stronger when measured with MNTD, especially in mountainous areas of central Honshu (Fig. \@ref(fig:mntd)). Patterns are similar between all three datasets except that MNTD values are smaller in the "ferns_NS" dataset (Fig. \@ref(fig:mntd)c).
+The signal of clustering is much stronger when measured with MNTD, especially in mountainous areas of central Honshu (Fig. \@ref(fig:phy-mntd)). Patterns are similar between all three datasets except that MNTD values are smaller in the "ferns_NS" dataset (Fig. \@ref(fig:phy-mntd)c).
 
-Values of MPD and MNTD decrease significantly with elevation across all datasets (Fig. \@ref(fig:compare-pd-el), linear model).
+Values of MPD and MNTD decrease significantly with elevation across all datasets (Fig. \@ref(fig:compare-phy-div-el), linear model).
 
 ### Breeding system
 
@@ -70,17 +70,32 @@ make_diversity_map(
   ) + scale_fill_scico(palette = "bilbao", na.value="white")
 ```
 
-```{r compare-pd-richness, fig.cap = "Correlation between phylogenetic diversity and richness. Phylogenetic diversity measured as standard effect size (SES) of mean phylogenetic diversity (MPD) or mean nearest taxon distance (MNTD) in native pteridophytes, ferns, or ferns calculated separately north and south of 30.1 latitude of Japan. Blue trendline shows significant linear model fit (*P* < 0.05) with 96% confidence interval in pink."}
-a <- make_scatter_with_lm(alpha_div_pteridos, "richness", "mpd_obs_z", "Richness", "MPD") +
+```{r compare-phylo-div-richness, fig.cap = "Correlation between phylogenetic diversity and richness. Phylogenetic diversity measured as standard effect size (SES) of mean phylogenetic diversity (MPD) or mean nearest taxon distance (MNTD) in native pteridophytes, ferns, or ferns calculated separately north and south of 30.1 latitude of Japan. Blue trendline shows significant linear model fit (*P* < 0.05) with 96% confidence interval in pink."}
+a <- make_scatter_with_lm(alpha_div_pteridos, "richness", "phy_mpd_obs_z", "Richness", "MPD") +
   labs(title = "Pteridophytes", x = "")
-b <- make_scatter_with_lm(alpha_div_ferns, "richness", "mpd_obs_z", "Richness", "MPD") +
+b <- make_scatter_with_lm(alpha_div_ferns, "richness", "phy_mpd_obs_z", "Richness", "MPD") +
   labs(title = "Ferns", y = "", x = "")
-c <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "mpd_obs_z", "Richness", "MPD") +
+c <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "phy_mpd_obs_z", "Richness", "MPD") +
   labs(title = "Ferns (NS separate)", y = "", x = "")
-d <- make_scatter_with_lm(alpha_div_pteridos, "richness", "mntd_obs_z", "Richness", "MNTD")
-e <- make_scatter_with_lm(alpha_div_ferns, "richness", "mntd_obs_z", "Richness", "MNTD") +
+d <- make_scatter_with_lm(alpha_div_pteridos, "richness", "phy_mntd_obs_z", "Richness", "MNTD")
+e <- make_scatter_with_lm(alpha_div_ferns, "richness", "phy_mntd_obs_z", "Richness", "MNTD") +
   labs(y = "")
-f <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "mntd_obs_z", "Richness", "MNTD") +
+f <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "phy_mntd_obs_z", "Richness", "MNTD") +
+  labs(y = "")
+a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
+```
+
+```{r compare-func-div-richness, fig.cap = "Correlation between functional diversity and richness. Functional diversity measured as standard effect size (SES) of mean phylogenetic diversity (MPD) or mean nearest taxon distance (MNTD) using a trait distance matrix in native pteridophytes, ferns, or ferns calculated separately north and south of 30.1 latitude of Japan. Blue trendline shows significant linear model fit (*P* < 0.05) with 96% confidence interval in pink."}
+a <- make_scatter_with_lm(alpha_div_pteridos, "richness", "func_mpd_obs_z", "Richness", "MPD") +
+  labs(title = "Pteridophytes", x = "")
+b <- make_scatter_with_lm(alpha_div_ferns, "richness", "func_mpd_obs_z", "Richness", "MPD") +
+  labs(title = "Ferns", y = "", x = "")
+c <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "func_mpd_obs_z", "Richness", "MPD") +
+  labs(title = "Ferns (NS separate)", y = "", x = "")
+d <- make_scatter_with_lm(alpha_div_pteridos, "richness", "func_mntd_obs_z", "Richness", "MNTD")
+e <- make_scatter_with_lm(alpha_div_ferns, "richness", "func_mntd_obs_z", "Richness", "MNTD") +
+  labs(y = "")
+f <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "func_mntd_obs_z", "Richness", "MNTD") +
   labs(y = "")
 a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
 ```
@@ -89,13 +104,13 @@ a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
 # Combine mpd and mntd calculations from the three datasets for comparison
 comp_data <- 
   bind_rows(
-  transmute(alpha_div_pteridos, dataset = "pteridos", mpd_obs_z, mntd_obs_z),
-  transmute(alpha_div_ferns, dataset = "ferns", mpd_obs_z, mntd_obs_z),
-  transmute(alpha_div_ferns_ns, dataset = "ferns_ns", mpd_obs_z, mntd_obs_z)
+  transmute(alpha_div_pteridos, dataset = "pteridos", phy_mpd_obs_z, phy_mntd_obs_z),
+  transmute(alpha_div_ferns, dataset = "ferns", phy_mpd_obs_z, phy_mntd_obs_z),
+  transmute(alpha_div_ferns_ns, dataset = "ferns_ns", phy_mpd_obs_z, phy_mntd_obs_z)
   )
 
 # MPD
-a <- ggplot(comp_data, aes(x = mpd_obs_z, y = dataset, fill = dataset)) + geom_density_ridges(
+a <- ggplot(comp_data, aes(x = phy_mpd_obs_z, y = dataset, fill = dataset)) + geom_density_ridges(
   scale = 1,
   quantile_lines = TRUE, quantiles = 2)  +
   labs(
@@ -106,7 +121,7 @@ a <- ggplot(comp_data, aes(x = mpd_obs_z, y = dataset, fill = dataset)) + geom_d
   theme(legend.position = "none")
 
 # MNTD
-b <- ggplot(comp_data, aes(x = mntd_obs_z, y = dataset, fill = dataset)) + geom_density_ridges(
+b <- ggplot(comp_data, aes(x = phy_mntd_obs_z, y = dataset, fill = dataset)) + geom_density_ridges(
   scale = 1,
   quantile_lines = TRUE, quantiles = 2) +
   theme(legend.position = "none") +
@@ -122,19 +137,19 @@ a + b + plot_layout(ncol = 1) + plot_annotation(tag_levels = "a")
 
 ```
 
-```{r mpd, fig.asp = 2.0, fig.cap = "Standard effect size (SES) of mean phylogenetic distance (MPD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
+```{r phy-mpd, fig.asp = 2.0, fig.cap = "Phylogenetic standard effect size (SES) of mean phylogenetic distance (MPD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
 a <- make_diversity_map(
     div_data = alpha_div_pteridos, 
     world_map = world_map, 
     occ_data = occ_data_pteridos, 
-    div_metric = "mpd_obs_z", 
+    div_metric = "phy_mpd_obs_z", 
     metric_title = "MPD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
     limits = c(
-      -get_limit(alpha_div_pteridos, mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, mpd_obs_z, "abs", 3)
+      -get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3), 
+      get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3)
     )) +
   labs(title = "a, pteridophytes") +
   theme(legend.position = c(0.1, 0.80))
@@ -143,14 +158,14 @@ b <- make_diversity_map(
     div_data = alpha_div_ferns, 
     world_map = world_map, 
     occ_data = occ_data_ferns, 
-    div_metric = "mpd_obs_z", 
+    div_metric = "phy_mpd_obs_z", 
     metric_title = "MPD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
     limits = c(
-      -get_limit(alpha_div_ferns, mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns, mpd_obs_z, "abs", 3)
+      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3), 
+      get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3)
     )) +
   labs(title = "b, ferns") +
   theme(legend.position = c(0.1, 0.80))
@@ -159,14 +174,14 @@ c <- make_diversity_map(
     div_data = alpha_div_ferns_ns, 
     world_map = world_map, 
     occ_data = occ_data_ferns, 
-    div_metric = "mpd_obs_z", 
+    div_metric = "phy_mpd_obs_z", 
     metric_title = "MPD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
     limits = c(
-      -get_limit(alpha_div_ferns_ns, mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns_ns, mpd_obs_z, "abs", 3)
+      -get_limit(alpha_div_ferns_ns, phy_mpd_obs_z, "abs", 3), 
+      get_limit(alpha_div_ferns_ns, phy_mpd_obs_z, "abs", 3)
     )) +
   labs(title = "c, ferns (NS separate)") +
   theme(legend.position = c(0.1, 0.80))
@@ -174,19 +189,19 @@ c <- make_diversity_map(
 a + b + c + plot_layout(ncol = 1)
 ```
 
-```{r mntd, fig.asp = 2.0, fig.cap = "Standard effect size (SES) of mean nearest taxon distance (MNTD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
+```{r phy-mntd, fig.asp = 2.0, fig.cap = "Phylogenetic standard effect size (SES) of mean nearest taxon distance (MNTD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
 a <- make_diversity_map(
     div_data = alpha_div_pteridos, 
     world_map = world_map, 
     occ_data = occ_data_pteridos, 
-    div_metric = "mntd_obs_z", 
+    div_metric = "phy_mntd_obs_z", 
     metric_title = "MNTD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
     limits = c(
-      -get_limit(alpha_div_pteridos, mntd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, mntd_obs_z, "abs", 3)
+      -get_limit(alpha_div_pteridos, phy_mntd_obs_z, "abs", 3), 
+      get_limit(alpha_div_pteridos, phy_mntd_obs_z, "abs", 3)
     )) +
   labs(title = "a, pteridophytes") +
   theme(legend.position = c(0.1, 0.80))
@@ -195,14 +210,14 @@ b <- make_diversity_map(
     div_data = alpha_div_ferns, 
     world_map = world_map, 
     occ_data = occ_data_ferns, 
-    div_metric = "mntd_obs_z", 
+    div_metric = "phy_mntd_obs_z", 
     metric_title = "MNTD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
     limits = c(
-      -get_limit(alpha_div_ferns, mntd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns, mntd_obs_z, "abs", 3)
+      -get_limit(alpha_div_ferns, phy_mntd_obs_z, "abs", 3), 
+      get_limit(alpha_div_ferns, phy_mntd_obs_z, "abs", 3)
     )) +
   labs(title = "b, ferns") +
   theme(legend.position = c(0.1, 0.80))
@@ -211,14 +226,14 @@ c <- make_diversity_map(
     div_data = alpha_div_ferns_ns, 
     world_map = world_map, 
     occ_data = occ_data_ferns, 
-    div_metric = "mntd_obs_z", 
+    div_metric = "phy_mntd_obs_z", 
     metric_title = "MNTD"
   ) + scale_fill_scico(
     palette = "vik", 
     na.value="white",
     limits = c(
-      -get_limit(alpha_div_ferns_ns, mntd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns_ns, mntd_obs_z, "abs", 3)
+      -get_limit(alpha_div_ferns_ns, phy_mntd_obs_z, "abs", 3), 
+      get_limit(alpha_div_ferns_ns, phy_mntd_obs_z, "abs", 3)
     )) +
   labs(title = "c, ferns (NS separate)") +
   theme(legend.position = c(0.1, 0.80))
@@ -226,17 +241,136 @@ c <- make_diversity_map(
 a + b + c + plot_layout(ncol = 1)
 ```
 
-```{r compare-pd-el, fig.cap = "Relationship between standard effect size (SES) of mean phylogenetic distance (MPD) and mean nearest taxon distance (MNTD) of native Japanese pteridophytes and elevation (m). Blue trendline shows significant linear model fit with confidence interval in pink."}
-a <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "mpd_obs_z", "Elevation (m)", "MPD") +
+```{r func-mpd, fig.asp = 2.0, fig.cap = "Functional standard effect size (SES) of mean phylogenetic distance (MPD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
+a <- make_diversity_map(
+  div_data = alpha_div_pteridos, 
+  world_map = world_map, 
+  occ_data = occ_data_pteridos, 
+  div_metric = "func_mpd_obs_z", 
+  metric_title = "MPD"
+) + scale_fill_scico(
+  palette = "vik", 
+  na.value="white",
+  limits = c(
+    -get_limit(alpha_div_pteridos, func_mpd_obs_z, "abs", 3), 
+    get_limit(alpha_div_pteridos, func_mpd_obs_z, "abs", 3)
+  )) +
+  labs(title = "a, pteridophytes") +
+  theme(legend.position = c(0.1, 0.80))
+
+b <- make_diversity_map(
+  div_data = alpha_div_ferns, 
+  world_map = world_map, 
+  occ_data = occ_data_ferns, 
+  div_metric = "func_mpd_obs_z", 
+  metric_title = "MPD"
+) + scale_fill_scico(
+  palette = "vik", 
+  na.value="white",
+  limits = c(
+    -get_limit(alpha_div_ferns, func_mpd_obs_z, "abs", 3), 
+    get_limit(alpha_div_ferns, func_mpd_obs_z, "abs", 3)
+  )) +
+  labs(title = "b, ferns") +
+  theme(legend.position = c(0.1, 0.80))
+
+c <- make_diversity_map(
+  div_data = alpha_div_ferns_ns, 
+  world_map = world_map, 
+  occ_data = occ_data_ferns, 
+  div_metric = "func_mpd_obs_z", 
+  metric_title = "MPD"
+) + scale_fill_scico(
+  palette = "vik", 
+  na.value="white",
+  limits = c(
+    -get_limit(alpha_div_ferns_ns, func_mpd_obs_z, "abs", 3), 
+    get_limit(alpha_div_ferns_ns, func_mpd_obs_z, "abs", 3)
+  )) +
+  labs(title = "c, ferns (NS separate)") +
+  theme(legend.position = c(0.1, 0.80))
+
+a + b + c + plot_layout(ncol = 1)
+```
+
+```{r func-mntd, fig.asp = 2.0, fig.cap = "Functional standard effect size (SES) of mean nearest taxon distance (MNTD) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. All datasets are native taxa of Japan excluding hybrids."}
+a <- make_diversity_map(
+  div_data = alpha_div_pteridos, 
+  world_map = world_map, 
+  occ_data = occ_data_pteridos, 
+  div_metric = "func_mntd_obs_z", 
+  metric_title = "MNTD"
+) + scale_fill_scico(
+  palette = "vik", 
+  na.value="white",
+  limits = c(
+    -get_limit(alpha_div_pteridos, func_mntd_obs_z, "abs", 3), 
+    get_limit(alpha_div_pteridos, func_mntd_obs_z, "abs", 3)
+  )) +
+  labs(title = "a, pteridophytes") +
+  theme(legend.position = c(0.1, 0.80))
+
+b <- make_diversity_map(
+  div_data = alpha_div_ferns, 
+  world_map = world_map, 
+  occ_data = occ_data_ferns, 
+  div_metric = "func_mntd_obs_z", 
+  metric_title = "MNTD"
+) + scale_fill_scico(
+  palette = "vik", 
+  na.value="white",
+  limits = c(
+    -get_limit(alpha_div_ferns, func_mntd_obs_z, "abs", 3), 
+    get_limit(alpha_div_ferns, func_mntd_obs_z, "abs", 3)
+  )) +
+  labs(title = "b, ferns") +
+  theme(legend.position = c(0.1, 0.80))
+
+c <- make_diversity_map(
+  div_data = alpha_div_ferns_ns, 
+  world_map = world_map, 
+  occ_data = occ_data_ferns, 
+  div_metric = "func_mntd_obs_z", 
+  metric_title = "MNTD"
+) + scale_fill_scico(
+  palette = "vik", 
+  na.value="white",
+  limits = c(
+    -get_limit(alpha_div_ferns_ns, func_mntd_obs_z, "abs", 3), 
+    get_limit(alpha_div_ferns_ns, func_mntd_obs_z, "abs", 3)
+  )) +
+  labs(title = "c, ferns (NS separate)") +
+  theme(legend.position = c(0.1, 0.80))
+
+a + b + c + plot_layout(ncol = 1)
+```
+
+```{r compare-phy-div-el, fig.cap = "Relationship between phylogenetic standard effect size (SES) of mean phylogenetic distance (MPD) and mean nearest taxon distance (MNTD) of native Japanese pteridophytes and elevation (m). Blue trendline shows significant linear model fit with confidence interval in pink."}
+a <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "phy_mpd_obs_z", "Elevation (m)", "MPD") +
   labs(title = "Pteridophytes", x = "")
-b <- make_scatter_with_lm(alpha_div_ferns, "elevation", "mpd_obs_z", "Elevation (m)", "MPD") +
+b <- make_scatter_with_lm(alpha_div_ferns, "elevation", "phy_mpd_obs_z", "Elevation (m)", "MPD") +
   labs(title = "Ferns", y = "", x = "")
-c <- make_scatter_with_lm(alpha_div_ferns_ns, "elevation", "mpd_obs_z", "Elevation (m)", "MPD") +
+c <- make_scatter_with_lm(alpha_div_ferns_ns, "elevation", "phy_mpd_obs_z", "Elevation (m)", "MPD") +
   labs(title = "Ferns (NS separate)", y = "", x = "")
-d <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "mntd_obs_z", "Elevation (m)", "MNTD")
-e <- make_scatter_with_lm(alpha_div_ferns, "elevation", "mntd_obs_z", "Elevation (m)", "MNTD") +
+d <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "phy_mntd_obs_z", "Elevation (m)", "MNTD")
+e <- make_scatter_with_lm(alpha_div_ferns, "elevation", "phy_mntd_obs_z", "Elevation (m)", "MNTD") +
   labs(y = "")
-f <- make_scatter_with_lm(alpha_div_ferns_ns, "elevation", "mntd_obs_z", "Elevation (m)", "MNTD") +
+f <- make_scatter_with_lm(alpha_div_ferns_ns, "elevation", "phy_mntd_obs_z", "Elevation (m)", "MNTD") +
+  labs(y = "")
+a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
+```
+
+```{r compare-func-div-el, fig.cap = "Relationship between functional standard effect size (SES) of mean phylogenetic distance (MPD) and mean nearest taxon distance (MNTD) of native Japanese pteridophytes and elevation (m). Blue trendline shows significant linear model fit with confidence interval in pink."}
+a <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "func_mpd_obs_z", "Elevation (m)", "MPD") +
+  labs(title = "Pteridophytes", x = "")
+b <- make_scatter_with_lm(alpha_div_ferns, "elevation", "func_mpd_obs_z", "Elevation (m)", "MPD") +
+  labs(title = "Ferns", y = "", x = "")
+c <- make_scatter_with_lm(alpha_div_ferns_ns, "elevation", "func_mpd_obs_z", "Elevation (m)", "MPD") +
+  labs(title = "Ferns (NS separate)", y = "", x = "")
+d <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "func_mntd_obs_z", "Elevation (m)", "MNTD")
+e <- make_scatter_with_lm(alpha_div_ferns, "elevation", "func_mntd_obs_z", "Elevation (m)", "MNTD") +
+  labs(y = "")
+f <- make_scatter_with_lm(alpha_div_ferns_ns, "elevation", "func_mntd_obs_z", "Elevation (m)", "MNTD") +
   labs(y = "")
 a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
 ```
@@ -252,16 +386,16 @@ make_diversity_map(
 ```
 
 ```{r compare-pd-sexdip, fig.cap = "Relationship between standard effect size (SES) of mean phylogenetic distance (MPD) and mean nearest taxon distance (MNTD) of native Japanese pteridophytes and percent sexual diploid taxa in each community. Blue trendline shows significant linear model fit with confidence interval in pink."}
-a <- make_scatter_with_lm(alpha_div_pteridos, "percent_sex_dip", "mpd_obs_z", "% sexual diploid", "MPD") +
+a <- make_scatter_with_lm(alpha_div_pteridos, "percent_sex_dip", "phy_mpd_obs_z", "% sexual diploid", "MPD") +
   labs(title = "Pteridophytes", x = "")
-b <- make_scatter_with_lm(alpha_div_ferns, "percent_sex_dip", "mpd_obs_z", "% sexual diploid", "MPD") +
+b <- make_scatter_with_lm(alpha_div_ferns, "percent_sex_dip", "phy_mpd_obs_z", "% sexual diploid", "MPD") +
   labs(title = "Ferns", y = "", x = "")
-c <- make_scatter_with_lm(alpha_div_ferns_ns, "percent_sex_dip", "mpd_obs_z", "% sexual diploid", "MPD") +
+c <- make_scatter_with_lm(alpha_div_ferns_ns, "percent_sex_dip", "phy_mpd_obs_z", "% sexual diploid", "MPD") +
   labs(title = "Ferns (NS separate)", y = "", x = "")
-d <- make_scatter_with_lm(alpha_div_pteridos, "percent_sex_dip", "mntd_obs_z", "% sexual diploid", "MNTD")
-e <- make_scatter_with_lm(alpha_div_ferns, "percent_sex_dip", "mntd_obs_z", "% sexual diploid", "MNTD") +
+d <- make_scatter_with_lm(alpha_div_pteridos, "percent_sex_dip", "phy_mntd_obs_z", "% sexual diploid", "MNTD")
+e <- make_scatter_with_lm(alpha_div_ferns, "percent_sex_dip", "phy_mntd_obs_z", "% sexual diploid", "MNTD") +
   labs(y = "")
-f <- make_scatter_with_lm(alpha_div_ferns_ns, "percent_sex_dip", "mntd_obs_z", "% sexual diploid", "MNTD") +
+f <- make_scatter_with_lm(alpha_div_ferns_ns, "percent_sex_dip", "phy_mntd_obs_z", "% sexual diploid", "MNTD") +
   labs(y = "")
 a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
 ```
