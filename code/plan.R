@@ -301,8 +301,8 @@ plan <- drake_plan (
     left_join(clean_ses(func_mntd_comm_ferns_ns, "func_")) %>%
     left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0))
-  
   ,
+  
   # 
   # # Ecostructure ----
   # 
@@ -400,9 +400,9 @@ plan <- drake_plan (
   #   transform = map(K = !!k_vals)
   # ),
 
-  # Write out manuscript ----
-  ms = rmarkdown::render(
-    knitr_in(here::here("report/japan_pteridos_biodiv.Rmd")),
-    output_file = file_out(here::here("report/japan_pteridos_biodiv.html")),
-    quiet = TRUE)
+  # # Write out manuscript ----
+  # ms = rmarkdown::render(
+  #   knitr_in(here::here("ms/manuscript.Rmd")),
+  #   output_file = file_out(here::here("ms/manuscript.pdf")),
+  #   quiet = TRUE)
 )
