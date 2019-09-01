@@ -10,6 +10,14 @@
 % \usepackage{fontspec}
 % \setmainfont{Times New Roman} 
 
+% Add "S" to supplemental figure and table labels
+\newcommand{\beginsupplement}{
+  \setcounter{table}{0}  
+  \renewcommand{\thetable}{S\arabic{table}} 
+  \setcounter{figure}{0} 
+  \renewcommand{\thefigure}{S\arabic{figure}}
+}
+
 % Set margins
 \usepackage[margin=1in]{geometry}
 
