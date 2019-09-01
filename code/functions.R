@@ -365,17 +365,17 @@ transform_traits <- function (traits,
   
 }
 
-#' Make a traits distance matrix
+#' Format traits for further analysis
 #' 
 #' Use raw fern and lycophyte trait data
-#' formatted for lucid
+#' formatted for lucid. Output taxon names will be IDs.
 #'
 #' @param path_to_lucid_traits Path to raw trait data
 #' @param taxon_id_map Tibble mapping taxon IDs to taxon names
 #'
-#' @return Distance matrix
+#' @return Tibble
 #' 
-make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
+format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   # Read in raw trait data for pteridophytes of Japan.
   # These were originally formatted for lucid dichotomous key software.
@@ -385,10 +385,9 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
     clean_names() %>%
     select(-x1, -x222) %>%
     rename(taxon = x2) %>%
-    mutate(taxon = str_replace_all(taxon, ":", "_"))
-  
-  # Check for NA values: nope
-  traits %>% map(is.na) %>% unlist %>% any
+    mutate(taxon = str_replace_all(taxon, ":", "_")) %>%
+    # Check for NA values
+    assert(not_na, everything())
   
   # Separate out into numeric and binary traits
   # (numeric container "number" in name, assume binary otherwise)
@@ -396,14 +395,6 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
   traits_binary <-  select(traits, -contains("number"))
   
   ### Cleanup binary traits ###
-  
-  # Check what are the unique values in the "binary" traits:
-  # Almost all 0 and 1s, a few other values
-  traits_binary %>%
-    select(-taxon) %>%
-    map(~unique(.) %>% sort) %>%
-    unlist %>%
-    table
   
   # These are what the values mean according to the lucid manual
   # "common and misinterpreted" means that the user may incorrectly think the trait is
@@ -429,21 +420,9 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
       TRUE ~ .
     )) 
   
-  traits_binary %>%
-    select(-taxon) %>%
-    map(~unique(.) %>% sort) %>%
-    unlist %>%
-    table
-  
-  traits_binary %>% map(is.na) %>% unlist %>% sum
-  
   # Reformat presence/absence traits. These have one column each for "presence" (0 or 1),
   # "absence" (also 0 or 1), and sometimes another related state ("caducous" etc).
   # Combine these into a single "present" column.
-  
-  # Check names of presence/absence columns
-  traits_binary %>% select(contains("abs"), contains("pres")) %>%
-    colnames %>% sort
   
   traits_binary <- 
     traits_binary %>%
@@ -482,10 +461,6 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
       )) %>%
     select(-contains("leaf_sorus_indusium_presence_absence")) %>%
     rename(leaf_sorus_false_indusium_present = leaf_sorus_false_indusium)
-  
-  # Check names of presence/absence columns
-  traits_binary %>% select(contains("abs"), contains("pres")) %>%
-    colnames %>% sort
   
   #### Clean up numeric traits ###
   # Replace missing (0 or 3) with NA,
@@ -532,12 +507,6 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
     scale_select = num_trait_names
   )
   
-  # Subset to only completely sampled species
-  traits_numeric_combined_trans_complete <- 
-    filter(traits_numeric_combined_trans, complete.cases(traits_numeric_combined_trans))
-  
-  ### Distance matrix
-  
   # Combine all numeric and categorical traits
   traits_for_dist <- left_join(traits_numeric_combined_trans, traits_binary)
   
@@ -557,16 +526,27 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
     traits_for_dist %>% inner_join(taxon_id_map) %>%
     select(-taxon) 
   
-  # Set up weighting.
-  trait_categories <-
-    traits_for_dist %>%
-    select(-taxon_id) %>%
-    colnames %>%
-    tibble(trait = .) %>%
-    mutate(value_type = case_when(
-      trait %in% colnames(traits_binary) ~ "binary",
-      trait %in% colnames(traits_numeric_combined_trans) ~ "numeric"
-    )) %>%
+  # Drop any traits that have only one state
+  drop_single_state <-
+    map_df(traits_for_dist, n_distinct) %>%
+    gather(trait, n_states) %>%
+    filter(n_states == 1) %>%
+    pull(trait)
+  
+  traits_for_dist[,!colnames(traits_for_dist) %in% drop_single_state]
+}
+
+#' Categorize binary traits into their categorical versions
+#' 
+#' Detects traits by name and groups them into categories
+#' (combined traits)
+#'
+#' @param traits Tibble of traits in binary format
+#'
+#' @return Tibble
+#' 
+categorize_traits <- function(traits) {
+  traits %>%
     mutate(comp_trait = case_when(
       str_detect(trait, "leaf_sorus_shape") ~ "sorus_shape",
       str_detect(trait, "leaf_sorus_indusium_shape") ~ "indusium_shape",
@@ -585,10 +565,82 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
       str_detect(trait, "leaf_lamina_rhachis_adaxial_side_grooved") ~ "rhachis_adaxial_side_grooved",
       str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
       TRUE ~ trait
+    ))
+}
+
+#' Summarize traits for supplemental info
+#'
+#' @param traits_for_dist Formatted trait data
+#'
+#' @return Tibble
+#' 
+make_trait_summary <- function (traits_for_dist) {
+  
+  # Count trait states to categorize traits.
+  # Those with > 3 states should be numeric.
+  # (binary can be 1, 0, or missing).
+  states <- map_df(traits_for_dist, n_distinct) %>%
+    gather(trait, n_states) 
+  
+  # Summarize traits
+  traits_for_dist %>%
+    select(-taxon_id) %>%
+    colnames %>%
+    tibble(trait = .) %>%
+    left_join(states) %>%
+    mutate(trait_type = case_when(
+      n_states > 3 ~ "continuous",
+      TRUE ~ "binary"
     )) %>%
+    # Collapse binarized traits into their 
+    # categorical version by name.
+    categorize_traits %>%
+    add_count(comp_trait) %>% 
+    select(comp_trait, trait_type, n) %>%
+    unique() %>% 
+    mutate(trait_type = case_when(
+      trait_type == "continuous" ~ trait_type,
+      n > 1 ~ "qualitative",
+      TRUE ~ trait_type
+    )) %>% 
+    mutate(n_states = case_when(
+      trait_type == "qualitative" ~ n
+    )) %>%
+    select(trait = comp_trait, trait_type, n_states) %>%
+    arrange(trait_type, trait)
+}
+
+#' Make a traits distance matrix
+#'
+#' @param traits_for_dist Formatted trait data
+#'
+#' @return Distance matrix
+#' 
+make_trait_dist_matrix <- function (traits_for_dist) {
+  
+  # Count trait states to categorize traits.
+  # Those with > 3 states should be numeric.
+  # (binary can be 1, 0, or missing).
+  states <- map_df(traits_for_dist, n_distinct) %>%
+    gather(trait, n_states) 
+  
+  # Set up weighting.
+  trait_categories <-
+    traits_for_dist %>%
+    select(-taxon_id) %>%
+    colnames %>%
+    tibble(trait = .) %>%
+    left_join(states) %>%
+    mutate(trait_type = case_when(
+      n_states > 3 ~ "continuous",
+      TRUE ~ "binary"
+    )) %>%
+    # Collapse binarized traits into their 
+    # categorical version by name.
+    categorize_traits %>%
     add_count(comp_trait) %>%
     mutate(weight_by_comp_trait = 1 / n) %>%
-    add_count(value_type) %>%
+    add_count(trait_type) %>%
     mutate(weight_by_type = 1 / n) %>%
     mutate(final_weight = weight_by_comp_trait * weight_by_type)
   
@@ -605,7 +657,7 @@ make_traits_dist_matrix <- function(path_to_lucid_traits, taxon_id_map) {
     column_to_rownames("taxon_id")
   
   # Run gowdis with trait weightings
-  dist_mat <- FD::gowdis(traits_df, w = trait_categories$final_weight) 
+  FD::gowdis(traits_df, w = trait_categories$final_weight) 
   
 }
 
@@ -1604,6 +1656,22 @@ dsp_to_matrix2 <- function (dispersion.field, drop_zero = FALSE) {
 
 # Plotting ----
 
+
+#' Define ggplot theme
+#' 
+#' BW theme with no gridlines, black axis text, main font size 11,
+#' axis ticks size 9.
+#'
+standard_theme2 <- function () {
+  ggplot2::theme_bw() + 
+    theme(
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(colour="black"),
+      axis.text.y = ggplot2::element_text(colour="black")
+    )
+}
+
 #' Get the lower, upper, or absolute maximum value
 #' of a variable in a dataframe
 #' 
@@ -1771,7 +1839,7 @@ make_scatter_with_lm <- function(data, indep_var, resp_var,
   
   plot <- ggplot(data, aes(!!indep_var_sym, !!resp_var_sym)) +
     geom_point(alpha = 0.2) +
-    jntools::standard_theme() +
+    standard_theme2() +
     labs(
       y = resp_var_print,
       x = indep_var_print

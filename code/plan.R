@@ -228,10 +228,14 @@ plan <- drake_plan (
   # - first make tibble mapping taxon IDs to species names
   taxon_id_map = make_taxon_id_map(occ_data_pteridos),
   
-  # - make trait distance matrix using taxon IDs as labels
-  trait_distance_matrix = make_traits_dist_matrix(
-    file_in("data_raw/JpFernLUCID_forJoel.xlsx"),
+  # - format trait data
+  traits_for_dist = format_traits(
+    file_in("data_raw/JpFernLUCID_forJoel.xlsx"), 
     taxon_id_map),
+  
+  # - make trait distance matrix using taxon IDs as labels
+  trait_distance_matrix = make_trait_dist_matrix(
+    traits_for_dist),
   
   func_mpd = target(
     ses_func_mpd(
