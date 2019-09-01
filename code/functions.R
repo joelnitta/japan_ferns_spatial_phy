@@ -1924,3 +1924,92 @@ make_scatter_with_lm <- function(data, indep_var, resp_var,
   plot
   
 }
+
+
+#' Plot an aspect of alpha diversity by latitude and elevation
+#'
+#' @param alpha_div Tibble of alpha diversity metrics including
+#' elevatin and latitude
+#' @param var Name of variable to plot
+#' @param subtitle Subtitle to add to plot
+#'
+#' @return GGplot object
+#'
+make_lat_el_pd_plot <- function (alpha_div, var, subtitle) {
+  
+  var_sym <- rlang::sym(var)
+  
+  ggplot(alpha_div, aes(x = elevation, y = latitude, color = !!var_sym)) +
+    geom_point(size = 0.7, alpha = 0.7, stroke=0) +
+    scale_color_scico(
+      palette = "vik", 
+      na.value="dark grey",
+      limits = c(
+        -get_limit(alpha_div, !!var_sym, "abs", 3), 
+        get_limit(alpha_div, !!var_sym, "abs", 3)
+      )) +
+    labs(
+      color = "SES",
+      subtitle = subtitle) +
+    standard_theme2()
+  
+}
+
+#' Plot an aspect of alpha diversity by latitude and elevation
+#'
+#' @param alpha_div Tibble of alpha diversity metrics including
+#' elevation and latitude
+#' @param var Name of variable to plot
+#' @param legend_label Label to use for legend
+#' @param subtitle Subtitle to add to plot
+#'
+#' @return GGplot object
+#'
+make_lat_el_rich_plot <- function (alpha_div, var, legend_label, subtitle) {
+  
+  var_sym <- rlang::sym(var)
+  
+  ggplot(alpha_div, aes(x = elevation, y = latitude, color = !!var_sym)) +
+    geom_point(size = 0.7, alpha = 0.7, stroke=0) +
+    scale_color_scico(palette = "bamako", na.value="grey") +
+    labs(
+      color = legend_label,
+      subtitle = subtitle) +
+    standard_theme2()
+  
+}
+
+#' Creat a set of elevation by latitude plots for a given dataset
+#'
+#' @param alpha_div Tibble of alpha diversity metrics including
+#' elevation and latitude
+#' @param main_title Main title to use for plot
+#'
+#' @return GGplot object
+#' 
+compose_lat_el_plots <- function (alpha_div, main_title) {
+  
+  # Make tibble of variables to feed into plotting funcs
+  ses_plot_vars <- tibble(
+    var = c("phy_mpd_obs_z", "phy_mntd_obs_z", "func_mpd_obs_z", "func_mntd_obs_z"),
+    subtitle = c("MPDphy", "MNTDphy", "MPDfunc", "MNTDfunc")
+  ) %>%
+    mutate(alpha_div = list(alpha_div))
+  
+  richness_plot_vars <- tibble(
+    var = c("richness", "percent_sex_dip"),
+    subtitle = c("Richness", "Percent sex. dip."),
+    legend_label = c("n_spp", "%")
+  ) %>%
+    mutate(alpha_div = list(alpha_div))
+  
+  ses_plots <- pmap(ses_plot_vars, make_lat_el_pd_plot)
+  
+  richness_plots <- pmap(richness_plot_vars, make_lat_el_rich_plot)
+  
+  ses_plots[[1]] <- ses_plots[[1]] +
+    labs(title = main_title)
+  
+  wrap_plots(c(ses_plots,richness_plots), ncol = 2, nrow = 3)
+  
+}
