@@ -18,6 +18,7 @@ temp
 *.tar.gz
 packrat/*
 !packrat/packrat.lock
+cached_zip/
 *_cache/
 *_files/
 wc*/
