@@ -661,6 +661,67 @@ make_trait_dist_matrix <- function (traits_for_dist) {
   
 }
 
+#' Make NMDS plots for pteridophytes based on traits
+#' 
+#' Makes two plots: one at order level, and another just for
+#' Polypodiales.
+#'
+#' @param nmds Output of vegan::metaMDS() on traits matrix
+#' @param ppgi PPGI taxonomy
+#' @param taxon_id_map Dataframe mapping taxon IDs to PPGI species names
+#'
+#' @return GGPlot object
+#' 
+make_trait_nmds_plot <- function (nmds, ppgi, taxon_id_map) {
+  
+  nmds_points = nmds[["points"]] %>% 
+    as.data.frame %>% 
+    rownames_to_column("taxon_id") %>%
+    as_tibble %>%
+    left_join(taxon_id_map) %>%
+    mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+    left_join(ppgi) %>%
+    mutate(
+      order = factor(order),
+      family = factor(family))
+  
+  a <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = order, shape = order)) +
+    geom_point() +
+    scale_shape_manual(values = 1:n_distinct(nmds_points$order)) +
+    labs(title = "Pteridophytes")
+  
+  nmds_points_polypod <- filter(nmds_points, order == "Polypodiales")
+  
+  b <- ggplot(nmds_points_polypod, aes(x = MDS1, y = MDS2, color = family, shape = family)) +
+    geom_point() +
+    scale_shape_manual(values = 1:n_distinct(nmds_points_polypod$family)) +
+    labs(title = "Polypodiales")
+  
+  a + b
+}
+
+#' Make trait dendrogram
+#'
+#' @param trait_distance_matrix Distance matrix based on traits
+#' @param taxon_id_map  Dataframe mapping taxon IDs to PPGI species names
+#'
+#' @return Nothing; externally, the plot will be written to 
+#' results/traits_dendrogram.pdf
+#' 
+make_traits_dendrogram <- function(trait_distance_matrix, taxon_id_map) {
+  
+  # Cluster species by trait distances
+  h <- hclust(trait_distance_matrix)
+  
+  # Relabel from taxon id to species names
+  h[["labels"]] <- taxon_id_map$taxon[match(h[["labels"]], taxon_id_map$taxon_id)]
+  
+  # Output plot
+  pdf(height = 50, width = 8, file = "results/traits_dendrogram.pdf")
+  plot(ape::as.phylo(h), cex = 0.4)
+  dev.off()
+}
+
 # Community diversity ----
 
 #' Calculate species richness for all grid cells

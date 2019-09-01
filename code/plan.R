@@ -307,6 +307,25 @@ plan <- drake_plan (
     mutate(richness = replace_na(richness, 0))
   ,
   
+  # Traits analysis ----
+  
+  # Run NMDS on traits
+  traits_nmds = vegan::metaMDS(trait_distance_matrix),
+  
+  # Plot species in NMDS trait space
+  traits_nmds_plot = make_trait_nmds_plot(traits_nmds, ppgi, taxon_id_map),
+  
+  # Write it out
+  traits_nmds_plot_out = ggsave(
+    plot = traits_nmds_plot,
+    file = "results/traits_nmds_plot.pdf",
+    width = 10,
+    height = 6,
+    units = "in"),
+  
+  # Plot and write out traits dendrogram
+  traits_dendrogram = make_traits_dendrogram(trait_distance_matrix, taxon_id_map)
+  
   # 
   # # Ecostructure ----
   # 
