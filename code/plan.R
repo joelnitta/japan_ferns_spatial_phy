@@ -178,13 +178,13 @@ plan <- drake_plan (
   # Analyze community diversity ----
   
   # Make richness matrix (number of species per
-  # 1km2 grid cell).
+  # 10 km grid cell).
   richness_pteridos = make_richness_matrix(occ_data_pteridos),
   
   richness_ferns = make_richness_matrix(occ_data_ferns),
   
   # Make community matrix (presence/absence of each species in
-  # 1km2 grid cells), trim to only species in tree.
+  # 10 km grid cells), trim to only species in tree.
   comm_pteridos = make_comm_matrix(occ_data_pteridos) %>% 
     match_comm_and_tree(japan_pterido_tree, "comm"),
   
