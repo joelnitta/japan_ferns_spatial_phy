@@ -4,6 +4,7 @@
 .Ruserdata
 .drake
 .Rprofile
+.DS_Store
 data
 data_raw
 drafts
