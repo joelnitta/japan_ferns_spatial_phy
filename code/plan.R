@@ -335,7 +335,7 @@ plan <- drake_plan (
     ggsave(
     plot = ., 
     filename = "results/ferns_ns_lat_el_plot.pdf", 
-    height = 9, width = 7, units = "in")
+    height = 9, width = 7, units = "in"),
   
   # 
   # Ecostructure ----
@@ -352,7 +352,7 @@ plan <- drake_plan (
       resolved_names,
       by = c(scientific_name = "query")) %>%
     mutate(site = paste(longitude, latitude, sep = "_")) %>%
-    select(species, site)
+    select(species, site),
   
   # # Make community data matrix for renamed pteriphytes of Japan
   # comm_pteridos_renamed = occ_data_pteridos_renamed %>%
@@ -363,8 +363,8 @@ plan <- drake_plan (
   #   mutate_at(vars(-species), ~replace_na(., 0)) %>%
   #   mutate(species = as.character(species)),
   # 
-  # # Crop global species records from GBIF to exclude Japan
-  # gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells),
+  # Crop global species records from GBIF to exclude Japan
+  gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells)
   # 
   # # Make a global presence/absence matrix (excluding Japan)
   # # based on GBFIF occurrence records
