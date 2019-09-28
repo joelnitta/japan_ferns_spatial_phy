@@ -1,7 +1,7 @@
 version: "3"
 services:
-  rmd:
-    image: joelnitta/rmd:3.6.0
+  analysis:
+    image: joelnitta/japan_ferns_biogeo:3.6.1
     ports:
       - "8787:8787"
     volumes:

@@ -1,8 +1,10 @@
-# This script is used to intall packages for tracking with packrat.
-# For more info on installing R packages to docker images with
-# packrat, see https://www.joelnitta.com/post/docker-and-packrat/
-
-# This should be run in a conda environment with R 3.5.1
+# This script writes renv.lock for installing R packages to a docker image.
+# It should be run from within the rocker/geospatial:3.6.1 container:
+#
+# docker run --rm -e DISABLE_AUTH=true -v /Users/joelnitta/Documents/japan_ferns_biogeo:/home/rstudio/project rocker/geospatial:3.6.1 bash /home/rstudio/project/install_packages.sh
+#
+# Then build the image with
+# docker build . -t joelnitta/japan_ferns_biogeo:3.6.1
 
 ### Initialize packrat ###
 
@@ -21,8 +23,7 @@ packrat::init(
 install.packages("BiocManager", repos = "https://cran.rstudio.com/")
 install.packages("remotes", repos = "https://cran.rstudio.com/")
 
-# Specify repositories so they get included in
-# packrat.lock file.
+# Set repos.
 my_repos <- BiocManager::repositories()
 my_repos["CRAN"] <- "https://cran.rstudio.com/"
 options(repos = my_repos)
@@ -36,6 +37,8 @@ cran_packages <- c(
   "clustermq", # For running in parallel on the cluster
   "drake",
   "gghighlight",
+  "ggridges",
+  "here",
   "janitor",
   "maps",
   "picante",
@@ -53,19 +56,20 @@ cran_packages <- c(
 install.packages(cran_packages)
 
 ### Install bioconductor packages ###
-bioc_packages <- c(
-  "Biobase" # ecostructure dep
-)
+bioc_packages <- c("Biobase", "BiocGenerics")
 
 BiocManager::install(bioc_packages)
 
 ### Install github packages ###
 github_packages <- c(
   "joelnitta/jntools",
+  "joelnitta/taxastand",
+  "thomasp85/patchwork",
+  "r-lib/scales", # For degree_format(), which isn't in CRAN scales yet
   "kkdey/methClust", # ecostructure dep
   "kkdey/CountClust", # ecostructure dep
-  "kkdey/ecostructure",
-  "TaddyLab/maptpx" # ecostructure dep
+  "TaddyLab/maptpx", # ecostructure dep
+  "kkdey/ecostructure"
 )
 
 remotes::install_github(github_packages)
