@@ -1,5 +1,4 @@
-# syntax = docker/dockerfile:1.0-experimental
-FROM rocker/geospatial:3.5.1
+FROM rocker/geospatial:3.6.1
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -13,17 +12,11 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
   libmagick++-dev \
   libudunits2-dev \
-  libgdal-dev \
-  mafft \
-  ncbi-blast+ \
-  fasttree
+  libgdal-dev
 
 #######################################
 ### Install R packages with packrat ###
 #######################################
-
-# Only run this after making packrat/packrat.lock by
-# running install_packages.R
 
 # First install dependencies of methClust and CountClust that for
 # some reason don't get installed automatically.
@@ -34,16 +27,10 @@ RUN install2.r -e slam \
 
 COPY ./packrat/packrat.lock packrat/
 
-COPY packrat_restore.R .
-
-# RUN install2.r packrat
-RUN Rscript -e 'install.packages("packrat", repos = "https://cran.rstudio.com/")'
-
-RUN --mount=type=secret,id=pat \
-Rscript packrat_restore.R `cat /run/secrets/pat`
+RUN Rscript -e 'install.packages("packrat", repos = "https://cran.rstudio.com/"); packrat::restore()'
 
 # Modify Rprofile.site so R loads packrat library by default
-RUN echo '.libPaths("/packrat/lib/x86_64-pc-linux-gnu/3.5.1")' >> /usr/local/lib/R/etc/Rprofile.site
+RUN echo '.libPaths("/packrat/lib/x86_64-pc-linux-gnu/3.6.1")' >> /usr/local/lib/R/etc/Rprofile.site
 
 #############################
 ### Other custom software ###
