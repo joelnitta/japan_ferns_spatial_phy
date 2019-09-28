@@ -40,11 +40,7 @@ plan <- drake_plan (
     mutate(taxon_id = as.character(taxon_id)),
   
   # Match fern and pteridophyte names to COL.
-  gnr_results = match_with_gnr(green_list$scientific_name),
-  
-  # Resolve synonyms, drop any names that couldn't be resolved.
-  resolved_names = resolve_synonyms(gnr_results, world_ferns) %>% 
-    filter(!is.na(scientificName)),
+  resolved_names = taxastand::resolve_fern_names(green_list$scientific_name, col_plants, resolve_to = "scientific_name"),
   
   # Reproductive mode data, with one row per species.
   repro_data_raw = read_csv(
