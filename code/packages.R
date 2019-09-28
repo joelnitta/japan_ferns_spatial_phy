@@ -1,4 +1,7 @@
 library(conflicted)
+library(checkr)
+library(FD)
+library(here)
 library(assertthat)
 library(ape)
 library(readxl)

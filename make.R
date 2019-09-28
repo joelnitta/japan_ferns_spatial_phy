@@ -19,7 +19,6 @@ source("code/packages.R")
 # Update drake settings
 pkgconfig::set_config("drake::strings_in_dots" = "literals")
 
-
 # Load functions and plans  ----
 source("code/functions.R")
 source("code/plan.R")
