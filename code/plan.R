@@ -23,7 +23,17 @@ plan <- drake_plan (
     mutate(taxon_id = as.character(taxon_id)),
   
   # Match fern and pteridophyte names to COL.
-  resolved_names = taxastand::resolve_fern_names(green_list$scientific_name, col_plants, resolve_to = "scientific_name"),
+  resolved_names_auto = taxastand::resolve_fern_names(green_list$scientific_name, col_plants, resolve_to = "species"),
+  
+  # Read in list of manually resolved names.
+  resolved_names_manual_fix = read_csv("data_raw/japan_pterido_names_manual_fix.csv") %>%
+    filter(!is.na(scientificName)),
+  
+  # Update automatically resolved names with manually resolved names to get final list
+  resolved_names = update_resolved_names(
+    resolved_names_auto,
+    resolved_names_manual_fix
+  ),
   
   # Reproductive mode data, with one row per species.
   repro_data_raw = read_csv(
@@ -328,26 +338,22 @@ plan <- drake_plan (
     height = 9, width = 7, units = "in")
   
   # 
-  # # Ecostructure ----
-  # 
-  # ### Global analysis (dispersion fields) ###
-  # 
-  # # Rename pteridophyte species to match World Ferns (same as GBIF)
-  # occ_data_pteridos_renamed = 
-  #   left_join(
-  #     select(occ_data_pteridos, taxon_id, latitude, longitude), 
-  #     select(green_list, taxon_id, scientific_name)
-  #   ) %>%
-  #   inner_join(
-  #     resolved_names,
-  #     by = c(scientific_name = "query")) %>%
-  #   filter(is.na(genus)) %>%
-  #   assert(not_na, genus) %>%
-  #   assert(not_na, specificEpithet) %>%
-  #   mutate(species = paste(genus, specificEpithet)) %>%
-  #   mutate(site = paste(longitude, latitude, sep = "_")) %>%
-  #   select(species, site),
-  # 
+  # Ecostructure ----
+
+  ### Global analysis (dispersion fields) ###
+
+  # Rename pteridophyte species to match World Ferns (same as GBIF)
+  occ_data_pteridos_renamed =
+    left_join(
+      select(occ_data_pteridos, taxon_id, latitude, longitude),
+      select(green_list, taxon_id, scientific_name)
+    ) %>%
+    inner_join(
+      resolved_names,
+      by = c(scientific_name = "query")) %>%
+    mutate(site = paste(longitude, latitude, sep = "_")) %>%
+    select(species, site)
+  
   # # Make community data matrix for renamed pteriphytes of Japan
   # comm_pteridos_renamed = occ_data_pteridos_renamed %>%
   #   mutate(

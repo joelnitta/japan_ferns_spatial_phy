@@ -234,6 +234,31 @@ make_taxon_id_map <- function(occ_data_pteridos) {
   mutate(taxon = str_remove_all(taxon, "_x"))
 }
 
+#' Update automatically resolved names with manually fixed names
+#'
+#' @param resolved_names_auto Dataframe of automatically resolved fern names;
+#' output of taxastand::resolved_fern_names()
+#' @param resolved_names_manual_fix Dataframe of manually fixed names to add for
+#' names that failed to be resolved automatically 
+#'
+#' @return Tibble
+#' 
+update_resolved_names <- function (resolved_names_auto, resolved_names_manual_fix) {
+  
+  resolved_names_auto %>%
+    # Drop excluded names
+    filter_at(vars(contains("exclude")), all_vars(. == FALSE)) %>%
+    select(-contains("exclude")) %>%
+    # Drop anything not resoved to species
+    filter(!is.na(species)) %>%
+    # Add manually fixed names
+    select(query, species) %>%
+    bind_rows(
+      select(resolved_names_manual_fix, query, species)
+    )
+  
+}
+
 # Traits ----
 
 #' Get the mean value of a numeric trait from data formatted for lucid

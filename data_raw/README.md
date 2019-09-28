@@ -35,6 +35,13 @@ All species names resolved to Catalog of Life, and coordinates have been cleaned
 using coordinate cleaner. Based on vouchered specimens only (no occurrence records). 
 Produced by pacific_ferns_biogeo project.
 
+japan_pterido_names_manual_fix.csv: Spreadsheet of manually resolved names of
+Japanese pteridophytes. Names were first resolved automatically using the 
+taxastand::resolve_fern_names() function. Names that failed to be resolved this
+way were output to a CSV file, then looked up manually. Columns: query = original
+name in FernGreenListV1.01.xls, scientificName: manually resolved sci. name, 
+species = manually resolved species name, source: source of name information.
+
 japan_pterido_rbcl_cipres.zip: Output of Bayesian analysis of Japanese pteridophyte
 rbcL data matrix (rbcl_mrbayes.nex) downloaded from the CIPRES cluster. The resulting
 tree file is "infile.nex.con.tre" within the zip folder. Tips named with two numbers
