@@ -8,31 +8,14 @@ plan <- drake_plan (
   
   ### Taxonomy data ###
   
-  # Pteridophyte Phylogeny Group I (PPGI) taxonomy
-  # - original version
-  ppgi_raw = read_csv(file_in("data_raw/ppgi_taxonomy.csv")),
-  
-  # - modify slightly for Pteridophytes of Japan
-  ppgi = modify_ppgi(ppgi_raw),
+  # Pteridophyte Phylogeny Group I (PPGI) taxonomy, 
+  # modified slightly for ferns of Japan
+  ppgi = read_csv(file_in("data_raw/ppgi_taxonomy.csv")) %>%
+    modify_ppgi,
   
   # Catalog of Life (COL) plants taxonomic data
-  col_plants_raw = data.table::fread(here::here(
-    "data_raw/archive-kingdom-plantae-phylum-tracheophyta-bl3/taxa.txt"
-  ), encoding = "Latin-1") %>%
-    as_tibble(),
-  
-  # Extract World Ferns database contained within COL, only use simple set of columns
-  world_ferns = filter(
-    col_plants_raw,
-    str_detect(datasetName, "World Ferns")
-  ) %>%
-    select(c(
-      "taxonID", "acceptedNameUsageID",
-      "taxonomicStatus", "taxonRank",
-      "scientificName", "genus", 
-      "specificEpithet", "infraspecificEpithet"
-    )),
-  
+  col_plants = read_col_plants(file_in("data_raw/archive-kingdom-plantae-phylum-tracheophyta-bl3/taxa.txt")),
+    
   # Load Fern Green List, with conservation status for each species.
   green_list = read_excel(file_in("data_raw/FernGreenListV1.01.xls")) %>%
     select(taxon_id = ID20160331, scientific_name = `GreenList学名`,

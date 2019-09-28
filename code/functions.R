@@ -17,6 +17,21 @@ read_nexus_in_zip <- function (zip_folder, nexus_file) {
   
 }
 
+#' Read in Catalog of Life plants data
+#'
+#' @param path_to_col Path to Catalog of Life plants data
+#'
+#' @return Tibble
+#' 
+read_col_plants <- function (path_to_col) {
+  
+  read_tsv(path_to_col,
+    col_types = rep("c", 31) %>% paste(collapse = "")
+  ) %>%
+    mutate(taxonID = as.numeric(taxonID), acceptedNameUsageID = as.numeric(acceptedNameUsageID))
+  
+}
+
 
 #' Clean up reproductive mode data for pteridophytes of Japan
 #'
