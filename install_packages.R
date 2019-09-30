@@ -1,10 +1,10 @@
 # This script writes renv.lock for installing R packages to a docker image.
-# It should be run from within the rocker/geospatial:3.6.1 container:
+# It should be run from within the rocker/geospatial:3.5.1 container:
 #
-# docker run --rm -e DISABLE_AUTH=true -v /Users/joelnitta/Documents/japan_ferns_biogeo:/home/rstudio/project rocker/geospatial:3.6.1 bash /home/rstudio/project/install_packages.sh
+# docker run --rm -e DISABLE_AUTH=true -v /Users/joelnitta/Documents/japan_ferns_biogeo:/home/rstudio/project rocker/geospatial:3.5.1 bash /home/rstudio/project/install_packages.sh
 #
 # Then build the image with
-# docker build . -t joelnitta/japan_ferns_biogeo:3.6.1
+# docker build . -t joelnitta/japan_ferns_biogeo:3.5.1
 
 ### Initialize packrat ###
 

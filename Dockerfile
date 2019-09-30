@@ -1,4 +1,4 @@
-FROM rocker/geospatial:3.6.1
+FROM rocker/geospatial:3.5.1
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -30,7 +30,7 @@ COPY ./packrat/packrat.lock packrat/
 RUN Rscript -e 'install.packages("packrat", repos = "https://cran.rstudio.com/"); packrat::restore()'
 
 # Modify Rprofile.site so R loads packrat library by default
-RUN echo '.libPaths("/packrat/lib/x86_64-pc-linux-gnu/3.6.1")' >> /usr/local/lib/R/etc/Rprofile.site
+RUN echo '.libPaths("/packrat/lib/x86_64-pc-linux-gnu/3.5.1")' >> /usr/local/lib/R/etc/Rprofile.site
 
 #############################
 ### Other custom software ###
