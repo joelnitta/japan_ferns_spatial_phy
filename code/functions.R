@@ -1260,8 +1260,8 @@ exclude_japan_points <- function (gbif_points_global, all_cells) {
   
   # Convert Japan 10 km grid cell centroids to sf object
   all_cells_sf <- purrr::map2(
-    all_cells$decimallongitude,
-    all_cells$decimallatitude,
+    all_cells$longitude,
+    all_cells$latitude,
     ~ sf::st_point(c(.x, .y))) %>%
     sf::st_sfc(crs = 4326) %>%
     sf::st_sf(all_cells, .)
