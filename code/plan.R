@@ -378,22 +378,23 @@ plan <- drake_plan (
 
   # Make a combined presence/absence matrix
   # 1-degree grid cells outside of Japan,
-  # 10-km grid cells inside Japan
+  # 10-km grid cells inside Japan, 
+  # limited to only species in common in both
   comm_for_ecos_global_combined = combine_presabs_mat(
     comm_for_ecos_global_cropped,
     comm_pteridos_renamed),
 
-  # # Make dispersion fields list
-  # dispersion_fields_list = pres_ab_to_disp(
-  #   comm_for_ecos_global_combined
-  # ),
-  #
-  # # Make dispersion fields matrix
-  # dispersion_fields_matrix = dsp_to_matrix2(
-  #   dispersion_fields_list,
-  #   drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
-  # ),
-  #
+  # Make dispersion fields list
+  dispersion_fields_list = pres_ab_to_disp(
+    comm_for_ecos_global_combined
+  ),
+
+  # Make dispersion fields matrix
+  dispersion_fields_matrix = dsp_to_matrix2(
+    dispersion_fields_list,
+    drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
+  )
+
   # # Keep only sites in Japan
   # # NEED TO WRITE FUNCTION
   # dispersion_fields_matrix_japan = select_disp_fields(
