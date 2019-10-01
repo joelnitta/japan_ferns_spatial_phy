@@ -13,8 +13,9 @@ set.seed(9130)
 # Set working directory
 setwd(here::here())
 
-# Load packages
+# Load packages and resolve namespace conflicts
 source("code/packages.R")
+source("code/resolve_conflicts.R")
 
 # Update drake settings
 pkgconfig::set_config("drake::strings_in_dots" = "literals")

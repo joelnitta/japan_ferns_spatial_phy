@@ -1,3 +1,5 @@
+# Load packages
+
 library(conflicted)
 library(checkr)
 library(FD)
@@ -8,7 +10,6 @@ library(readxl)
 library(janitor)
 library(drake)
 library(maps)
-# library(viridis)
 library(picante)
 library(scales)
 library(jntools)
@@ -24,8 +25,3 @@ library(taxastand)
 library(data.table)
 library(sf)
 library(tidyverse)
-
-conflict_prefer("map", "purrr")
-conflict_prefer("select", "dplyr")
-conflict_prefer("filter", "dplyr")
-conflict_prefer("gather", "tidyr")
