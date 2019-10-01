@@ -364,7 +364,7 @@ plan <- drake_plan (
   #   mutate(species = as.character(species)),
 
   # Crop global species records from GBIF to exclude Japan
-  gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells)
+  gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells),
 
   # Make a global presence/absence matrix (excluding Japan)
   # based on GBFIF occurrence records
