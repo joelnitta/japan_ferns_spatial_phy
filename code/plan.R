@@ -355,13 +355,15 @@ plan <- drake_plan (
     select(species, site),
 
   # # Make community data matrix for renamed pteriphytes of Japan
-  # comm_pteridos_renamed = occ_data_pteridos_renamed %>%
-  #   mutate(
-  #     abundance = 1,
-  #     site = as.character(site)) %>%
-  #   spread(site, abundance) %>%
-  #   mutate_at(vars(-species), ~replace_na(., 0)) %>%
-  #   mutate(species = as.character(species)),
+  comm_pteridos_renamed = 
+    occ_data_pteridos_renamed %>%
+    # Have to use unique occurrences since some original names got 
+    # collapsed to same resolved name (synonyms or varieties)
+    unique() %>%
+    mutate(species = str_replace_all(species, " ", "_")) %>%
+    mutate(abundance = 1) %>%
+    pivot_wider(names_from = species, values_from = abundance) %>%
+    mutate_at(vars(-site), ~replace_na(., 0)),
 
   # Crop global species records from GBIF to exclude Japan
   gbif_points_no_japan = exclude_japan_points(gbif_points_global, all_cells),
