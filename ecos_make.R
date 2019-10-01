@@ -14,7 +14,7 @@
 #
 # module load /home/nittaj/modulefiles/miniconda
 # source activate pacferns
-# nohup Rscript ecos_make.R > make.log 2>&1 &
+# nohup Rscript ecos_make.R > ecos_make.log 2>&1 &
 # 
 # Note that running ecos_make.R this way will may result in it getting
 # killed for using too much memory. The jobs will still get
