@@ -1,0 +1,14 @@
+#!/bin/bash
+#$ -S /bin/sh
+#$ -cwd
+#$ -j y
+#$ -o <%= log.file %>
+#$ -N <%= job.name %>
+#$ -q <%= resources[["queue"]] %>
+#$ -l <%= resources[["memory"]] %>
+#$ -m bea
+#$ -M joelnitta@gmail.com
+module load /home/nittaj/modulefiles/miniconda
+source activate pacferns
+Rscript -e 'batchtools::doJobCollection("<%= uri %>")'
+exit 0

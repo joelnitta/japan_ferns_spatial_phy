@@ -1719,8 +1719,48 @@ dsp_to_matrix2 <- function (dispersion.field, drop_zero = FALSE) {
   return(map_data)
 }
 
-# Plotting ----
+#' Fit an ecostructure model and save the output as RDS
+#' 
+#' The output RDS file will be saved to `out_dir` and named
+#' automatically according to motif, dataset, and other settings
+#' used for ecostructure::ecos_fit().
+#'
+#' @param out_dir Directory to save the results
+#' @param motif Type of motif used for ecostructure. Must be one of
+#' "species", "species-trans", "geo", "phylo", or "traits"
+#' @param dataset Name of dataset used
+#' 
+#' Other arguments as in ecostructure::ecos_fit()
+#'
+#' @return NULL
+#' @examples
+#' library(ecostructure)
+#' data("himalayan_birds")
+#' species_counts <- t(Biobase::exprs(himalayan_birds))
+#' run_ecos(out_dir = "tmp", motif = "species", dataset = "birds",
+#' dat = species_counts, K = 2, tol = 0.1, num_trials = 1)
+#' 
+run_ecos <- function (out_dir, motif, dataset, 
+                      dat, max_dat = NULL, K, tol = 0.1, num_trials = 1, 
+                      fit_control = list()) {
+  
+  assertthat::assert_that(assertthat::is.dir(fs::path_dir(out_dir)))
+  
+  out_file = glue::glue("ecosfit_motif={motif}_dataset={dataset}_K={K}_tol={tol}_trials={num_trials}.RDS")
+  
+  out_path = fs::path(out_dir, out_file)
+  
+  results <- ecostructure::ecos_fit(dat = dat, max_dat = max_dat, 
+                                    K = K, tol = tol, num_trials = num_trials, 
+                                    fit_control = fit_control)
+  
+  saveRDS(object = results, file = out_path)
+  
+  results
+  
+}
 
+# Plotting ----
 
 #' Define ggplot theme
 #'
@@ -2017,3 +2057,48 @@ compose_lat_el_plots <- function (alpha_div, main_title) {
   wrap_plots(c(ses_plots,richness_plots), ncol = 2, nrow = 3)
 
 }
+
+# Drake ----
+
+# Fill-in memory settings as named lists
+
+#' Specify queue and memory requested for a drake plan
+#' running on the hydra cluster
+#'
+#' @param plan Drake plan. Must include column for "mem_type", which
+#' includes values "small", "medium", "large", or "very large".
+#' The amount of memory and run queue will be set accordingly
+#' (5gb, 50gb, 100gb, or 150gb per job).
+#'
+#' @return Tibble
+#' 
+specify_resources <- function (plan) {
+  
+  plan$resources <- ""
+  
+  for (i in 1:nrow(plan)) {
+    # Default is 1gb, short-run time if not specified
+    plan$resources[i] <- list(list(queue = "sThC.q", memory = "mres=1G"))
+    # Change if mem_type is specified
+    if (isTRUE(plan$mem_type[[i]] == "small")) {
+      plan$resources[i] <- list(
+        list(queue = "lThC.q", memory = "mres=5G,h_data=5G,h_vmem=5G") # 24 hours, 5Gb
+      ) }
+    if (isTRUE(plan$mem_type[[i]] == "medium")) {
+      plan$resources[i] <- list(
+        list(queue = "uThM.q -l lopri", memory = "mres=50G,h_data=50G,h_vmem=50G,himem") # unlimited, 50Gb
+      ) }
+    if (isTRUE(plan$mem_type[[i]] == "large")) {
+      plan$resources[i] <- list(
+        list(queue = "uThM.q -l lopri", memory = "mres=100G,h_data=100G,h_vmem=100G,himem") # unlimited, 100Gb
+      ) }
+    if (isTRUE(plan$mem_type[[i]] == "very large")) {
+      plan$resources[i] <- list(
+        list(queue = "uThM.q -l lopri", memory = "mres=150G,h_data=150G,h_vmem=150G,himem") # unlimited, 150Gb
+      ) }
+  }
+  
+  plan
+  
+}
+

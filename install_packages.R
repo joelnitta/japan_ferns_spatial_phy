@@ -38,6 +38,7 @@ cran_packages <- c(
   "clustermq", # For running in parallel on the cluster
   "drake",
   "FD",
+  "future.batchtools", # For running in parallel on the cluster
   "gghighlight",
   "ggridges",
   "here",
