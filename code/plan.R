@@ -396,6 +396,9 @@ plan <- drake_plan (
 
   # Keep only sites in Japan
   dispersion_fields_matrix_japan = dispersion_fields_matrix[rownames(dispersion_fields_matrix) %in% comm_pteridos_renamed$site,],
+  
+  # Write out dispersion fields matrix for running ecostructure analysis as separate plan
+  dispersion_fields_matrix_japan_out = saveRDS(dispersion_fields_matrix_japan, "data/dispersion_fields_matrix_japan.RDS"),
 
   # Analyze geographical motifs using ecostructure
   geo_motifs_pteridos = target(
