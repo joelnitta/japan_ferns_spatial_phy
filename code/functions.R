@@ -1583,8 +1583,8 @@ ecos_plot_pie2 <- function (
 
 #' Convert a presence/absence matrix to a list of
 #' dispersion fields.
-#'
-#' A dispersion field is the global richness for the species from
+#' 
+#' A dispersion field is the global richness for the species from 
 #' one particular site.
 #'
 #' @param pres_ab_matrix Presence/absence matrix. Must be formatted
@@ -1598,9 +1598,9 @@ ecos_plot_pie2 <- function (
 #' @param ymax Maximum latitude to use when projecting the dispersion fields
 #'
 #' @return List, of length equal to the number of sites (rows) in the
-#' input presence/absence matrix.
+#' input presence/absence matrix. 
 #' Each item in the list is a raster -- the dispersion field for that site.
-#'
+#' 
 #' @examples
 #' test_matrix <- matrix(data = rbinom(100, 1, 0.5), 10, 10)
 #' longs <- sample(c(1:5), replace=TRUE, size=10)
@@ -1615,26 +1615,26 @@ pres_ab_to_disp <- function (pres_ab_matrix,
                              ymin = -90, ymax = 90,
                              proj = sp::CRS(' +proj=longlat +ellps=WGS84'),
                              res = 1) {
-
+  
   assertthat::assert_that(is.matrix(pres_ab_matrix))
-
+  
   # Make empty raster
   ras <- raster::raster(xmn=xmin, xmx=xmax, ymn=ymin, ymx=ymax, crs=proj, resolution = res)
-
+  
   # Prepare loop to get cell IDs
   idx <- c()
   site_names <- rownames(pres_ab_matrix)
-
+  
   # `idx` is a vector of cell IDs in the raster, only including cells in the
   # pres/abs matrix
   for (i in 1:length(site_names)){
     idx[i] <- raster::cellFromXY(ras, as.numeric(unlist(strsplit(site_names[i], "[_]"))))
   }
-
+  
   # Prepare loop for species rasters
   species_rasters <- list()
   k <- length(colnames(pres_ab_matrix))
-
+  
   # `species_rasters` is a list of rasters, one for each species in the
   # pres/abs matrix
   for (i in 1:k){
@@ -1642,13 +1642,13 @@ pres_ab_to_disp <- function (pres_ab_matrix,
     ras[idx] <- pres_ab_matrix[,i]
     species_rasters[[i]] <- ras
   }
-
+  
   names(species_rasters) <- colnames(pres_ab_matrix)
-
+  
   # Prepare loop for dispersion fields
   disp_rasters <- list()
   k <- length(site_names)
-
+  
   # `disp_rasters` is a list of rasters; each one is the dispersion field
   # of a site in the pres-abs matrix, i.e., the global richness of species
   # at that site.
@@ -1660,24 +1660,24 @@ pres_ab_to_disp <- function (pres_ab_matrix,
       disp_rasters[[i]] <- sum(raster::stack(species_rasters[names(pres_ab_matrix[i,][pres_ab_matrix[i,] > 0])]))
     }
   }
-
+  
   names(disp_rasters) <- rownames(pres_ab_matrix)
-
+  
   return(disp_rasters)
-
+  
 }
 
 #' Convert a list of dispersion fields to a matrix
 #'
-#' @param dispersion.field List of dispersion fields,
+#' @param dispersion.field List of dispersion fields, 
 #' where each dispersion field is a raster.
-#' @param
+#' @param 
 #'
 #' @return Matrix of with number of rows equal to the length
-#' of `dispersion.field` and number of columns equal to the
+#' of `dispersion.field` and number of columns equal to the 
 #' number of rows x the number of columns of each dispersion
 #' field in the list.
-#'
+#' 
 #' @examples
 #' test_matrix <- matrix(data = rbinom(100, 1, 0.5), 10, 10)
 #' longs <- sample(c(1:5), replace=TRUE, size=10)
@@ -1687,35 +1687,35 @@ pres_ab_to_disp <- function (pres_ab_matrix,
 #' disp_list <- pres_ab_to_disp(test_matrix, 1,5,1,5, res = 1)
 #' dsp_to_matrix2(disp_list, drop_zero = TRUE)
 dsp_to_matrix2 <- function (dispersion.field, drop_zero = FALSE) {
-
+  
   # Set up results matrix: number of rows equal to length of dispersion
   # field list, with number of columns equal to the total number of cells
   # in each dispersion field.
   map_data <- matrix(
-    ncol = dim(dispersion.field[[1]])[1] * dim(dispersion.field[[1]])[2],
+    ncol = dim(dispersion.field[[1]])[1] * dim(dispersion.field[[1]])[2], 
     nrow=length(dispersion.field))
-
+  
   # Convert dispersion field list to matrix.
   for (l in 1:length(dispersion.field)) {
     temp_data <- dispersion.field[[l]]
     temp_data[is.na(temp_data)] <- 0
     map_data[l,] <- as.vector(temp_data)
   }
-
+  
   # Set row and column names.
   rownames(map_data) <- names(dispersion.field)
-
+  
   lat_long_names <- c()
   for (i in 1:dim(map_data)[2]){
     lat_long_names[i] <- paste0(raster::xyFromCell(temp_data,i), collapse = "_")
   }
   colnames(map_data) <- lat_long_names
-
+  
   # Optionally drop columns that are all zeros
   if (isTRUE(drop_zero)) {
     map_data <- map_data[,colSums(map_data) != 0]
   }
-
+  
   return(map_data)
 }
 
