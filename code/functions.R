@@ -1278,6 +1278,46 @@ exclude_japan_points <- function (gbif_points_global, all_cells) {
 
 }
 
+#' Combine the global occurrence matrix with local (Japan) matrix
+#'
+#' @param comm_for_ecos_global_cropped Global pteridophyte occurrence matrix
+#' with Japan occurrences removed (cropped), of class matrix.
+#' @param comm_pteridos_renamed Occurrences of pteridophytes in Japan as tibble.
+#'
+#' @return Matrix
+#'
+combine_presabs_mat <- function(comm_for_ecos_global_cropped, comm_pteridos_renamed) {
+  
+  # Convert the cropped (i.e., without Japan) global matrix to tibble
+  comm_for_ecos_global_cropped_tibble <-
+    comm_for_ecos_global_cropped %>% 
+    as.data.frame %>%
+    rownames_to_column("site") %>%
+    as_tibble
+  
+  # Find common columns betwen the two ('site' and species)
+  common_cols <- intersect(
+    colnames(comm_for_ecos_global_cropped_tibble),
+    colnames(comm_pteridos_renamed)
+  )
+  
+  # Combine the cropped global dataset (1-degree grid cells)
+  # with the Japan dataset (10km x 10 km grid cells)
+  combined <-
+  bind_rows(
+    select(comm_for_ecos_global_cropped_tibble, common_cols),
+    select(comm_pteridos_renamed, common_cols)
+  ) %>%
+    # Convert to matrix
+    column_to_rownames("site") %>%
+    as.matrix()
+  
+  # Only keep those cells with at least one species, and species with
+  # at least on occurence
+  combined[rowSums(combined) > 0, colSums(combined) > 0]
+  
+}
+
 # Ecostructure ----
 
 #' Make community matrix from species' occurrences

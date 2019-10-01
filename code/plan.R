@@ -374,16 +374,15 @@ plan <- drake_plan (
      species_coods = gbif_points_no_japan,
      resol = 1,
      rownames = TRUE
-   )
-  #
-  # # Make a combined presence/absence matrix
-  # # 1-degree grid cells outside of Japan,
-  # # 10-km grid cells inside Japan
-  # # NEED TO WRITE FUNCTION
-  # comm_for_ecos_global_combined = combine_presabs_mat(
-  #   comm_for_ecos_global_cropped,
-  #   comm_pteridos_renamed),
-  #
+   ),
+
+  # Make a combined presence/absence matrix
+  # 1-degree grid cells outside of Japan,
+  # 10-km grid cells inside Japan
+  comm_for_ecos_global_combined = combine_presabs_mat(
+    comm_for_ecos_global_cropped,
+    comm_pteridos_renamed),
+
   # # Make dispersion fields list
   # dispersion_fields_list = pres_ab_to_disp(
   #   comm_for_ecos_global_combined
