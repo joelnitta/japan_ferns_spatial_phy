@@ -392,22 +392,19 @@ plan <- drake_plan (
   dispersion_fields_matrix = dsp_to_matrix2(
     dispersion_fields_list,
     drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
+  ),
+
+  # Keep only sites in Japan
+  dispersion_fields_matrix_japan = dispersion_fields_matrix[rownames(dispersion_fields_matrix) %in% comm_pteridos_renamed$site,],
+
+  # Analyze geographical motifs using ecostructure
+  geo_motifs_pteridos = target(
+    ecostructure::ecos_fit(
+      dispersion_fields_matrix_japan,
+      K = K, tol = 0.1, num_trials = 1),
+    transform = map(K = !!k_vals)
   )
 
-  # # Keep only sites in Japan
-  # # NEED TO WRITE FUNCTION
-  # dispersion_fields_matrix_japan = select_disp_fields(
-  #   dispersion_fields_matrix
-  # ),
-  #
-  # # Analyze geographical motifs using ecostructure
-  # geo_motifs_pteridos = target(
-  #   ecostructure::ecos_fit(
-  #     dispersion_fields_matrix_japan,
-  #     K = K, tol = 0.1, num_trials = 1),
-  #   transform = map(K = !!k_vals)
-  # ),
-  #
   # ### Regional analysis (species matrix) ###
   #
   # # Make input matrix. Species and geographic motifs don't
