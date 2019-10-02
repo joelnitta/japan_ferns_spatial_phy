@@ -23,4 +23,5 @@ cached_zip/
 *_cache/
 *_files/
 wc*/
+results/
 references_raw.bib
