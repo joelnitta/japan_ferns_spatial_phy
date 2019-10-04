@@ -216,6 +216,10 @@ ggsave(plot = geo_theta_plot, filename = here(glue::glue("reports/ecostructure_g
 ## Combined plots
 
 ```{r combined-plot}
+# For easy tweaking of plot size to get pie charts
+# to not overlap.
+tweak <- 1.5
+
 make_geo_theta_plot_color <- function (geo_theta_long, border_color) {
   ggplot(ggplot2::map_data("world"), aes(x = long, y = lat)) +
   geom_polygon(aes(group = group), fill = "light grey") +
@@ -233,15 +237,15 @@ make_geo_theta_plot_color <- function (geo_theta_long, border_color) {
   )
 }
 
-k_select <- 4
+k_select <- 3
 
-cols <- RColorBrewer::brewer.pal(k_select, name = "Set1")
+cols <- RColorBrewer::brewer.pal(k_select, name = "Dark2")
 
 ecos_plot_pie2(
     omega = results_list[[k_select - 1]][["omega"]],
     image_width = 6000*tweak,
     image_height = 4800*tweak,
-    radius = 0.05,
+    radius = 0.04,
     color = cols,
     bgmap_path = japan,
     long_lim = c(pull(all_cells, longitude) %>% min %>% floor, 
