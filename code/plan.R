@@ -382,16 +382,45 @@ plan <- drake_plan (
   comm_for_ecos_global_combined = combine_presabs_mat(
     comm_for_ecos_global_cropped,
     comm_pteridos_renamed),
-
+  
+  # Split into datasets: 
+  # combined at 1-degree resolution, 
+  # global 1-degree plus JA 10km
+  comm_ja = magrittr::extract(
+    comm_for_ecos_global_combined, 
+    rownames(comm_for_ecos_global_combined) %in% comm_pteridos_renamed$site, ),
+  
+  comm_global = magrittr::extract(
+    comm_for_ecos_global_combined, 
+    !rownames(comm_for_ecos_global_combined) %in% comm_pteridos_renamed$site, ),
+  
   # Make dispersion fields list
-  dispersion_fields_list = pres_ab_to_disp(
-    comm_for_ecos_global_combined
-  ),
+  # - Combined global + Japan 1-degree
+  dispersion_fields_list = pres_ab_to_disp(comm_for_ecos_global_combined),
+  
+  # - Global 1-degree
+  dispersion_fields_list_global = pres_ab_to_disp(comm_global),
+  
+  # - Japan 10 km
+  dispersion_fields_list_ja = pres_ab_to_disp(comm_ja, res = 1/111), # set resolution to ca. 10 km
 
   # Make dispersion fields matrix
+  # - Combined global + Japan 1-degree
   dispersion_fields_matrix = dsp_to_matrix2(
     dispersion_fields_list,
     drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
+  ),
+  
+  # - Global (no Japan) Japan 1-degree
+  dispersion_fields_matrix_global = dsp_to_matrix2(
+    dispersion_fields_list_global,
+    drop_zero = TRUE
+  ),
+  
+  # - Japan only 10 km
+  dispersion_fields_matrix_ja = dsp_to_matrix2(
+    dispersion_fields_list_ja,
+    drop_zero = TRUE
   ),
 
   # Keep only sites in Japan
