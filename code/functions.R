@@ -83,6 +83,51 @@ get_ksj_urls <- function (dataset) {
   urls$zipFileUrl
 }
 
+#' Unzip Ebihara and Nitta 2017 Ecol Mono data zip file and 
+#' extract needed data files.
+#' 
+#' The dryad data zip file should be downloaded from 
+#' https://datadryad.org/stash/dataset/doi:10.5061/dryad.df59g
+#' (click on "Download dataset")
+#'
+#' @param dryad_zip_file Path to the data zip file downloaded from Dryad.
+#' @param unzip_path Path to directory to put the unzipped
+#' contents (will be created if needed).
+#' @param ... Extra arguments; not used by this function, but
+#' meant for tracking with drake.
+#' @return Unzipped data files:
+#' - rbcL_clean_sporos.fasta: rbcL sequences of sporophytes from Moorea
+#'
+unzip_ebihara_2019 <- function (dryad_zip_file, exdir, ...) {
+  
+  # Unzip only the needed files
+  unzip(dryad_zip_file, "FernGreenListV1.01E.xls", exdir = exdir)
+  unzip(dryad_zip_file, "ESM1.csv", exdir = exdir)
+  unzip(dryad_zip_file, "ESM2.csv", exdir = exdir)
+  unzip(dryad_zip_file, "japan_pterido_rbcl_cipres.zip", exdir = exdir)
+  unzip(dryad_zip_file, "2_grid_cells_all.csv", exdir = exdir)
+  
+}
+
+#' Tidy taxonomic data of pteridophytes of Japan
+#'
+#' Data is from Japan Green list
+#'
+#' @param data 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tidy_japan_names <- function (data) {
+  data %>%
+    select(taxon_id = ID20160331, scientific_name = `GreenList Name`,
+           endemic = Endemism, conservation_status = RL2012) %>%
+    mutate(taxon_id = as.character(taxon_id)) %>%
+    select(taxon_id, scientific_name)
+}
+
+
 # Basic stats ----
 
 #' Count species per grid cell excluding hybrids

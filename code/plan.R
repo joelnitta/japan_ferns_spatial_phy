@@ -15,12 +15,23 @@ plan <- drake_plan (
 
   # Catalog of Life (COL) plants taxonomic data
   col_plants = read_col_plants(file_in("data_raw/archive-kingdom-plantae-phylum-tracheophyta-bl3/taxa.txt")),
+  
+  # Unzip data files from Ebihara and Nitta 2019
+  # This requires doi_10.5061_dryad.4362p32__v4.zip to be downloaded to data_raw/
+  # from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32 first
+  ebihara_2019_data = unzip_ebihara_2019(
+    dryad_zip_file = file_in("data/doi_10.5061_dryad.4362p32__v4.zip"), 
+    exdir = "data/ebihara_2019",
+    produces_1 = file_out("data/ebihara_2019/FernGreenListV1.01E.xls"),
+    produces_2 = file_out("data/ebihara_2019/ESM1.csv"),
+    produces_3 = file_out("data/ebihara_2019/ESM2.csv"),
+    produces_4 = file_out("data/ebihara_2019/japan_pterido_rbcl_cipres.zip"),
+    produces_5 = file_out("data/ebihara_2019/2_grid_cells_all.csv")
+  ),
 
   # Load Fern Green List, with conservation status for each species.
-  green_list = read_excel(file_in("data_raw/FernGreenListV1.01.xls")) %>%
-    select(taxon_id = ID20160331, scientific_name = `GreenList学名`,
-           endemic = `固有`, conservation_status = `RL2012`) %>%
-    mutate(taxon_id = as.character(taxon_id)),
+  green_list = read_excel(file_in("data/ebihara_2019/FernGreenListV1.01E.xls")) %>% 
+    tidy_japan_names(),
 
   # Match fern and pteridophyte names to COL.
   resolved_names_auto = taxastand::resolve_fern_names(green_list$scientific_name, col_plants, resolve_to = "species"),
@@ -37,22 +48,32 @@ plan <- drake_plan (
 
   # Reproductive mode data, with one row per species.
   repro_data_raw = read_csv(
-    file_in("data_raw/ESM1.csv"),
+    file_in("data/ebihara_2019/ESM1.csv"),
     col_types = "cccccnnnnn"),
 
   repro_data = process_repro_data(repro_data_raw),
+  
+  # Raw environmental data
+  ja_env_raw = read_csv(
+    file_in("data/ja_env_data.csv"),
+    col_types = "nnnnnnnnnnn"
+  ),
 
-  # List of all 10 km grid cells across Japan with elevation
-  all_cells = read_csv(
-    file_in("data/all_cells_el.csv"),
-    col_types = "nnccn") %>%
+  # List of all 10 km grid cells across Japan
+  all_cells_raw = read_csv(
+    file_in("data/ebihara_2019/2_grid_cells_all.csv"),
+    col_types = "nnn") %>%
+    rename(secondary_grid_code = id, latitude = y, longitude = x) %>%
     assert(is_uniq, secondary_grid_code),
+  
+  # Combine into list of 10km grid cells with environment
+  all_cells = left_join(all_cells_raw, ja_env_raw, by = "secondary_grid_code"),
 
   # Occurrence data, with multiple rows per species.
   # Occurrences are presences in a set of 1km2 grid
   # cells across Japan, not actual occurrence points of specimens.
   occ_data_raw = read_csv(
-    file_in("data_raw/ESM2.csv"),
+    file_in("data/ebihara_2019/ESM2.csv"),
     col_types = "cccnnccc"
   ),
 
