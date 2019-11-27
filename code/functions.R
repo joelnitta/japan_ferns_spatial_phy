@@ -106,6 +106,7 @@ unzip_ebihara_2019 <- function (dryad_zip_file, exdir, ...) {
   unzip(dryad_zip_file, "ESM2.csv", exdir = exdir)
   unzip(dryad_zip_file, "japan_pterido_rbcl_cipres.zip", exdir = exdir)
   unzip(dryad_zip_file, "2_grid_cells_all.csv", exdir = exdir)
+  unzip(dryad_zip_file, "ppgi_taxonomy.csv", exdir = exdir)
   
 }
 
