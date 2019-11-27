@@ -5,6 +5,7 @@
 .drake
 .Rprofile
 .DS_Store
+.future/
 data
 data_raw
 drafts
