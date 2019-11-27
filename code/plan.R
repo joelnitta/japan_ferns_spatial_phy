@@ -86,7 +86,7 @@ plan <- drake_plan (
   # taxa based on rbcL gene.
   japan_pterido_tree = read_nexus_in_zip(
     file_in("data_raw/ebihara_2019/japan_pterido_rbcl_cipres.zip"),
-    "infile.nex.con.tre")[[2]] %>%
+    "japan_pterido_rbcl_cipres/infile.nex.con.tre")[[2]] %>%
     format_tip_labels,
 
   # Basic world map.
