@@ -1546,7 +1546,9 @@ make_ecos_matrix <- function (comm_pteridos, all_cells) {
   # rows in matrix
   long_lats <-
     all_cells %>%
-    transmute(secondary_grid_code, long_lat = paste(longitude, latitude, sep = "_")) %>%
+    transmute(
+      secondary_grid_code = as.character(secondary_grid_code), 
+              long_lat = paste(longitude, latitude, sep = "_")) %>%
     unique %>%
     # Only use those actually in the community data so we
     # don't end up with a bunch of NA values after joining.
@@ -1555,13 +1557,11 @@ make_ecos_matrix <- function (comm_pteridos, all_cells) {
   comm_pteridos %>%
     gather(secondary_grid_code, abundance, -species) %>%
     spread(species, abundance) %>%
-    # Remove grid cell flagged as missing until get fixed data
-    filter(secondary_grid_code != "513613") %>%
     # Check for grid cells in comm data but missing from all_cells data
     verify(secondary_grid_code %in% long_lats$secondary_grid_code) %>%
     # Check that grid cells in comm data are unique
     assert(is_uniq, secondary_grid_code) %>%
-    left_join(long_lats) %>%
+    left_join(long_lats, by = "secondary_grid_code") %>%
     select(-secondary_grid_code) %>%
     column_to_rownames("long_lat") %>%
     as.matrix
