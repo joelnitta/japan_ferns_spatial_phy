@@ -60,7 +60,7 @@ cran_packages <- c(
 install.packages(cran_packages)
 
 ### Install bioconductor packages ###
-bioc_packages <- c("Biobase", "CountClust", "BiocGenerics")
+bioc_packages <- c("Biobase", "BiocGenerics")
 
 BiocManager::install(bioc_packages, update=FALSE, ask=FALSE)
 
@@ -68,6 +68,7 @@ BiocManager::install(bioc_packages, update=FALSE, ask=FALSE)
 github_packages <- c(
   "joelnitta/jntools",
   "joelnitta/taxastand",
+  "kkdey/CountClust", # ecostructure dep
   "kkdey/methClust", # ecostructure dep
   "TaddyLab/maptpx", # ecostructure dep
   "kkdey/ecostructure"

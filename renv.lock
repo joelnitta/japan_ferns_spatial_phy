@@ -62,9 +62,15 @@
     },
     "CountClust": {
       "Package": "CountClust",
-      "Version": "1.14.0",
-      "Source": "Bioconductor",
-      "Hash": "d0e5fd4c8f0e1253cfb18a01f2c891f5"
+      "Version": "1.6.2",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "CountClust",
+      "RemoteUsername": "kkdey",
+      "RemoteRef": "master",
+      "RemoteSha": "5397b7c32819ccd6f636c56a1832453f9df9c913",
+      "Hash": "3a322c1e1f217c507e95e99aef6a9d27"
     },
     "DBI": {
       "Package": "DBI",
@@ -135,6 +141,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "8025b5d36e7cb094049b3f8174d676a2"
+    },
+    "Rtsne": {
+      "Package": "Rtsne",
+      "Version": "0.15",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f153432c4ca15b937ccfaa40f167c892"
     },
     "SQUAREM": {
       "Package": "SQUAREM",
