@@ -1,52 +1,57 @@
-FROM rocker/geospatial:3.5.1
+FROM rocker/r-ver:3.6.1
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-####################
-### APT packages ###
-####################
+############################
+### Install APT packages ###
+############################
 
-# libudunits2-dev, libgdal-dev for CoordinateCleaner
 # libmagick for animation->magick->phytools
+# the rest are same dependencies as rocker/geospatial
+# https://hub.docker.com/r/rocker/geospatial/dockerfile
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-  libmagick++-dev \
-  libudunits2-dev \
-  libgdal-dev
+    lbzip2 \
+    libfftw3-dev \
+    libgeos-dev \
+    libgdal-dev \
+    libgsl0-dev \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
+    libhdf4-alt-dev \
+    libhdf5-dev \
+    libjq-dev \
+    liblwgeom-dev \
+    libpq-dev \
+    libproj-dev \
+    libprotobuf-dev \
+    libnetcdf-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    libudunits2-dev \
+    netcdf-bin \
+    postgis \
+    protobuf-compiler \
+    sqlite3 \
+    tk-dev \
+    unixodbc-dev \
+    libgdal-dev \
+    libmagick++-dev \
+    libzmq3-dev
 
-#######################################
-### Install R packages with packrat ###
-#######################################
+####################################
+### Install R packages with renv ###
+####################################
 
-# First install dependencies of methClust and CountClust that for
-# some reason don't get installed automatically.
-RUN install2.r -e slam \
-  SQUAREM \
-  boot \
-&& Rscript -e 'devtools::install_github("kkdey/CountClust")'
+COPY ./renv.lock ./
 
-COPY ./packrat/packrat.lock packrat/
+COPY ./renv_restore.R ./
 
-RUN Rscript -e 'install.packages("packrat", repos = "https://cran.rstudio.com/"); packrat::restore()'
+RUN mkdir renv
 
-# Modify Rprofile.site so R loads packrat library by default
-RUN echo '.libPaths("/packrat/lib/x86_64-pc-linux-gnu/3.5.1")' >> /usr/local/lib/R/etc/Rprofile.site
+RUN Rscript renv_restore.R
 
-#############################
-### Other custom software ###
-#############################
+# Modify Rprofile.site so R loads renv library by default
+RUN echo '.libPaths("/renv")' >> /usr/local/lib/R/etc/Rprofile.site
 
-ENV APPS_HOME=/apps
-RUN mkdir $APPS_HOME
-WORKDIR $APPS_HOME
-
-### gnparser ###
-ENV APP_NAME=gnparser
-ENV VERSION=0.7.5
-ENV DEST=$APPS_HOME/$APP_NAME/$VERSION
-RUN wget https://www.dropbox.com/s/7jcrjj0o39vuh3x/$APP_NAME-v$VERSION-linux.tar.gz?dl=1 \
-  && tar xf $APP_NAME-v$VERSION-linux.tar.gz?dl=1 \
-  && rm $APP_NAME-v$VERSION-linux.tar.gz?dl=1 \
-  && mv "$APP_NAME" /usr/local/bin/
-
-WORKDIR /home/rstudio/
+WORKDIR /home/
