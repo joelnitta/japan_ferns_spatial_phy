@@ -1,26 +1,30 @@
-# This script writes renv.lock for installing R packages to a docker image.
-# It should be run from within the rocker/geospatial:3.5.1 container:
-#
-# docker run --rm -e DISABLE_AUTH=true -v /Users/joelnitta/Documents/japan_ferns_biogeo:/home/rstudio/project rocker/geospatial:3.5.1 bash /home/rstudio/project/install_packages.sh
-#
-# Then build the image with
-# docker build . -t joelnitta/japan_ferns_biogeo:3.5.1
+# Install packages to a docker image with renv
 
-### Initialize packrat ###
+# First do an initial install to write the Renv lock file
+# (change wd on left side of colon as needed):
+# docker run --rm -v /Users/joelnitta/repos/japan_ferns_biogeo:/home/japan_ferns_biogeo -w /home/japan_ferns_biogeo rocker/r-ver:3.6.1 bash /home/japan_ferns_biogeo/install_packages.sh
 
-# Don't let packrat try to find
-# packages to install itself.
+### Initialize renv ###
 
-install.packages("packrat", repos = "https://cran.rstudio.com/")
-packrat::init(
-  infer.dependencies = FALSE,
-  enter = TRUE,
+# Initialize renv, but don't let it try to find packages to install itself.
+install.packages("remotes", repos = "https://cran.rstudio.com/")
+# Use dev version with most recent bug fixes
+remotes::install_github("rstudio/renv")
+
+renv::consent(provided = TRUE)
+
+renv::init(
+  bare = TRUE,
+  force = TRUE,
   restart = FALSE)
+
+renv::activate()
 
 ### Setup repositories ###
 
 # Install packages that install packages.
 install.packages("BiocManager", repos = "https://cran.rstudio.com/")
+# (Need to do this again because now we're in a fresh renv project)
 install.packages("remotes", repos = "https://cran.rstudio.com/")
 
 # Set repos.
@@ -39,20 +43,15 @@ cran_packages <- c(
   "drake",
   "FD",
   "future.batchtools", # For running in parallel on the cluster
-  "gghighlight",
-  "ggridges",
   "here",
   "janitor",
   "lwgeom",
   "maps",
   "picante",
   "readxl",
-  "scales",
-  "scico",
   "sf",
   "tidyverse",
   "usedist",
-  "viridis",
   "boot", # ecostructure dependency that doesn't get detected automatically
   "slam", # ecostructure dep
   "SQUAREM" # ecostructure dep
@@ -61,18 +60,15 @@ cran_packages <- c(
 install.packages(cran_packages)
 
 ### Install bioconductor packages ###
-bioc_packages <- c("Biobase", "BiocGenerics")
+bioc_packages <- c("Biobase", "CountClust", "BiocGenerics")
 
-BiocManager::install(bioc_packages)
+BiocManager::install(bioc_packages, update=FALSE, ask=FALSE)
 
 ### Install github packages ###
 github_packages <- c(
   "joelnitta/jntools",
   "joelnitta/taxastand",
-  "thomasp85/patchwork",
-  "r-lib/scales", # For degree_format(), which isn't in CRAN scales yet
   "kkdey/methClust", # ecostructure dep
-  "kkdey/CountClust", # ecostructure dep
   "TaddyLab/maptpx", # ecostructure dep
   "kkdey/ecostructure"
 )
@@ -81,7 +77,4 @@ remotes::install_github(github_packages)
 
 ### Take snapshot ###
 
-packrat::snapshot(
-  snapshot.sources = FALSE,
-  ignore.stale = TRUE,
-  infer.dependencies = FALSE)
+renv::snapshot(type = "simple")
