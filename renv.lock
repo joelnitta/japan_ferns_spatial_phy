@@ -277,10 +277,10 @@
     },
     "boot": {
       "Package": "boot",
-      "Version": "1.3-23",
+      "Version": "1.3-22",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f7c819deb39929db5af6c6299f7eb0b5"
+      "Hash": "f2b2e80b975c6248510bed633c2ec382"
     },
     "brew": {
       "Package": "brew",
@@ -368,10 +368,10 @@
     },
     "clustermq": {
       "Package": "clustermq",
-      "Version": "0.8.8",
+      "Version": "0.8.8.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "644dc578f786be4e69f0281c1246e1e6"
+      "Hash": "6ef6d273bd05f0ca7f72593ca7890b15"
     },
     "coda": {
       "Package": "coda",
@@ -489,14 +489,14 @@
       "Package": "ecostructure",
       "Version": "0.99.1",
       "Source": "GitHub",
-      "Remotes": "kkdey/methClust, kkdey/CountClust",
+      "Remotes": "kkdey/CountClust, joelnitta/methClust",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "ecostructure",
-      "RemoteUsername": "kkdey",
+      "RemoteUsername": "joelnitta",
       "RemoteRef": "master",
-      "RemoteSha": "73995e0c779244d521ac955e4c706abb851fb20b",
-      "Hash": "3b6a642d0e49f3531815f87ea69d15a9"
+      "RemoteSha": "b9783b75677448ba7e36b0c67c5ff1af42dccb58",
+      "Hash": "f4ae225909a8b6da050fc8d613634079"
     },
     "ellipsis": {
       "Package": "ellipsis",
@@ -941,10 +941,10 @@
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "methClust",
-      "RemoteUsername": "kkdey",
+      "RemoteUsername": "joelnitta",
       "RemoteRef": "master",
-      "RemoteSha": "962b511d6156241eb60ccdf50d29c4888d9dd95f",
-      "Hash": "801f7ace187cc7478a6a22fa150e231b"
+      "RemoteSha": "4a746815a351550a85973651c5c36924985c3d63",
+      "Hash": "74128437f836816661eb127c8921eb89"
     },
     "mgcv": {
       "Package": "mgcv",
@@ -1193,15 +1193,15 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.9.2-12",
+      "Version": "0.9.2-13",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "renv",
       "RemoteUsername": "rstudio",
       "RemoteRef": "master",
-      "RemoteSha": "defdd7e5e175ce5bdc2d20cd73001947e5575fa7",
-      "Hash": "2ad09045c1ef56558dbfa14a93af96b1"
+      "RemoteSha": "f88ccaac8105d0899cc4c93e3eea2247cda8a606",
+      "Hash": "4be182c534d0f1ac87251a2bfe28d0d7"
     },
     "reprex": {
       "Package": "reprex",

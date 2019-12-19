@@ -49,12 +49,8 @@ cran_packages <- c(
   "maps",
   "picante",
   "readxl",
-  "sf",
   "tidyverse",
-  "usedist",
-  "boot", # ecostructure dependency that doesn't get detected automatically
-  "slam", # ecostructure dep
-  "SQUAREM" # ecostructure dep
+  "usedist"
   )
 
 install.packages(cran_packages)
@@ -69,9 +65,9 @@ github_packages <- c(
   "joelnitta/jntools",
   "joelnitta/taxastand",
   "kkdey/CountClust", # ecostructure dep
-  "kkdey/methClust", # ecostructure dep
+  "joelnitta/methClust", # ecostructure dep
   "TaddyLab/maptpx", # ecostructure dep
-  "kkdey/ecostructure"
+  "joelnitta/ecostructure"
 )
 
 remotes::install_github(github_packages)
