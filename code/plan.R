@@ -39,13 +39,13 @@ plan <- drake_plan (
   # Raw environmental data
   ja_env_raw = read_csv(
     file_in("data/ja_env_data.csv"),
-    col_types = "nnnnnnnnnnn"
+    col_types = "cnnnnnnnnnn"
   ),
 
   # List of all 10 km grid cells across Japan
   all_cells_raw = read_csv(
     file_in("data_raw/ebihara_2019/2_grid_cells_all.csv"),
-    col_types = "nnn") %>%
+    col_types = "cnn") %>%
     rename(secondary_grid_code = id, latitude = y, longitude = x) %>%
     assert(is_uniq, secondary_grid_code),
   
