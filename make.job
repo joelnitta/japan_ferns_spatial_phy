@@ -1,8 +1,9 @@
 # /bin/sh
 # ----------------Parameters---------------------- #
-#$  -S /bin/sh
-#$ -q uThM.q -l lopri
-#$ -l mres=50G,h_data=50G,h_vmem=50G,himem
+#$ -S /bin/sh
+#$ -pe mthread 20
+#$ -q mThC.q
+#$ -l mres=100G,h_data=5G,h_vmem=5G
 #$ -cwd
 #$ -j y
 #$ -N make
@@ -16,8 +17,8 @@
 #
 echo + `date` job $JOB_NAME started in $QUEUE with jobID=$JOB_ID on $HOSTNAME
 #
-module load /home/nittaj/modulefiles/miniconda
-source activate pacferns
-Rscript make.R
+module load /home/nittaj/modulefiles/udocker
+udocker run -v /data/genomics/nittaj/japan_ferns_biogeo:/home/japan_ferns_biogeo -w /home/japan_ferns_biogeo japan_ferns_biogeo Rscript make.R
+
 #
 echo = `date` job $JOB_NAME done
