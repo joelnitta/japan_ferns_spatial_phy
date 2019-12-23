@@ -1,5 +1,5 @@
 # Set vector of k-values to use for ecostructure
-k_vals <- 2:10
+k_vals <- 2:30
 
 # Define analysis plan
 plan <- drake_plan (
