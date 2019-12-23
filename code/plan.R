@@ -305,37 +305,37 @@ plan <- drake_plan (
   traits_nmds = vegan::metaMDS(trait_distance_matrix),
 
   # Plot species in NMDS trait space
-  traits_nmds_plot = make_trait_nmds_plot(traits_nmds, ppgi, taxon_id_map),
+  # traits_nmds_plot = make_trait_nmds_plot(traits_nmds, ppgi, taxon_id_map),
 
   # Write out NMDS plot
-  traits_nmds_plot_out = ggsave(
-    plot = traits_nmds_plot,
-    file = "results/traits_nmds_plot.pdf",
-    width = 10,
-    height = 6,
-    units = "in"),
+  # traits_nmds_plot_out = ggsave(
+  #   plot = traits_nmds_plot,
+  #   file = "results/traits_nmds_plot.pdf",
+  #   width = 10,
+  #   height = 6,
+  #   units = "in"),
 
   # Plot and write out traits dendrogram
-  traits_dendrogram = make_traits_dendrogram(trait_distance_matrix, taxon_id_map),
+  # traits_dendrogram = make_traits_dendrogram(trait_distance_matrix, taxon_id_map),
 
   ### Diversity by elevation + latitude scatter plots ###
-  pterido_lat_el_plot = compose_lat_el_plots(alpha_div_pteridos, "Pteridophytes") %>%
-    ggsave(
-      plot = .,
-      filename = "results/pterido_lat_el_plot.pdf",
-      height = 9, width = 7, units = "in"),
-
-  ferns_lat_el_plot = compose_lat_el_plots(alpha_div_ferns, "Ferns") %>%
-    ggsave(
-    plot = .,
-    filename = "results/ferns_lat_el_plot.pdf",
-    height = 9, width = 7, units = "in"),
-
-  ferns_ns_lat_el_plot = compose_lat_el_plots(alpha_div_ferns_ns, "Ferns_NS") %>%
-    ggsave(
-    plot = .,
-    filename = "results/ferns_ns_lat_el_plot.pdf",
-    height = 9, width = 7, units = "in"),
+  # pterido_lat_el_plot = compose_lat_el_plots(alpha_div_pteridos, "Pteridophytes") %>%
+  #   ggsave(
+  #     plot = .,
+  #     filename = "results/pterido_lat_el_plot.pdf",
+  #     height = 9, width = 7, units = "in"),
+  # 
+  # ferns_lat_el_plot = compose_lat_el_plots(alpha_div_ferns, "Ferns") %>%
+  #   ggsave(
+  #   plot = .,
+  #   filename = "results/ferns_lat_el_plot.pdf",
+  #   height = 9, width = 7, units = "in"),
+  # 
+  # ferns_ns_lat_el_plot = compose_lat_el_plots(alpha_div_ferns_ns, "Ferns_NS") %>%
+  #   ggsave(
+  #   plot = .,
+  #   filename = "results/ferns_ns_lat_el_plot.pdf",
+  #   height = 9, width = 7, units = "in"),
 
   # Ecostructure ----
 
