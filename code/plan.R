@@ -344,15 +344,29 @@ plan <- drake_plan (
   # Make input matrices for ecostructure
   comm_for_ecos_pteridos = make_ecos_matrix(comm_pteridos, all_cells),
   
-  comm_for_ecos_ferns = make_ecos_matrix(comm_ferns, all_cells),
+  # remove communities with zero richness (after filtering to ferns)
+  comm_ferns_filtered =
+    comm_ferns %>%
+    pivot_longer(-species, values_to = "abun", names_to = "site") %>%
+    group_by(site) %>%
+    filter(sum(abun) > 0) %>%
+    ungroup %>%
+    pivot_wider(names_from = site, values_from = abun),
+  
+  comm_for_ecos_ferns = make_ecos_matrix(comm_ferns_filtered, all_cells),
   
   # Make dispersion files
-  # Dispersion fields list
+  # - dispersion fields list
   dispersion_fields_ferns = pres_ab_to_disp(
-    comm_for_ecos_ferns
+    pres_ab_matrix = comm_for_ecos_ferns,
+    xmin = pull(occ_data_pteridos, longitude) %>% min %>% floor, 
+    xmax = pull(occ_data_pteridos, longitude) %>% max %>% ceiling,
+    ymin = pull(occ_data_pteridos, latitude) %>% min %>% floor, 
+    ymax = pull(occ_data_pteridos, latitude) %>% max %>% ceiling,
+    res = 0.5
   ),
   
-  # Dispersion fields matrix
+  # - dispersion fields matrix
   dispersion_fields_matrix_ferns = dsp_to_matrix2(
     dispersion_fields_ferns,
     drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
