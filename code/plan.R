@@ -1,5 +1,5 @@
 # Set vector of k-values to use for ecostructure
-k_vals <- 2:30
+k_vals <- 2:10
 
 # Define analysis plan
 plan <- drake_plan (
@@ -341,15 +341,35 @@ plan <- drake_plan (
 
   ### Regional analysis (species matrix) ###
 
-  # Make input matrix. Species and geographic motifs don't
-  # care about phylogeny, so use all pteridophytes together.
+  # Make input matrices for ecostructure
   comm_for_ecos_pteridos = make_ecos_matrix(comm_pteridos, all_cells),
+  
+  comm_for_ecos_ferns = make_ecos_matrix(comm_ferns, all_cells),
+  
+  # Make dispersion files
+  # Dispersion fields list
+  dispersion_fields_ferns = pres_ab_to_disp(
+    comm_for_ecos_ferns
+  ),
+  
+  # Dispersion fields matrix
+  dispersion_fields_matrix_ferns = dsp_to_matrix2(
+    dispersion_fields_ferns,
+    drop_zero = TRUE # drop all-zero columns, i.e., cells with no species
+  ),
 
   # Analyze motifs using ecostructure:
   # - species motifs
   species_motifs_pteridos = target(
     ecostructure::ecos_fit(
       comm_for_ecos_pteridos,
+      K = K, tol = 0.1, num_trials = 1),
+    transform = map(K = !!k_vals)
+  ),
+  
+  species_motifs_ferns = target(
+    ecostructure::ecos_fit(
+      comm_for_ecos_ferns,
       K = K, tol = 0.1, num_trials = 1),
     transform = map(K = !!k_vals)
   ),
@@ -361,6 +381,14 @@ plan <- drake_plan (
       K = K, tol = 0.1, num_trials = 1),
     transform = map(K = !!k_vals)
   ),
+  
+  # dispersion fields
+  geo_motifs_ferns = target(
+    ecostructure::ecos_fit(
+      dispersion_fields_matrix_ferns,
+      K = K, tol = 0.1, num_trials = 1),
+    transform = map(K = !!k_vals)
+  )
 
   # # Write out manuscript ----
   # ms = rmarkdown::render(
