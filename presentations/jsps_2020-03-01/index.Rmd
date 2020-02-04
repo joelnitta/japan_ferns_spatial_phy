@@ -1,0 +1,358 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["default-fonts", "default", "custom.css"]
+    lib_dir: libs
+    mathjax: default
+    seal: false
+    nature:
+      slideNumberFormat: "" # To turn off slide numbers
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: ["left", "middle", "inverse"]
+editor_options:
+  chunk_output_type: console
+---
+class: inverse, middle, title-slide, big-margin
+<!-- background-position: 50% 50%
+background-image: url(images/title_slide_background.svg)
+background-size: contain -->
+
+# 日本のシダ植物多様性の多次元解析
+<br>
+## 新田ジョエル^1^、海老原淳^2^
+
+^1^スミソニアン国立自然史博物館植物研究部<br>
+<span style = 'font-size: 80%;'>https://joelnitta.com</span>
+
+^2^国立科学博物館植物研究部
+
+日本植物分類学会第19回大会<br><span style = 'font-size: 80%;'>2020.03.01</span>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, include = TRUE, eval = TRUE, cache = TRUE, dev = "svg")
+```
+
+```{r load-packages, cache = FALSE}
+library(drake)
+library(knitr)
+library(patchwork)
+library(scales)
+library(scico)
+library(magrittr)
+library(broom)
+library(assertr)
+library(sf)
+library(tidyverse)
+```
+
+```{r load-data, cache = FALSE}
+# Set cache
+ja_fern_cache <- new_cache(here::here("ja_fern_cache"))
+
+source(here::here("code/functions.R"))
+
+# Load targets
+loadd(list = c(
+  "all_cells",
+  "alpha_div_ferns",
+  "occ_data_ferns",
+  "ja_bioregions_ferns",
+  "biodiv_results_pteridos",
+  "species_motifs_ferns_6L",
+  "percent_sex_dip_ferns"), 
+  cache = ja_fern_cache)
+
+```
+
+---
+class: big-margin
+
+## Biodiversity is in danger from climate change
+
+---
+class: big-margin
+
+## We must understand the distribution of biodiversity to save it
+
+- Most analyses of BD only include richness
+- But BD is more complicated: evo history also important
+
+---
+class: big-margin
+
+## Japan is an ideal site to study fern BD
+
+- Extremely well sampled
+
+---
+class: big-margin
+
+## Goals
+
+- Map biodiversity (species richness, PD, endemism)
+- Identify biogeographical realms
+- Understand drivers of biogeo structure
+
+---
+class: big-margin
+
+## Data
+
+- Occurrence data of Japanese fern specimens
+- Phylogenetic tree (*rbcL*)
+- Morphological traits
+- Climate data
+
+---
+
+## Species richness peaks on Yakushima Isl.
+
+```{r richness-plot, out.width = "120%", fig.asp = 0.7}
+alpha_div_ferns <-
+  alpha_div_ferns %>%
+  filter(latitude > 21) 
+
+alpha_div_ferns_binned <-
+  alpha_div_ferns %>%
+  mutate(
+    latitude = cut_width(latitude, width = 0.1, closed = "left") %>%
+      str_split(",") %>%
+      map_chr(1) %>%
+      parse_number) %>%
+  group_by(latitude) %>%
+  summarize_at(
+    vars(richness, phy_mpd_obs_z, func_mpd_obs_z), mean, na.rm = TRUE
+  )
+
+# Fern richness
+a <- make_diversity_map(
+  div_data = alpha_div_ferns, 
+  occ_data = occ_data_ferns, 
+  div_metric = "richness", 
+  metric_title = "No. species ",
+  label = "Richness") +
+  scale_fill_scico(palette = "bamako", na.value="grey") +
+  scale_y_continuous(
+    labels = scales::label_number(suffix = "\u00b0N", accuracy = 1),
+    limits = c(24, 46)) +
+  theme(
+    plot.subtitle = element_blank())
+
+b <-
+  ggplot(alpha_div_ferns_binned, aes(y = latitude, x = richness)) +
+  geom_path() +
+  labs(
+    x = "No. species"
+  ) + 
+  ylim(24, 46) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
+    panel.grid.minor = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+a + b + plot_layout(widths = c(3,1))
+
+```
+
+---
+
+## Phylogenetic diversity is high in N and S
+
+```{r mpd-plot, out.width = "120%", fig.asp = 0.7}
+
+# pterido_phy_mpd
+a <- make_diversity_map(
+  div_data = alpha_div_ferns, 
+  occ_data = occ_data_ferns, 
+  div_metric = "phy_mpd_obs_z", 
+  metric_title = "MPD",
+  label = "Mean Phylogenetic Distance") +
+  scale_fill_scico(
+    palette = "vik", 
+    na.value="dark grey",
+    limits = c(
+      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3), 
+      get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3)
+    )) +
+  scale_y_continuous(
+    labels = scales::label_number(suffix = "\u00b0N", accuracy = 1),
+    limits = c(24, 46)) +
+  theme(
+    plot.subtitle = element_blank())
+
+b <- ggplot(
+  alpha_div_ferns_binned, 
+  aes(y = latitude, x = phy_mpd_obs_z)) +
+  geom_path() +
+  scale_y_continuous(
+    labels = scales::label_number(suffix = "\u00b0N", accuracy = 1),
+    position = "right") +
+  labs(
+    subtitle = "",
+    x = "MPD"
+  ) + 
+  annotate(
+    "segment", 
+    x = 0, xend = 0, 
+    y = -Inf, yend = Inf, 
+    linetype = 2) + 
+  ylim(24, 46) +
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
+    panel.grid.minor = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+a + b + plot_layout(widths = c(3,1))
+
+```
+
+---
+
+## Highest bioregional diversity in S islands
+
+```{r mapequation-prep, include = FALSE}
+# Convert all_cells dataframe to sf object
+all_cells_sf <-
+  purrr::map2(all_cells$longitude, all_cells$latitude, ~st_point(c(.x, .y))) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(all_cells, .)
+
+# Join secondary grid cells with bioregions
+all_cells_regions <-sf::st_join(
+  all_cells_sf,
+  ja_bioregions_ferns) %>% 
+  select(secondary_grid_code, longitude, latitude, bioregion) %>% 
+  as_tibble %>%
+  mutate(bioregion = as.factor(bioregion)) %>%
+  filter(secondary_grid_code %in% occ_data_ferns$secondary_grid_code)
+```
+
+```{r mapequation-plot, out.width = "120%", fig.asp = 0.7}
+ggplot(all_cells_regions, aes(x = longitude, y = latitude, fill = bioregion)) +
+  geom_tile() +
+  coord_quickmap(
+    xlim = c(pull(occ_data_ferns, longitude) %>% min %>% floor,
+             pull(occ_data_ferns, longitude) %>% max %>% ceiling),
+    ylim = c(pull(occ_data_ferns, latitude) %>% min %>% floor,
+             pull(occ_data_ferns, latitude) %>% max %>% ceiling)
+  ) +
+  scale_fill_brewer(palette = "Set1") +
+    scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+    scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  labs(fill = "Bioregion") +
+  theme(
+    panel.background = element_blank(),
+      panel.grid.major = element_line(size = 0.1, color = "dark grey"),
+      panel.grid.minor = element_blank(),
+      axis.title = element_blank(),
+    axis.ticks = element_blank()
+  )
+  
+```
+
+---
+
+## Honshu has significant ecological structure
+
+```{r ecostructure}
+# For easy manipulation of plot size
+tweak = 0.5
+
+# Output pie plot without basemap
+ecos_plot_pie2(
+  omega =  species_motifs_ferns_6L$omega,
+  image_width = 6000*tweak,
+  image_height = 4800*tweak,
+  radius = 0.05,
+  no_map = TRUE,
+  blank_bg = "white",
+  long_lim = c(122, 146),
+  lat_lim = c(24, 46),
+  path = here::here("presentations/jsps_2020-03-01/images/species_motifs_ferns_6L.png")
+)
+
+# crop image, save as species_motifs_ferns_6L_cropped.png
+```
+
+.center[<img src="images/species_motifs_ferns_6L_cropped.png" alt="drawing" height="600">]
+
+---
+
+## S islands have high rates of endemism
+
+```{r canape-plot, out.width = "120%", fig.asp = 0.7}
+ggplot(biodiv_results_pteridos, aes(x = longitude, y = latitude, fill = canape)) +
+  geom_tile() +
+  coord_quickmap(
+    xlim = c(pull(occ_data_ferns, longitude) %>% min %>% floor,
+             pull(occ_data_ferns, longitude) %>% max %>% ceiling),
+    ylim = c(pull(occ_data_ferns, latitude) %>% min %>% floor,
+             pull(occ_data_ferns, latitude) %>% max %>% ceiling)
+  ) +
+  scale_fill_brewer(palette = "Set1", na.value = "grey80") +
+    scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+    scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  labs(fill = "Endemism") +
+  theme(
+    panel.background = element_blank(),
+      panel.grid.major = element_line(size = 0.1, color = "dark grey"),
+      panel.grid.minor = element_blank(),
+      axis.title = element_blank(),
+    axis.ticks = element_blank()
+  )
+```
+
+---
+
+## Neoendemic areas have more sexual diploids
+  
+```{r canape-sex, out.width = "120%", fig.asp = 0.7}
+
+percent_sex_dip_ferns_round <-
+  percent_sex_dip_ferns %>% 
+  mutate(latitude = round(latitude, 3)) %>%
+  mutate(longitude = round(longitude, 3))
+
+canape_sex_mode <-
+  biodiv_results_pteridos %>%
+  mutate(latitude = round(latitude, 3)) %>%
+  mutate(longitude = round(longitude, 3)) %>%
+  inner_join(
+    percent_sex_dip_ferns_round,
+    by = c("latitude", "longitude")
+  ) %>%
+  assert(is_uniq, secondary_grid_code) %>%
+  filter(!is.na(canape))
+
+
+# Run analysis of variance (AOV) on
+# latitudinal breadth by reproductive mode.
+canape_by_repro_model = aov(
+  percent_sex_dip ~ canape,
+  data = canape_sex_mode)
+
+canape_by_repro_model_summary = tidy(canape_by_repro_model)
+
+# AOV of latidudinal breadth by reproductive mode
+# showed a significant difference, so
+# run Tukey HSD test on results.
+canape_by_repro_tukey = TukeyHSD(canape_by_repro_model) %>% tidy
+
+ggplot(canape_sex_mode, aes(x = canape, y = percent_sex_dip)) +
+  geom_jitter() +
+  geom_boxplot() +
+  coord_flip()
+
+```
