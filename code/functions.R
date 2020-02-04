@@ -1301,6 +1301,97 @@ clean_ses <- function (
 
 }
 
+# Biodiverse ----
+
+# Reformat community matrix (columns as sites and rows as species) to
+# format for biodiverse (rows as sites, columns as species, with lat/long)
+make_matrix_for_biodiverse <- function (comm, cell_xy) {
+  
+  comm %>%
+    pivot_longer(-species, names_to = "secondary_grid_code", values_to = "count") %>%
+    pivot_wider(names_from = species, values_from = "count") %>%
+    left_join(cell_xy, by = "secondary_grid_code") %>%
+    select(secondary_grid_code, longitude, latitude, everything())
+  
+}
+
+#' Rename species in community matrix from number codes to species names
+#'
+#' @param comm Community matrix
+#' @param taxon_id_map Tibble mapping species names to number codes
+#'
+#' @return Dataframe
+#' 
+rename_comm <- function (comm, taxon_id_map) {
+  comm %>%
+    left_join(taxon_id_map, by = c(species = "taxon_id")) %>%
+    assert(not_na, taxon) %>%
+    select(-species) %>%
+    select(species = taxon, everything())
+}
+
+#' Rename tips in tree from number codes to species names
+#'
+#' @param tree Phylogenetic tree with tips as number codes
+#' @param taxon_id_map Tibble mapping species names to number codes
+#'
+#' @return Phylogenetic tree
+rename_tree <- function (tree, taxon_id_map) {
+  
+  new_tip_labs <- tree$tip.label %>%
+    tibble(taxon_id = .) %>%
+    left_join(taxon_id_map, by = "taxon_id") %>%
+    assert(not_na, taxon)
+  
+  tree$tip.label <- new_tip_labs$taxon
+  
+  tree
+  
+}
+
+#' Classify phylogenetic endemism (CANAPE)
+#'
+#' Verbal description from 
+#' http://biodiverse-analysis-software.blogspot.com/2014/11/canape-categorical-analysis-of-palaeo.html
+#'
+#' (here, PE_orig = PE_WE_P, PE_alt = PHYLO_RPE_NULL2, and RPE = PHYLO_RPE2)
+#'
+#' 1)    If either PE_orig or PE_alt are significantly high then we look for palaeo or neo endemism
+#'   a)    If RPE is significantly high then we have palaeo-endemism 
+#'         (PE_orig is consistently higher than PE_alt across the random realisations)
+#'   b)    Else if RPE is significantly low then we have neo-endemism 
+#'         (PE_orig is consistently lower than PE_alt across the random realisations)
+#'     c)    Else we have mixed age endemism in which case
+#'        i)    If both PE_orig and PE_alt are highly significant (p<0.01) then we 
+#'              have super endemism (high in both palaeo and neo)
+#'        ii)   Else we have mixed (some mixture of palaeo, neo and non endemic)
+#' 2)    Else if neither PE_orig or PE_alt are significantly high then we have a non-endemic cell
+#'
+#' Also see base-R version at
+#' https://github.com/NunzioKnerr/biodiverse_pipeline/blob/master/R_release/plot_CANAPE_only.R
+#'
+#' @param biodiv_results_raw Dataframe with columns `PE_WE_P`, `PHYLO_RPE_NULL2`,
+#' and `PHYLO_RPE2`: results of running randomization analysis on "Phylogenetic Endemism" and
+#' "Relative Phylogenetic Endemism, type 2" in Biodiverse
+#'
+#' @return Dataframe with endemism type categorized as column "canape"
+#' 
+classify_endemism <- function (biodiv_results_raw) {
+  biodiv_results_raw %>%
+    mutate(
+      PE_WE_P = replace_na(PE_WE_P, 0),
+      PHYLO_RPE_NULL2 = replace_na(PHYLO_RPE_NULL2, 0),
+      PHYLO_RPE2 = replace_na(PHYLO_RPE2, 0.5),
+      canape = case_when(
+        PE_WE_P <= 0.95 & PHYLO_RPE_NULL2 <= 0.95 ~ NA_character_,
+        PHYLO_RPE2 > 0.975 ~ "palaeo",
+        PHYLO_RPE2 < 0.025 ~ "neo",
+        PE_WE_P > 0.99 & PHYLO_RPE_NULL2 > 0.99 ~"super",
+        TRUE ~ "mixed"
+      ) %>% as.factor(.)
+    )
+}
+
 # Geospatial ----
 
 #' Exclude points in Japan from GBIF data
@@ -1571,7 +1662,9 @@ make_ecos_matrix <- function (comm_pteridos, all_cells) {
 # Slightly tweaked version of ecos_plot_pie that takes sf object as background map
 # instead of reading in shape file.
 ecos_plot_pie2 <- function (
-  omega = NULL, coords = NULL, bgmap_path = NULL, adjust = FALSE,
+  omega = NULL, coords = NULL, bgmap_path = NULL, 
+  no_map = FALSE, blank_bg = NULL,
+  adjust = FALSE,
   thresh = 0.7, long_lim = c(-180, 180), lat_lim = c(-60, 90),
   coastline_lwd = 10, intensity = 1, radius = 0.5, color = c("dodgerblue2",
                                                              "#E31A1C", "green4", "#6A3D9A", "#FF7F00", "black", "gold1",
@@ -1602,20 +1695,20 @@ ecos_plot_pie2 <- function (
                               init.angle = 90, density = NULL, angle = 45, border = NULL,
                               lty = NULL, label.dist = 1.1)
   pie_control <- modifyList(pie_control_default, pie_control)
-  if (is.null(bgmap_path)) {
+  if (is.null(bgmap_path) & no_map == FALSE) {
     message("reading background map shapefile from inst/extdata/ne_110m_coastline \n            folder")
     GlobalCoast <- sf::st_read(system.file("extdata", "ne_110m_land",
                                            "ne_110m_land.shp", package = "ecostructure"), quiet = T)
   }
-  else {
+  if (!is.null(bgmap_path) & no_map == FALSE) {
     GlobalCoast <- bgmap_path
+    glob <- c(xmin = long_lim[1], xmax = long_lim[2], ymin = lat_lim[1],
+              ymax = lat_lim[2])
+    glob <- sf::st_bbox(glob)
+    glob <- structure(glob, crs = sf::st_crs(GlobalCoast))
+    GlobalCoast <- suppressWarnings(suppressMessages(sf::st_intersection(GlobalCoast,
+                                                                         sf::st_as_sfc(glob))))
   }
-  glob <- c(xmin = long_lim[1], xmax = long_lim[2], ymin = lat_lim[1],
-            ymax = lat_lim[2])
-  glob <- sf::st_bbox(glob)
-  glob <- structure(glob, crs = sf::st_crs(GlobalCoast))
-  GlobalCoast <- suppressWarnings(suppressMessages(sf::st_intersection(GlobalCoast,
-                                                                       sf::st_as_sfc(glob))))
   if (adjust) {
     idx <- which(omega[, 1] > thresh)
     omega <- omega[-idx, ]
@@ -1636,8 +1729,12 @@ ecos_plot_pie2 <- function (
   else {
     stop("the output image may either be of  tiff, png or pdf extension")
   }
-  plot(sf::st_geometry(GlobalCoast), axes = T, main = "", reset = F,
-       xaxs = "i", yaxs = "i", lwd = coastline_lwd)
+  if (isTRUE(no_map)) {
+    if(is.null(blank_bg)) blank_bg <- "lightblue"
+    mapplots::basemap(xlim = long_lim, ylim = lat_lim, bg = blank_bg)
+  } else {
+    plot(sf::st_geometry(GlobalCoast), axes = T, main = "", reset = F,
+         xaxs = "i", yaxs = "i", lwd = coastline_lwd) }
   par(lwd = 0.01)
   invisible(lapply(1:dim(omega)[1], function(r) do.call(mapplots::add.pie,
                                                         append(list(z = as.integer(100 * omega[r, ]), x = coords[r,
@@ -1645,6 +1742,8 @@ ecos_plot_pie2 <- function (
                                                                     col = sapply(color, scales::alpha, intensity)), pie_control))))
   invisible(dev.off())
 }
+
+
 
 #' Convert a presence/absence matrix to a list of
 #' dispersion fields.

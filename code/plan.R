@@ -19,7 +19,7 @@ plan <- drake_plan (
     produces_5 = file_out("data_raw/ebihara_2019/2_grid_cells_all.csv"),
     produces_6 = file_out("data_raw/ebihara_2019/ppgi_taxonomy.csv")
   ),
-
+  
   # Pteridophyte Phylogeny Group I (PPGI) taxonomy,
   # modified slightly for ferns of Japan
   ppgi = read_csv(file_in("data_raw/ebihara_2019/ppgi_taxonomy.csv")) %>%
@@ -52,14 +52,20 @@ plan <- drake_plan (
   # Combine into list of 10km grid cells with environment
   all_cells = left_join(all_cells_raw, ja_env_raw, by = "secondary_grid_code"),
 
-  # Occurrence data, with multiple rows per species.
-  # Occurrences are presences in a set of 1km2 grid
+  # - Occurrence data, with multiple rows per species.
+  # Occurrences are presences in a set of 10 x 10 km2 grid
   # cells across Japan, not actual occurrence points of specimens.
   occ_data_raw = read_csv(
     file_in("data_raw/ebihara_2019/ESM2.csv"),
     col_types = "cccnnccc"
   ),
-
+  
+  # - Raw occurrence data of pteridophytes in Japan.
+  # Occurrences are actual point data (one specimen per lat/long)
+  occ_point_data_raw = readr::read_csv(
+    file_in("data_raw/ja_fern_occs_raw.csv"),
+    col_types = "lcnncccccc"),
+  
   # - occurrence data including ferns and lycophytes
   occ_data_pteridos = clean_names(occ_data_raw) %>%
     add_taxonomy(ppgi) %>%
@@ -402,7 +408,75 @@ plan <- drake_plan (
       dispersion_fields_matrix_ferns,
       K = K, tol = 0.1, num_trials = 1),
     transform = map(K = !!k_vals)
-  )
+  ),
+  
+  # Infomap Bioregions ----
+  
+  # Prep data for Infomap Bioregions 
+  # Filter raw point occurrence data to ferns
+  occ_point_data_ferns =
+    occ_point_data_raw %>%
+    select(taxon_name = species, decimalLongitude, decimalLatitude) %>%
+    add_taxonomy(ppgi) %>%
+    assert(not_na, class) %>%
+    filter(class == "Polypodiopsida"),
+  
+  # Write data out for Infomap Bioregions
+  occ_point_data_ferns_out = readr::write_csv(
+    occ_point_data_ferns, "data/ja_fern_occ.csv"),
+  
+  # Run Infomap Bioregions via online server
+  #
+  # https://bioregions.mapequation.org/
+  # 
+  # Analysis settings:
+  # max cell size = 1
+  # min cell size = 0.5
+  # max cell capacity = 100
+  # min cell capacity = 10
+  # patch sparse grid cells = yes
+  # number of trials = 10
+  # number of cluster cost = 1
+  #
+  # Export resulting geojson file to "data" as "ja_fern_occ_bioregions.geojson"
+  
+  # Read in results of running Infomap Bioregions externally
+  ja_bioregions_ferns = sf::st_read(file_in("data/ja_fern_occ_bioregions.geojson")) %>%
+    # Join geometries within each bioregion
+    mutate(geometry = sf::st_union(geometry, by_feature = TRUE)),
+  
+  # Biodiverse ----
+  
+  # Prep data for Biodiverse
+  comm_ferns_renamed = rename_comm(comm_ferns, taxon_id_map),
+  
+  matrix_for_biodiverse_ferns = make_matrix_for_biodiverse(
+    comm_ferns_renamed, all_cells_raw),
+  
+  matrix_for_biodiverse_ferns_out = readr::write_csv(
+    matrix_for_biodiverse_ferns, 
+    file_out(here::here("data/matrix_for_biodiverse_ferns.csv"))
+    ),
+  
+  tree_for_biodiverse_ferns = match_comm_and_tree(
+    comm_ferns, japan_pterido_tree, "tree") %>%
+    rename_tree(taxon_id_map),
+  
+  tree_for_biodiverse_ferns_out = ape::write.tree(
+    tree_for_biodiverse_ferns,
+    file_out(here::here("data/tree_for_biodiverse_ferns.tre"))
+  ),
+  
+  # Run CANAPE in Biodiverse as described on this blog post:
+  # http://biodiverse-analysis-software.blogspot.com/2014/11/do-it-yourself-canape.html
+  # Settings:
+  # Randomization iterations: 999
+  
+  # Read in results of running Biodiverse externally
+  biodiv_results_pteridos = readr::read_csv(
+    file_in("data/ja_pteridophytes_biodiverse_rand_p_spatial_results.csv")) %>%
+    classify_endemism %>%
+    rename(longitude = Axis_0, latitude = Axis_1)
 
   # # Write out manuscript ----
   # ms = rmarkdown::render(
