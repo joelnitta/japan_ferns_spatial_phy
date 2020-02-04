@@ -1776,9 +1776,10 @@ dsp_to_matrix2 <- function (dispersion.field, drop_zero = FALSE) {
   }
   colnames(map_data) <- lat_long_names
   
-  # Optionally drop columns that are all zeros
+  # Optionally drop columns and rows that are all zeros
   if (isTRUE(drop_zero)) {
     map_data <- map_data[,colSums(map_data) != 0]
+    map_data <- map_data[rowSums(map_data) != 0,]
   }
   
   return(map_data)
