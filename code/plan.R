@@ -476,6 +476,11 @@ plan <- drake_plan (
   biodiv_results_pteridos = readr::read_csv(
     file_in("data/ja_pteridophytes_biodiverse_rand_p_spatial_results.csv")) %>%
     classify_endemism %>%
+    rename(longitude = Axis_0, latitude = Axis_1),
+  
+  biodiv_results_ferns = readr::read_csv(
+    file_in("data/ja_ferns_biodiverse_rand_p_spatial_results.csv")) %>%
+    classify_endemism %>%
     rename(longitude = Axis_0, latitude = Axis_1)
 
   # # Write out manuscript ----
