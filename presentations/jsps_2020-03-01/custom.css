@@ -92,6 +92,17 @@ font-color: black;}
   text-align: left;
 }
 
+.pull-left-wide {
+  width: 75%;
+  float: left;
+}
+
+.pull-right-narrow {
+  width: 25%;
+  float: right;
+  text-align: left;
+}
+
 .acme { font-family: 'Acme'; }
 
 .grey { color: grey; }

@@ -15,18 +15,19 @@ editor_options:
   chunk_output_type: console
 ---
 class: inverse, middle, title-slide, big-margin
-<!-- background-position: 50% 50%
-background-image: url(images/title_slide_background.svg)
-background-size: contain -->
+background-color: #000000
+background-position: 50% 50%
+background-image: url(images/title_background.png)
+background-size: contain
 
-# 日本のシダ植物多様性の多次元解析
+# 日本のシダ植物多様性の<br>多次元解析
 <br>
-## 新田ジョエル^1^、海老原淳^2^
+## 新田ジョエル<sup>1</sup>、海老原淳<sup>2</sup>
 
-^1^スミソニアン国立自然史博物館植物研究部<br>
+<sup>1</sup>スミソニアン国立自然史博物館・植物研究部<br>
 <span style = 'font-size: 80%;'>https://joelnitta.com</span>
 
-^2^国立科学博物館植物研究部
+<sup>2</sup>国立科学博物館・植物研究部
 
 日本植物分類学会第19回大会<br><span style = 'font-size: 80%;'>2020.03.01</span>
 
@@ -35,6 +36,8 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, include = 
 ```
 
 ```{r load-packages, cache = FALSE}
+library(magick)
+library(gt)
 library(drake)
 library(knitr)
 library(patchwork)
@@ -55,11 +58,12 @@ source(here::here("code/functions.R"))
 
 # Load targets
 loadd(list = c(
+  "taxon_id_map",
   "all_cells",
   "alpha_div_ferns",
   "occ_data_ferns",
   "ja_bioregions_ferns",
-  "biodiv_results_pteridos",
+  "biodiv_results_ferns",
   "species_motifs_ferns_6L",
   "percent_sex_dip_ferns"), 
   cache = ja_fern_cache)
@@ -133,7 +137,7 @@ a <- make_diversity_map(
   div_metric = "richness", 
   metric_title = "No. species ",
   label = "Richness") +
-  scale_fill_scico(palette = "bamako", na.value="grey") +
+  scale_fill_viridis_c() +
   scale_y_continuous(
     labels = scales::label_number(suffix = "\u00b0N", accuracy = 1),
     limits = c(24, 46)) +
@@ -158,6 +162,56 @@ b <-
   )
 
 a + b + plot_layout(widths = c(3,1))
+
+```
+
+```{r title-slide-image}
+a <- make_diversity_map(
+  div_data = alpha_div_ferns, 
+  occ_data = occ_data_ferns, 
+  div_metric = "richness", 
+  metric_title = "No. species ",
+  label = "Richness") +
+  scale_fill_viridis_c() +
+  theme_void() +
+  theme(
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    legend.position = "none", 
+     panel.background = element_rect(fill = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+  )
+
+ggsave(plot = a, here::here("presentations/jsps_2020-03-01/images/title_slide_part_a.png"))
+
+b <- make_diversity_map(
+  div_data = alpha_div_ferns, 
+  occ_data = occ_data_ferns, 
+  div_metric = "phy_mpd_obs_z", 
+  metric_title = "MPD",
+  label = "Mean Phylogenetic Distance") +
+  scale_fill_scico(
+    palette = "vik", 
+    na.value="dark grey",
+    limits = c(
+      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3), 
+      get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3)
+    )) +
+  scale_y_continuous(
+    labels = scales::label_number(suffix = "\u00b0N", accuracy = 1),
+    limits = c(24, 46)) +
+  theme_void() +
+  theme(
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    legend.position = "none", 
+     panel.background = element_rect(fill = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+  )
+
+ggsave(plot = b, here::here("presentations/jsps_2020-03-01/images/title_slide_part_b.png"))
 
 ```
 
@@ -220,80 +274,13 @@ a + b + plot_layout(widths = c(3,1))
 
 ---
 
-## Highest bioregional diversity in S islands
-
-```{r mapequation-prep, include = FALSE}
-# Convert all_cells dataframe to sf object
-all_cells_sf <-
-  purrr::map2(all_cells$longitude, all_cells$latitude, ~st_point(c(.x, .y))) %>%
-  st_sfc(crs = 4326) %>%
-  st_sf(all_cells, .)
-
-# Join secondary grid cells with bioregions
-all_cells_regions <-sf::st_join(
-  all_cells_sf,
-  ja_bioregions_ferns) %>% 
-  select(secondary_grid_code, longitude, latitude, bioregion) %>% 
-  as_tibble %>%
-  mutate(bioregion = as.factor(bioregion)) %>%
-  filter(secondary_grid_code %in% occ_data_ferns$secondary_grid_code)
-```
-
-```{r mapequation-plot, out.width = "120%", fig.asp = 0.7}
-ggplot(all_cells_regions, aes(x = longitude, y = latitude, fill = bioregion)) +
-  geom_tile() +
-  coord_quickmap(
-    xlim = c(pull(occ_data_ferns, longitude) %>% min %>% floor,
-             pull(occ_data_ferns, longitude) %>% max %>% ceiling),
-    ylim = c(pull(occ_data_ferns, latitude) %>% min %>% floor,
-             pull(occ_data_ferns, latitude) %>% max %>% ceiling)
-  ) +
-  scale_fill_brewer(palette = "Set1") +
-    scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-    scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  labs(fill = "Bioregion") +
-  theme(
-    panel.background = element_blank(),
-      panel.grid.major = element_line(size = 0.1, color = "dark grey"),
-      panel.grid.minor = element_blank(),
-      axis.title = element_blank(),
-    axis.ticks = element_blank()
-  )
-  
-```
-
----
-
-## Honshu has significant ecological structure
-
-```{r ecostructure}
-# For easy manipulation of plot size
-tweak = 0.5
-
-# Output pie plot without basemap
-ecos_plot_pie2(
-  omega =  species_motifs_ferns_6L$omega,
-  image_width = 6000*tweak,
-  image_height = 4800*tweak,
-  radius = 0.05,
-  no_map = TRUE,
-  blank_bg = "white",
-  long_lim = c(122, 146),
-  lat_lim = c(24, 46),
-  path = here::here("presentations/jsps_2020-03-01/images/species_motifs_ferns_6L.png")
-)
-
-# crop image, save as species_motifs_ferns_6L_cropped.png
-```
-
-.center[<img src="images/species_motifs_ferns_6L_cropped.png" alt="drawing" height="600">]
-
----
-
 ## S islands have high rates of endemism
 
 ```{r canape-plot, out.width = "120%", fig.asp = 0.7}
-ggplot(biodiv_results_pteridos, aes(x = longitude, y = latitude, fill = canape)) +
+canape_cols <- RColorBrewer::brewer.pal(4, "Dark2") %>%
+  set_names(c("mixed", "neo", "palaeo", "super"))
+
+ggplot(biodiv_results_ferns, aes(x = longitude, y = latitude, fill = canape)) +
   geom_tile() +
   coord_quickmap(
     xlim = c(pull(occ_data_ferns, longitude) %>% min %>% floor,
@@ -301,7 +288,7 @@ ggplot(biodiv_results_pteridos, aes(x = longitude, y = latitude, fill = canape))
     ylim = c(pull(occ_data_ferns, latitude) %>% min %>% floor,
              pull(occ_data_ferns, latitude) %>% max %>% ceiling)
   ) +
-  scale_fill_brewer(palette = "Set1", na.value = "grey80") +
+  scale_fill_manual(values = canape_cols, na.value = "grey80") +
     scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
     scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   labs(fill = "Endemism") +
@@ -317,8 +304,11 @@ ggplot(biodiv_results_pteridos, aes(x = longitude, y = latitude, fill = canape))
 ---
 
 ## Neoendemic areas have more sexual diploids
-  
-```{r canape-sex, out.width = "120%", fig.asp = 0.7}
+
+<br>
+
+.center[
+```{r canape-sex, fig.asp = 0.7}
 
 percent_sex_dip_ferns_round <-
   percent_sex_dip_ferns %>% 
@@ -326,7 +316,7 @@ percent_sex_dip_ferns_round <-
   mutate(longitude = round(longitude, 3))
 
 canape_sex_mode <-
-  biodiv_results_pteridos %>%
+  biodiv_results_ferns %>%
   mutate(latitude = round(latitude, 3)) %>%
   mutate(longitude = round(longitude, 3)) %>%
   inner_join(
@@ -335,7 +325,6 @@ canape_sex_mode <-
   ) %>%
   assert(is_uniq, secondary_grid_code) %>%
   filter(!is.na(canape))
-
 
 # Run analysis of variance (AOV) on
 # latitudinal breadth by reproductive mode.
@@ -350,9 +339,222 @@ canape_by_repro_model_summary = tidy(canape_by_repro_model)
 # run Tukey HSD test on results.
 canape_by_repro_tukey = TukeyHSD(canape_by_repro_model) %>% tidy
 
-ggplot(canape_sex_mode, aes(x = canape, y = percent_sex_dip)) +
-  geom_jitter() +
-  geom_boxplot() +
-  coord_flip()
+canape_sex_mode %>%
+  group_by(canape) %>%
+  summarize(
+    mean_sex_dip = mean(percent_sex_dip, na.rm = TRUE),
+    sd_sex_dip = sd(percent_sex_dip, na.rm = TRUE)
+  ) %>%
+  mutate(
+    upper = mean_sex_dip + sd_sex_dip,
+    lower = mean_sex_dip - sd_sex_dip
+  ) %>%
+  mutate(canape = fct_reorder(canape, mean_sex_dip)) %>%
+  ggplot(aes(x = canape, y = mean_sex_dip, fill = canape)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(values = canape_cols, na.value = "grey80", guide = FALSE) +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.25) +
+  labs(
+    x = "Type of endemicity",
+    y = "% sexual diploids"
+  ) +
+  jntools::standard_theme()
 
 ```
+]
+
+---
+class: inverse, middle
+background-color: #000000
+
+## Ecological structure of Japanese ferns, *K* = 6
+
+```{r ecos-map-prep}
+# Write out ecostructure plots using modified version of ecos_plot_pie(),
+# then crop them to the right size.
+# (ggscatterpie is too slow, can't map aesthetics)
+
+# Set a base tweaking factor for easy manipulation of plot size
+tweak = 0.5
+
+# Use color brewer "Set1" for the 6 motifs (k=6)
+ecos_cols <- RColorBrewer::brewer.pal(6, "Set1")
+
+# Define a function to dim all other colors (using alpha)
+# besides the focus color
+apply_focus <- function (cols, focus, alpha = 0.15) {
+  new_cols <- scales::alpha(cols, alpha)
+  new_cols[[focus]] <- cols[[focus]]
+  new_cols
+}
+
+# Make list of colors to use for writing out plots
+cols_list <- purrr::map(1:6, ~apply_focus(ecos_cols, .)) %>%
+  c(list(ecos_cols), .) %>%
+  set_names(c("all", paste0("focus_", 1:6)))
+
+# Loop over outputting pie plot without basemap
+purrr::walk2(
+  cols_list,
+  names(cols_list),
+  ~ecos_plot_pie2(
+    omega =  species_motifs_ferns_6L$omega,
+    color = .x,
+    image_width = 6000*tweak,
+    image_height = 4800*tweak,
+    radius = 0.05,
+    no_map = TRUE,
+    blank_bg = "black",
+    long_lim = c(122, 146),
+    lat_lim = c(24, 46),
+    path = here::here(
+      glue::glue("presentations/jsps_2020-03-01/images/species_motifs_ferns_{.y}.png")
+    )
+  )
+)
+
+# Define a function to crop ecostructure map plot
+crop_ecos_plot <- function (image_path) {
+  
+  image_read(image_path) %>%
+    # Crops to 2410x2410, starting 525 to the right and 150 down from UL corner
+    image_crop("2140x2140+525+150") %>%
+    image_write(
+      path = image_path %>% 
+        fs::path_ext_remove() %>%
+        paste0("_crop.png")
+    )
+}
+
+# Loop over plots and crop them
+here::here(glue::glue("presentations/jsps_2020-03-01/images/species_motifs_ferns_{names(cols_list)}.png")) %>%
+  walk(crop_ecos_plot)
+```
+
+```{r ecos-species-prep}
+# Make overall dataframe of species contributions to motifs based on theta
+species_ranking <-
+species_motifs_ferns_6L$theta %>%
+  as.data.frame %>%
+  rownames_to_column("taxon_id") %>%
+  as_tibble %>%
+  pivot_longer(-taxon_id, names_to = "motif", values_to = "score") %>%
+  left_join(taxon_id_map, by = "taxon_id") %>% 
+  select(motif, taxon, score) %>%
+  mutate(taxon = str_replace_all(taxon, "_", " ")) %>%
+  mutate(score = round(score, 2))
+
+# Define function for making species ranking table
+make_species_ranking_table <- function (df, motif_select, slice_n = 15) {
+  
+  df %>%
+  filter(motif == motif_select) %>%
+  arrange(desc(score), taxon) %>% 
+  slice(1:slice_n) %>%
+  select(taxon, score) %>%
+  gt() %>%
+  tab_options(
+    row.striping.include_table_body = FALSE,
+    row.striping.include_stub = FALSE,
+    table.background.color = "#000000",
+    column_labels.background.color = "#000000") %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#000000"),
+      cell_text(color = "white", size = "medium")
+      ),
+    locations = cells_column_labels(columns = everything())
+    ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#000000"),
+      cell_text(color = "white", size = "small")
+      ),
+    locations = cells_data(
+      columns = everything())
+  ) %>%
+  tab_style(
+    style = list(
+      cell_text(style = "italic")
+      ),
+    locations = cells_data(
+      columns = vars(taxon))
+  )
+}
+
+```
+
+.center[<img src="images/species_motifs_ferns_all_crop.png" alt="drawing" height = "600">]
+
+---
+class: inverse, middle
+background-color: #000000
+
+.pull-left-wide[<img src="images/species_motifs_ferns_focus_2_crop.png" alt="drawing">]
+
+.pull-right-narrow[
+```{r ecos-ranking-2}
+make_species_ranking_table(species_ranking, 2)
+```
+]
+
+---
+class: inverse, middle
+background-color: #000000
+
+.pull-left-wide[<img src="images/species_motifs_ferns_focus_3_crop.png" alt="drawing">]
+
+.pull-right-narrow[
+```{r ecos-ranking-3}
+make_species_ranking_table(species_ranking, 3)
+```
+]
+
+---
+class: inverse, middle
+background-color: #000000
+
+.pull-left-wide[<img src="images/species_motifs_ferns_focus_4_crop.png" alt="drawing">]
+
+.pull-right-narrow[
+```{r ecos-ranking-4}
+make_species_ranking_table(species_ranking, 4)
+```
+]
+
+---
+class: inverse, middle
+background-color: #000000
+
+.pull-left-wide[<img src="images/species_motifs_ferns_focus_5_crop.png" alt="drawing">]
+
+.pull-right-narrow[
+```{r ecos-ranking-5}
+make_species_ranking_table(species_ranking, 5)
+```
+]
+
+---
+class: inverse, middle
+background-color: #000000
+
+.pull-left-wide[<img src="images/species_motifs_ferns_focus_6_crop.png" alt="drawing">]
+
+.pull-right-narrow[
+```{r ecos-ranking-6}
+make_species_ranking_table(species_ranking, 6)
+```
+]
+
+---
+class: inverse, middle
+background-color: #000000
+
+.pull-left-wide[<img src="images/species_motifs_ferns_focus_1_crop.png" alt="drawing">]
+
+.pull-right-narrow[
+```{r ecos-ranking-1}
+make_species_ranking_table(species_ranking, 1)
+```
+]
