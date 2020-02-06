@@ -470,20 +470,23 @@ species_motifs_ferns_6L$theta %>%
   ungroup
 
 # Define function for making species ranking table
-make_species_ranking_table <- function (ranking_data, motif_select, taxon_select = NULL, slice_n = 10) {
+make_species_ranking_table <- function (ranking_data, motif_select, taxon_select = NULL, taxon_include = "", slice_n = 10) {
   
   ranking_data_sliced <- ranking_data %>%
     filter(motif == motif_select) %>%
+    mutate(include = ifelse(taxon %in% taxon_include, 1, 0)) %>%
     # Select top-scoring species with high SD
     # (high SD should indicate mostly contributing to
     # a single motif)
-    arrange(desc(score), desc(score_sd)) %>%
+    arrange(desc(include), desc(score), desc(score_sd)) %>%
     slice(1:slice_n) %>%
     select(taxon, score) %>%
     mutate(score = as.factor(score)) %>%
     # Arrange alphabetically within score
     arrange(desc(score), taxon)
   
+  if(is.numeric(taxon_select)) taxon_select <- ranking_data_sliced$taxon[[taxon_select]]
+   
   table <-
     ranking_data_sliced %>%
     gt() %>%
@@ -527,7 +530,7 @@ make_species_ranking_table <- function (ranking_data, motif_select, taxon_select
         ),
         locations = cells_data(
           columns = everything(),
-          rows = taxon == ranking_data_sliced$taxon[[taxon_select]])
+          rows = taxon == taxon_select)
       )
   
   table
@@ -535,18 +538,21 @@ make_species_ranking_table <- function (ranking_data, motif_select, taxon_select
 }
 
 # Define function to make simple distribution map for a species
-plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_data, show_title = TRUE) {
+plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_data, show_title = FALSE, taxon_include = "") {
   
    ranking_data <- ranking_data %>%
     filter(motif == motif_select) %>%
-    arrange(desc(score), desc(score_sd)) %>%
+    mutate(include = ifelse(taxon %in% taxon_include, 1, 0)) %>%
+    arrange(desc(include), desc(score), desc(score_sd)) %>%
     select(taxon, score) %>%
     mutate(score = as.factor(score)) %>%
     arrange(desc(score), taxon)
-  
+   
+  if(is.numeric(taxon_select)) taxon_select <- ranking_data$taxon[[taxon_select]]
+   
   cells_present <-
     occ_data %>%
-    filter(taxon_name == ranking_data$taxon[[taxon_select]]) %>%
+    filter(taxon_name == taxon_select) %>%
     select(secondary_grid_code) %>%
     unique %>%
     mutate(present = TRUE)
@@ -571,7 +577,7 @@ plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_dat
   if(isTRUE(show_title))
     plot <- plot +
     labs(
-      title = ranking_data$taxon[[taxon_select]]
+      title = taxon_select
     )
   
   plot
@@ -582,7 +588,7 @@ plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_dat
 # Don't run when making slides, but it's a useful practice to check the
 # distributions for the top 10 taxa for each motif
 plot_dist_by_motif <- function(species_ranking, motif, occ_data_ferns) {
-  dist_maps <- purrr::map(1:10, ~plot_distribution(species_ranking, motif, ., occ_data_ferns)) %>%
+  dist_maps <- purrr::map(1:10, ~plot_distribution(species_ranking, motif, ., occ_data_ferns, show_title = TRUE)) %>%
     patchwork::wrap_plots(ncol = 2, nrow = 5)
   
   ggsave(plot = dist_maps, file = glue::glue("motif_{motif}_maps.png"), width = 6, height = 12, units = "in")
@@ -612,9 +618,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_1_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-1-focus-3}
-make_species_ranking_table(species_ranking, 1, 3)
-plot_distribution(species_ranking, 1, 3, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-1-focus-3, dev = "png"}
+make_species_ranking_table(species_ranking, 1, "Equisetum arvense")
+plot_distribution(species_ranking, 1, "Equisetum arvense", occ_data_ferns, show_title = FALSE)
 ```
 ]
 
@@ -625,9 +631,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_1_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-1-focus-7}
-make_species_ranking_table(species_ranking, 1, 7)
-plot_distribution(species_ranking, 1, 7, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-1-focus-7, dev = "png"}
+make_species_ranking_table(species_ranking, 1, "Athyrium vidalii")
+plot_distribution(species_ranking, 1, "Athyrium vidalii", occ_data_ferns)
 ```
 ]
 
@@ -650,9 +656,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_2_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-2-focus-1}
-make_species_ranking_table(species_ranking, 2, 1)
-plot_distribution(species_ranking, 2, 1, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-2-focus-1, dev = "png"}
+make_species_ranking_table(species_ranking, 2, "Adiantum pedatum")
+plot_distribution(species_ranking, 2, "Adiantum pedatum", occ_data_ferns)
 ```
 ]
 
@@ -663,9 +669,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_2_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-2-focus-2}
-make_species_ranking_table(species_ranking, 2, 2)
-plot_distribution(species_ranking, 2, 2, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-2-focus-2, dev = "png"}
+make_species_ranking_table(species_ranking, 2, "Arachniodes borealis")
+plot_distribution(species_ranking, 2, "Arachniodes borealis", occ_data_ferns)
 ```
 ]
 
@@ -688,9 +694,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_3_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-3-focus-3}
-make_species_ranking_table(species_ranking, 3, 3)
-plot_distribution(species_ranking, 3, 3, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-3-focus-3, dev = "png"}
+make_species_ranking_table(species_ranking, 3, "Dryopteris erythrosora")
+plot_distribution(species_ranking, 3, "Dryopteris erythrosora", occ_data_ferns)
 ```
 ]
 
@@ -701,9 +707,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_3_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-3-focus-7}
-make_species_ranking_table(species_ranking, 3, 7)
-plot_distribution(species_ranking, 3, 7, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-3-focus-7, dev = "png"}
+make_species_ranking_table(species_ranking, 3, "Odontosoria chinensis")
+plot_distribution(species_ranking, 3, "Odontosoria chinensis", occ_data_ferns)
 ```
 ]
 
@@ -726,9 +732,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_4_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-4-focus-2}
-make_species_ranking_table(species_ranking, 4, 2)
-plot_distribution(species_ranking, 4, 2, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-4-focus-2, dev = "png"}
+make_species_ranking_table(species_ranking, 4, "Blechnum niponicum")
+plot_distribution(species_ranking, 4, "Blechnum niponicum", occ_data_ferns)
 ```
 ]
 
@@ -739,9 +745,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_4_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-4-focus-8}
-make_species_ranking_table(species_ranking, 4, 8)
-plot_distribution(species_ranking, 4, 8, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-4-focus-8, dev = "png"}
+make_species_ranking_table(species_ranking, 4, "Polystichum retrosopaleaceum")
+plot_distribution(species_ranking, 4, "Polystichum retrosopaleaceum", occ_data_ferns)
 ```
 ]
 
@@ -764,9 +770,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_5_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-5-focus-3}
-make_species_ranking_table(species_ranking, 5, 3)
-plot_distribution(species_ranking, 5, 3, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-5-focus-3, dev = "png"}
+make_species_ranking_table(species_ranking, 5, "Dicranopteris linearis")
+plot_distribution(species_ranking, 5, "Dicranopteris linearis", occ_data_ferns)
 ```
 ]
 
@@ -777,9 +783,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_5_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-5-focus-7}
-make_species_ranking_table(species_ranking, 5, 7)
-plot_distribution(species_ranking, 5, 7, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-5-focus-7, dev = "png"}
+make_species_ranking_table(species_ranking, 5, "Polystichum tagawanum")
+plot_distribution(species_ranking, 5, "Polystichum tagawanum", occ_data_ferns, show_title = FALSE)
 ```
 ]
 
@@ -791,7 +797,7 @@ background-color: #000000
 
 .pull-right-narrow[
 ```{r ecos-motif-6}
-make_species_ranking_table(species_ranking, 6)
+make_species_ranking_table(species_ranking, 6, taxon_include = c("Angiopteris lygodiifolia", "Ctenitis subglandulosa"))
 ```
 ]
 
@@ -802,9 +808,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_6_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-6-focus-1}
-make_species_ranking_table(species_ranking, 6, 1)
-plot_distribution(species_ranking, 6, 1, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-6-focus-2, dev = "png"}
+make_species_ranking_table(species_ranking, 6, "Angiopteris lygodiifolia", taxon_include = c("Angiopteris lygodiifolia", "Ctenitis subglandulosa"))
+plot_distribution(species_ranking, 6, "Angiopteris lygodiifolia", occ_data_ferns, taxon_include = "Angiopteris lygodiifolia")
 ```
 ]
 
@@ -815,9 +821,9 @@ background-color: #000000
 .pull-left-wide[<img src="images/species_motifs_ferns_focus_6_crop.png" alt="drawing">]
 
 .pull-right-narrow[
-```{r ecos-motif-6-focus-2}
-make_species_ranking_table(species_ranking, 6, 2)
-plot_distribution(species_ranking, 6, 2, occ_data_ferns, show_title = FALSE)
+```{r ecos-motif-6-focus-1, dev = "png"}
+make_species_ranking_table(species_ranking, 6, "Arachniodes sporadosora", taxon_include = c("Angiopteris lygodiifolia", "Ctenitis subglandulosa"))
+plot_distribution(species_ranking, 6, "Arachniodes sporadosora", occ_data_ferns)
 ```
 ]
 
