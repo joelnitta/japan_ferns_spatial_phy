@@ -8,13 +8,13 @@
 #' @return List
 #'
 read_nexus_in_zip <- function (zip_folder, nexus_file) {
-
+  
   temp_dir <- tempdir()
-
+  
   unzip(zip_folder, exdir = temp_dir)
-
+  
   ape::read.nexus(fs::path(temp_dir, nexus_file))
-
+  
 }
 
 #' Read in Catalog of Life plants data
@@ -24,12 +24,12 @@ read_nexus_in_zip <- function (zip_folder, nexus_file) {
 #' @return Tibble
 #'
 read_col_plants <- function (path_to_col) {
-
+  
   read_tsv(path_to_col,
-    col_types = rep("c", 31) %>% paste(collapse = "")
+           col_types = rep("c", 31) %>% paste(collapse = "")
   ) %>%
     mutate(taxonID = as.numeric(taxonID), acceptedNameUsageID = as.numeric(acceptedNameUsageID))
-
+  
 }
 
 
@@ -39,9 +39,9 @@ read_col_plants <- function (path_to_col) {
 #'
 #' @return Tibble
 process_repro_data <- function (data) {
-
+  
   data %>%
-  clean_names %>%
+    clean_names %>%
     mutate(
       reproductive_mode = case_when(
         reproductive_mode == 0 ~ "unknown",
@@ -61,7 +61,7 @@ process_repro_data <- function (data) {
     ) %>%
     rename(rbcl_genbank_no = rbc_l_gen_bank_accession_no) %>%
     mutate(rbcl_genbank_no = str_remove_all(rbcl_genbank_no, "\\*"))
-
+  
 }
 
 #' Get a list of URLs to download data for a kokudosuuchi dataset
@@ -140,9 +140,9 @@ tidy_japan_names <- function (data) {
 #' @return tibble
 count_species_per_cell <- function (occ_data, repro_data) {
   occ_data %>%
-  filter(taxon_id %in% repro_data$taxon_id) %>%
-  group_by(secondary_grid_code) %>%
-  count(sort = TRUE)
+    filter(taxon_id %in% repro_data$taxon_id) %>%
+    group_by(secondary_grid_code) %>%
+    count(sort = TRUE)
 }
 
 #' Count grid cells per species
@@ -152,8 +152,8 @@ count_species_per_cell <- function (occ_data, repro_data) {
 #' @return tibble
 count_cells_per_species <- function (occ_data) {
   occ_data %>%
-  group_by(taxon_name) %>%
-  count(sort = TRUE)
+    group_by(taxon_name) %>%
+    count(sort = TRUE)
 }
 
 #' Count number of grid cells per species by reproductive mode
@@ -165,13 +165,13 @@ count_cells_per_species <- function (occ_data) {
 #' @return tibble
 count_cells_per_species_by_repro <- function(occ_data, repro_data) {
   occ_data %>%
-  group_by(taxon_id) %>%
-  summarize(
-    n_grids = n()
-  ) %>%
-  inner_join(select(repro_data, taxon_id, reproductive_mode)) %>%
-  ungroup() %>%
-  filter(reproductive_mode != "unknown")
+    group_by(taxon_id) %>%
+    summarize(
+      n_grids = n()
+    ) %>%
+    inner_join(select(repro_data, taxon_id, reproductive_mode)) %>%
+    ungroup() %>%
+    filter(reproductive_mode != "unknown")
 }
 
 #' Get mean number of grid cells per species by reproductive mode
@@ -181,12 +181,12 @@ count_cells_per_species_by_repro <- function(occ_data, repro_data) {
 #' @return Tibble
 avg_cells_per_species_by_repro <- function (cells_per_species_by_repro) {
   cells_per_species_by_repro %>%
-  group_by(reproductive_mode) %>%
-  summarize(
-    mean_grids = mean(n_grids),
-    n = n(),
-    sd = sd(n_grids)
-  )
+    group_by(reproductive_mode) %>%
+    summarize(
+      mean_grids = mean(n_grids),
+      n = n(),
+      sd = sd(n_grids)
+    )
 }
 
 #' Determine latitudinal breadth for each species,
@@ -202,13 +202,13 @@ avg_cells_per_species_by_repro <- function (cells_per_species_by_repro) {
 #' hybrids and repro mode unknown.
 count_lat_by_repro <- function(occ_data, repro_data) {
   occ_data %>%
-  group_by(taxon_id) %>%
-  summarize(
-    lat_breadth = max(latitude) - min(latitude)
-  ) %>%
-  inner_join(select(repro_data, taxon_id, reproductive_mode)) %>%
-  ungroup() %>%
-  filter(reproductive_mode != "unknown")
+    group_by(taxon_id) %>%
+    summarize(
+      lat_breadth = max(latitude) - min(latitude)
+    ) %>%
+    inner_join(select(repro_data, taxon_id, reproductive_mode)) %>%
+    ungroup() %>%
+    filter(reproductive_mode != "unknown")
 }
 
 #' Get mean latitudinal breadth per species by reproductive mode
@@ -218,12 +218,12 @@ count_lat_by_repro <- function(occ_data, repro_data) {
 #' @return Tibble
 avg_lat_by_repro <- function(lat_by_repro) {
   lat_by_repro %>%
-  group_by(reproductive_mode) %>%
-  summarize(
-    lat_breadth = mean(lat_breadth),
-    n = n(),
-    sd = sd(lat_breadth)
-  )
+    group_by(reproductive_mode) %>%
+    summarize(
+      lat_breadth = mean(lat_breadth),
+      n = n(),
+      sd = sd(lat_breadth)
+    )
 }
 
 # Taxonomy ----
@@ -235,7 +235,7 @@ avg_lat_by_repro <- function(lat_by_repro) {
 #'
 #' @return tibble
 modify_ppgi <- function (ppgi) {
-
+  
   # Use normal "e" for Isoetes
   ppgi_mod <-
     ppgi %>%
@@ -247,25 +247,25 @@ modify_ppgi <- function (ppgi) {
         transliterations = c("Latin-ASCII"),
         parsing_option = 0)
     )
-
+  
   # Add genera missing in PPGI that are included in Japan pteridophyte checklist
   # Use the sister (or encompassing) genus for each, so other higher-order
   # taxonomy will be correct
   anisocampium_dat <-
     ppgi_mod %>% filter(genus == "Athyrium") %>%
     mutate(genus = "Anisocampium")
-
+  
   humata_dat <-
     ppgi_mod %>% filter(genus == "Davallia") %>%
     mutate(genus = "Humata")
-
+  
   drynaria_dat <-
     ppgi_mod %>% filter(genus == "Aglaomorpha") %>%
     mutate(genus = "Drynaria")
-
+  
   bind_rows(ppgi_mod, anisocampium_dat, humata_dat, drynaria_dat) %>%
     select(genus, family, order, class)
-
+  
 }
 
 #' Add taxonomy data to occurrence data
@@ -292,11 +292,11 @@ add_taxonomy <- function(occ_data, taxonomy_data) {
 #'
 make_taxon_id_map <- function(occ_data_pteridos) {
   occ_data_pteridos %>% select(taxon_id, taxon = taxon_name) %>% unique %>%
-  mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
-  mutate(taxon = str_remove_all(taxon, "\\.")) %>%
-  mutate(taxon = str_remove_all(taxon, "_var")) %>%
-  mutate(taxon = str_remove_all(taxon, "_subsp")) %>%
-  mutate(taxon = str_remove_all(taxon, "_x"))
+    mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
+    mutate(taxon = str_remove_all(taxon, "\\.")) %>%
+    mutate(taxon = str_remove_all(taxon, "_var")) %>%
+    mutate(taxon = str_remove_all(taxon, "_subsp")) %>%
+    mutate(taxon = str_remove_all(taxon, "_x"))
 }
 
 #' Update automatically resolved names with manually fixed names
@@ -309,7 +309,7 @@ make_taxon_id_map <- function(occ_data_pteridos) {
 #' @return Tibble
 #'
 update_resolved_names <- function (resolved_names_auto, resolved_names_manual_fix) {
-
+  
   resolved_names_auto %>%
     # Drop excluded names
     filter_at(vars(contains("exclude")), all_vars(. == FALSE)) %>%
@@ -321,7 +321,7 @@ update_resolved_names <- function (resolved_names_auto, resolved_names_manual_fi
     bind_rows(
       select(resolved_names_manual_fix, query, species)
     )
-
+  
 }
 
 # Traits ----
@@ -366,7 +366,7 @@ transform_traits <- function (traits,
                               scale_select = c("sla", "dissection", "stipe", "length",
                                                "width", "rhizome", "pinna")
 ) {
-
+  
   # Log-transform
   if (log_trans == TRUE) {
     traits <-
@@ -377,7 +377,7 @@ transform_traits <- function (traits,
       dplyr::mutate_at(trans_select, ~ifelse(. == 0, small_number, .)) %>%
       dplyr::mutate_at(trans_select, log)
   }
-
+  
   # Rescale by dividing original value by range of
   # that value (max - min) across the dataset
   if (scale_traits == TRUE) {
@@ -389,9 +389,9 @@ transform_traits <- function (traits,
         scale_select, ~ . / (max(., na.rm = TRUE) - min(., na.rm = TRUE))
       )
   }
-
+  
   traits
-
+  
 }
 
 #' Format traits for further analysis
@@ -405,7 +405,7 @@ transform_traits <- function (traits,
 #' @return Tibble
 #'
 format_traits <- function(path_to_lucid_traits, taxon_id_map) {
-
+  
   # Read in raw trait data for pteridophytes of Japan.
   # These were originally formatted for lucid dichotomous key software.
   # So they are mostly quantitative traits that have been converted to binary format,
@@ -417,14 +417,14 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
     mutate(taxon = str_replace_all(taxon, ":", "_")) %>%
     # Check for NA values
     assert(not_na, everything())
-
+  
   # Separate out into numeric and binary traits
   # (numeric container "number" in name, assume binary otherwise)
   traits_numeric <- select(traits, taxon, contains("number"))
   traits_binary <-  select(traits, -contains("number"))
-
+  
   ### Cleanup binary traits ###
-
+  
   # These are what the values mean according to the lucid manual
   # "common and misinterpreted" means that the user may incorrectly think the trait is
   # absent when it's actually frequently present.
@@ -436,7 +436,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   # 4=common and misinterpreted
   # 5=rare and misinterpreted
   # 6=not scoped
-
+  
   # Reformat so all traits are either present (1), absent (0), or NA
   traits_binary <-
     traits_binary %>%
@@ -448,11 +448,11 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
       . == 5 ~ 1,
       TRUE ~ .
     ))
-
+  
   # Reformat presence/absence traits. These have one column each for "presence" (0 or 1),
   # "absence" (also 0 or 1), and sometimes another related state ("caducous" etc).
   # Combine these into a single "present" column.
-
+  
   traits_binary <-
     traits_binary %>%
     # - pseudo_veinlet
@@ -490,7 +490,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
       )) %>%
     select(-contains("leaf_sorus_indusium_presence_absence")) %>%
     rename(leaf_sorus_false_indusium_present = leaf_sorus_false_indusium)
-
+  
   #### Clean up numeric traits ###
   # Replace missing (0 or 3) with NA,
   # take the mean of the range of normal values otherwise
@@ -501,20 +501,20 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
     mutate_at(vars(-taxon), ~na_if(., "0")) %>%
     mutate_at(vars(-taxon), ~na_if(., "3")) %>%
     mutate_at(vars(-taxon), ~map_dbl(., get_lucid_mean))
-
+  
   # Split numeric traits into those measured on sterile vs fertile plants
   # (i.e., with or without spores)
-
+  
   traits_numeric_sterile <- select(traits_numeric, taxon, contains("sterile")) %>%
     rename_all(~str_remove(., "sterile_")) %>%
     gather(trait, value, -taxon) %>%
     mutate(type = "sterile")
-
+  
   traits_numeric_fertile <- select(traits_numeric, taxon, contains("fertile")) %>%
     rename_all(~str_remove(., "fertile_")) %>%
     gather(trait, value, -taxon) %>%
     mutate(type = "fertile")
-
+  
   # Combine these, taking the maximum value regardless of sterile or fertile
   traits_numeric_combined <-
     bind_rows(traits_numeric_sterile, traits_numeric_fertile) %>%
@@ -526,42 +526,42 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
     mutate(value = na_if(value, -Inf)) %>%
     spread(trait, value) %>%
     rename_all(~str_remove(., "_number"))
-
+  
   # Log-transform and scale numeric traits
   num_trait_names <- select(traits_numeric_combined, -taxon) %>% colnames()
-
+  
   traits_numeric_combined_trans <- transform_traits(
     traits_numeric_combined,
     trans_select = num_trait_names,
     scale_select = num_trait_names
   )
-
+  
   # Combine all numeric and categorical traits
   traits_for_dist <- left_join(traits_numeric_combined_trans, traits_binary)
-
+  
   # Convert species names to taxon id codes
   missing_taxon_id <-
     traits_for_dist %>% left_join(taxon_id_map) %>%
     select(taxon_id, everything()) %>%
     select(taxon_id, taxon) %>%
     filter(is.na(taxon_id))
-
+  
   assertthat::validate_that(
     nrow(missing_taxon_id) == 0,
     msg = glue::glue("{nrow(missing_taxon_id)} taxa missing taxa IDs and dropped")
   )
-
+  
   traits_for_dist <-
     traits_for_dist %>% inner_join(taxon_id_map) %>%
     select(-taxon)
-
+  
   # Drop any traits that have only one state
   drop_single_state <-
     map_df(traits_for_dist, n_distinct) %>%
     gather(trait, n_states) %>%
     filter(n_states == 1) %>%
     pull(trait)
-
+  
   traits_for_dist[,!colnames(traits_for_dist) %in% drop_single_state]
 }
 
@@ -604,13 +604,13 @@ categorize_traits <- function(traits) {
 #' @return Tibble
 #'
 make_trait_summary <- function (traits_for_dist) {
-
+  
   # Count trait states to categorize traits.
   # Those with > 3 states should be numeric.
   # (binary can be 1, 0, or missing).
   states <- map_df(traits_for_dist, n_distinct) %>%
     gather(trait, n_states)
-
+  
   # Summarize traits
   traits_for_dist %>%
     select(-taxon_id) %>%
@@ -646,13 +646,13 @@ make_trait_summary <- function (traits_for_dist) {
 #' @return Distance matrix
 #'
 make_trait_dist_matrix <- function (traits_for_dist) {
-
+  
   # Count trait states to categorize traits.
   # Those with > 3 states should be numeric.
   # (binary can be 1, 0, or missing).
   states <- map_df(traits_for_dist, n_distinct) %>%
     gather(trait, n_states)
-
+  
   # Set up weighting.
   trait_categories <-
     traits_for_dist %>%
@@ -672,22 +672,22 @@ make_trait_dist_matrix <- function (traits_for_dist) {
     add_count(trait_type) %>%
     mutate(weight_by_type = 1 / n) %>%
     mutate(final_weight = weight_by_comp_trait * weight_by_type)
-
+  
   trait_categories$weight_by_comp_trait %>% sum
   trait_categories$weight_by_type %>% sum
   trait_categories$final_weight %>% sum
-
+  
   # Make sure traits for calculating the distance matrix are in correct
   # order for weighting
   traits_for_dist <- select(traits_for_dist, taxon_id, trait_categories$trait)
-
+  
   # Convert to dataframe for gowdis
   traits_df <- traits_for_dist %>%
     column_to_rownames("taxon_id")
-
+  
   # Run gowdis with trait weightings
   FD::gowdis(traits_df, w = trait_categories$final_weight)
-
+  
 }
 
 #' Make NMDS plots for pteridophytes based on traits
@@ -702,7 +702,7 @@ make_trait_dist_matrix <- function (traits_for_dist) {
 #' @return GGPlot object
 #'
 make_trait_nmds_plot <- function (nmds, ppgi, taxon_id_map) {
-
+  
   nmds_points = nmds[["points"]] %>%
     as.data.frame %>%
     rownames_to_column("taxon_id") %>%
@@ -713,19 +713,19 @@ make_trait_nmds_plot <- function (nmds, ppgi, taxon_id_map) {
     mutate(
       order = factor(order),
       family = factor(family))
-
+  
   a <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = order, shape = order)) +
     geom_point() +
     scale_shape_manual(values = 1:n_distinct(nmds_points$order)) +
     labs(title = "Pteridophytes")
-
+  
   nmds_points_polypod <- filter(nmds_points, order == "Polypodiales")
-
+  
   b <- ggplot(nmds_points_polypod, aes(x = MDS1, y = MDS2, color = family, shape = family)) +
     geom_point() +
     scale_shape_manual(values = 1:n_distinct(nmds_points_polypod$family)) +
     labs(title = "Polypodiales")
-
+  
   a + b
 }
 
@@ -738,13 +738,13 @@ make_trait_nmds_plot <- function (nmds, ppgi, taxon_id_map) {
 #' results/traits_dendrogram.pdf
 #'
 make_traits_dendrogram <- function(trait_distance_matrix, taxon_id_map) {
-
+  
   # Cluster species by trait distances
   h <- hclust(trait_distance_matrix)
-
+  
   # Relabel from taxon id to species names
   h[["labels"]] <- taxon_id_map$taxon[match(h[["labels"]], taxon_id_map$taxon_id)]
-
+  
   # Output plot
   pdf(height = 50, width = 8, file = "results/traits_dendrogram.pdf")
   plot(ape::as.phylo(h), cex = 0.4)
@@ -787,11 +787,11 @@ make_richness_matrix <- function (occ_data) {
 #'
 #' @return List of class "phylo"
 format_tip_labels <- function (phy) {
-
+  
   phy$tip.label <- str_split(phy$tip.label, "_") %>% map_chr(2)
-
+  
   phy
-
+  
 }
 
 #' Make a community matrix
@@ -832,23 +832,23 @@ make_comm_matrix <- function (occ_data) {
 #' @return a number: phylogenetic diversity (sum of branch lengths)
 #' for that community
 calc_pd <- function(single_comm, phy, shuffle_tips = FALSE) {
-
+  
   # Filter to only species present in the focal community
   single_comm <- filter(single_comm, abundance > 0)
-
+  
   # Return 0 if there are zero species present
   if(nrow(single_comm) == 0) return (0)
-
+  
   # The phylogenetic distance for a single species without using the root is
   # undefined.
   if(nrow(single_comm) == 1) return (NA)
-
+  
   # Optionally shuffle tips when generating null distributions
   if(isTRUE(shuffle_tips)) phy <- picante::tipShuffle(phy)
-
+  
   # Prune tree to only species present in the community
   phy <- ape::keep.tip(phy, single_comm$species)
-
+  
   # Get sum of branches remaining
   sum(phy$edge.length)
 }
@@ -910,12 +910,12 @@ get_rank <- function(value, other_nums) {
 #' values (pd_obs_rank), standard effect size of PD (ses_pd), and
 #' probability of the observed value (pd_obs_p).
 ses_pd <- function (comm, phy, n_reps) {
-
+  
   assert_that(isTRUE(all.equal(
-  sort(comm$species), sort(phy$tip.label) )),
-  msg = "Species don't match exactly between 'comm' and 'phy'"
+    sort(comm$species), sort(phy$tip.label) )),
+    msg = "Species don't match exactly between 'comm' and 'phy'"
   )
-
+  
   # Nest by community, then calculate PD for each
   comm %>%
     gather(site, abundance, -species) %>%
@@ -928,9 +928,9 @@ ses_pd <- function (comm, phy, n_reps) {
       ses_pd = (pd_obs - pd_rand_mean) / pd_rand_sd,
       pd_obs_rank = map2_dbl(pd_obs, pd_rnd, ~ get_rank(.x, .y)),
       pd_obs_p = pd_obs_rank/(n_reps + 1)
-      ) %>%
+    ) %>%
     select(-data, -pd_rnd)
-
+  
 }
 
 #' Merge diversity metrics
@@ -980,46 +980,46 @@ merge_metrics <- function (all_pd, richness, all_cells) {
 #' match_comm_and_tree(comm_small, phylo_small, "tree")
 #'
 match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
-
+  
   assert_that("species" %in% colnames(comm))
-
+  
   comm_original <- comm
   phy_original <- phy
-
+  
   # Keep only species in phylogeny
   comm <- comm %>%
     filter(species %in% phy$tip.label)
-
+  
   # Trim to only species with trait data
   phy <- drop.tip(phy, setdiff(phy$tip.label, comm$species))
-
+  
   # Get comm in same order as tips
   comm <- left_join(
     tibble(species = phy$tip.label),
     comm,
     by = "species"
   )
-
+  
   # Make sure that worked
   assert_that(isTRUE(all.equal(comm$species, phy$tip.label)))
-
+  
   if(nrow(comm_original) != nrow(comm)) {
     print(glue::glue("Dropped {nrow(comm_original) - nrow(comm)} species not in phy from comm"))
   }
-
+  
   if(ape::Ntip(phy_original) != ape::Ntip(phy)) {
     print(glue::glue("Dropped {Ntip(phy_original) - Ntip(phy)} species not in comm from phy"))
   }
-
+  
   # Return comm or tree
   assert_that(return %in% c("tree", "comm"))
-
+  
   if(return == "tree") {
     return (phy)
   } else {
     return (comm)
   }
-
+  
 }
 
 #' Match community data and traits
@@ -1047,50 +1047,50 @@ match_comm_and_tree <- function (comm, phy, return = c("comm", "tree")) {
 #' match_comm_and_traits(comm_small, dist_mat, "comm")
 #' match_comm_and_traits(comm_small, dist_mat, "traits")
 match_comm_and_traits <- function (comm, traits, return = c("comm", "traits")) {
-
+  
   assert_that("species" %in% colnames(comm))
-
+  
   comm_original <- comm
   traits_original <- traits
-
+  
   # Keep only species in traits
   comm <- comm %>%
     filter(species %in% attributes(traits)[["Labels"]])
-
+  
   # Trim traits matrix to only species in comm
   in_both <- base::intersect(attributes(traits)[["Labels"]], comm$species)
   traits <- usedist::dist_subset(traits, in_both)
-
+  
   # Get comm in same order as traits
   comm <- left_join(
     tibble(species = attributes(traits)[["Labels"]]),
     comm,
     by = "species"
   )
-
+  
   # Make sure that worked
   assert_that(isTRUE(all.equal(comm$species, attributes(traits)[["Labels"]])))
-
+  
   if(nrow(comm_original) != nrow(comm)) {
     print(glue::glue("Dropped {nrow(comm_original) - nrow(comm)} species not in traits from comm"))
   }
-
+  
   traits_labels_original <- attributes(traits_original)[["Labels"]]
   traits_labels <- attributes(traits)[["Labels"]]
-
+  
   if(length(traits_labels_original) != length(traits_labels)) {
     print(glue::glue("Dropped {length(traits_labels_original) - length(traits_labels)} species not in comm from traits"))
   }
-
+  
   # Return comm or tree
   assert_that(return %in% c("traits", "comm"))
-
+  
   if(return == "traits") {
     return (traits)
   } else {
     return (comm)
   }
-
+  
 }
 
 #' Analyze Standard Effect Size (SES) of mean phylogenetic distance (MPD)
@@ -1110,24 +1110,24 @@ match_comm_and_traits <- function (comm, traits, return = c("comm", "traits")) {
 #' @return Dataframe. Results of ape::ses.mpd
 #'
 ses_phy_mpd <- function(comm, tree, species_col = "species",
-                    null.model = "independentswap",
-                    iterations = 10000,
-                    runs = 999) {
-
+                        null.model = "independentswap",
+                        iterations = 10000,
+                        runs = 999) {
+  
   assertthat::assert_that(
     species_col %in% colnames(comm),
     msg = "value for 'species_col' not one of the columns of comm")
-
+  
   # Drop species not matching between community and tree
   comm <- match_comm_and_tree(comm, tree, "comm")
   tree <- match_comm_and_tree(comm, tree, "tree")
-
+  
   # Make sure that worked
   assert_that(isTRUE(all.equal(comm$species, tree$tip.label)))
-
+  
   # Convert community to dataframe with rows as sites and columns as species
   comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
-
+  
   # Run ses mpd
   picante::ses.mpd(
     samp = comm_df,
@@ -1135,7 +1135,7 @@ ses_phy_mpd <- function(comm, tree, species_col = "species",
     null.model = null.model,
     iterations = iterations,
     runs = runs)
-
+  
 }
 
 #' Analyze Standard Effect Size (SES) of mean nearest taxon distance (MNTD)
@@ -1155,24 +1155,24 @@ ses_phy_mpd <- function(comm, tree, species_col = "species",
 #' @return Dataframe. Results of ape::ses.mpd
 #'
 ses_phy_mntd <- function(comm, tree, species_col = "species",
-                        null.model = "independentswap",
-                        iterations = 10000,
-                        runs = 999) {
-
+                         null.model = "independentswap",
+                         iterations = 10000,
+                         runs = 999) {
+  
   assertthat::assert_that(
     species_col %in% colnames(comm),
     msg = "value for 'species_col' not one of the columns of comm")
-
+  
   # Drop species not matching between community and tree
   comm <- match_comm_and_tree(comm, tree, "comm")
   tree <- match_comm_and_tree(comm, tree, "tree")
-
+  
   # Make sure that worked
   assert_that(isTRUE(all.equal(comm$species, tree$tip.label)))
-
+  
   # Convert community to dataframe with rows as sites and columns as species
   comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
-
+  
   # Run ses mpd
   picante::ses.mntd(
     samp = comm_df,
@@ -1180,7 +1180,7 @@ ses_phy_mntd <- function(comm, tree, species_col = "species",
     null.model = null.model,
     iterations = iterations,
     runs = runs)
-
+  
 }
 
 #' Analyze Standard Effect Size (SES) of functional mean phylogenetic distance (MPD)
@@ -1203,21 +1203,21 @@ ses_func_mpd <- function(comm, traits, species_col = "species",
                          null.model = "independentswap",
                          iterations = 10000,
                          runs = 999) {
-
+  
   assertthat::assert_that(
     species_col %in% colnames(comm),
     msg = "value for 'species_col' not one of the columns of comm")
-
+  
   # Drop species not matching between community and traits
   comm <- match_comm_and_traits(comm, traits, "comm")
   traits <- match_comm_and_traits(comm, traits, "traits")
-
+  
   # Make sure that worked
   assert_that(isTRUE(all.equal(comm$species, attributes(traits)[["Labels"]])))
-
+  
   # Convert community to dataframe with rows as sites and columns as species
   comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
-
+  
   # Run ses mpd
   picante::ses.mpd(
     samp = comm_df,
@@ -1225,7 +1225,7 @@ ses_func_mpd <- function(comm, traits, species_col = "species",
     null.model = null.model,
     iterations = iterations,
     runs = runs)
-
+  
 }
 
 #' Analyze Standard Effect Size (SES) of functional nearest mean taxonomic distance (MNTD)
@@ -1245,24 +1245,24 @@ ses_func_mpd <- function(comm, traits, species_col = "species",
 #' @return Dataframe. Results of ape::ses.mpd
 #'
 ses_func_mntd <- function(comm, traits, species_col = "species",
-                         null.model = "independentswap",
-                         iterations = 10000,
-                         runs = 999) {
-
+                          null.model = "independentswap",
+                          iterations = 10000,
+                          runs = 999) {
+  
   assertthat::assert_that(
     species_col %in% colnames(comm),
     msg = "value for 'species_col' not one of the columns of comm")
-
+  
   # Drop species not matching between community and traits
   comm <- match_comm_and_traits(comm, traits, "comm")
   traits <- match_comm_and_traits(comm, traits, "traits")
-
+  
   # Make sure that worked
   assert_that(isTRUE(all.equal(comm$species, attributes(traits)[["Labels"]])))
-
+  
   # Convert community to dataframe with rows as sites and columns as species
   comm_df <- tibble::column_to_rownames(comm, species_col) %>% t()
-
+  
   # Run ses mpd
   picante::ses.mntd(
     samp = comm_df,
@@ -1270,7 +1270,7 @@ ses_func_mntd <- function(comm, traits, species_col = "species",
     null.model = null.model,
     iterations = iterations,
     runs = runs)
-
+  
 }
 
 #' Clean up output from ses.mpd and ses.mntd
@@ -1288,17 +1288,17 @@ clean_ses <- function (
   prefix = "phy_",
   id = "secondary_grid_code"
 ) {
-
+  
   ses_mpd_results <-
     select(ses_mpd_results, contains("obs.z"))
-
+  
   colnames(ses_mpd_results) <- paste0(prefix, colnames(ses_mpd_results))
-
+  
   ses_mpd_results %>%
     rownames_to_column(id) %>%
     as_tibble %>%
     clean_names
-
+  
 }
 
 # Biodiverse ----
@@ -1404,7 +1404,7 @@ classify_endemism <- function (biodiv_results_raw) {
 #' fall in the 10km grid cells in Japan
 #'
 exclude_japan_points <- function (gbif_points_global, all_cells) {
-
+  
   # Convert global occurrence points to sf object.
   gbif_points_global_sf <-
     purrr::map2(
@@ -1413,7 +1413,7 @@ exclude_japan_points <- function (gbif_points_global, all_cells) {
       ~ sf::st_point(c(.x, .y))) %>%
     sf::st_sfc(crs = 4326) %>%
     sf::st_sf(gbif_points_global, .)
-
+  
   # Convert Japan 10 km grid cell centroids to sf object
   all_cells_sf <- purrr::map2(
     all_cells$longitude,
@@ -1421,17 +1421,17 @@ exclude_japan_points <- function (gbif_points_global, all_cells) {
     ~ sf::st_point(c(.x, .y))) %>%
     sf::st_sfc(crs = 4326) %>%
     sf::st_sf(all_cells, .)
-
+  
   # Find all points within 10 km of centers of grid cells in Japan
   points_within_japan <- sf::st_is_within_distance(
     gbif_points_global_sf, all_cells_sf, 10)
-
+  
   # Make logical vector of all points outside of Japan
   is_outside_of_japan <- lengths(points_within_japan) == 0
-
+  
   # Exclude points inside Japan
   dplyr::filter(gbif_points_global, is_outside_of_japan)
-
+  
 }
 
 #' Combine the global occurrence matrix with local (Japan) matrix
@@ -1460,10 +1460,10 @@ combine_presabs_mat <- function(comm_for_ecos_global_cropped, comm_pteridos_rena
   # Combine the cropped global dataset (1-degree grid cells)
   # with the Japan dataset (10km x 10 km grid cells)
   combined <-
-  bind_rows(
-    select(comm_for_ecos_global_cropped_tibble, common_cols),
-    select(comm_pteridos_renamed, common_cols)
-  ) %>%
+    bind_rows(
+      select(comm_for_ecos_global_cropped_tibble, common_cols),
+      select(comm_pteridos_renamed, common_cols)
+    ) %>%
     # Convert to matrix
     column_to_rownames("site") %>%
     as.matrix()
@@ -1522,7 +1522,7 @@ comm_from_points <- function(species_coods,
                              crs = sp::CRS("+proj=longlat +datum=WGS84"),
                              rownames = FALSE,
                              abun = FALSE) {
-
+  
   checkr::check_data(
     species_coods,
     values = list(
@@ -1531,13 +1531,13 @@ comm_from_points <- function(species_coods,
       decimallatitude = 1
     )
   )
-
+  
   assertr::verify(species_coods, decimallongitude <= 180, success_logical)
-
+  
   assertr::verify(species_coods, decimallatitude <= 90, success_logical)
-
+  
   assertthat::assert_that(!is.factor(species_coods$species))
-
+  
   # Create empty raster
   r <- raster::raster(
     resolution = resol,
@@ -1546,35 +1546,35 @@ comm_from_points <- function(species_coods,
     ymn = ymn,
     ymx = ymx,
     crs = crs)
-
+  
   ### Extract cell IDs from points by species
-
+  
   # Coordinates must be long, lat for raster
   # (which assumes x, y position in that order)
   species_coods <- species_coods[,c("species", "decimallongitude", "decimallatitude")]
-
+  
   # Extract cell IDs from points by species
   species_coods <- tidyr::nest(species_coods, data = c(decimallongitude, decimallatitude))
-
+  
   # raster::cellFromXY needs data to be data.frame, not tibble
   species_coods <- dplyr::mutate(species_coods, data = purrr::map(data, as.data.frame))
-
+  
   cells_occur <- purrr::map(
     species_coods$data,
     ~ raster::cellFromXY(xy = ., object = r)
   )
-
+  
   names(cells_occur) <- species_coods$species
-
+  
   rm(species_coods)
-
+  
   # Get vector of non-empty cells
   non_empty_cells <- sort(unique(unlist(cells_occur)))
-
+  
   # Convert list of cell occurrences from cell IDs to vector
   # the length of non_empty_cells with 1 (or number of times for abundance)
   # for each cell where that species occurs.
-
+  
   if(isTRUE(abun)) {
     # abudance
     cells_occur <- purrr::map(cells_occur, count_abun, all_cells = non_empty_cells)
@@ -1582,23 +1582,23 @@ comm_from_points <- function(species_coods,
     # presence/absence
     cells_occur <- purrr::map(cells_occur, ~as.numeric(non_empty_cells %in% .))
   }
-
+  
   # Combine these into a matrix
   pres_abs_mat <- t(do.call(rbind, cells_occur))
-
+  
   rm(cells_occur)
-
+  
   # Add coordinates
-
+  
   # Make vector of xy (lat/long) coordinates in raster,
   # named by cell ID.
-
+  
   # When setting names, assumes cell ID naming order goes
   # from upper-left most cell
   # to bottom right-most cell (as in raster docs).
   cell_xy <- raster::xyFromCell(r, 1:raster::ncell(r))
   cell_xy <- cell_xy[non_empty_cells,]
-
+  
   if(isTRUE(rownames)) {
     cell_xy <- paste(cell_xy[,"x"], cell_xy[,"y"], sep = "_")
     rownames(pres_abs_mat) <- cell_xy
@@ -1606,9 +1606,9 @@ comm_from_points <- function(species_coods,
     colnames(cell_xy) <- c("Longitude(x)", "Latitude(y)")
     pres_abs_mat <- cbind(cell_xy, pres_abs_mat)
   }
-
+  
   return(pres_abs_mat)
-
+  
 }
 
 
@@ -1624,14 +1624,14 @@ comm_from_points <- function(species_coods,
 #' Rownames are longitude, latitude separated by underscore.
 #'
 make_ecos_matrix <- function (comm_pteridos, all_cells) {
-
+  
   # Get vector of site names
   pterido_sites <-
     comm_pteridos %>%
     gather(secondary_grid_code, abundance, -species) %>%
     pull(secondary_grid_code) %>%
     unique
-
+  
   # Make tibble of all longitudes and latitudes by
   # site name (here, secondary_grid_code) for renaming
   # rows in matrix
@@ -1639,12 +1639,12 @@ make_ecos_matrix <- function (comm_pteridos, all_cells) {
     all_cells %>%
     transmute(
       secondary_grid_code = as.character(secondary_grid_code), 
-              long_lat = paste(longitude, latitude, sep = "_")) %>%
+      long_lat = paste(longitude, latitude, sep = "_")) %>%
     unique %>%
     # Only use those actually in the community data so we
     # don't end up with a bunch of NA values after joining.
     filter(secondary_grid_code %in% pterido_sites)
-
+  
   comm_pteridos %>%
     gather(secondary_grid_code, abundance, -species) %>%
     spread(species, abundance) %>%
@@ -1656,7 +1656,7 @@ make_ecos_matrix <- function (comm_pteridos, all_cells) {
     select(-secondary_grid_code) %>%
     column_to_rownames("long_lat") %>%
     as.matrix
-
+  
 }
 
 # Slightly tweaked version of ecos_plot_pie that takes sf object as background map
@@ -1958,28 +1958,28 @@ standard_theme2 <- function () {
 #' @examples
 #' get_limit(mtcars, disp, "max")
 get_limit <- function (data, var, type = c("min", "max", "abs"), digits = 2) {
-
+  
   var <- enquo(var)
-
+  
   switch(type,
-
+         
          max = data %>%
            pull(!!var) %>%
            max(na.rm = TRUE) %>%
            multiply_by(10^digits) %>% ceiling %>% divide_by(10^digits),
-
+         
          min = data %>%
            pull(!!var) %>%
            min(na.rm = TRUE) %>%
            multiply_by(10^digits) %>% floor %>% divide_by(10^digits),
-
+         
          abs = c(
            data %>% pull(!!var) %>% max(na.rm = TRUE),
            data %>% pull(!!var) %>% min(na.rm = TRUE)) %>%
            abs %>% max %>%
            multiply_by(10^digits) %>% ceiling %>% divide_by(10^digits)
   )
-
+  
 }
 
 #' Make a plot showing selected alpha diversity metric on a map of Japan
@@ -2039,10 +2039,10 @@ make_diversity_map <- function (div_data, occ_data, div_metric, metric_title, la
 #'
 #' @return ggplot object
 make_highlight_map <- function (div_data, world_map, occ_data, div_metric, sig_metric, metric_title) {
-
+  
   div_metric <- sym(div_metric)
   sig_metric <- sym(sig_metric)
-
+  
   # gghighlight only "knows about" data in the most recent layer
   # So make plot with world map on top of highlighted SES of PD,
   # then rearrange layers.
@@ -2057,11 +2057,11 @@ make_highlight_map <- function (div_data, world_map, occ_data, div_metric, sig_m
                pull(occ_data, latitude) %>% max %>% ceiling)
     ) +
     geom_polygon(data = world_map, aes(group = group), fill = "light grey")
-
+  
   # See
   # https://stackoverflow.com/questions/20249653/insert-layer-underneath-existing-layers-in-ggplot2-object
   plot$layers <- plot$layers[c(1,3,2)]
-
+  
   plot +
     scale_fill_scico(palette = "vik", na.value="transparent") +
     jntools::blank_x_theme() +
@@ -2075,7 +2075,7 @@ make_highlight_map <- function (div_data, world_map, occ_data, div_metric, sig_m
     labs(
       fill = metric_title
     )
-
+  
 }
 
 #' Make scatter plot with linear model
@@ -2085,6 +2085,7 @@ make_highlight_map <- function (div_data, world_map, occ_data, div_metric, sig_m
 #' @param indep_var Name of independent variable in data
 #' @param resp_var_print Label to print on y axis
 #' @param indep_var_print Label to print on x axis
+#' @param title_color Color to use for background of title
 #' @param digits_p Number of digits to output for p value
 #' @param digits_r2 Number of digits to output for R-squared
 #'
@@ -2095,16 +2096,17 @@ make_highlight_map <- function (div_data, world_map, occ_data, div_metric, sig_m
 make_scatter_with_lm <- function(data, indep_var, resp_var,
                                  indep_var_print = indep_var,
                                  resp_var_print = resp_var,
+                                 title_color = NULL,
                                  digits_p = 3, digits_r2 = 3) {
-
+  
   resp_var_sym <- sym(resp_var)
   indep_var_sym <- sym(indep_var)
-
+  
   model <- lm(formula(glue::glue("{resp_var} ~ {indep_var}")), data = data)
-
+  
   p <- model %>% glance %>% pull(p.value) %>% round(digits_p)
   r2 <- model %>% glance %>% pull(r.squared) %>% round(digits_r2)
-
+  
   plot <- ggplot(data, aes(!!indep_var_sym, !!resp_var_sym)) +
     geom_point(alpha = 0.2) +
     standard_theme2() +
@@ -2112,7 +2114,7 @@ make_scatter_with_lm <- function(data, indep_var, resp_var,
       y = resp_var_print,
       x = indep_var_print
     )
-
+  
   if(p < 0.05) {
     plot <- plot +
       geom_smooth(
@@ -2127,9 +2129,21 @@ make_scatter_with_lm <- function(data, indep_var, resp_var,
                hjust = 1.2,
                vjust = 1.2)
   }
-
+  
+  if(!is.null(title_color)) {
+    plot <- plot + theme(
+      plot.title = element_textbox_simple(
+        fill = title_color,
+        size = 13,
+        lineheight = 1,
+        padding = margin(5.5, 5.5, 5.5, 5.5),
+        margin = margin(0, 0, 5.5, 0)
+      )
+    )
+  }
+  
   plot
-
+  
 }
 
 
@@ -2143,9 +2157,9 @@ make_scatter_with_lm <- function(data, indep_var, resp_var,
 #' @return GGplot object
 #'
 make_lat_el_pd_plot <- function (alpha_div, var, subtitle) {
-
+  
   var_sym <- rlang::sym(var)
-
+  
   ggplot(alpha_div, aes(x = elevation, y = latitude, color = !!var_sym)) +
     geom_point(size = 0.7, alpha = 0.7, stroke=0) +
     scale_color_scico(
@@ -2159,7 +2173,7 @@ make_lat_el_pd_plot <- function (alpha_div, var, subtitle) {
       color = "SES",
       subtitle = subtitle) +
     standard_theme2()
-
+  
 }
 
 #' Plot an aspect of alpha diversity by latitude and elevation
@@ -2173,9 +2187,9 @@ make_lat_el_pd_plot <- function (alpha_div, var, subtitle) {
 #' @return GGplot object
 #'
 make_lat_el_rich_plot <- function (alpha_div, var, legend_label, subtitle) {
-
+  
   var_sym <- rlang::sym(var)
-
+  
   ggplot(alpha_div, aes(x = elevation, y = latitude, color = !!var_sym)) +
     geom_point(size = 0.7, alpha = 0.7, stroke=0) +
     scale_color_scico(palette = "bamako", na.value="grey") +
@@ -2183,7 +2197,7 @@ make_lat_el_rich_plot <- function (alpha_div, var, legend_label, subtitle) {
       color = legend_label,
       subtitle = subtitle) +
     standard_theme2()
-
+  
 }
 
 #' Creat a set of elevation by latitude plots for a given dataset
@@ -2195,30 +2209,30 @@ make_lat_el_rich_plot <- function (alpha_div, var, legend_label, subtitle) {
 #' @return GGplot object
 #'
 compose_lat_el_plots <- function (alpha_div, main_title) {
-
+  
   # Make tibble of variables to feed into plotting funcs
   ses_plot_vars <- tibble(
     var = c("phy_mpd_obs_z", "phy_mntd_obs_z", "func_mpd_obs_z", "func_mntd_obs_z"),
     subtitle = c("MPDphy", "MNTDphy", "MPDfunc", "MNTDfunc")
   ) %>%
     mutate(alpha_div = list(alpha_div))
-
+  
   richness_plot_vars <- tibble(
     var = c("richness", "percent_sex_dip"),
     subtitle = c("Richness", "Percent sex. dip."),
     legend_label = c("n_spp", "%")
   ) %>%
     mutate(alpha_div = list(alpha_div))
-
+  
   ses_plots <- pmap(ses_plot_vars, make_lat_el_pd_plot)
-
+  
   richness_plots <- pmap(richness_plot_vars, make_lat_el_rich_plot)
-
+  
   ses_plots[[1]] <- ses_plots[[1]] +
     labs(title = main_title)
-
+  
   wrap_plots(c(ses_plots,richness_plots), ncol = 2, nrow = 3)
-
+  
 }
 
 # Drake ----
