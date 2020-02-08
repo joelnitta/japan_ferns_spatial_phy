@@ -61,3 +61,6 @@ family, subfamily, and genus. Encoding is Unicode (UTF-8).
 rbcl_mrbayes.nex: NEXUS file used for phylogenetic analysis of Japanese fern
 and lycophyte taxa with MrBayes. Output by "make_mrbayes_nex.R" in the "code"
 folder. This was uploaded to CIPRES for phylogenetic analysis.
+
+mesh2R.zip: Zipped shp file of second-degree mesh codes for Japan. Downloaded
+from http://www.gis-okinawa.jp/GIS_data/mesh23/ on 2020-02-06.
