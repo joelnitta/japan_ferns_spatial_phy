@@ -1386,7 +1386,9 @@ classify_endemism <- function (biodiv_results_raw) {
         PE_WE_P <= 0.95 & PHYLO_RPE_NULL2 <= 0.95 ~ NA_character_,
         PHYLO_RPE2 > 0.975 ~ "palaeo",
         PHYLO_RPE2 < 0.025 ~ "neo",
-        PE_WE_P > 0.99 & PHYLO_RPE_NULL2 > 0.99 ~"super",
+        # 'super' is just a more extreme version of 'mixed', 
+        # so it may be easier to understand the results without it.
+        # PE_WE_P > 0.99 & PHYLO_RPE_NULL2 > 0.99 ~"super",
         TRUE ~ "mixed"
       ) %>% as.factor(.)
     )
