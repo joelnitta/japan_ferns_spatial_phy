@@ -67,7 +67,8 @@ loadd(list = c(
   "ja_bioregions_ferns",
   "biodiv_results_ferns",
   "species_motifs_ferns_6L",
-  "percent_sex_dip_ferns"), 
+  "percent_sex_dip_ferns",
+  "repro_data"),
   cache = ja_fern_cache)
 
 ```
@@ -88,6 +89,8 @@ alpha_div_ferns <-
     mutate_at(biodiv_results_ferns, vars(longitude, latitude), as.character),
     by = c("longitude", "latitude")) %>%
   mutate_at(vars(longitude, latitude), as.numeric) %>%
+  # Make canape 'NA' an explicit factor level
+  mutate(canape = forcats::fct_explicit_na(canape, "NA")) %>%
   rename_at(vars(1:6 %>% as.character), ~paste0("motif_", .)) %>%
   filter(latitude > 21)
 ```
@@ -96,9 +99,9 @@ alpha_div_ferns <-
 # Code to make title slide image, don't need to run when rendering slides
 
 a <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  occ_data = occ_data_ferns, 
-  div_metric = "richness", 
+  div_data = alpha_div_ferns,
+  occ_data = occ_data_ferns,
+  div_metric = "richness",
   metric_title = "No. species ",
   label = "Richness") +
   scale_fill_viridis_c() +
@@ -106,7 +109,7 @@ a <- make_diversity_map(
   theme(
     plot.title = element_blank(),
     plot.subtitle = element_blank(),
-    legend.position = "none", 
+    legend.position = "none",
      panel.background = element_rect(fill = "black"),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -115,16 +118,16 @@ a <- make_diversity_map(
 ggsave(plot = a, here::here("presentations/jsps_2020-03-01/images/title_slide_part_a.png"))
 
 b <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  occ_data = occ_data_ferns, 
-  div_metric = "phy_mpd_obs_z", 
+  div_data = alpha_div_ferns,
+  occ_data = occ_data_ferns,
+  div_metric = "phy_mpd_obs_z",
   metric_title = "MPD",
   label = "Mean Phylogenetic Distance") +
   scale_fill_scico(
-    palette = "vik", 
+    palette = "vik",
     na.value="dark grey",
     limits = c(
-      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3), 
+      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3),
       get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3)
     )) +
   scale_y_continuous(
@@ -134,7 +137,7 @@ b <- make_diversity_map(
   theme(
     plot.title = element_blank(),
     plot.subtitle = element_blank(),
-    legend.position = "none", 
+    legend.position = "none",
      panel.background = element_rect(fill = "black"),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
@@ -147,53 +150,182 @@ ggsave(plot = b, here::here("presentations/jsps_2020-03-01/images/title_slide_pa
 ---
 class: big-margin
 
-## Biodiversity is in danger from climate change
+## 生物多様性は危機にさらされている
+
+- 地球温暖化をはじめ、人間の活動によって生物多様性が失われている
+
+- 保全対策が必要
 
 ---
 class: big-margin
 
-## We must understand the distribution of biodiversity to save it
+## 生物多様性の保全には、まずその分布を理解する必要がある
 
-- Most analyses of BD only include richness
-- But BD is more complicated: evo history also important
+- 今まで生物多様性は主に種数だけで計れてきた
 
----
-class: big-margin
+- しかし、生物多様性には様々な側面（次元）がある
 
-## Japan is an ideal site to study fern BD
-
-- Extremely well sampled
-
----
-class: big-margin
-
-## Goals
-
-- Map biodiversity (species richness, PD, endemism)
-- Identify biogeographical realms
-- Understand drivers of biogeo structure
+ - 系統的多様性
+ 
+ - 機能的多様性
+ 
+ - など
 
 ---
 class: big-margin
 
-## Data
+## 日本のシダ植物
 
-- Occurrence data of Japanese fern specimens
-- Phylogenetic tree (*rbcL*)
-- Morphological traits
-- Climate data
+.pull-left[
+- どの国よりも豊富なサンプリング
+
+- 日本シダの会の動力の甲斐
+
+- 生物多様性の多次元解析の最適？
+]
+
+.pull-right[
+```{r gbif-colls-per-country}
+# Read in pteridophyte GBIF collections per country data from
+# Iwasaki lab presentation
+collections_by_country <- read_csv(here::here("data_raw/gbif_pterido_coll_by_country.csv")) %>%
+  mutate(country = factor(country)) %>%
+  mutate(country = fct_reorder(country, n))
+
+# Plot showing top 10
+ggplot(collections_by_country, aes(x = country, y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "GBIF pteridophyte \ncollections (top 10)",
+    y = "No. collections") +
+  scale_y_continuous(labels = scales::comma) +
+  ggplot2::theme_bw(base_size = 24) +
+  theme(
+    axis.title.y = element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(colour="black"),
+      axis.text.y = ggplot2::element_text(colour="black")
+  )
+```
+]
+
+
+---
+class: big-margin
+
+## 日本のシダ植物
+
+.pull-left[
+- どの国よりも豊富なサンプリング
+
+- 日本シダの会の動力の甲斐
+
+- 生物多様性の多次元解析の最適？
+]
+
+.pull-right[
+```{r ja-pterido-coll-curve}
+# Format pteridophyte abundances (no hybrids) as numeric vector
+pterido_abun <-
+occ_point_data_raw %>%
+  group_by(species) %>%
+  count(sort = TRUE) %>%
+  pull(n)
+
+# Run iNEXT
+inext_out <- iNEXT::iNEXT(pterido_abun, q=0, datatype="abundance")
+
+# create subset of observed points to add to plot as dots
+observed_data <- inext_out$iNextEst[inext_out$iNextEst$method == "observed",]
+
+# Make iNEXT plot
+inext_out$iNextEst %>%
+  filter(m < 500000) %>%
+  ggplot(aes(x=m, y=qD)) +
+  geom_ribbon(aes(ymin = qD.LCL, ymax = qD.UCL), fill = "grey70", alpha=0.2) +
+  geom_line(aes(linetype=method), size=0.8) +
+  scale_linetype_manual(values=c("dotted", "solid", "solid")) +
+  geom_point(data=observed_data, size=5) +
+  scale_y_continuous("No. spp.") +
+  scale_x_continuous("No. collections") +
+  labs(
+    title = "Species collection curve",
+    subtitle = "Japanese pteridophytes (no hybrids)"
+  ) +
+  ggplot2::theme_bw(base_size = 24) +
+  theme(
+    axis.title.y = element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(colour="black"),
+    axis.text.y = ggplot2::element_text(colour="black"),
+    legend.position="bottom", 
+    legend.title=element_blank()
+    )
+
+```
+]
+
+---
+class: big-margin
+
+## 本研究の目的
+
+**日本産シダ類** において
+
+- 多様性を複数の次元から把握すること
+
+- 生態的構造を検討すること
+
+- 以上のパターンを生み出している要素を探ること
+
+---
+class: big-margin
+
+
+```{r calc-species-num}
+# Count number of fern species, no hybrids
+
+# Inner-join fern occurrence data (incl. hybrids)
+# with repro data (no hybrids)
+n_ferns_no_hybrids <-
+occ_data_ferns %>%
+  select(taxon_id) %>%
+  unique %>%
+  inner_join(repro_data) %>%
+  pull(taxon_name) %>%
+  n_distinct()
+
+```
+
+## データ
+
+- 日本産シダ類の採取データ
+
+  - `r nrow(occ_data_ferns) %>% scales::comma()`点
+  
+  - `r n_ferns_no_hybrids` 種類（雑種を除く）
+
+- 系統樹 (*rbcL*)
+
+- 形態的特徴
+
+- 気候データ
+
+.footnote[Ebihara and Nitta. 2019. *Journal of Plant Research* 132:723–738]
 
 ---
 
-## Species richness peaks on Yakushima Isl.
+## 屋久島は種数の頂点
 
 ```{r richness-plot, out.width = "120%", fig.asp = 0.7}
 # Fern richness
 # - map
 a <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  occ_data = occ_data_ferns, 
-  div_metric = "richness", 
+  div_data = alpha_div_ferns,
+  occ_data = occ_data_ferns,
+  div_metric = "richness",
   metric_title = "No. species ",
   label = "Richness") +
   scale_fill_viridis_c() +
@@ -221,7 +353,7 @@ b <-
   geom_path() +
   labs(
     x = "No. species"
-  ) + 
+  ) +
   ylim(24, 46) +
   theme(
     panel.background = element_blank(),
@@ -237,23 +369,34 @@ a + b + plot_layout(widths = c(3,1))
 ```
 
 ---
+class: big-margin
 
-## Phylogenetic diversity is high in N and S
+## 系統的多様性
+
+- Mean phylogenetic distance (MPD): ある地点に生育する種の**平均的系統距離**
+
+- 生値をランダムな分布と比較して、ランダムより高いか、低いか、解析する
+
+.footnote[Webb, et al. 2002. *Annual Review of Ecology and Systematics* 33:475–505.]
+
+---
+
+## 系統的多様性は南北に高い
 
 ```{r mpd-plot, out.width = "120%", fig.asp = 0.7}
 # Phylogenetic diversity (MPD)
 # - map
 a <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  occ_data = occ_data_ferns, 
-  div_metric = "phy_mpd_obs_z", 
+  div_data = alpha_div_ferns,
+  occ_data = occ_data_ferns,
+  div_metric = "phy_mpd_obs_z",
   metric_title = "MPD",
   label = "Mean Phylogenetic Distance") +
   scale_fill_scico(
-    palette = "vik", 
+    palette = "vik",
     na.value="dark grey",
     limits = c(
-      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3), 
+      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3),
       get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3)
     )) +
   scale_y_continuous(
@@ -264,7 +407,7 @@ a <- make_diversity_map(
 
 # line tracking mean MPD
 b <- ggplot(
-  alpha_div_ferns_binned, 
+  alpha_div_ferns_binned,
   aes(y = latitude, x = phy_mpd_obs_z)) +
   geom_path() +
   scale_y_continuous(
@@ -273,12 +416,12 @@ b <- ggplot(
   labs(
     subtitle = "",
     x = "MPD"
-  ) + 
+  ) +
   annotate(
-    "segment", 
-    x = 0, xend = 0, 
-    y = -Inf, yend = Inf, 
-    linetype = 2) + 
+    "segment",
+    x = 0, xend = 0,
+    y = -Inf, yend = Inf,
+    linetype = 2) +
   ylim(24, 46) +
   theme(
     panel.background = element_blank(),
@@ -292,16 +435,33 @@ b <- ggplot(
 
 a + b + plot_layout(widths = c(3,1))
 ```
+---
+class: big-margin
+
+## Categorical Analyses of Neo- and Paleo-Endemism (CANAPE)
+
+- 分布域が狭く、系統樹の枝が短い：Neoendemic
+
+- 分布域が狭く、系統樹の枝が長い：Paleoendemic
+
+- 両方混じっている地域：Mixed
+
+- 生値をランダムな分布と比較して、ランダムと有意義な差があれば**固有地域**として認める
+
+.footnote[Mishler, et al. 2014. *Nature Communications* 5:4473]
 
 ---
 
-## S islands have high rates of endemism
+## 南の島々は固有種が多い
 
 ```{r canape-plot, out.width = "120%", fig.asp = 0.7}
-canape_cols <- RColorBrewer::brewer.pal(4, "Dark2") %>%
-  set_names(c("mixed", "neo", "palaeo", "super"))
+canape_cols <- RColorBrewer::brewer.pal(4, "Set1") %>%
+  c(., "grey80") %>%
+  set_names(c("neo", "palaeo", "super", "mixed", "NA"))
 
-ggplot(biodiv_results_ferns, aes(x = longitude, y = latitude, fill = canape)) +
+biodiv_results_ferns %>%
+  mutate(canape = fct_relevel(canape, "palaeo", "mixed", "neo")) %>%
+ggplot(aes(x = longitude, y = latitude, fill = canape)) +
   geom_tile() +
   coord_quickmap(
     xlim = c(pull(occ_data_ferns, longitude) %>% min %>% floor,
@@ -324,43 +484,41 @@ ggplot(biodiv_results_ferns, aes(x = longitude, y = latitude, fill = canape)) +
 
 ---
 
-## Neoendemic areas have more sexual diploids
+## Neoendemicな地域は有性生殖・二倍体種が多い
 
 <br>
 
 .center[
 ```{r canape-sex, fig.asp = 0.7}
-
-percent_sex_dip_ferns_round <-
-  percent_sex_dip_ferns %>% 
-  mutate(latitude = round(latitude, 3)) %>%
-  mutate(longitude = round(longitude, 3))
-
-canape_sex_mode <-
-  biodiv_results_ferns %>%
-  mutate(latitude = round(latitude, 3)) %>%
-  mutate(longitude = round(longitude, 3)) %>%
-  inner_join(
-    percent_sex_dip_ferns_round,
-    by = c("latitude", "longitude")
-  ) %>%
-  assert(is_uniq, secondary_grid_code) %>%
-  filter(!is.na(canape))
-
 # Run analysis of variance (AOV) on
-# latitudinal breadth by reproductive mode.
-canape_by_repro_model = aov(
+# endemism type by reproductive mode.
+canape_by_repro_model <- aov(
   percent_sex_dip ~ canape,
-  data = canape_sex_mode)
+  data = alpha_div_ferns)
 
-canape_by_repro_model_summary = tidy(canape_by_repro_model)
+# Inspect results:
 
-# AOV of latidudinal breadth by reproductive mode
+# - p-value
+# tidy(canape_by_repro_model)
+
+# - AOV of endemism type by reproductive mode
 # showed a significant difference, so
 # run Tukey HSD test on results.
-canape_by_repro_tukey = TukeyHSD(canape_by_repro_model) %>% tidy
+# TukeyHSD(canape_by_repro_model) %>% tidy
 
-canape_sex_mode %>%
+# Assign tukey groups for plotting
+tukey_groups <-
+    multcomp::glht(
+    canape_by_repro_model, 
+    linfct = multcomp::mcp(canape = "Tukey")) %>%
+    multcomp::cld() %>%
+    purrr::pluck("mcletters", "Letters") %>%
+    tibble(canape = names(.), group = .) %>%
+    mutate(
+      y_pos = 1.1
+    )
+
+alpha_div_ferns %>%
   group_by(canape) %>%
   summarize(
     mean_sex_dip = mean(percent_sex_dip, na.rm = TRUE),
@@ -370,10 +528,11 @@ canape_sex_mode %>%
     upper = mean_sex_dip + sd_sex_dip,
     lower = mean_sex_dip - sd_sex_dip
   ) %>%
-  mutate(canape = fct_reorder(canape, mean_sex_dip)) %>%
+  mutate(canape = fct_relevel(canape, "palaeo", "mixed", "neo")) %>%
   ggplot(aes(x = canape, y = mean_sex_dip, fill = canape)) +
   geom_col() +
-  scale_y_continuous(labels = scales::percent) +
+  geom_text(data = tukey_groups, aes(y = y_pos, label = group), color = "black") +
+  scale_y_continuous(labels = scales::percent, breaks = c(0, 0.25, 0.5, 0.75, 1.0)) +
   scale_fill_manual(values = canape_cols, na.value = "grey80", guide = FALSE) +
   geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.25) +
   labs(
@@ -385,11 +544,27 @@ canape_sex_mode %>%
 ```
 ]
 
+.footnote['a', 'b', 'c' = Tukey's HSDテストによる有意義な差があったグループ]
+
+---
+class: big-margin
+
+## 生態的構造
+
+STRUCTURE (Pritchard 2000)と同じようなアルゴリズムで生態的構造を解析する。
+
+STRUCTUREでは、**遺伝子型**のデータから**個体レベル**の遺伝的構造を推定する
+
+Ecostructure (White 2019)では、**種の分布**のデータから**群集レベル**の生態的構造を推定する
+
+.footnote[Pritchard, et al. 2000. *Genetics* 155: 945-959<br>
+White, et al. 2019. *Nature Communications* 10:2646.]
+
 ---
 class: inverse, middle
 background-color: #000000
 
-## Ecological structure of Japanese ferns, *K* = 6
+## 日本産シダ類の生態的構造 (*K* = 6)
 
 ```{r ecos-map-prep}
 # Write out ecostructure plots using modified version of ecos_plot_pie(),
@@ -437,12 +612,12 @@ purrr::walk2(
 
 # Define a function to crop ecostructure map plot
 crop_ecos_plot <- function (image_path) {
-  
+
   image_read(image_path) %>%
     # Crops to 2410x2410, starting 525 to the right and 150 down from UL corner
     image_crop("2140x2140+525+150") %>%
     image_write(
-      path = image_path %>% 
+      path = image_path %>%
         fs::path_ext_remove() %>%
         paste0("_crop.png")
     )
@@ -461,7 +636,7 @@ species_motifs_ferns_6L$theta %>%
   rownames_to_column("taxon_id") %>%
   as_tibble %>%
   pivot_longer(-taxon_id, names_to = "motif", values_to = "score") %>%
-  left_join(taxon_id_map, by = "taxon_id") %>% 
+  left_join(taxon_id_map, by = "taxon_id") %>%
   select(motif, taxon, score) %>%
   mutate(taxon = str_replace_all(taxon, "_", " ")) %>%
   mutate(score = round(score, 2)) %>%
@@ -471,7 +646,7 @@ species_motifs_ferns_6L$theta %>%
 
 # Define function for making species ranking table
 make_species_ranking_table <- function (ranking_data, motif_select, taxon_select = NULL, taxon_include = "", slice_n = 10) {
-  
+
   ranking_data_sliced <- ranking_data %>%
     filter(motif == motif_select) %>%
     mutate(include = ifelse(taxon %in% taxon_include, 1, 0)) %>%
@@ -484,9 +659,9 @@ make_species_ranking_table <- function (ranking_data, motif_select, taxon_select
     mutate(score = as.factor(score)) %>%
     # Arrange alphabetically within score
     arrange(desc(score), taxon)
-  
+
   if(is.numeric(taxon_select)) taxon_select <- ranking_data_sliced$taxon[[taxon_select]]
-   
+
   table <-
     ranking_data_sliced %>%
     gt() %>%
@@ -517,7 +692,7 @@ make_species_ranking_table <- function (ranking_data, motif_select, taxon_select
       locations = cells_data(
         columns = vars(taxon))
     )
-  
+
   if(!is.null(taxon_select))
     table <-
       table %>%
@@ -532,14 +707,14 @@ make_species_ranking_table <- function (ranking_data, motif_select, taxon_select
           columns = everything(),
           rows = taxon == taxon_select)
       )
-  
+
   table
-  
+
 }
 
 # Define function to make simple distribution map for a species
 plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_data, show_title = FALSE, taxon_include = "") {
-  
+
    ranking_data <- ranking_data %>%
     filter(motif == motif_select) %>%
     mutate(include = ifelse(taxon %in% taxon_include, 1, 0)) %>%
@@ -547,22 +722,22 @@ plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_dat
     select(taxon, score) %>%
     mutate(score = as.factor(score)) %>%
     arrange(desc(score), taxon)
-   
+
   if(is.numeric(taxon_select)) taxon_select <- ranking_data$taxon[[taxon_select]]
-   
+
   cells_present <-
     occ_data %>%
     filter(taxon_name == taxon_select) %>%
     select(secondary_grid_code) %>%
     unique %>%
     mutate(present = TRUE)
-  
+
   plot_data <-
     occ_data %>%
     select(secondary_grid_code, latitude, longitude) %>%
     left_join(cells_present) %>%
     mutate(present = replace_na(present, FALSE))
-  
+
   plot <- ggplot(plot_data, aes(x = longitude, y = latitude, fill = present)) +
     geom_tile() +
     coord_quickmap(
@@ -573,13 +748,13 @@ plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_dat
     ) +
     scale_fill_manual(values = c("TRUE" = "red", "FALSE" = "grey80"), na.value = "grey80", guide = FALSE) +
     theme_void()
-  
+
   if(isTRUE(show_title))
     plot <- plot +
     labs(
       title = taxon_select
     )
-  
+
   plot
 }
 ```
@@ -590,7 +765,7 @@ plot_distribution <- function (ranking_data, motif_select, taxon_select, occ_dat
 plot_dist_by_motif <- function(species_ranking, motif, occ_data_ferns) {
   dist_maps <- purrr::map(1:10, ~plot_distribution(species_ranking, motif, ., occ_data_ferns, show_title = TRUE)) %>%
     patchwork::wrap_plots(ncol = 2, nrow = 5)
-  
+
   ggsave(plot = dist_maps, file = glue::glue("motif_{motif}_maps.png"), width = 6, height = 12, units = "in")
 }
 
@@ -829,7 +1004,7 @@ plot_distribution(species_ranking, 6, "Arachniodes sporadosora", occ_data_ferns)
 
 ---
 
-## Motif 2 tends to cluster, motif 6 tends to overdisperse
+## 生態的構造のグループによって、系統的多様性が違う
 
 .pull-left[<img src="images/species_motifs_ferns_all_crop.png" alt="drawing">]
 
