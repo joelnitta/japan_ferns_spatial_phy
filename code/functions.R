@@ -124,8 +124,7 @@ tidy_japan_names <- function (data) {
   data %>%
     select(taxon_id = ID20160331, scientific_name = `GreenList Name`,
            endemic = Endemism, conservation_status = RL2012) %>%
-    mutate(taxon_id = as.character(taxon_id)) %>%
-    select(taxon_id, scientific_name)
+    mutate(taxon_id = as.character(taxon_id))
 }
 
 
