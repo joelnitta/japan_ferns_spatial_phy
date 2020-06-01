@@ -26,6 +26,7 @@ source("code/plan.R")
 
 # Load cache
 ja_fern_cache <- new_cache("ja_fern_cache")
+options(rstudio_drake_cache = ja_fern_cache)
 
 # Run analyses ----
 
