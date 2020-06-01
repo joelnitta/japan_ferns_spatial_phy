@@ -467,6 +467,33 @@ plan <- drake_plan (
     file_out(here::here("data/tree_for_biodiverse_ferns.tre"))
   ),
   
+  # Also do for endemics only
+  comm_ferns_endemic = left_join(comm_ferns, green_list, by = c(species = "taxon_id")) %>%
+    mutate(endemic = replace_na(endemic, "no")) %>%
+    filter(endemic == "Endemic") %>%
+    select(-endemic, -scientific_name, -conservation_status) %>%
+    # Drop sites with 0 abundance
+    pivot_longer(-species, names_to = "site", values_to = "abun") %>%
+    filter(abun > 0) %>%
+    pivot_wider(names_from = "site", values_from = "abun") %>%
+    mutate_at(vars(-species), ~replace_na(., 0)),
+  
+  matrix_for_biodiverse_ferns_endemic = make_matrix_for_biodiverse(
+    comm_ferns_endemic, all_cells_raw),
+  
+  matrix_for_biodiverse_ferns_endemic_out = readr::write_csv(
+    matrix_for_biodiverse_ferns_endemic, 
+    file_out(here::here("data/matrix_for_biodiverse_ferns_endemic.csv"))
+  ),
+  
+  tree_for_biodiverse_ferns_endemic = match_comm_and_tree(
+    comm_ferns_endemic, japan_pterido_tree, "tree"),
+  
+  tree_for_biodiverse_ferns_endemic_out = ape::write.tree(
+    tree_for_biodiverse_ferns_endemic,
+    file_out(here::here("data/tree_for_biodiverse_ferns_endemic.tre"))
+  ),
+  
   # Run CANAPE in Biodiverse as described on this blog post:
   # http://biodiverse-analysis-software.blogspot.com/2014/11/do-it-yourself-canape.html
   # Settings:
@@ -480,6 +507,11 @@ plan <- drake_plan (
   
   biodiv_results_ferns = readr::read_csv(
     file_in("data/ja_ferns_biodiverse_rand_p_spatial_results.csv")) %>%
+    classify_endemism %>%
+    rename(longitude = Axis_0, latitude = Axis_1),
+  
+  biodiv_results_ferns_endemic = readr::read_csv(
+    file_in("data/ja_ferns_endemic_biodiverse_rand_p_spatial_results.csv")) %>%
     classify_endemism %>%
     rename(longitude = Axis_0, latitude = Axis_1)
 
