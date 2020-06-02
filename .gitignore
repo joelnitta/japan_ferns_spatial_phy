@@ -18,8 +18,7 @@ temp
 *.png
 *.log
 *.tar.gz
-packrat/*
-!packrat/packrat.lock
+renv/
 cached_zip/
 *_cache/
 *_files/
