@@ -1,4 +1,4 @@
-FROM rocker/r-ver:3.6.1
+FROM rocker/rstudio:4.0.0
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -15,13 +15,12 @@ RUN apt-get update \
     libfftw3-dev \
     libgeos-dev \
     libgdal-dev \
-    libgsl0-dev \
+    libgsl-dev \
     libgl1-mesa-dev \
     libglu1-mesa-dev \
     libhdf4-alt-dev \
     libhdf5-dev \
     libjq-dev \
-    liblwgeom-dev \
     libpq-dev \
     libproj-dev \
     libprotobuf-dev \
@@ -37,7 +36,8 @@ RUN apt-get update \
     unixodbc-dev \
     libgdal-dev \
     libmagick++-dev \
-    libzmq3-dev
+    libzmq3-dev \
+    libgmp3-dev
 
 ####################################
 ### Install R packages with renv ###
