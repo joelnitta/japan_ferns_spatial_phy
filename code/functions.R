@@ -1393,6 +1393,148 @@ classify_endemism <- function (biodiv_results_raw) {
     )
 }
 
+
+#' Run Categorical Analysis of Palaeo and Neo Endemism (CANAPE)
+#' analysis
+#'
+#' @param comm_tbl Input community as a tibble, with species as rows
+#' and communities as columns. There should be a single column named
+#' "species", then the rest of the columns are named after each community
+#' (or grid cell).
+#' @param tree Phylogenetic tree. Species in the `comm_tbl` and `tree` must
+#' match exactly
+#' @param n_reps Number of null communities to simulate
+#' @param n_iterations Number of iterations used to scramble species names per
+#' null community
+#'
+#' @return Tibble with columns `grid_cell` (corresponds to column names
+#' other than `species` in `comm_tbl`), `endem_type` (type of endemism:
+#' paleo, neo, mixed, or none), and summary statistics of various phylogenetic
+#' endemism metrics
+#' 
+canape <- function (comm_tbl, tree, n_reps, n_iterations) {
+  
+  # Convert comm to sparse matrix format for phyloregions
+  comm_sparse <-
+    comm_tbl %>%
+    pivot_longer(names_to = "grids", values_to = "abundance", cols = -species) %>%
+    assert(in_set(c(0,1)), abundance) %>%
+    assert(not_na, abundance) %>%
+    filter(abundance == 1) %>%
+    select(species, grids) %>%
+    long2sparse
+  
+  # Make sure names match
+  assert_that(isTRUE(
+    all.equal(sort(tree$tip.label), sort(colnames(comm_sparse)))
+  ))
+  
+  # Convert comm to data frame format for picante (for making null communities)
+  comm_df <- comm_tbl %>%
+    pivot_longer(names_to = "grids", values_to = "abundance", cols = -species) %>%
+    pivot_wider(names_from = "species", values_from = "abundance") %>%
+    column_to_rownames("grids")
+  
+  # Make alternative tree with equal branch lengths
+  tree_alt <- tree
+  tree_alt$edge.length <- rep(length(tree_alt$edge.length), 1)
+  
+  # Calculate observed PE and PEalt
+  pe_orig_obs <- phylo_endemism(comm_sparse, tree) %>%
+    tibble(
+      grid_cell = names(.),
+      pe_orig_obs = .
+    )
+  
+  pe_alt_obs <- phylo_endemism(comm_sparse, tree_alt) %>%
+    tibble(
+      grid_cell = names(.),
+      pe_alt_obs = .
+    )
+  
+  # Generate random communities and calculate phylogenetic endemism metrics for each
+  # (about 4 minutes for 100 reps)
+  random_comm_data <-
+    tibble(
+      random_comm = rerun(
+        n_reps, 
+        picante::randomizeMatrix(comm_df, null.model = "independentswap", iterations = n_iterations) %>% 
+          dense2sparse()
+      ) 
+    ) %>%
+    mutate(
+      # pe_orig is phylogenetic endemism (PE) of Rosauer et al. (2009)
+      pe_orig = map(random_comm, ~phylo_endemism(x = ., phy = tree, weighted = TRUE)),
+      # pe_alt is PE calculated using an alternative tree
+      # where the non-zero branches are modified to be of equal length (Mishler et al., 2014)
+      pe_alt = map(random_comm, ~phylo_endemism(x = ., phy = tree_alt, weighted = TRUE)),
+      # rpe is the ratio of pe_orig to pe_alt
+      rpe = map2(.x = pe_orig, .y = pe_alt, ~magrittr::divide_by(.x, .y))
+    ) 
+  
+  # Calculate summary statistics (upper and lower quantiles)
+  # for `pe_orig`, `pe_alt`, and `rpe`
+  
+  # pe_orig is one-sided (we are only interested in unusually high values)
+  pe_orig_random <- bind_rows(random_comm_data$pe_orig) %>%
+    pivot_longer(values_to = "pe_orig", names_to = "grid_cell", cols = everything()) %>%
+    group_by(grid_cell) %>%
+    summarize(
+      pe_orig_upper = quantile(pe_orig, probs = 0.95)
+    )
+  
+  # pe_alt is one-sided (we are only interested in unusually high values)
+  pe_alt_random <- bind_rows(random_comm_data$pe_alt) %>%
+    pivot_longer(values_to = "pe_alt", names_to = "grid_cell", cols = everything()) %>%
+    group_by(grid_cell) %>%
+    summarize(
+      pe_alt_upper = quantile(pe_alt, probs = 0.95),
+    )
+  
+  # rpe_random is two-sided (we are only interested in unusually high and low values)
+  rpe_random <- bind_rows(random_comm_data$rpe) %>%
+    pivot_longer(values_to = "rpe", names_to = "grid_cell", cols = everything()) %>%
+    group_by(grid_cell) %>%
+    summarize(
+      rpe_upper = quantile(rpe, probs = 0.975, na.rm = TRUE),
+      rpe_lower = quantile(rpe, probs = 0.025, na.rm = TRUE),
+    )
+  
+  # Summarize PE results, adding categorization for paleo-, neo-, and mixed-endemics
+  #
+  # Classify based on this description:
+  # (http://biodiverse-analysis-software.blogspot.com/2014/11/canape-categorical-analysis-of-palaeo.html)
+  # 1) If either PE_orig or PE_alt are significantly high then we look for palaeo or neo endemism
+  #    a) If RPE is significantly high then we have palaeo-endemism (PE_orig is consistently higher than PE_alt across the random realisations)
+  #    b) Else if RPE is significantly low then we have neo-endemism (PE_orig is consistently lower than PE_alt across the random realisations)
+  #    c) Else we have mixed age endemism in which case
+  #       i) If both PE_orig and PE_alt are highly significant (p<0.01) then we have super endemism (high in both palaeo and neo)
+  #       ii) Else we have mixed (some mixture of palaeo, neo and non endemic)
+  # 2)  Else if neither PE_orig or PE_alt are significantly high then we have a non-endemic cell
+  #
+  # ('super' is just a more extreme version of 'mixed', so don't use this)
+  
+  list(pe_orig_random, pe_alt_random, rpe_random, pe_orig_obs, pe_alt_obs) %>%
+    reduce(left_join, by = "grid_cell") %>%
+    mutate(rpe_obs = pe_orig_obs/pe_alt_obs) %>%
+    mutate(
+      pe_orig_signif = ifelse(pe_orig_obs >= pe_orig_upper, TRUE, FALSE),
+      pe_alt_signif = ifelse(pe_alt_obs >= pe_alt_upper, TRUE, FALSE),
+      rpe_high_signif = ifelse(rpe_obs >= rpe_upper, TRUE, FALSE),
+      rpe_low_signif = ifelse(rpe_obs <= rpe_lower, TRUE, FALSE)
+    ) %>%
+    mutate(
+      endem_type = case_when(
+        (pe_orig_signif | pe_alt_signif) & rpe_high_signif ~ "paleo",
+        (pe_orig_signif | pe_alt_signif) & rpe_low_signif ~ "neo",
+        pe_orig_signif | pe_alt_signif ~ "mixed",
+        TRUE ~ NA_character_
+      )
+    ) %>%
+    select(-contains("signif"))
+}
+
+
 # Geospatial ----
 
 #' Exclude points in Japan from GBIF data
