@@ -129,10 +129,10 @@
     },
     "SQUAREM": {
       "Package": "SQUAREM",
-      "Version": "2020.2",
+      "Version": "2020.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "274007cf21ffabcbc2e5f0bf73abcb3d"
+      "Hash": "e08d8c8eec7eb52ff6c12bd2cd0897b6"
     },
     "SpatialExtremes": {
       "Package": "SpatialExtremes",
@@ -164,10 +164,10 @@
     },
     "ape": {
       "Package": "ape",
-      "Version": "5.3",
+      "Version": "5.4",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "35b0c2165569c94550d5e28b5a792b2f"
+      "Hash": "82370851316f464d3b04fd6f84ecfcb7"
     },
     "askpass": {
       "Package": "askpass",
@@ -402,10 +402,10 @@
     },
     "drake": {
       "Package": "drake",
-      "Version": "7.12.1",
+      "Version": "7.12.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "54bf473bb5460aab76fec6cce3be76fd"
+      "Hash": "f1b1d4fa17d7006044b6c690888ed4e3"
     },
     "e1071": {
       "Package": "e1071",
@@ -714,10 +714,10 @@
     },
     "later": {
       "Package": "later",
-      "Version": "1.0.0",
+      "Version": "1.1.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "6d927978fc658d24175ce37db635f9e5"
+      "Hash": "d0a62b247165aabf397fded504660d8a"
     },
     "lattice": {
       "Package": "lattice",
@@ -851,10 +851,10 @@
     },
     "mnormt": {
       "Package": "mnormt",
-      "Version": "1.5-7",
+      "Version": "2.0.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "74b6d3efd46009b9304a7d760fd20e03"
+      "Hash": "7b8bfa03ea0737a0b8e9b8af4f721faf"
     },
     "modelr": {
       "Package": "modelr",
@@ -1304,6 +1304,13 @@
       "Repository": "CRAN",
       "Hash": "a8c653ef8ce67683f588e6088ed45572"
     },
+    "tmvnsim": {
+      "Package": "tmvnsim",
+      "Version": "1.0-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "50470c7ed0cc8099cbc17b38f0ef621f"
+    },
     "txtq": {
       "Package": "txtq",
       "Version": "0.2.0",
@@ -1334,10 +1341,10 @@
     },
     "vctrs": {
       "Package": "vctrs",
-      "Version": "0.3.0",
+      "Version": "0.3.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "fbf7ee297936697ec8404a22859da129"
+      "Hash": "1739235995f08583db4095a28c357207"
     },
     "vegan": {
       "Package": "vegan",
