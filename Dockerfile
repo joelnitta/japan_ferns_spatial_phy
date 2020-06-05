@@ -37,7 +37,8 @@ RUN apt-get update \
     libgdal-dev \
     libmagick++-dev \
     libzmq3-dev \
-    libgmp3-dev
+    libgmp3-dev \
+    libpng-dev
 
 ####################################
 ### Install R packages with renv ###
