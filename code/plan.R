@@ -455,7 +455,7 @@ plan <- drake_plan (
   
   matrix_for_biodiverse_ferns_out = readr::write_csv(
     matrix_for_biodiverse_ferns, 
-    file_out(here::here("data/matrix_for_biodiverse_ferns.csv"))
+    file_out("data/matrix_for_biodiverse_ferns.csv")
     ),
   
   tree_for_biodiverse_ferns = match_comm_and_tree(
@@ -464,7 +464,7 @@ plan <- drake_plan (
   
   tree_for_biodiverse_ferns_out = ape::write.tree(
     tree_for_biodiverse_ferns,
-    file_out(here::here("data/tree_for_biodiverse_ferns.tre"))
+    file_out("data/tree_for_biodiverse_ferns.tre")
   ),
   
   # Also do for endemics only
@@ -483,7 +483,7 @@ plan <- drake_plan (
   
   matrix_for_biodiverse_ferns_endemic_out = readr::write_csv(
     matrix_for_biodiverse_ferns_endemic, 
-    file_out(here::here("data/matrix_for_biodiverse_ferns_endemic.csv"))
+    file_out("data/matrix_for_biodiverse_ferns_endemic.csv")
   ),
   
   tree_for_biodiverse_ferns_endemic = match_comm_and_tree(
@@ -491,7 +491,7 @@ plan <- drake_plan (
   
   tree_for_biodiverse_ferns_endemic_out = ape::write.tree(
     tree_for_biodiverse_ferns_endemic,
-    file_out(here::here("data/tree_for_biodiverse_ferns_endemic.tre"))
+    file_out("data/tree_for_biodiverse_ferns_endemic.tre")
   ),
   
   # Run CANAPE in Biodiverse as described on this blog post:
