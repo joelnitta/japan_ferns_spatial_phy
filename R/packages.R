@@ -1,5 +1,4 @@
 # Load packages
-
 library(conflicted)
 library(checkr)
 library(FD)
@@ -19,3 +18,9 @@ library(ecostructure)
 library(sf)
 library(phyloregion)
 library(tidyverse)
+
+# Resolve conflicts
+conflicted::conflict_prefer("map", "purrr")
+conflicted::conflict_prefer("select", "dplyr")
+conflicted::conflict_prefer("filter", "dplyr")
+conflicted::conflict_prefer("gather", "tidyr")
