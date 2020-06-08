@@ -44,15 +44,24 @@ RUN apt-get update \
 ### Install R packages with renv ###
 ####################################
 
-COPY ./renv.lock ./
-
-COPY ./renv_restore.R ./
-
+# Create directory for renv project library
 RUN mkdir renv
 
-RUN Rscript renv_restore.R
+# Modify Rprofile.site so renv uses /renv for project library
+RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site
 
-# Modify Rprofile.site so R loads renv library by default
-RUN echo '.libPaths("/renv")' >> /usr/local/lib/R/etc/Rprofile.site
+# Initialize a 'dummy' project and restore the renv library.
+# Since the library path is specified as above, the library will be restored to /renv
+RUN mkdir tmp/project
 
-WORKDIR /home/
+COPY ./renv.lock tmp/project
+
+WORKDIR tmp/project
+
+# Don't use cache (the symlinks won't work from Rstudio server)
+RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
+
+# Modify Rprofile.site so renv will always be activated, regardless of wd
+RUN echo 'source("/tmp/project/renv/activate.R")' >> /usr/local/lib/R/etc/Rprofile.site
+
+WORKDIR /home/rstudio/
