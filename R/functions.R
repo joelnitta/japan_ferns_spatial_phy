@@ -1534,6 +1534,191 @@ canape <- function (comm_tbl, tree, n_reps, n_iterations) {
     select(-contains("signif"))
 }
 
+#' Make a list of random communities in sparse matrix form
+#' 
+#' The independent swap method of Gotelli (2000) is used, which randomizes
+#' the community matrix while maintaining species occurrence frequency and
+#' sample species richness.
+#'
+#' Sparse matrix form is used by phyloregion natively, and results in much
+#' smaller file size (ca. 1 order of magnitude) than data.frame.
+#' 
+#' For example, 10 sparse matrices of dimensions 4,000 x 700 each (about the size
+#' of the Japan pteridophytes dataset) is about 25 mb, but 250 mb if each was a data.frame.
+#' 
+#' So data.frame is simply too big for generating 1,000 random communities (250 gb!).
+#'
+#' @param comm Dataframe; Input community matrix, with rows as sites and columns
+#' as species.
+#' @param n_reps Number of random communities to generate
+#' @param n_iterations Number of iterations to use for shuffling species of each
+#' random community
+#'
+#' @return List of random communities, each in sparse matrix form
+#' 
+make_null_comms_sparse <- function (comm, n_reps, n_iterations) {
+  purrr::rerun(
+    n_reps, 
+    picante::randomizeMatrix(comm, null.model = "independentswap", iterations = n_iterations) %>%
+      phyloregion::dense2sparse()
+  ) 
+}
+
+#' Calculate relative phylogenetic endemism (RPE)
+#' 
+#' RPE is the ratio of observed phylogenetic endemism to phylogenetic endemism 
+#' measured with an alternative tree where all branch lengths are equal. Thus,
+#' RPE >> 1 indicates longer branches than expected (paleoendemics), and
+#' and RPE << 1 indicates shorter branches than expected (neoendemics).
+#'
+#' @param comm_sparse Community phylogeny matrix in sparse format
+#' @param phy List of class "phylo"; phylogeny
+#'
+#' @return Numeric vector; names are sites of community
+#'
+rpe <- function (comm_sparse, phy) {
+  
+  # FIXME: add checks for input, make sure names are in correct order
+  
+  # Make alternative tree with equal branch lengths
+  phy_alt <- phy
+  phy_alt$edge.length <- rep(length(phy_alt$edge.length), 1)
+  # rescale so total phy length is 1
+  phy_alt$edge.length <- phy_alt$edge.length / sum(phy_alt$edge.length)
+  # rescale original phy so total length is 1
+  phy$edge.length <- phy$edge.length / sum(phy$edge.length)
+  
+  # Calculate range-weighted phylogenetic endemism using the original tree
+  pe_orig_obs <- phylo_endemism(comm_sparse, phy, weighted = TRUE)
+  
+  # Calculate range-weighted phylogenetic endemism using the alternate tree
+  pe_alt_obs <- phylo_endemism(comm_sparse, phy_alt, weighted = TRUE)
+  
+  # Take the ratio
+  pe_orig_obs / pe_alt_obs
+  
+}
+
+#' Calculate the standard effect size (SES) of Faith's (1992) phylogenetic diversity (PD)
+#'
+#' @param comm Dataframe; Input community matrix, with rows as sites and columns
+#' as species.
+#' @param phy List of class "phylo"; phylogeny
+#' @param random_comm_sparse List of random communities;
+#' each item is one randomized community in sparse matrix format
+#'
+#' @return Tibble with standard effect size and other metrics
+#'
+ses_pd <- function(comm, phy, random_comm_sparse) {
+  
+  # Make sure that the input community and the random community all match in order of columns and rows
+  random_comm_rownames <- map(random_comm, rownames) %>% unique %>% magrittr::extract2(1)
+  assert_that(
+    isTRUE(all.equal(rownames(comm), random_comm_rownames)),
+    msg = "Row names in comm and random_comm don't match")
+  
+  random_comm_colnames <- map(random_comm, colnames) %>% unique %>% magrittr::extract2(1)
+  assert_that(
+    isTRUE(all.equal(colnames(comm), random_comm_colnames)),
+    msg = "Column names in comm and random_comm don't match")
+  
+  tibble(
+    # Loop over random communities and measure PD for each
+    # Convert output to list of vectors of PD values, one per random community
+    random_values = purrr::map(random_comm_sparse, ~phyloregion::PD(., phy)) %>%
+      transpose() %>%
+      map(unlist)
+  ) %>%
+    mutate(
+      obs_val = phyloregion::PD(phyloregion::dense2sparse(comm), phy),
+      site = names(random_values)
+    ) %>%
+    # Before continuing, make sure site names match between random values and 
+    # observed values
+    verify(site == names(obs_val)) %>%
+    # Calculate mean, sd, and SES
+    mutate(
+      random_mean = purrr::map_dbl(random_values, ~mean(., na.rm = TRUE)),
+      random_sd = purrr::map_dbl(random_values, ~sd(., na.rm = TRUE)),
+      obs_rank = purrr::map2_dbl(.x = obs_val, .y = random_values, ~rank(c(.x, .y), ties.method = "average")[[1]]),
+      ses = (obs_val - random_mean) / random_sd,
+      p_val = obs_rank/(length(random_comm) + 1)
+    ) %>%
+    select(
+      site,
+      pd_obs = obs_val,
+      pd_rand_mean = random_mean,
+      pd_rand_sd = random_sd,
+      pd_obs_rank = obs_rank,
+      pd_obs_z = ses,
+      pd_obs_p = p_val
+    )
+}
+
+#' Calculate the standard effect size (SES) of relative phylogenetic endemisn (RPE)
+#'
+#' RPE is the ratio of observed phylogenetic endemism to phylogenetic endemism 
+#' measured with an alternative tree where all branch lengths are equal. Thus,
+#' RPE >> 1 indicates longer branches than expected (paleoendemics), and
+#' and RPE << 1 indicates shorter branches than expected (neoendemics).
+#' 
+#' The standard effect size compares observed RPE to that in a null distribution
+#' of random communities.
+#'
+#' @param comm Dataframe; Input community matrix, with rows as sites and columns
+#' as species.
+#' @param phy List of class "phylo"; phylogeny
+#' @param random_comm_sparse List of random communities;
+#' each item is one randomized community in sparse matrix format
+#'
+#' @return Tibble with standard effect size and other metrics
+#' 
+ses_rpe <- function(comm, phy, random_comm_sparse) {
+  
+  # Make sure that the input community and the random community all match in order of columns and rows
+  random_comm_rownames <- map(random_comm, rownames) %>% unique %>% magrittr::extract2(1)
+  assert_that(
+    isTRUE(all.equal(rownames(comm), random_comm_rownames)),
+    msg = "Row names in comm and random_comm don't match")
+  
+  random_comm_colnames <- map(random_comm, colnames) %>% unique %>% magrittr::extract2(1)
+  assert_that(
+    isTRUE(all.equal(colnames(comm), random_comm_colnames)),
+    msg = "Column names in comm and random_comm don't match")
+  
+  tibble(
+    # Loop over random communities and measure RPE for each
+    # Convert output to list of vectors of RPE values, one per random community
+    random_values = purrr::map(random_comm_sparse, ~rpe(., phy)) %>%
+      transpose() %>%
+      map(unlist)
+  ) %>%
+    mutate(
+      obs_val = rpe(phyloregion::dense2sparse(comm), phy),
+      site = names(random_values)
+    ) %>%
+    # Before continuing, make sure site names match between random values and 
+    # observed values
+    verify(site == names(obs_val)) %>%
+    # Calculate mean, sd, and SES
+    mutate(
+      random_mean = purrr::map_dbl(random_values, ~mean(., na.rm = TRUE)),
+      random_sd = purrr::map_dbl(random_values, ~sd(., na.rm = TRUE)),
+      obs_rank = purrr::map2_dbl(.x = obs_val, .y = random_values, ~rank(c(.x, .y), ties.method = "average")[[1]]),
+      ses = (obs_val - random_mean) / random_sd,
+      p_val = obs_rank/(length(random_comm) + 1)
+    ) %>%
+    select(
+      site,
+      rpe_obs = obs_val,
+      rpe_rand_mean = random_mean,
+      rpe_rand_sd = random_sd,
+      rpe_obs_rank = obs_rank,
+      rpe_obs_z = ses,
+      rpe_obs_p = p_val
+    )
+  
+}
 
 # Geospatial ----
 

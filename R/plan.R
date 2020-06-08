@@ -513,7 +513,32 @@ plan <- drake_plan (
   biodiv_results_ferns_endemic = readr::read_csv(
     file_in("data/ja_ferns_endemic_biodiverse_rand_p_spatial_results.csv")) %>%
     classify_endemism %>%
-    rename(longitude = Axis_0, latitude = Axis_1)
+    rename(longitude = Axis_0, latitude = Axis_1),
+  
+  # Working code for SES of RPE ----
+  # Convert comm to data frame format for making null communities
+  comm_ferns_df = comm_ferns_renamed %>%
+    pivot_longer(names_to = "grids", values_to = "abundance", cols = -species) %>%
+    pivot_wider(names_from = "species", values_from = "abundance") %>%
+    column_to_rownames("grids"),
+  
+  # Make random communities in sparse matrix format
+  random_comm_ferns = make_null_comms_sparse(
+    comm = comm_ferns_df, 
+    n_reps = 999, 
+    n_iterations = 10000),
+  
+  # Calculate standard effect size of relative phylogenetic endemism
+  ses_rpe_ferns = ses_rpe(
+    comm = comm_ferns_df, 
+    phy = tree_for_biodiverse_ferns, 
+    random_comm_sparse = random_comm_ferns),
+  
+  # Calculate standard effect size of phylogenetic diversity
+  ses_pd_ferns = ses_pd(
+    comm = comm_ferns_df, 
+    phy = tree_for_biodiverse_ferns, 
+    random_comm_sparse = random_comm_ferns)
 
   # # Write out manuscript ----
   # ms = rmarkdown::render(
