@@ -3,7 +3,6 @@
 .RData
 .Ruserdata
 .drake
-.Rprofile
 .DS_Store
 .future/
 data

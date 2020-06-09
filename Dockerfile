@@ -61,7 +61,4 @@ WORKDIR tmp/project
 # Don't use cache (the symlinks won't work from Rstudio server)
 RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
 
-# Modify Rprofile.site so renv will always be activated, regardless of wd
-RUN echo 'source("/tmp/project/renv/activate.R")' >> /usr/local/lib/R/etc/Rprofile.site
-
 WORKDIR /home/rstudio/
