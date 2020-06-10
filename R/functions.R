@@ -1438,7 +1438,6 @@ get_ses <- function (random_vals, obs_vals, metric) {
   results
 }
 
-
 #' Run standard effect size analysis for a set of biodiversity metrics
 #' 
 #' The biodiversity metrics analyzed include:
@@ -1448,6 +1447,8 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)
 #'   - pe: Phylogenetic endemism calculated with an alternate tree where all the branch lengths are equal
 #'   - rpe: Relative phylogenetic endemism (Mishler 2014 https://doi.org/10.1038/ncomms5473)
+#'   
+#' Also categorizes phylogenetic endemism using CANAPE (Mishler 2014 https://doi.org/10.1038/ncomms5473)
 #'   
 #' The independent swap method of Gotelli (2000) is used to generate random communities, which randomizes
 #' the community matrix while maintaining species occurrence frequency and
@@ -1462,7 +1463,8 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' @return Tibble. For each of the biodiversity metrics, the observed value (_obs), 
 #' mean of the random values (_rand_mean), SD of the random values (_rand_sd), 
 #' rank of the observed value vs. the random values (_obs_rank), standard effect size
-#' (_obs_z), and p-value (_obs_p) are given.
+#' (_obs_z), and p-value (_obs_p) are given. Type of phylogenetic endemism (neo, paleo, or mixed)
+#' is given as "endem_type".
 #' 
 run_ses_analysis <- function(comm_df, phy, n_reps) {
   
@@ -1474,12 +1476,14 @@ run_ses_analysis <- function(comm_df, phy, n_reps) {
   # rescale original phy so total length is 1
   phy$edge.length <- phy$edge.length / sum(phy$edge.length)
   
+  # Calculate biodiversity metrics for random communities
   random_vals <-
     purrr::rerun(
       n_reps, 
       calc_biodiv_random(comm_df, phy, phy_alt, 10000)
     )
   
+  # Calculate biodiversity metrics for observed community
   mpd_obs <- picante::mpd(as.matrix(comm_df), cophenetic(phy))
   mntd_obs <- picante::mntd(as.matrix(comm_df), cophenetic(phy))
   pe_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy, weighted = TRUE)
@@ -1487,6 +1491,7 @@ run_ses_analysis <- function(comm_df, phy, n_reps) {
   pd_obs <- phyloregion::PD(dense2sparse(comm_df), phy)
   rpe_obs <- pe_obs / pe_alt_obs
   
+  # Caclulate SES of each metric and combine
   bind_cols(
     get_ses(random_vals, mpd_obs, "mpd"),
     get_ses(random_vals, mntd_obs, "mntd"),
@@ -1496,6 +1501,30 @@ run_ses_analysis <- function(comm_df, phy, n_reps) {
     get_ses(random_vals, rpe_obs, "rpe")
   ) %>%
     mutate(site = rownames(comm_df)) %>%
+    # Categorize phylogenetic endemism, see:
+    # http://biodiverse-analysis-software.blogspot.com/2014/11/canape-categorical-analysis-of-palaeo.html
+    #
+    # (here, PE_orig = pe_obs_p, PE_alt = pe_alt_obs_p, and RPE = rpe_obs_p)
+    # (don't consider 'super endemism' as it doesn't add much meaning)
+    #
+    # 1)    If either PE_orig or PE_alt are significantly high then we look for palaeo or neo endemism
+    #   a)    If RPE is significantly high then we have palaeo-endemism 
+    #         (PE_orig is consistently higher than PE_alt across the random realisations)
+    #   b)    Else if RPE is significantly low then we have neo-endemism 
+    #         (PE_orig is consistently lower than PE_alt across the random realisations)
+    #     c)    Else we have mixed age endemism in which case
+    #        i)    If both PE_orig and PE_alt are highly significant (p<0.01) then we 
+    #              have super endemism (high in both palaeo and neo)
+    #        ii)   Else we have mixed (some mixture of palaeo, neo and non endemic)
+    # 2)    Else if neither PE_orig or PE_alt are significantly high then we have a non-endemic cell
+  mutate(
+    endem_type = case_when(
+      (pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95) & rpe_obs_p >= 0.975 ~ "paleo",
+      (pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95) & rpe_obs_p <= 0.025 ~ "neo",
+      pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95 ~ "mixed",
+      TRUE ~ NA_character_
+    )
+  ) %>%
     select(site, everything())
   
 }
