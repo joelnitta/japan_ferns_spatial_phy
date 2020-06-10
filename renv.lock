@@ -113,6 +113,13 @@
       "Repository": "CRAN",
       "Hash": "07a8bd218526e939d07fada5a950e5be"
     },
+    "RcppEigen": {
+      "Package": "RcppEigen",
+      "Version": "0.3.3.7.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c6faf038ba4346b1de19ad7c99b8f94a"
+    },
     "RcppProgress": {
       "Package": "RcppProgress",
       "Version": "0.4.2",
@@ -309,6 +316,13 @@
       "Repository": "CRAN",
       "Hash": "d6565dc95ed7273187fd1c59a1bfc1aa"
     },
+    "clustermq": {
+      "Package": "clustermq",
+      "Version": "0.8.9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "496acc77604d473929cb543431ff7b95"
+    },
     "coda": {
       "Package": "coda",
       "Version": "0.19-3",
@@ -418,8 +432,8 @@
       "Package": "ecostructure",
       "Version": "0.99.1",
       "Source": "GitHub",
-      "Remotes": "kkdey/CountClust, kkdey/methClust",
       "RemoteType": "github",
+      "Remotes": "kkdey/CountClust, kkdey/methClust",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "ecostructure",
       "RemoteUsername": "joelnitta",
@@ -545,6 +559,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "78717b800aa9c52cadd893f3e1e8402e"
+    },
+    "ggforce": {
+      "Package": "ggforce",
+      "Version": "0.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b7132d67f9814af0536cd5761be94314"
     },
     "ggplot2": {
       "Package": "ggplot2",
@@ -877,6 +898,13 @@
       "Repository": "CRAN",
       "Hash": "6dfe8bf774944bd5595785e3229d8771"
     },
+    "narray": {
+      "Package": "narray",
+      "Version": "0.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b275f9d21e812b6338f4c3e9d70b2209"
+    },
     "nlme": {
       "Package": "nlme",
       "Version": "3.1-148",
@@ -995,6 +1023,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "03b7076c234cb3331288919983326c55"
+    },
+    "polyclip": {
+      "Package": "polyclip",
+      "Version": "1.10-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "cb167f328b3ada4ec5cf67a7df4c900a"
     },
     "praise": {
       "Package": "praise",
@@ -1164,6 +1199,13 @@
       "Repository": "CRAN",
       "Hash": "6a20c2cdf133ebc7ac45888c9ccc052b"
     },
+    "rzmq": {
+      "Package": "rzmq",
+      "Version": "0.9.7",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "19feb38a48f30f0eadd56c1b06c58d92"
+    },
     "scales": {
       "Package": "scales",
       "Version": "1.1.1",
@@ -1177,6 +1219,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "0d3e8c286b735517c2df4ed48848e732"
+    },
+    "scico": {
+      "Package": "scico",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8c75fb64420e2aafadbc258e2797c459"
     },
     "selectr": {
       "Package": "selectr",
@@ -1310,6 +1359,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "50470c7ed0cc8099cbc17b38f0ef621f"
+    },
+    "tweenr": {
+      "Package": "tweenr",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fc77eb5297507cccfa3349a606061030"
     },
     "txtq": {
       "Package": "txtq",
