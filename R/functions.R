@@ -1348,237 +1348,123 @@ rename_tree <- function (tree, taxon_id_map) {
   
 }
 
-#' Classify phylogenetic endemism (CANAPE)
-#'
-#' Verbal description from 
-#' http://biodiverse-analysis-software.blogspot.com/2014/11/canape-categorical-analysis-of-palaeo.html
-#'
-#' (here, PE_orig = PE_WE_P, PE_alt = PHYLO_RPE_NULL2, and RPE = PHYLO_RPE2)
-#'
-#' 1)    If either PE_orig or PE_alt are significantly high then we look for palaeo or neo endemism
-#'   a)    If RPE is significantly high then we have palaeo-endemism 
-#'         (PE_orig is consistently higher than PE_alt across the random realisations)
-#'   b)    Else if RPE is significantly low then we have neo-endemism 
-#'         (PE_orig is consistently lower than PE_alt across the random realisations)
-#'     c)    Else we have mixed age endemism in which case
-#'        i)    If both PE_orig and PE_alt are highly significant (p<0.01) then we 
-#'              have super endemism (high in both palaeo and neo)
-#'        ii)   Else we have mixed (some mixture of palaeo, neo and non endemic)
-#' 2)    Else if neither PE_orig or PE_alt are significantly high then we have a non-endemic cell
-#'
-#' Also see base-R version at
-#' https://github.com/NunzioKnerr/biodiverse_pipeline/blob/master/R_release/plot_CANAPE_only.R
-#'
-#' @param biodiv_results_raw Dataframe with columns `PE_WE_P`, `PHYLO_RPE_NULL2`,
-#' and `PHYLO_RPE2`: results of running randomization analysis on "Phylogenetic Endemism" and
-#' "Relative Phylogenetic Endemism, type 2" in Biodiverse
-#'
-#' @return Dataframe with endemism type categorized as column "canape"
-#' 
-classify_endemism <- function (biodiv_results_raw) {
-  biodiv_results_raw %>%
-    mutate(
-      PE_WE_P = replace_na(PE_WE_P, 0),
-      PHYLO_RPE_NULL2 = replace_na(PHYLO_RPE_NULL2, 0),
-      PHYLO_RPE2 = replace_na(PHYLO_RPE2, 0.5),
-      canape = case_when(
-        PE_WE_P <= 0.95 & PHYLO_RPE_NULL2 <= 0.95 ~ NA_character_,
-        PHYLO_RPE2 > 0.975 ~ "palaeo",
-        PHYLO_RPE2 < 0.025 ~ "neo",
-        # 'super' is just a more extreme version of 'mixed', 
-        # so it may be easier to understand the results without it.
-        # PE_WE_P > 0.99 & PHYLO_RPE_NULL2 > 0.99 ~"super",
-        TRUE ~ "mixed"
-      ) %>% as.factor(.)
-    )
-}
-
-
-#' Run Categorical Analysis of Palaeo and Neo Endemism (CANAPE)
-#' analysis
-#'
-#' @param comm_tbl Input community as a tibble, with species as rows
-#' and communities as columns. There should be a single column named
-#' "species", then the rest of the columns are named after each community
-#' (or grid cell).
-#' @param tree Phylogenetic tree. Species in the `comm_tbl` and `tree` must
-#' match exactly
-#' @param n_reps Number of null communities to simulate
-#' @param n_iterations Number of iterations used to scramble species names per
-#' null community
-#'
-#' @return Tibble with columns `grid_cell` (corresponds to column names
-#' other than `species` in `comm_tbl`), `endem_type` (type of endemism:
-#' paleo, neo, mixed, or none), and summary statistics of various phylogenetic
-#' endemism metrics
-#' 
-canape <- function (comm_tbl, tree, n_reps, n_iterations) {
-  
-  # Convert comm to sparse matrix format for phyloregions
-  comm_sparse <-
-    comm_tbl %>%
-    pivot_longer(names_to = "grids", values_to = "abundance", cols = -species) %>%
-    assert(in_set(c(0,1)), abundance) %>%
-    assert(not_na, abundance) %>%
-    filter(abundance == 1) %>%
-    select(species, grids) %>%
-    long2sparse
-  
-  # Make sure names match
-  assert_that(isTRUE(
-    all.equal(sort(tree$tip.label), sort(colnames(comm_sparse)))
-  ))
-  
-  # Convert comm to data frame format for picante (for making null communities)
-  comm_df <- comm_tbl %>%
-    pivot_longer(names_to = "grids", values_to = "abundance", cols = -species) %>%
-    pivot_wider(names_from = "species", values_from = "abundance") %>%
-    column_to_rownames("grids")
-  
-  # Make alternative tree with equal branch lengths
-  tree_alt <- tree
-  tree_alt$edge.length <- rep(length(tree_alt$edge.length), 1)
-  
-  # Calculate observed PE and PEalt
-  pe_orig_obs <- phylo_endemism(comm_sparse, tree) %>%
-    tibble(
-      grid_cell = names(.),
-      pe_orig_obs = .
-    )
-  
-  pe_alt_obs <- phylo_endemism(comm_sparse, tree_alt) %>%
-    tibble(
-      grid_cell = names(.),
-      pe_alt_obs = .
-    )
-  
-  # Generate random communities and calculate phylogenetic endemism metrics for each
-  # (about 4 minutes for 100 reps)
-  random_comm_data <-
-    tibble(
-      random_comm = rerun(
-        n_reps, 
-        picante::randomizeMatrix(comm_df, null.model = "independentswap", iterations = n_iterations) %>% 
-          dense2sparse()
-      ) 
-    ) %>%
-    mutate(
-      # pe_orig is phylogenetic endemism (PE) of Rosauer et al. (2009)
-      pe_orig = map(random_comm, ~phylo_endemism(x = ., phy = tree, weighted = TRUE)),
-      # pe_alt is PE calculated using an alternative tree
-      # where the non-zero branches are modified to be of equal length (Mishler et al., 2014)
-      pe_alt = map(random_comm, ~phylo_endemism(x = ., phy = tree_alt, weighted = TRUE)),
-      # rpe is the ratio of pe_orig to pe_alt
-      rpe = map2(.x = pe_orig, .y = pe_alt, ~magrittr::divide_by(.x, .y))
-    ) 
-  
-  # Calculate summary statistics (upper and lower quantiles)
-  # for `pe_orig`, `pe_alt`, and `rpe`
-  
-  # pe_orig is one-sided (we are only interested in unusually high values)
-  pe_orig_random <- bind_rows(random_comm_data$pe_orig) %>%
-    pivot_longer(values_to = "pe_orig", names_to = "grid_cell", cols = everything()) %>%
-    group_by(grid_cell) %>%
-    summarize(
-      pe_orig_upper = quantile(pe_orig, probs = 0.95)
-    )
-  
-  # pe_alt is one-sided (we are only interested in unusually high values)
-  pe_alt_random <- bind_rows(random_comm_data$pe_alt) %>%
-    pivot_longer(values_to = "pe_alt", names_to = "grid_cell", cols = everything()) %>%
-    group_by(grid_cell) %>%
-    summarize(
-      pe_alt_upper = quantile(pe_alt, probs = 0.95),
-    )
-  
-  # rpe_random is two-sided (we are only interested in unusually high and low values)
-  rpe_random <- bind_rows(random_comm_data$rpe) %>%
-    pivot_longer(values_to = "rpe", names_to = "grid_cell", cols = everything()) %>%
-    group_by(grid_cell) %>%
-    summarize(
-      rpe_upper = quantile(rpe, probs = 0.975, na.rm = TRUE),
-      rpe_lower = quantile(rpe, probs = 0.025, na.rm = TRUE),
-    )
-  
-  # Summarize PE results, adding categorization for paleo-, neo-, and mixed-endemics
-  #
-  # Classify based on this description:
-  # (http://biodiverse-analysis-software.blogspot.com/2014/11/canape-categorical-analysis-of-palaeo.html)
-  # 1) If either PE_orig or PE_alt are significantly high then we look for palaeo or neo endemism
-  #    a) If RPE is significantly high then we have palaeo-endemism (PE_orig is consistently higher than PE_alt across the random realisations)
-  #    b) Else if RPE is significantly low then we have neo-endemism (PE_orig is consistently lower than PE_alt across the random realisations)
-  #    c) Else we have mixed age endemism in which case
-  #       i) If both PE_orig and PE_alt are highly significant (p<0.01) then we have super endemism (high in both palaeo and neo)
-  #       ii) Else we have mixed (some mixture of palaeo, neo and non endemic)
-  # 2)  Else if neither PE_orig or PE_alt are significantly high then we have a non-endemic cell
-  #
-  # ('super' is just a more extreme version of 'mixed', so don't use this)
-  
-  list(pe_orig_random, pe_alt_random, rpe_random, pe_orig_obs, pe_alt_obs) %>%
-    reduce(left_join, by = "grid_cell") %>%
-    mutate(rpe_obs = pe_orig_obs/pe_alt_obs) %>%
-    mutate(
-      pe_orig_signif = ifelse(pe_orig_obs >= pe_orig_upper, TRUE, FALSE),
-      pe_alt_signif = ifelse(pe_alt_obs >= pe_alt_upper, TRUE, FALSE),
-      rpe_high_signif = ifelse(rpe_obs >= rpe_upper, TRUE, FALSE),
-      rpe_low_signif = ifelse(rpe_obs <= rpe_lower, TRUE, FALSE)
-    ) %>%
-    mutate(
-      endem_type = case_when(
-        (pe_orig_signif | pe_alt_signif) & rpe_high_signif ~ "paleo",
-        (pe_orig_signif | pe_alt_signif) & rpe_low_signif ~ "neo",
-        pe_orig_signif | pe_alt_signif ~ "mixed",
-        TRUE ~ NA_character_
-      )
-    ) %>%
-    select(-contains("signif"))
-}
-
-#' Make a list of random communities in sparse matrix form
+#' Calculate diversity metrics for a single random community
 #' 
 #' The independent swap method of Gotelli (2000) is used, which randomizes
 #' the community matrix while maintaining species occurrence frequency and
 #' sample species richness.
 #'
-#' Sparse matrix form is used by phyloregion natively, and results in much
-#' smaller file size (ca. 1 order of magnitude) than data.frame.
-#' 
-#' For example, 10 sparse matrices of dimensions 4,000 x 700 each (about the size
-#' of the Japan pteridophytes dataset) is about 25 mb, but 250 mb if each was a data.frame.
-#' 
-#' So data.frame is simply too big for generating 1,000 random communities (250 gb!).
+#' @param comm_df Input community matrix in data.frame format (communities as rows,
+#' species as columns, with row names and column names)
+#' @param phy Input phylogeny with total branch length scaled to 1
+#' @param phy_alt Alternative phylogeny where all branches are of equal length, scaled to 1
+#' @param n_iterations Number of iterations to use when shuffling random community
 #'
-#' @param comm Dataframe; Input community matrix, with rows as sites and columns
-#' as species.
-#' @param n_reps Number of random communities to generate
-#' @param n_iterations Number of iterations to use for shuffling species of each
-#' random community
-#'
-#' @return List of random communities, each in sparse matrix form
+#' @return List of vectors. Each vector is a biodiversity metric measured on the
+#' random community, in the same order as the rows in the input community. Metrics
+#' (names of items in the list) include:
+#'   - mpd: Mean phylogenetic distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
+#'   - mntd: Mean nearest taxon distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
+#'   - pd: Phylogenetic diversity (Faith 1992 https://doi.org/10.1016/0006-3207(92)91201-3)
+#'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)
+#'   - rpe: Relative phylogenetic endemism (Mishler 2014 https://doi.org/10.1038/ncomms5473)
 #' 
-make_null_comms_sparse <- function (comm, n_reps, n_iterations) {
-  purrr::rerun(
-    n_reps, 
-    picante::randomizeMatrix(comm, null.model = "independentswap", iterations = n_iterations) %>%
-      phyloregion::dense2sparse()
-  ) 
+calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations) {
+  
+  # Make sure phylogeny has been rescaled to total branch length of 1
+  assert_that(sum(phy$edge.length) == 1)
+  assert_that(sum(phy_alt$edge.length) == 1)
+  
+  # Make sure names match between community and tree
+  assert_that(isTRUE(
+    all.equal(sort(phy$tip.label), sort(colnames(comm_df)))
+  ))
+  
+  # Convert comm to sparse matrix format for phyloregions
+  comm_sparse <- phyloregion::dense2sparse(comm_df)
+  
+  # Generate random community
+  random_comm <- picante::randomizeMatrix(comm_df, null.model = "independentswap", iterations = n_iterations)
+  random_comm_sparse <- phyloregion::dense2sparse(random_comm)
+  
+  # Get phylogenetic distances
+  phy_distances <- cophenetic(phy)
+  
+  # Calculate statistics for random community
+  pe = phyloregion::phylo_endemism(random_comm_sparse, phy, weighted = TRUE)
+  pe_alt = phyloregion::phylo_endemism(random_comm_sparse, phy_alt, weighted = TRUE)
+  
+  list(
+    mpd = picante::mpd(random_comm, phy_distances),
+    mntd = picante::mntd(random_comm, phy_distances),
+    pd = phyloregion::PD(random_comm_sparse, phy),
+    pe = pe,
+    pe_alt = pe_alt,
+    rpe = pe / pe_alt
+  )
+  
 }
 
-#' Calculate relative phylogenetic endemism (RPE)
+#' Extract standard effect size (and other related statistics) for a single
+#' diversity metric given random values and observed values of the metric
+#'
+#' @param random_vals List of list of vectors. Each list of vectors is a biodiversity metric measured on a
+#' random community, in the same order as the rows in the input community.
+#' @param obs_vals Observed values of the biodiversity metric
+#' @param metric Name of the metric ("mpd", "mntd", "pd", "pe", or "rpe")
+#'
+#' @return Tibble
 #' 
-#' RPE is the ratio of observed phylogenetic endemism to phylogenetic endemism 
-#' measured with an alternative tree where all branch lengths are equal. Thus,
-#' RPE >> 1 indicates longer branches than expected (paleoendemics), and
-#' and RPE << 1 indicates shorter branches than expected (neoendemics).
-#'
-#' @param comm_sparse Community phylogeny matrix in sparse format
-#' @param phy List of class "phylo"; phylogeny
-#'
-#' @return Numeric vector; names are sites of community
-#'
-rpe <- function (comm_sparse, phy) {
+get_ses <- function (random_vals, obs_vals, metric) {
   
-  # FIXME: add checks for input, make sure names are in correct order
+  random_vals_trans <- transpose(random_vals)
+  
+  results <-
+    tibble(
+      random_values = transpose(random_vals_trans[[metric]]) %>% map(as_vector),
+      obs_val = obs_vals
+    ) %>%
+    transmute(
+      obs = obs_val,
+      rand_mean = purrr::map_dbl(random_values, ~mean(., na.rm = TRUE)),
+      rand_sd = purrr::map_dbl(random_values, ~sd(., na.rm = TRUE)),
+      obs_rank = purrr::map2_dbl(.x = obs_val, .y = random_values, ~rank(c(.x, .y), ties.method = "average")[[1]]),
+      obs_z = (obs_val - rand_mean) / rand_sd,
+      obs_p = obs_rank/(length(random_vals) + 1)
+    )
+  
+  colnames(results) <- paste(metric, colnames(results), sep = "_")
+  
+  results
+}
+
+
+#' Run standard effect size analysis for a set of biodiversity metrics
+#' 
+#' The biodiversity metrics analyzed include:
+#'   - mpd: Mean phylogenetic distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
+#'   - mntd: Mean nearest taxon distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
+#'   - pd: Phylogenetic diversity (Faith 1992 https://doi.org/10.1016/0006-3207(92)91201-3)
+#'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)
+#'   - pe: Phylogenetic endemism calculated with an alternate tree where all the branch lengths are equal
+#'   - rpe: Relative phylogenetic endemism (Mishler 2014 https://doi.org/10.1038/ncomms5473)
+#'   
+#' The independent swap method of Gotelli (2000) is used to generate random communities, which randomizes
+#' the community matrix while maintaining species occurrence frequency and
+#' sample species richness. Each random community is generated by shuffling observed
+#' data 10,000 times.
+#'   
+#' @param comm_df Input community matrix in data.frame format (communities as rows,
+#' species as columns, with row names and column names)
+#' @param phy Input phylogeny with total branch length scaled to 1
+#' @param n_reps Number of random communities to replicate
+#'
+#' @return Tibble. For each of the biodiversity metrics, the observed value (_obs), 
+#' mean of the random values (_rand_mean), SD of the random values (_rand_sd), 
+#' rank of the observed value vs. the random values (_obs_rank), standard effect size
+#' (_obs_z), and p-value (_obs_p) are given.
+#' 
+run_ses_analysis <- function(comm_df, phy, n_reps) {
   
   # Make alternative tree with equal branch lengths
   phy_alt <- phy
@@ -1588,135 +1474,29 @@ rpe <- function (comm_sparse, phy) {
   # rescale original phy so total length is 1
   phy$edge.length <- phy$edge.length / sum(phy$edge.length)
   
-  # Calculate range-weighted phylogenetic endemism using the original tree
-  pe_orig_obs <- phylo_endemism(comm_sparse, phy, weighted = TRUE)
-  
-  # Calculate range-weighted phylogenetic endemism using the alternate tree
-  pe_alt_obs <- phylo_endemism(comm_sparse, phy_alt, weighted = TRUE)
-  
-  # Take the ratio
-  pe_orig_obs / pe_alt_obs
-  
-}
-
-#' Calculate the standard effect size (SES) of Faith's (1992) phylogenetic diversity (PD)
-#'
-#' @param comm Dataframe; Input community matrix, with rows as sites and columns
-#' as species.
-#' @param phy List of class "phylo"; phylogeny
-#' @param random_comm_sparse List of random communities;
-#' each item is one randomized community in sparse matrix format
-#'
-#' @return Tibble with standard effect size and other metrics
-#'
-ses_pd <- function(comm, phy, random_comm_sparse) {
-  
-  # Make sure that the input community and the random community all match in order of columns and rows
-  random_comm_rownames <- map(random_comm, rownames) %>% unique %>% magrittr::extract2(1)
-  assert_that(
-    isTRUE(all.equal(rownames(comm), random_comm_rownames)),
-    msg = "Row names in comm and random_comm don't match")
-  
-  random_comm_colnames <- map(random_comm, colnames) %>% unique %>% magrittr::extract2(1)
-  assert_that(
-    isTRUE(all.equal(colnames(comm), random_comm_colnames)),
-    msg = "Column names in comm and random_comm don't match")
-  
-  tibble(
-    # Loop over random communities and measure PD for each
-    # Convert output to list of vectors of PD values, one per random community
-    random_values = purrr::map(random_comm_sparse, ~phyloregion::PD(., phy)) %>%
-      transpose() %>%
-      map(unlist)
-  ) %>%
-    mutate(
-      obs_val = phyloregion::PD(phyloregion::dense2sparse(comm), phy),
-      site = names(random_values)
-    ) %>%
-    # Before continuing, make sure site names match between random values and 
-    # observed values
-    verify(site == names(obs_val)) %>%
-    # Calculate mean, sd, and SES
-    mutate(
-      random_mean = purrr::map_dbl(random_values, ~mean(., na.rm = TRUE)),
-      random_sd = purrr::map_dbl(random_values, ~sd(., na.rm = TRUE)),
-      obs_rank = purrr::map2_dbl(.x = obs_val, .y = random_values, ~rank(c(.x, .y), ties.method = "average")[[1]]),
-      ses = (obs_val - random_mean) / random_sd,
-      p_val = obs_rank/(length(random_comm) + 1)
-    ) %>%
-    select(
-      site,
-      pd_obs = obs_val,
-      pd_rand_mean = random_mean,
-      pd_rand_sd = random_sd,
-      pd_obs_rank = obs_rank,
-      pd_obs_z = ses,
-      pd_obs_p = p_val
+  random_vals <-
+    purrr::rerun(
+      n_reps, 
+      calc_biodiv_random(comm_df, phy, phy_alt, 10000)
     )
-}
-
-#' Calculate the standard effect size (SES) of relative phylogenetic endemisn (RPE)
-#'
-#' RPE is the ratio of observed phylogenetic endemism to phylogenetic endemism 
-#' measured with an alternative tree where all branch lengths are equal. Thus,
-#' RPE >> 1 indicates longer branches than expected (paleoendemics), and
-#' and RPE << 1 indicates shorter branches than expected (neoendemics).
-#' 
-#' The standard effect size compares observed RPE to that in a null distribution
-#' of random communities.
-#'
-#' @param comm Dataframe; Input community matrix, with rows as sites and columns
-#' as species.
-#' @param phy List of class "phylo"; phylogeny
-#' @param random_comm_sparse List of random communities;
-#' each item is one randomized community in sparse matrix format
-#'
-#' @return Tibble with standard effect size and other metrics
-#' 
-ses_rpe <- function(comm, phy, random_comm_sparse) {
   
-  # Make sure that the input community and the random community all match in order of columns and rows
-  random_comm_rownames <- map(random_comm, rownames) %>% unique %>% magrittr::extract2(1)
-  assert_that(
-    isTRUE(all.equal(rownames(comm), random_comm_rownames)),
-    msg = "Row names in comm and random_comm don't match")
+  mpd_obs <- picante::mpd(as.matrix(comm_df), cophenetic(phy))
+  mntd_obs <- picante::mntd(as.matrix(comm_df), cophenetic(phy))
+  pe_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy, weighted = TRUE)
+  pe_alt_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy_alt, weighted = TRUE)
+  pd_obs <- phyloregion::PD(dense2sparse(comm_df), phy)
+  rpe_obs <- pe_obs / pe_alt_obs
   
-  random_comm_colnames <- map(random_comm, colnames) %>% unique %>% magrittr::extract2(1)
-  assert_that(
-    isTRUE(all.equal(colnames(comm), random_comm_colnames)),
-    msg = "Column names in comm and random_comm don't match")
-  
-  tibble(
-    # Loop over random communities and measure RPE for each
-    # Convert output to list of vectors of RPE values, one per random community
-    random_values = purrr::map(random_comm_sparse, ~rpe(., phy)) %>%
-      transpose() %>%
-      map(unlist)
+  bind_cols(
+    get_ses(random_vals, mpd_obs, "mpd"),
+    get_ses(random_vals, mntd_obs, "mntd"),
+    get_ses(random_vals, pd_obs, "pd"),
+    get_ses(random_vals, pe_obs, "pe"),
+    get_ses(random_vals, pe_obs, "pe_alt"),
+    get_ses(random_vals, rpe_obs, "rpe")
   ) %>%
-    mutate(
-      obs_val = rpe(phyloregion::dense2sparse(comm), phy),
-      site = names(random_values)
-    ) %>%
-    # Before continuing, make sure site names match between random values and 
-    # observed values
-    verify(site == names(obs_val)) %>%
-    # Calculate mean, sd, and SES
-    mutate(
-      random_mean = purrr::map_dbl(random_values, ~mean(., na.rm = TRUE)),
-      random_sd = purrr::map_dbl(random_values, ~sd(., na.rm = TRUE)),
-      obs_rank = purrr::map2_dbl(.x = obs_val, .y = random_values, ~rank(c(.x, .y), ties.method = "average")[[1]]),
-      ses = (obs_val - random_mean) / random_sd,
-      p_val = obs_rank/(length(random_comm) + 1)
-    ) %>%
-    select(
-      site,
-      rpe_obs = obs_val,
-      rpe_rand_mean = random_mean,
-      rpe_rand_sd = random_sd,
-      rpe_obs_rank = obs_rank,
-      rpe_obs_z = ses,
-      rpe_obs_p = p_val
-    )
+    mutate(site = rownames(comm_df)) %>%
+    select(site, everything())
   
 }
 

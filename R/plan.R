@@ -494,51 +494,19 @@ plan <- drake_plan (
     file_out("data/tree_for_biodiverse_ferns_endemic.tre")
   ),
   
-  # Run CANAPE in Biodiverse as described on this blog post:
-  # http://biodiverse-analysis-software.blogspot.com/2014/11/do-it-yourself-canape.html
-  # Settings:
-  # Randomization iterations: 999
+  # Working code for SES of diversity metrics ----
   
-  # Read in results of running Biodiverse externally
-  biodiv_results_pteridos = readr::read_csv(
-    file_in("data/ja_pteridophytes_biodiverse_rand_p_spatial_results.csv")) %>%
-    classify_endemism %>%
-    rename(longitude = Axis_0, latitude = Axis_1),
-  
-  biodiv_results_ferns = readr::read_csv(
-    file_in("data/ja_ferns_biodiverse_rand_p_spatial_results.csv")) %>%
-    classify_endemism %>%
-    rename(longitude = Axis_0, latitude = Axis_1),
-  
-  biodiv_results_ferns_endemic = readr::read_csv(
-    file_in("data/ja_ferns_endemic_biodiverse_rand_p_spatial_results.csv")) %>%
-    classify_endemism %>%
-    rename(longitude = Axis_0, latitude = Axis_1),
-  
-  # Working code for SES of RPE ----
-  # Convert comm to data frame format for making null communities
-  comm_ferns_df = comm_ferns_renamed %>%
+  # Convert comm to data frame format for picante (for making null communities)
+  comm_ferns_renamed_df = comm_ferns_renamed %>%
     pivot_longer(names_to = "grids", values_to = "abundance", cols = -species) %>%
     pivot_wider(names_from = "species", values_from = "abundance") %>%
     column_to_rownames("grids"),
   
-  # Make random communities in sparse matrix format
-  random_comm_ferns = make_null_comms_sparse(
-    comm = comm_ferns_df, 
-    n_reps = 999, 
-    n_iterations = 10000),
-  
-  # Calculate standard effect size of relative phylogenetic endemism
-  ses_rpe_ferns = ses_rpe(
-    comm = comm_ferns_df, 
+  # Run SES analysis
+  ferns_ses = run_ses_analysis(
+    comm_df = comm_ferns_renamed_df, 
     phy = tree_for_biodiverse_ferns, 
-    random_comm_sparse = random_comm_ferns),
-  
-  # Calculate standard effect size of phylogenetic diversity
-  ses_pd_ferns = ses_pd(
-    comm = comm_ferns_df, 
-    phy = tree_for_biodiverse_ferns, 
-    random_comm_sparse = random_comm_ferns)
+    n_reps = 1000)
 
   # # Write out manuscript ----
   # ms = rmarkdown::render(
