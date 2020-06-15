@@ -127,6 +127,33 @@ tidy_japan_names <- function (data) {
     mutate(taxon_id = as.character(taxon_id))
 }
 
+# Reproductive mode ----
+
+#' Calculate percent of sexual diploid taxa per grid cell (site)
+#'
+#' @param occ_data Occurrence data, including columns for
+#' `site`, `latitude`, and `longitude`
+#' @param repro_data Reproductive data, including columns 
+#' for reproductive type (`sexual_diploid`, `sexual_polyploid`)
+#'
+#' @return Tibble with percentage of sexual diploids per cell
+#' 
+calc_sex_dip <- function (occ_data, repro_data) {
+  
+  right_join(
+    occ_data_ferns,
+    select(repro_data, -taxon_name),
+    by = "taxon_id") %>%
+    group_by(site, latitude, longitude) %>%
+    summarize(
+      num_sex_dip = sum(sexual_diploid), # `sexual_diploid` is logical; TRUE for sex diploids, FALSE otherwise
+      num_total = n()
+    ) %>%
+    ungroup %>%
+    mutate(percent_sex_dip = num_sex_dip / num_total)
+  
+}
+
 # Taxonomy ----
 
 #' Modify Pteridophyte Phylogeny Group I taxonomy

@@ -102,7 +102,19 @@ plan <- drake_plan (
   # Basic world map.
   world_map = ggplot2::map_data("world") %>%
     rename(longitude = long, latitude = lat),
-
+  
+  # Analyze reproductive mode ----
+  percent_sex_dip_ferns = calc_sex_dip(
+    occ_data = occ_data_ferns,
+    repro_data = repro_data
+  ),
+  
+  # Analyze percentage of sexual diploid pteridophytes.
+  percent_sex_dip_pteridos = calc_sex_dip(
+    occ_data = occ_data_pteridos,
+    repro_data = repro_data
+  ),
+  
   # Analyze community diversity ----
 
   # Make richness matrix (number of species per
