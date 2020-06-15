@@ -280,7 +280,7 @@ add_taxonomy <- function(occ_data, taxonomy_data) {
   occ_data %>%
     mutate(genus = str_split(taxon_name, " ") %>% map_chr(1)) %>%
     filter(!is.na(genus)) %>%
-    left_join(taxonomy_data)
+    left_join(taxonomy_data, by = "genus")
 }
 
 #' Make a tibble for mapping taxon IDs to taxon names
