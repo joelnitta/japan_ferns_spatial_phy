@@ -127,24 +127,59 @@ tidy_japan_names <- function (data) {
     mutate(taxon_id = as.character(taxon_id))
 }
 
+#' Process raw occurrence data
+#'
+#' @param occ_data_raw Raw occurrence data, including columns for
+#' `Secondary grid code` (site) and `Taxon name`
+#' @param all_cells Dataframe of all site names in (secondary grid cell codes) in Japan
+#' @param ppgi Pteridophyte phylogeny group I taxonomic system
+#'
+#' @return Dataframe with cleaned names
+#' 
+process_occ_data <- function (occ_data_raw, all_cells, ppgi) {
+  
+  janitor::clean_names(occ_data_raw) %>%
+    rename(site = secondary_grid_code) %>%
+    # Simplify taxon names, replace space with underscore
+    taxastand::add_parsed_names(taxon_name, taxon) %>%
+    mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
+    # Make sure all "new" taxon names are still unique
+    verify(length(unique(taxon_name)) == length(unique(taxon))) %>%
+    select(-taxon_name) %>%
+    rename(taxon_name = taxon) %>%
+    # Add higher-level taxonomy
+    add_taxonomy(ppgi) %>%
+    # Verify that all site names (secondary grid codes) are in the all_cells data
+    assert(in_set(all_cells$site), site)
+  
+}
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)
 #'
-#' @param occ_data Occurrence data, including columns for
-#' `site`, `latitude`, and `longitude`
+#' @param comm Community data matrix, with species as columns
+#' and one column indicating "site"
 #' @param repro_data Reproductive data, including columns 
 #' for reproductive type (`sexual_diploid`, `sexual_polyploid`)
+#' @param taxon_id_map Tibble mapping taxon names to taxon ID numbers
 #'
 #' @return Tibble with percentage of sexual diploids per cell
 #' 
-calc_sex_dip <- function (occ_data, repro_data) {
+calc_sex_dip <- function (comm, repro_data, taxon_id_map) {
   
-  right_join(
-    occ_data_ferns,
-    select(repro_data, -taxon_name),
-    by = "taxon_id") %>%
-    group_by(site, latitude, longitude) %>%
+  comm %>%
+    # Convert comm to long
+    pivot_longer(names_to = "taxon", values_to = "abundance", -site) %>%
+    filter(abundance > 0) %>%
+    # Join taxon IDs
+    left_join(taxon_id_map, by = "taxon") %>%
+    assert(not_na, taxon_id) %>%
+    # Join reproductive data
+    left_join(repro_data, by = "taxon_id") %>%
+    # Calculate percent sexual diploid per site
+    assert(not_na, sexual_diploid) %>%
+    group_by(site) %>%
     summarize(
       num_sex_dip = sum(sexual_diploid), # `sexual_diploid` is logical; TRUE for sex diploids, FALSE otherwise
       num_total = n()
@@ -207,24 +242,27 @@ modify_ppgi <- function (ppgi) {
 #' @return tibble
 add_taxonomy <- function(occ_data, taxonomy_data) {
   occ_data %>%
-    mutate(genus = str_split(taxon_name, " ") %>% map_chr(1)) %>%
+    mutate(genus = str_split(taxon_name, " |_") %>% map_chr(1)) %>%
     filter(!is.na(genus)) %>%
     left_join(taxonomy_data, by = "genus")
 }
 
 #' Make a tibble for mapping taxon IDs to taxon names
+#' 
+#' All taxon names appear to be uniquely mapped to taxon ID
+#' except for Diplazium sibiricum var. sibiricum x D. sibiricum var. glabrum
+#' (both 668 and 670, not in tree)
 #'
-#' @param occ_data_pteridos All occurrence data of pteridophytes in Japan
+#' @param occ_data All occurrence data of pteridophytes in Japan
 #'
 #' @return tibble
 #'
-make_taxon_id_map <- function(occ_data_pteridos) {
-  occ_data_pteridos %>% select(taxon_id, taxon = taxon_name) %>% unique %>%
-    mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
-    mutate(taxon = str_remove_all(taxon, "\\.")) %>%
-    mutate(taxon = str_remove_all(taxon, "_var")) %>%
-    mutate(taxon = str_remove_all(taxon, "_subsp")) %>%
-    mutate(taxon = str_remove_all(taxon, "_x"))
+make_taxon_id_map <- function(occ_data) {
+  occ_data %>% 
+    select(taxon_id, taxon = taxon_name) %>% 
+    unique %>%
+    assert(is_uniq, taxon_id) %>%
+    assert(not_na, taxon_id, taxon)
 }
 
 #' Update automatically resolved names with manually fixed names
@@ -726,21 +764,22 @@ format_tip_labels <- function (phy) {
 #'
 #' @param occ_data Occurrence data, with one row per
 #' grid cell per taxon, including hybrids.
+#' @param taxa_list Character vector of taxa to include in community matrix
 #'
 #' @return tibble. One column for species then the rest
 #' of the columns are presence/absence of that species in
 #' each site, where a "site" is a 1km2 grid cell. Names
 #' of sites are grid-cell codes.
 #' Species are stored as taxon_id values.
-make_comm_matrix <- function (occ_data) {
+make_comm_matrix <- function (occ_data, taxa_list) {
   occ_data %>%
-    select(species = taxon_id, site) %>%
+    select(taxon_name, site) %>%
+    filter(taxon_name %in% taxa_list) %>%
     mutate(
       abundance = 1,
       site = as.character(site)) %>%
-    spread(site, abundance) %>%
-    mutate_at(vars(-species), ~replace_na(., 0)) %>%
-    mutate(species = as.character(species))
+    pivot_wider(values_from = abundance, names_from = taxon_name, values_fn = sum, values_fill = 0) %>%
+    assert(in_set(c(0,1)), -site)
 }
 
 #' Calculate Faith's PD for a single community
@@ -1268,7 +1307,8 @@ rename_tree <- function (tree, taxon_id_map) {
   new_tip_labs <- tree$tip.label %>%
     tibble(taxon_id = .) %>%
     left_join(taxon_id_map, by = "taxon_id") %>%
-    assert(not_na, taxon)
+    assert(not_na, taxon) %>%
+    assert(is_uniq, taxon)
   
   tree$tip.label <- new_tip_labs$taxon
   
