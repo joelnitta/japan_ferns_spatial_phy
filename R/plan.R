@@ -104,6 +104,16 @@ plan <- drake_plan (
     transform = map(occ_data = c(pteridos, ferns))
   ),
 
+  # Format trait data
+  raw_trait_data_path = target("data_raw/JpFernLUCID_forJoel.xlsx", format = "file"),
+  
+  traits_for_dist = format_traits(
+    path_to_lucid_traits = raw_trait_data_path,
+    taxon_id_map = taxon_id_map),
+
+  # Make trait distance matrix using taxon IDs as labels
+  trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
+  
   # Analyze reproductive mode ----
   
   percent_sex_dip = target(

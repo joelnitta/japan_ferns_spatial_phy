@@ -363,7 +363,7 @@ transform_traits <- function (traits,
 #' Format traits for further analysis
 #'
 #' Use raw fern and lycophyte trait data
-#' formatted for lucid. Output taxon names will be IDs.
+#' formatted for lucid.
 #'
 #' @param path_to_lucid_traits Path to raw trait data
 #' @param taxon_id_map Tibble mapping taxon IDs to taxon names
@@ -376,8 +376,8 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   # These were originally formatted for lucid dichotomous key software.
   # So they are mostly quantitative traits that have been converted to binary format,
   # or numeric traits. There are a lot of traits. One row per taxon.
-  traits <- read_excel("data_raw/JpFernLUCID_forJoel.xlsx", skip = 1) %>%
-    clean_names() %>%
+  traits <- read_excel(path_to_lucid_traits, skip = 1) %>%
+    clean_names() %>% 
     select(-x1, -x222) %>%
     rename(taxon = x2) %>%
     mutate(taxon = str_replace_all(taxon, ":", "_")) %>%
@@ -413,7 +413,8 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
       . == 4 ~ 1,
       . == 5 ~ 1,
       TRUE ~ .
-    ))
+    )) %>%
+    assert(in_set(c(0,1)), -taxon)
   
   # Reformat presence/absence traits. These have one column each for "presence" (0 or 1),
   # "absence" (also 0 or 1), and sometimes another related state ("caducous" etc).
@@ -484,7 +485,11 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   # Combine these, taking the maximum value regardless of sterile or fertile
   traits_numeric_combined <-
     bind_rows(traits_numeric_sterile, traits_numeric_fertile) %>%
-    group_by(taxon, trait) %>%
+    group_by(taxon, trait) %T>% 
+    # Normally this next step would issue a warning because a bunch of
+    # values have NA for both sterile and fertile, resulting in -Inf.
+    # But we fix that in the next step anyways.
+    {options(warn=-1)} %>%
     summarize(
       value = max(value, na.rm = TRUE)
     ) %>%
@@ -498,28 +503,12 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   traits_numeric_combined_trans <- transform_traits(
     traits_numeric_combined,
-    trans_select = num_trait_names,
-    scale_select = num_trait_names
+    trans_select = all_of(num_trait_names),
+    scale_select = all_of(num_trait_names)
   )
   
   # Combine all numeric and categorical traits
-  traits_for_dist <- left_join(traits_numeric_combined_trans, traits_binary)
-  
-  # Convert species names to taxon id codes
-  missing_taxon_id <-
-    traits_for_dist %>% left_join(taxon_id_map) %>%
-    select(taxon_id, everything()) %>%
-    select(taxon_id, taxon) %>%
-    filter(is.na(taxon_id))
-  
-  assertthat::validate_that(
-    nrow(missing_taxon_id) == 0,
-    msg = glue::glue("{nrow(missing_taxon_id)} taxa missing taxa IDs and dropped")
-  )
-  
-  traits_for_dist <-
-    traits_for_dist %>% inner_join(taxon_id_map) %>%
-    select(-taxon)
+  traits_for_dist <- left_join(traits_numeric_combined_trans, traits_binary, by = "taxon")
   
   # Drop any traits that have only one state
   drop_single_state <-
@@ -528,7 +517,49 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
     filter(n_states == 1) %>%
     pull(trait)
   
-  traits_for_dist[,!colnames(traits_for_dist) %in% drop_single_state]
+  traits_for_dist <- traits_for_dist[,!colnames(traits_for_dist) %in% drop_single_state]
+  
+  # Fix some taxon names (synonyms)
+  traits_for_dist <-
+  traits_for_dist %>%
+    mutate(taxon = case_when(
+      # taxon == "Athyrium_nudum" ~ missing
+      taxon == "Athyrium_opacum_opacum" ~ "Athyrium_opacum",
+      # taxon == "Azolla_cristata" ~ , missing
+      # taxon == "Dryopteris_intermedia" ~ , missing
+      # taxon == "Pityrogramma_calomelanos" ~ , non-native?
+      # taxon == "Psilotum_nudum" ~ , non-native?
+      # taxon == "Selaginella_uncinata" ~ , missing
+      taxon == "Stegnogramma_griffithii_wilfordii" ~ "Thelypteris_griffithii_wilfordii",
+      taxon == "Stegnogramma_gymnocarpa_amabilis" ~ "Thelypteris_gymnocarpa_amabilis",
+      taxon == "Stegnogramma_pozoi_mollissima" ~ "Thelypteris_pozoi_mollissima",
+      taxon == "Thelypteris_aurita" ~ "Phegopteris_aurita",
+      taxon == "Thelypteris_bukoensis" ~ "Phegopteris_bukoensis",
+      taxon == "Thelypteris_decursivepinnata" ~ "Phegopteris_decursivepinnata",
+      taxon == "Thelypteris_nipponica" ~ "Thelypteris_nipponica_nipponica",
+      taxon == "Thelypteris_ogasawarensis" ~ "Macrothelypteris_ogasawarensis",
+      taxon == "Thelypteris_phegopteris" ~ "Phegopteris_connectilis",
+      taxon == "Thelypteris_subaurita" ~ "Phegopteris_subaurita",
+      taxon == "Thelypteris_torresiana_calvata" ~ "Macrothelypteris_torresiana_calvata",
+      taxon == "Thelypteris_torresiana_torresiana" ~ "Macrothelypteris_torresiana_torresiana",
+      taxon == "Thelypteris_viridifrons" ~ "Macrothelypteris_viridifrons",
+      TRUE ~ taxon
+    ))
+  
+  # Convert species names to taxon id codes
+  missing_taxon_id <-
+    filter(traits_for_dist, !(taxon %in% taxon_id_map$taxon)) %>%
+    pull(taxon)
+  
+  traits_for_dist <- filter(traits_for_dist, taxon %in% taxon_id_map$taxon)
+    
+  assertthat::validate_that(
+    length(missing_taxon_id) == 0,
+    msg = glue::glue("The following taxa in the trait data could not be verified in the taxa list and have been dropped: {paste(missing_taxon_id, collapse = ', ')}")
+  )
+  
+  traits_for_dist
+  
 }
 
 #' Categorize binary traits into their categorical versions
@@ -622,10 +653,10 @@ make_trait_dist_matrix <- function (traits_for_dist) {
   # Set up weighting.
   trait_categories <-
     traits_for_dist %>%
-    select(-taxon_id) %>%
+    select(-taxon) %>%
     colnames %>%
     tibble(trait = .) %>%
-    left_join(states) %>%
+    left_join(states, by = "trait") %>%
     mutate(trait_type = case_when(
       n_states > 3 ~ "continuous",
       TRUE ~ "binary"
@@ -633,23 +664,29 @@ make_trait_dist_matrix <- function (traits_for_dist) {
     # Collapse binarized traits into their
     # categorical version by name.
     categorize_traits %>%
+    # First weigh by combined trait
     add_count(comp_trait) %>%
     mutate(weight_by_comp_trait = 1 / n) %>%
+    select(-n) %>%
+    # Then weigh by trait type
     add_count(trait_type) %>%
     mutate(weight_by_type = 1 / n) %>%
+    select(-n) %>%
+    # Then weigh by combination of combined trait and trait type
     mutate(final_weight = weight_by_comp_trait * weight_by_type)
   
+  # Check trait weights
   trait_categories$weight_by_comp_trait %>% sum
   trait_categories$weight_by_type %>% sum
   trait_categories$final_weight %>% sum
   
   # Make sure traits for calculating the distance matrix are in correct
   # order for weighting
-  traits_for_dist <- select(traits_for_dist, taxon_id, trait_categories$trait)
+  traits_for_dist <- select(traits_for_dist, taxon, all_of(trait_categories$trait))
   
   # Convert to dataframe for gowdis
   traits_df <- traits_for_dist %>%
-    column_to_rownames("taxon_id")
+    column_to_rownames("taxon")
   
   # Run gowdis with trait weightings
   FD::gowdis(traits_df, w = trait_categories$final_weight)

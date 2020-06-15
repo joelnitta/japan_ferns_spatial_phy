@@ -19,6 +19,7 @@ library(sf)
 library(phyloregion)
 library(scico)
 library(clustermq)
+library(magrittr)
 library(tidyverse)
 
 # Resolve conflicts
