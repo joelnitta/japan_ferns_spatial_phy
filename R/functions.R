@@ -140,7 +140,7 @@ tidy_japan_names <- function (data) {
 count_species_per_cell <- function (occ_data, repro_data) {
   occ_data %>%
     filter(taxon_id %in% repro_data$taxon_id) %>%
-    group_by(secondary_grid_code) %>%
+    group_by(site) %>%
     count(sort = TRUE)
 }
 
@@ -763,12 +763,12 @@ make_traits_dendrogram <- function(trait_distance_matrix, taxon_id_map) {
 #' @return tibble
 make_richness_matrix <- function (occ_data) {
   occ_data %>%
-    group_by(secondary_grid_code) %>%
+    group_by(site) %>%
     summarize(
       richness = n()
     ) %>%
     left_join(
-      select(occ_data, latitude, longitude, secondary_grid_code) %>% unique
+      select(occ_data, latitude, longitude, site) %>% unique
     )
 }
 
@@ -805,7 +805,7 @@ format_tip_labels <- function (phy) {
 #' Species are stored as taxon_id values.
 make_comm_matrix <- function (occ_data) {
   occ_data %>%
-    select(species = taxon_id, site = secondary_grid_code) %>%
+    select(species = taxon_id, site) %>%
     mutate(
       abundance = 1,
       site = as.character(site)) %>%
@@ -946,7 +946,6 @@ ses_pd <- function (comm, phy, n_reps) {
 #' for grid cells that weren't in `all_pd` or `richness`.
 merge_metrics <- function (all_pd, richness, all_cells) {
   all_pd %>%
-    rename(secondary_grid_code = site) %>%
     left_join(richness) %>%
     select(-latitude, -longitude) %>%
     right_join(all_cells) %>%
@@ -1285,7 +1284,7 @@ ses_func_mntd <- function(comm, traits, species_col = "species",
 clean_ses <- function (
   ses_mpd_results,
   prefix = "phy_",
-  id = "secondary_grid_code"
+  id = "site"
 ) {
   
   ses_mpd_results <-
@@ -1307,10 +1306,10 @@ clean_ses <- function (
 make_matrix_for_biodiverse <- function (comm, cell_xy) {
   
   comm %>%
-    pivot_longer(-species, names_to = "secondary_grid_code", values_to = "count") %>%
+    pivot_longer(-species, names_to = "site", values_to = "count") %>%
     pivot_wider(names_from = species, values_from = "count") %>%
-    left_join(cell_xy, by = "secondary_grid_code") %>%
-    select(secondary_grid_code, longitude, latitude, everything())
+    left_join(cell_xy, by = "site") %>%
+    select(site, longitude, latitude, everything())
   
 }
 
@@ -1765,32 +1764,32 @@ make_ecos_matrix <- function (comm_pteridos, all_cells) {
   # Get vector of site names
   pterido_sites <-
     comm_pteridos %>%
-    gather(secondary_grid_code, abundance, -species) %>%
-    pull(secondary_grid_code) %>%
+    gather(site, abundance, -species) %>%
+    pull(site) %>%
     unique
   
   # Make tibble of all longitudes and latitudes by
-  # site name (here, secondary_grid_code) for renaming
+  # site name for renaming
   # rows in matrix
   long_lats <-
     all_cells %>%
     transmute(
-      secondary_grid_code = as.character(secondary_grid_code), 
+      site = as.character(site), 
       long_lat = paste(longitude, latitude, sep = "_")) %>%
     unique %>%
     # Only use those actually in the community data so we
     # don't end up with a bunch of NA values after joining.
-    filter(secondary_grid_code %in% pterido_sites)
+    filter(site %in% pterido_sites)
   
   comm_pteridos %>%
-    gather(secondary_grid_code, abundance, -species) %>%
+    gather(site, abundance, -species) %>%
     spread(species, abundance) %>%
     # Check for grid cells in comm data but missing from all_cells data
-    verify(secondary_grid_code %in% long_lats$secondary_grid_code) %>%
+    verify(site %in% long_lats$site) %>%
     # Check that grid cells in comm data are unique
-    assert(is_uniq, secondary_grid_code) %>%
-    left_join(long_lats, by = "secondary_grid_code") %>%
-    select(-secondary_grid_code) %>%
+    assert(is_uniq, site) %>%
+    left_join(long_lats, by = "site") %>%
+    select(-site) %>%
     column_to_rownames("long_lat") %>%
     as.matrix
   

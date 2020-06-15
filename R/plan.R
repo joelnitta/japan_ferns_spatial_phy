@@ -37,20 +37,23 @@ plan <- drake_plan (
   repro_data = process_repro_data(repro_data_raw),
   
   # Raw environmental data
+  ja_env_raw_path = target("data/ja_env_data.csv", format = "file"),
+  
   ja_env_raw = read_csv(
-    file_in("data/ja_env_data.csv"),
+    ja_env_raw_path,
     col_types = "cnnnnnnnnnn"
-  ),
+  ) %>%
+    rename(site = secondary_grid_code),
 
   # List of all 10 km grid cells across Japan
   all_cells_raw = read_csv(
     file_in("data_raw/ebihara_2019/2_grid_cells_all.csv"),
     col_types = "cnn") %>%
-    rename(secondary_grid_code = id, latitude = y, longitude = x) %>%
-    assert(is_uniq, secondary_grid_code),
+    rename(site = id, latitude = y, longitude = x) %>%
+    assert(is_uniq, site),
   
   # Combine into list of 10km grid cells with environment
-  all_cells = left_join(all_cells_raw, ja_env_raw, by = "secondary_grid_code"),
+  all_cells = left_join(all_cells_raw, ja_env_raw, by = "site"),
 
   # - Occurrence data, with multiple rows per species.
   # Occurrences are presences in a set of 10 x 10 km2 grid
@@ -67,10 +70,11 @@ plan <- drake_plan (
     col_types = "lcnncccccc"),
   
   # - occurrence data including ferns and lycophytes
-  occ_data_pteridos = clean_names(occ_data_raw) %>%
+  occ_data_pteridos = janitor::clean_names(occ_data_raw) %>%
+    rename(site = secondary_grid_code) %>%
     add_taxonomy(ppgi) %>%
-    # Verify that all secondary_grid_code values are in the all_cells data
-    assert(in_set(all_cells$secondary_grid_code), secondary_grid_code),
+    # Verify that all site names (secondary grid codes) are in the all_cells data
+    assert(in_set(all_cells$site), site),
 
   # - occurrence data including ferns only
   occ_data_ferns =
@@ -148,7 +152,7 @@ plan <- drake_plan (
       occ_data_ferns,
       select(repro_data, -taxon_name),
       by = "taxon_id") %>%
-    group_by(secondary_grid_code, latitude, longitude) %>%
+    group_by(site, latitude, longitude) %>%
     summarize(
       num_sex_dip = sum(sexual_diploid),
       num_total = n()
@@ -162,7 +166,7 @@ plan <- drake_plan (
       occ_data_pteridos,
       select(repro_data, -taxon_name),
       by = "taxon_id") %>%
-    group_by(secondary_grid_code, latitude, longitude) %>%
+    group_by(site, latitude, longitude) %>%
     summarize(
       num_sex_dip = sum(sexual_diploid),
       num_total = n()
@@ -273,32 +277,32 @@ plan <- drake_plan (
   # even if there are 0 species there.
   alpha_div_pteridos =
     all_cells %>%
-    left_join(select(richness_pteridos, secondary_grid_code, richness)) %>%
+    left_join(select(richness_pteridos, site, richness)) %>%
     left_join(clean_ses(phy_mpd_comm_pteridos)) %>%
     left_join(clean_ses(phy_mntd_comm_pteridos)) %>%
     left_join(clean_ses(func_mpd_comm_pteridos, "func_")) %>%
     left_join(clean_ses(func_mntd_comm_pteridos, "func_")) %>%
-    left_join(select(percent_sex_dip_pteridos, secondary_grid_code, percent_sex_dip)) %>%
+    left_join(select(percent_sex_dip_pteridos, site, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
 
   alpha_div_ferns =
     all_cells %>%
-    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
+    left_join(select(richness_ferns, site, richness)) %>%
     left_join(clean_ses(phy_mpd_comm_ferns)) %>%
     left_join(clean_ses(phy_mntd_comm_ferns)) %>%
     left_join(clean_ses(func_mpd_comm_ferns, "func_")) %>%
     left_join(clean_ses(func_mntd_comm_ferns, "func_")) %>%
-    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
+    left_join(select(percent_sex_dip_ferns, site, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0)),
 
   alpha_div_ferns_ns =
     all_cells %>%
-    left_join(select(richness_ferns, secondary_grid_code, richness)) %>%
+    left_join(select(richness_ferns, site, richness)) %>%
     left_join(clean_ses(phy_mpd_comm_ferns_ns)) %>%
     left_join(clean_ses(phy_mntd_comm_ferns_ns)) %>%
     left_join(clean_ses(func_mpd_comm_ferns_ns, "func_")) %>%
     left_join(clean_ses(func_mntd_comm_ferns_ns, "func_")) %>%
-    left_join(select(percent_sex_dip_ferns, secondary_grid_code, percent_sex_dip)) %>%
+    left_join(select(percent_sex_dip_ferns, site, percent_sex_dip)) %>%
     mutate(richness = replace_na(richness, 0))
   ,
 
