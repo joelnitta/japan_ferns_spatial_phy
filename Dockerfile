@@ -61,4 +61,21 @@ WORKDIR tmp/project
 # Don't use cache (the symlinks won't work from Rstudio server)
 RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
 
+#############################
+### Other custom software ###
+#############################
+
+ENV APPS_HOME=/apps
+RUN mkdir $APPS_HOME
+WORKDIR $APPS_HOME
+
+### gnparser ###
+ENV APP_NAME=gnparser
+ENV VERSION=0.14.1
+ENV DEST=$APPS_HOME/$APP_NAME/$VERSION
+RUN wget https://gitlab.com/gogna/gnparser/uploads/7d6ed7e3b1eee0fd6c9ae51f5bf711c0/$APP_NAME-v$VERSION-linux.tar.gz \
+  && tar xf $APP_NAME-v$VERSION-linux.tar.gz \
+  && rm $APP_NAME-v$VERSION-linux.tar.gz \
+  && mv "$APP_NAME" /usr/local/bin/
+
 WORKDIR /home/rstudio/
