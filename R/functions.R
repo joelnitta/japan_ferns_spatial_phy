@@ -1374,7 +1374,7 @@ rename_tree <- function (tree, taxon_id_map) {
 #'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)
 #'   - rpe: Relative phylogenetic endemism (Mishler 2014 https://doi.org/10.1038/ncomms5473)
 #' 
-calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations) {
+calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations, trait_distances) {
   
   # Make sure phylogeny has been rescaled to total branch length of 1
   assert_that(sum(phy$edge.length) == 1)
@@ -1398,11 +1398,19 @@ calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations) {
   # Calculate statistics for random community
   pe = phyloregion::phylo_endemism(random_comm_sparse, phy, weighted = TRUE)
   pe_alt = phyloregion::phylo_endemism(random_comm_sparse, phy_alt, weighted = TRUE)
+  mpd = picante::mpd(random_comm, phy_distances)
+  mntd = picante::mntd(random_comm, phy_distances)
+  pd = phyloregion::PD(random_comm_sparse, phy)
+  
+  mpd_morph = picante::mpd(random_comm, trait_distances)
+  mntd_morph = picante::mntd(random_comm, trait_distances)
   
   list(
-    mpd = picante::mpd(random_comm, phy_distances),
-    mntd = picante::mntd(random_comm, phy_distances),
-    pd = phyloregion::PD(random_comm_sparse, phy),
+    mpd = mpd,
+    mntd = mntd,
+    mpd_morph = mpd_morph,
+    mntd_morph = mntd_morph,
+    pd = pd,
     pe = pe,
     pe_alt = pe_alt,
     rpe = pe / pe_alt
