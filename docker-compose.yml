@@ -5,7 +5,7 @@ services:
     ports:
       - "8787:8787"
     volumes:
-      - ".:/home/rstudio/japan_ferns_biogeo"
+      - "~/:/home/rstudio/japan_ferns_biogeo"
     environment:
       DISABLE_AUTH: "true"
     working_dir: /home/rstudio/japan_ferns_biogeo
