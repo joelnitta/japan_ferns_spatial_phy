@@ -338,10 +338,10 @@ transform_traits <- function (traits,
     traits <-
       traits %>%
       assertr::verify(trans_select %in% colnames(traits)) %>%
-      assertr::assert(is.numeric, trans_select) %>%
+      assertr::assert(is.numeric, all_of(trans_select)) %>%
       # Replace zeros with arbitrarily small number
-      dplyr::mutate_at(trans_select, ~ifelse(. == 0, small_number, .)) %>%
-      dplyr::mutate_at(trans_select, log)
+      dplyr::mutate_at(all_of(trans_select), ~ifelse(. == 0, small_number, .)) %>%
+      dplyr::mutate_at(all_of(trans_select), log)
   }
   
   # Rescale by dividing original value by range of
@@ -350,9 +350,9 @@ transform_traits <- function (traits,
     traits <-
       traits %>%
       assertr::verify(scale_select %in% colnames(traits)) %>%
-      assertr::assert(is.numeric, scale_select) %>%
+      assertr::assert(is.numeric, all_of(scale_select)) %>%
       dplyr::mutate_at(
-        scale_select, ~ . / (max(., na.rm = TRUE) - min(., na.rm = TRUE))
+        all_of(scale_select), ~ . / (max(., na.rm = TRUE) - min(., na.rm = TRUE))
       )
   }
   
