@@ -183,7 +183,8 @@ calc_sex_dip <- function (comm, repro_data, taxon_id_map) {
     group_by(site) %>%
     summarize(
       num_sex_dip = sum(sexual_diploid), # `sexual_diploid` is logical; TRUE for sex diploids, FALSE otherwise
-      num_total = n()
+      num_total = n(),
+      .groups = "drop"
     ) %>%
     ungroup %>%
     mutate(percent_sex_dip = num_sex_dip / num_total)
@@ -492,7 +493,8 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
     # But we fix that in the next step anyways.
     {options(warn=-1)} %>%
     summarize(
-      value = max(value, na.rm = TRUE)
+      value = max(value, na.rm = TRUE),
+      .groups = "drop"
     ) %>%
     ungroup %>%
     mutate(value = na_if(value, -Inf)) %>%
@@ -770,7 +772,8 @@ make_richness_matrix <- function (occ_data) {
   occ_data %>%
     group_by(site) %>%
     summarize(
-      richness = n()
+      richness = n(),
+      .groups = "drop"
     ) %>%
     left_join(
       select(occ_data, latitude, longitude, site) %>% unique
