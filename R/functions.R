@@ -169,6 +169,7 @@ process_occ_data <- function (occ_data_raw, all_cells, ppgi) {
 calc_sex_dip <- function (comm, repro_data, taxon_id_map) {
   
   comm %>%
+    rownames_to_column("site") %>%
     # Convert comm to long
     pivot_longer(names_to = "taxon", values_to = "abundance", -site) %>%
     filter(abundance > 0) %>%
@@ -803,11 +804,7 @@ format_tip_labels <- function (phy) {
 #' grid cell per taxon, including hybrids.
 #' @param taxa_list Character vector of taxa to include in community matrix
 #'
-#' @return tibble. One column for species then the rest
-#' of the columns are presence/absence of that species in
-#' each site, where a "site" is a 1km2 grid cell. Names
-#' of sites are grid-cell codes.
-#' Species are stored as taxon_id values.
+#' @return tibble. Columns are species, rows are sites. Rownames are site names.
 make_comm_matrix <- function (occ_data, taxa_list) {
   occ_data %>%
     select(taxon_name, site) %>%
@@ -816,7 +813,8 @@ make_comm_matrix <- function (occ_data, taxa_list) {
       abundance = 1,
       site = as.character(site)) %>%
     pivot_wider(values_from = abundance, names_from = taxon_name, values_fn = sum, values_fill = 0) %>%
-    assert(in_set(c(0,1)), -site)
+    assert(in_set(c(0,1)), -site) %>%
+    column_to_rownames("site")
 }
 
 #' Calculate Faith's PD for a single community

@@ -97,8 +97,8 @@ plan <- drake_plan (
     format_tip_labels %>%
     rename_tree(taxon_id_map),
   
-  # Make community matrices, limited to taxa in tree
-  # (so, excluding hybrids)
+  # Make community matrices, limited to taxa in tree (so, excluding hybrids).
+  # Rows are sites, columns are species.
   comm = target(
     make_comm_matrix(occ_data, taxa_list = japan_pterido_tree$tip.label),
     transform = map(occ_data = c(pteridos, ferns))
