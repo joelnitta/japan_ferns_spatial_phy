@@ -85,6 +85,14 @@ plan <- drake_plan (
     pteridos %>%
     assert(not_na, class) %>%
     filter(class == "Polypodiopsida"),
+  
+  ferns_endemic = left_join(ferns, green_list, by = "taxon_id") %>%
+    mutate(endemic = replace_na(endemic, "no")) %>%
+    filter(endemic == "Endemic"),
+  
+  pteridos_endemic = left_join(pteridos, green_list, by = "taxon_id") %>%
+    mutate(endemic = replace_na(endemic, "no")) %>%
+    filter(endemic == "Endemic"),
 
   # Make tibble mapping taxon IDs to taxon names
   taxon_id_map = make_taxon_id_map(pteridos),
@@ -101,7 +109,7 @@ plan <- drake_plan (
   # Rows are sites, columns are species.
   comm = target(
     make_comm_matrix(occ_data, taxa_list = japan_pterido_tree$tip.label),
-    transform = map(occ_data = c(pteridos, ferns))
+    transform = map(occ_data = c(pteridos, ferns, pteridos_endemic, ferns_endemic))
   ),
 
   # Format trait data
@@ -119,9 +127,15 @@ plan <- drake_plan (
   percent_sex_dip = target(
     calc_sex_dip(comm, repro_data = repro_data, taxon_id_map = taxon_id_map),
     transform = map(comm, .id = occ_data)
-  )
+  ),
 
-  # # Analyze community diversity ----
+  # Analyze standard effect size (SES) of diversity metrics ----
+  
+  ses_div = target(
+    run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("mpd", "pd", "pe", "rpe")),
+    transform = map(comm, .id = occ_data)
+  )
+  
   # 
   # # Make richness matrix (number of species per
   # # 10 km grid cell).
@@ -440,21 +454,7 @@ plan <- drake_plan (
   #   tree_for_biodiverse_ferns_endemic,
   #   file_out("data/tree_for_biodiverse_ferns_endemic.tre")
   # ),
-  # 
-  # # Working code for SES of diversity metrics ----
-  # 
-  # # Convert comm to data frame format for picante (for making null communities)
-  # comm_ferns_renamed_df = comm_ferns_renamed %>%
-  #   pivot_longer(names_to = "grids", values_to = "abundance", cols = -species) %>%
-  #   pivot_wider(names_from = "species", values_from = "abundance") %>%
-  #   column_to_rownames("grids"),
-  # 
-  # # Run SES analysis
-  # ferns_ses = run_ses_analysis(
-  #   comm_df = comm_ferns_renamed_df, 
-  #   phy = tree_for_biodiverse_ferns, 
-  #   n_reps = 1000),
-  # 
+  #
   # # # Write out manuscript ----
   # ms = rmarkdown::render(
   #   knitr_in(here::here("ms/manuscript.Rmd")),

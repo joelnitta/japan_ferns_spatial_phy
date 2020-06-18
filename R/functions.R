@@ -1359,32 +1359,40 @@ rename_tree <- function (tree, taxon_id_map) {
 #' The independent swap method of Gotelli (2000) is used, which randomizes
 #' the community matrix while maintaining species occurrence frequency and
 #' sample species richness.
+#' 
+#' For description of metrics available, see run_ses_analysis()
 #'
 #' @param comm_df Input community matrix in data.frame format (communities as rows,
 #' species as columns, with row names and column names)
 #' @param phy Input phylogeny with total branch length scaled to 1
 #' @param phy_alt Alternative phylogeny where all branches are of equal length, scaled to 1
 #' @param n_iterations Number of iterations to use when shuffling random community
+#' @param metrics Names of metrics to calculate. Must one or more of
+#' 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'
 #'
 #' @return List of vectors. Each vector is a biodiversity metric measured on the
-#' random community, in the same order as the rows in the input community. Metrics
-#' (names of items in the list) include:
-#'   - mpd: Mean phylogenetic distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
-#'   - mntd: Mean nearest taxon distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
-#'   - pd: Phylogenetic diversity (Faith 1992 https://doi.org/10.1016/0006-3207(92)91201-3)
-#'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)
-#'   - rpe: Relative phylogenetic endemism (Mishler 2014 https://doi.org/10.1038/ncomms5473)
+#' random community, in the same order as the rows in the input community.
 #' 
-calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations, trait_distances) {
+calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations, trait_distances, metrics) {
   
-  # Make sure phylogeny has been rescaled to total branch length of 1
-  assert_that(sum(phy$edge.length) == 1)
-  assert_that(sum(phy_alt$edge.length) == 1)
+  # Make sure selection of metrics is OK
+  assert_that(is.character(metrics))
+  assert_that(
+    length(metrics) > 0,
+    msg = "At least one biodiversity metric must be selected")
+  assert_that(
+    all(metrics %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "pe", "rpe")),
+    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'"
+  )
   
   # Make sure names match between community and tree
-  assert_that(isTRUE(
+  if (any(metrics %in% c("mpd", "mntd", "pd", "pe", "rpe"))) assert_that(isTRUE(
     all.equal(sort(phy$tip.label), sort(colnames(comm_df)))
   ))
+  
+  # Make sure phylogeny has been rescaled to total branch length of 1 for RPE
+  if (any(metrics %in% c("rpe"))) assert_that(isTRUE(all.equal(sum(phy$edge.length), 1)))
+  if (any(metrics %in% c("rpe"))) assert_that(isTRUE(all.equal(sum(phy_alt$edge.length), 1)))
   
   # Convert comm to sparse matrix format for phyloregions
   comm_sparse <- phyloregion::dense2sparse(comm_df)
@@ -1394,18 +1402,30 @@ calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations, trait_dista
   random_comm_sparse <- phyloregion::dense2sparse(random_comm)
   
   # Get phylogenetic distances
-  phy_distances <- cophenetic(phy)
+  if (any(metrics %in% c("mpd", "mntd"))) phy_distances <- cophenetic(phy)
   
   # Calculate statistics for random community
-  pe = phyloregion::phylo_endemism(random_comm_sparse, phy, weighted = TRUE)
-  pe_alt = phyloregion::phylo_endemism(random_comm_sparse, phy_alt, weighted = TRUE)
-  mpd = picante::mpd(random_comm, phy_distances)
-  mntd = picante::mntd(random_comm, phy_distances)
-  pd = phyloregion::PD(random_comm_sparse, phy)
+  # - set up null vectors first
+  mpd <- NULL
+  mntd <- NULL
+  mpd_morph <- NULL
+  mntd_morph <- NULL
+  pd <- NULL
+  pe <- NULL
+  pe_alt <- NULL
+  rpe <- NULL
   
-  mpd_morph = picante::mpd(random_comm, trait_distances)
-  mntd_morph = picante::mntd(random_comm, trait_distances)
+  # - calculate selected metrics
+  if ("mpd" %in% metrics) mpd <- picante::mpd(random_comm, phy_distances)
+  if ("mntd" %in% metrics) mntd <- picante::mntd(random_comm, phy_distances)
+  if ("mpd_morph" %in% metrics) mpd_morph <- picante::mpd(random_comm, trait_distances)
+  if ("mntd_morph" %in% metrics) mntd_morph <- picante::mntd(random_comm, trait_distances)
+  if ("pd" %in% metrics) pd <- phyloregion::PD(random_comm_sparse, phy)
+  if ("pe" %in% metrics) pe <- phyloregion::phylo_endemism(random_comm_sparse, phy, weighted = TRUE)
+  if ("rpe" %in% metrics) pe_alt <- phyloregion::phylo_endemism(random_comm_sparse, phy_alt, weighted = TRUE)
+  if ("rpe" %in% metrics) rpe <- pe / pe_alt
   
+  # Output results
   list(
     mpd = mpd,
     mntd = mntd,
@@ -1414,8 +1434,10 @@ calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations, trait_dista
     pd = pd,
     pe = pe,
     pe_alt = pe_alt,
-    rpe = pe / pe_alt
-  )
+    rpe = rpe
+  ) %>%
+    # Only keep non-NULL results
+    purrr::compact()
   
 }
 
@@ -1425,11 +1447,18 @@ calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations, trait_dista
 #' @param random_vals List of list of vectors. Each list of vectors is a biodiversity metric measured on a
 #' random community, in the same order as the rows in the input community.
 #' @param obs_vals Observed values of the biodiversity metric
-#' @param metric Name of the metric ("mpd", "mntd", "pd", "pe", or "rpe")
+#' @param metric Name of the metric ("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "pe", or "rpe")
 #'
 #' @return Tibble
 #' 
 get_ses <- function (random_vals, obs_vals, metric) {
+  
+  assert_that(is.string(metric))
+  
+  assert_that(
+    metric %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "pe", "rpe", "pe_alt"),
+    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'"
+  )
   
   random_vals_trans <- transpose(random_vals)
   
@@ -1457,6 +1486,8 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' The biodiversity metrics analyzed include:
 #'   - mpd: Mean phylogenetic distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
 #'   - mntd: Mean nearest taxon distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
+#'   - mpd_morph: Same as mpd, but measured using a distance matrix based on morphological traits
+#'   - mntd_morph: Same as mntd, but measured using a distance matrix based on morphological traits
 #'   - pd: Phylogenetic diversity (Faith 1992 https://doi.org/10.1016/0006-3207(92)91201-3)
 #'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)
 #'   - pe: Phylogenetic endemism calculated with an alternate tree where all the branch lengths are equal
@@ -1473,6 +1504,8 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' species as columns, with row names and column names)
 #' @param phy Input phylogeny with total branch length scaled to 1
 #' @param n_reps Number of random communities to replicate
+#' @param metrics Names of metrics to calculate. Must one or more of
+#' 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'
 #'
 #' @return Tibble. For each of the biodiversity metrics, the observed value (_obs), 
 #' mean of the random values (_rand_mean), SD of the random values (_rand_sd), 
@@ -1480,7 +1513,20 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' (_obs_z), and p-value (_obs_p) are given. Type of phylogenetic endemism (neo, paleo, or mixed)
 #' is given as "endem_type".
 #' 
-run_ses_analysis <- function(comm_df, phy, n_reps) {
+run_ses_analysis <- function(comm_df, phy, n_reps, metrics, trait_distances = NULL) {
+  
+  # Use only tips that are in the community
+  phy <- ape::keep.tip(phy, colnames(comm_df))
+  
+  assert_that(
+    isTRUE(
+      all.equal(
+        sort(colnames(comm_df)),
+        sort(phy$tip.label)
+      )
+    ),
+    msg = "Tip names don't match between community and phylogeny"
+  )
   
   # Make alternative tree with equal branch lengths
   phy_alt <- phy
@@ -1494,43 +1540,97 @@ run_ses_analysis <- function(comm_df, phy, n_reps) {
   random_vals <-
     purrr::rerun(
       n_reps, 
-      calc_biodiv_random(comm_df, phy, phy_alt, 10000)
+      # Use 10,000 iterations (swaps) for each null community
+      calc_biodiv_random(comm_df, phy, phy_alt, 10000, metrics = metrics)
     )
   
   # Calculate biodiversity metrics for observed community
-  mpd_obs <- picante::mpd(as.matrix(comm_df), cophenetic(phy))
-  mntd_obs <- picante::mntd(as.matrix(comm_df), cophenetic(phy))
-  pe_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy, weighted = TRUE)
-  pe_alt_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy_alt, weighted = TRUE)
-  pd_obs <- phyloregion::PD(dense2sparse(comm_df), phy)
-  rpe_obs <- pe_obs / pe_alt_obs
+  # - set up null vectors first
+  ses_mpd <- NULL
+  ses_mntd <- NULL
+  ses_mpd_morph <- NULL
+  ses_mntd_morph <- NULL
+  ses_pd <- NULL
+  ses_pe <- NULL
+  ses_pe_alt <- NULL
+  ses_rpe <- NULL
   
-  # Caclulate SES of each metric and combine
+  # - calculate selected metrics
+  if ("mpd" %in% metrics) {
+    mpd_obs <- picante::mpd(as.matrix(comm_df), cophenetic(phy))
+    ses_mpd <- get_ses(random_vals, mpd_obs, "mpd")}
+  
+  if ("mntd" %in% metrics) {
+    mntd_obs <- picante::mntd(as.matrix(comm_df), cophenetic(phy))
+    ses_mntd <- get_ses(random_vals, mntd_obs, "mntd")}
+  
+  if ("mpd_morph" %in% metrics) {
+    mpd_morph_obs <- picante::mpd(as.matrix(comm_df), trait_distances)
+    ses_mpd_morph <- get_ses(random_vals, mpd_morph_obs, "mpd_morph")}
+  
+  if ("mntd_morph" %in% metrics) {
+    mntd_morph_obs <- picante::mntd(as.matrix(comm_df), trait_distances)
+    ses_mntd_morph <- get_ses(random_vals, mntd_morph_obs, "mntd_morph")}
+  
+  if ("pd" %in% metrics) {
+    pd_obs <- phyloregion::PD(dense2sparse(comm_df), phy)
+    ses_pd <- get_ses(random_vals, pd_obs, "pd")}
+  
+  if ("pe" %in% metrics) {
+    pe_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy, weighted = TRUE)
+    ses_pe <- get_ses(random_vals, pe_obs, "pe")}
+  
+  if ("rpe" %in% metrics) {
+    pe_alt_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy_alt, weighted = TRUE)
+    ses_pe_alt <- get_ses(random_vals, pe_obs, "pe_alt")}
+  
+  if ("rpe" %in% metrics) {
+    rpe_obs <- pe_obs / pe_alt_obs
+    ses_rpe <- get_ses(random_vals, rpe_obs, "rpe")
+  }
+  
+  # Combine results
   bind_cols(
-    get_ses(random_vals, mpd_obs, "mpd"),
-    get_ses(random_vals, mntd_obs, "mntd"),
-    get_ses(random_vals, pd_obs, "pd"),
-    get_ses(random_vals, pe_obs, "pe"),
-    get_ses(random_vals, pe_obs, "pe_alt"),
-    get_ses(random_vals, rpe_obs, "rpe")
+    ses_mpd,
+    ses_mntd,
+    ses_mpd_morph,
+    ses_mntd_morph,
+    ses_pd,
+    ses_pe,
+    ses_pe_alt,
+    ses_rpe
   ) %>%
     mutate(site = rownames(comm_df)) %>%
-    # Categorize phylogenetic endemism, see:
-    # http://biodiverse-analysis-software.blogspot.com/2014/11/canape-categorical-analysis-of-palaeo.html
-    #
-    # (here, PE_orig = pe_obs_p, PE_alt = pe_alt_obs_p, and RPE = rpe_obs_p)
-    # (don't consider 'super endemism' as it doesn't add much meaning)
-    #
-    # 1)    If either PE_orig or PE_alt are significantly high then we look for palaeo or neo endemism
-    #   a)    If RPE is significantly high then we have palaeo-endemism 
-    #         (PE_orig is consistently higher than PE_alt across the random realisations)
-    #   b)    Else if RPE is significantly low then we have neo-endemism 
-    #         (PE_orig is consistently lower than PE_alt across the random realisations)
-    #     c)    Else we have mixed age endemism in which case
-    #        i)    If both PE_orig and PE_alt are highly significant (p<0.01) then we 
-    #              have super endemism (high in both palaeo and neo)
-    #        ii)   Else we have mixed (some mixture of palaeo, neo and non endemic)
-    # 2)    Else if neither PE_orig or PE_alt are significantly high then we have a non-endemic cell
+    select(site, everything())
+  
+}
+
+#' Categorize phylogenetic endemism
+#' 
+#' see:
+#' http://biodiverse-analysis-software.blogspot.com/2014/11/canape-categorical-analysis-of-palaeo.html
+#'
+#' (here, PE_orig = pe_obs_p, PE_alt = pe_alt_obs_p, and RPE = rpe_obs_p)
+#' (don't consider 'super endemism' as it doesn't add much meaning)
+#'
+#' 1)    If either PE_orig or PE_alt are significantly high then we look for palaeo or neo endemism
+#'   a)    If RPE is significantly high then we have palaeo-endemism 
+#'         (PE_orig is consistently higher than PE_alt across the random realisations)
+#'   b)    Else if RPE is significantly low then we have neo-endemism 
+#'         (PE_orig is consistently lower than PE_alt across the random realisations)
+#'     c)    Else we have mixed age endemism in which case
+#'        i)    If both PE_orig and PE_alt are highly significant (p<0.01) then we 
+#'              have super endemism (high in both palaeo and neo)
+#'        ii)   Else we have mixed (some mixture of palaeo, neo and non endemic)
+#' 2)    Else if neither PE_orig or PE_alt are significantly high then we have a non-endemic cell
+#'
+#' @param df Input data frame. Must have p-values for pe, pe_alt, and rpe.
+#'
+#' @return Dataframe with areas of endemism categorized.
+#' 
+categorize_endemism <- function (df) {
+  
+  df %>% 
   mutate(
     endem_type = case_when(
       (pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95) & rpe_obs_p >= 0.975 ~ "paleo",
@@ -1538,8 +1638,7 @@ run_ses_analysis <- function(comm_df, phy, n_reps) {
       pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95 ~ "mixed",
       TRUE ~ NA_character_
     )
-  ) %>%
-    select(site, everything())
+  )
   
 }
 
