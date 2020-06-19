@@ -742,6 +742,13 @@
       "Repository": "CRAN",
       "Hash": "d521cf9db39ca79250a00029661fb7cd"
     },
+    "iNEXT": {
+      "Package": "iNEXT",
+      "Version": "2.0.20",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2d0ed52460656d80e4190d20aa1a164a"
+    },
     "igraph": {
       "Package": "igraph",
       "Version": "1.2.5",
