@@ -1359,6 +1359,7 @@ calculate_coverage <- function (comm_list) {
   # Extract community matrix and convert to data frame
   comm <-
   magrittr::extract2(comm_list, "comm_dat") %>%
+    phyloregion::sparse2dense() %>%
     as.data.frame()
   
   # Convert data frame to transposed version, with rows as species
