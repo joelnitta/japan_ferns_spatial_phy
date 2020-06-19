@@ -157,10 +157,10 @@ plan <- drake_plan (
 
   # Analyze standard effect size (SES) of diversity metrics ----
   
-  ses_div = target(
-    run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("mpd", "pd", "pe", "rpe")),
-    transform = map(comm, .id = occ_data)
-  )
+  # ses_div = target(
+  #   run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("mpd", "pd", "pe", "rpe")),
+  #   transform = map(comm, .id = occ_data)
+  # )
   
   # 
   # # Make richness matrix (number of species per
