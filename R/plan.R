@@ -73,12 +73,29 @@ plan <- drake_plan (
   ),
   
   # Generate datasets at different spatial scales: 
-  comm_04 = phyloregion::points2comm(
+  # 0.1 degree ~ 10 km x 10 km,
+  # 0.2 degree ~ 20 km x 20 km,
+  # 0.4 degree ~ 40 km x 40 km
+  comm_scaled_list = target(
+    phyloregion::points2comm(
     dat = occ_point_data_ferns,
-    res = 0.4,
+    res = scale,
     lon = "longitude",
     lat = "latitude",
-    species = "taxon"
+    species = "taxon"),
+    transform = map(scale = c(0.1, 0.2, 0.4))
+  ),
+  
+  # Extract community matrix from each list
+  comm_scaled_dat = target(
+    magrittr::extract2(comm_scaled_list, "comm_dat"),
+    transform = map(comm_scaled_list, .id = scale)
+  ),
+  
+  # Check coverage at each scale
+  comm_scaled_coverage = target(
+    calculate_coverage(comm_scaled_dat),
+    transform = map(comm_scaled_dat, .id = scale)
   ),
   
   # Load occurrence data of ferns and lycophytes, including hybrids (total 1089 taxa)

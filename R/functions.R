@@ -1342,6 +1342,41 @@ clean_ses <- function (
   
 }
 
+#' Calculate sampling coverage at each site of a community matrix
+#' 
+#' Coverage (ratio of species present in sample to that in true assemblage) 
+#' estimated following method of Chao et al 2014 (doi: 10.1111/2041-210X.12247)
+#'
+#' @param comm Input community matrix in data.frame or sparse matrix format 
+#' (communities or sites as rows,
+#' species as columns, with row names and column names)
+#'
+#' @return Dataframe, with columns for "site" and "coverage"
+#' 
+calculate_coverage <- function (comm) {
+  
+  # Convert to data frame if input is sparse matrix
+  if (inherits(comm, "dgCMatrix")) comm <- phyloregion::sparse2dense(comm) %>%
+      as.data.frame()
+  
+  assert_that(is.data.frame(comm))
+  
+  # Convert data frame to transposed version, with rows as species
+  # and columns as sites (for iNEXT)
+  comm_t <-
+    comm %>%
+    rownames_to_column("site") %>%
+    pivot_longer(values_to = "abundance", names_to = "species", -site) %>%
+    pivot_wider(values_from = "abundance", names_from = "site") %>%
+    column_to_rownames("species")
+  
+  # Run iNEXT and extract sampling coverage results
+  iNEXT::iNEXT(comm_t, datatype = "abundance") %>% 
+    magrittr::extract2("DataInfo") %>%
+    select(site, coverage = SC)
+  
+}
+
 # Biodiverse ----
 
 # Reformat community matrix (columns as sites and rows as species) to
