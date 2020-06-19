@@ -1347,19 +1347,19 @@ clean_ses <- function (
 #' Coverage (ratio of species present in sample to that in true assemblage) 
 #' estimated following method of Chao et al 2014 (doi: 10.1111/2041-210X.12247)
 #'
-#' @param comm Input community matrix in data.frame or sparse matrix format 
-#' (communities or sites as rows,
-#' species as columns, with row names and column names)
+#' @param comm_list Output of phyloregion::points2comm(), a list of two items:
+#' - `comm_dat`: community data frame
+#' - `poly_shp`: shapefile of grid cells with the values per cell.
+#' (this function extracts and uses `comm_dat`)
 #'
 #' @return Dataframe, with columns for "site" and "coverage"
 #' 
-calculate_coverage <- function (comm) {
+calculate_coverage <- function (comm_list) {
   
-  # Convert to data frame if input is sparse matrix
-  if (inherits(comm, "dgCMatrix")) comm <- phyloregion::sparse2dense(comm) %>%
-      as.data.frame()
-  
-  assert_that(is.data.frame(comm))
+  # Extract community matrix and convert to data frame
+  comm <-
+  magrittr::extract2(comm_list, "comm_dat") %>%
+    as.data.frame()
   
   # Convert data frame to transposed version, with rows as species
   # and columns as sites (for iNEXT)

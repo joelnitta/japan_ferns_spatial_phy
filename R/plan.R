@@ -86,16 +86,10 @@ plan <- drake_plan (
     transform = map(scale = c(0.1, 0.2, 0.4))
   ),
   
-  # Extract community matrix from each list
-  comm_scaled_dat = target(
-    magrittr::extract2(comm_scaled_list, "comm_dat"),
-    transform = map(comm_scaled_list, .id = scale)
-  ),
-  
   # Check coverage at each scale
   comm_scaled_coverage = target(
-    calculate_coverage(comm_scaled_dat),
-    transform = map(comm_scaled_dat, .id = scale)
+    calculate_coverage(comm_scaled_list),
+    transform = map(comm_scaled_list, .id = scale)
   ),
   
   # Load occurrence data of ferns and lycophytes, including hybrids (total 1089 taxa)
