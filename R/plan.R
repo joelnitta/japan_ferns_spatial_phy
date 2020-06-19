@@ -66,6 +66,21 @@ plan <- drake_plan (
     file_in("data_raw/ja_fern_occs_raw.csv"),
     col_types = "lcnncccccc"),
   
+  # Subset to just ferns (682 taxa)
+  occ_point_data_ferns = subset_occ_point_data(
+    occ_point_data_raw = occ_point_data_raw,
+    ppgi = ppgi
+  ),
+  
+  # Generate datasets at different spatial scales: 
+  comm_04 = phyloregion::points2comm(
+    dat = occ_point_data_ferns,
+    res = 0.4,
+    lon = "longitude",
+    lat = "latitude",
+    species = "taxon"
+  ),
+  
   # Load occurrence data of ferns and lycophytes, including hybrids (total 1089 taxa)
   # Occurrences are presences in a set of 10 x 10 km2 grid
   # cells across Japan, not actual occurrence points of specimens.

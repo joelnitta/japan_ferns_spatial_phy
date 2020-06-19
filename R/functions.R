@@ -154,6 +154,43 @@ process_occ_data <- function (occ_data_raw, all_cells, ppgi) {
   
 }
 
+#' Subset occurrence point data to only ferns
+#'
+#' @param occ_point_data_raw Raw occurrence point data (one row per specimen)
+#' @param ppgi Pteridophyte phylogeny group I taxonomy
+#'
+#' @return Dataframe subset to ferns only
+#' 
+subset_occ_point_data <- function(occ_point_data_raw, ppgi) {
+  
+  # To speed up parsing names, make a lookup table
+  taxa_replace_df <-
+    occ_point_data_raw %>%
+    select(species) %>%
+    unique %>%
+    # Simplify taxon names, replace space with underscore
+    taxastand::add_parsed_names(species, taxon) %>%
+    mutate(taxon = str_replace_all(taxon, " ", "_"))
+  
+  occ_point_data_raw %>%
+    # Replace species names with simple, parsed version (taxon name)
+    left_join(taxa_replace_df, by = "species") %>%
+    mutate(genus = str_split(taxon, " |_") %>% map_chr(1)) %>%
+    assert(not_na, genus) %>%
+    # Add higher-level taxonomy
+    left_join(ppgi, by = "genus") %>%
+    assert(not_na, class) %>%
+    # Filter to only ferns
+    filter(class == "Polypodiopsida") %>%
+    # Keep only needed columns
+    select(
+      taxon, longitude = decimalLongitude, latitude = decimalLatitude, date = eventDate, tns_accession = TNS
+    ) %>%
+    # Check for missing data
+    assert(not_na, longitude, latitude, taxon)
+  
+}
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)
