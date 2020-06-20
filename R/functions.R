@@ -124,7 +124,12 @@ tidy_japan_names <- function (data) {
   data %>%
     select(taxon_id = ID20160331, scientific_name = `GreenList Name`,
            endemic = Endemism, conservation_status = RL2012) %>%
-    mutate(taxon_id = as.character(taxon_id))
+    # Simplify taxon names, replace space with underscore
+    taxastand::add_parsed_names(scientific_name, taxon) %>%
+    mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
+    mutate(taxon_id = as.character(taxon_id)) %>%
+    assert(not_na, taxon, taxon_id, scientific_name) %>%
+    assert(is_uniq, taxon, taxon_id, scientific_name)
 }
 
 #' Process raw occurrence data
@@ -163,18 +168,9 @@ process_occ_data <- function (occ_data_raw, all_cells, ppgi) {
 #' 
 subset_occ_point_data <- function(occ_point_data_raw, ppgi) {
   
-  # To speed up parsing names, make a lookup table
-  taxa_replace_df <-
-    occ_point_data_raw %>%
-    select(species) %>%
-    unique %>%
-    # Simplify taxon names, replace space with underscore
-    taxastand::add_parsed_names(species, taxon) %>%
-    mutate(taxon = str_replace_all(taxon, " ", "_"))
+  cols_keep <- colnames(occ_point_data_raw)
   
   occ_point_data_raw %>%
-    # Replace species names with simple, parsed version (taxon name)
-    left_join(taxa_replace_df, by = "species") %>%
     mutate(genus = str_split(taxon, " |_") %>% map_chr(1)) %>%
     assert(not_na, genus) %>%
     # Add higher-level taxonomy
@@ -182,12 +178,30 @@ subset_occ_point_data <- function(occ_point_data_raw, ppgi) {
     assert(not_na, class) %>%
     # Filter to only ferns
     filter(class == "Polypodiopsida") %>%
-    # Keep only needed columns
-    select(
-      taxon, longitude = decimalLongitude, latitude = decimalLatitude, date = eventDate, tns_accession = TNS
-    ) %>%
     # Check for missing data
-    assert(not_na, longitude, latitude, taxon)
+    assert(not_na, longitude, latitude, taxon) %>%
+    select(all_of(cols_keep))
+  
+}
+
+#' Rename taxa in data by taxon ID code
+#'
+#' The `green_list` has the official taxon names. These
+#' will be mapped by taxon ID code to the input data,
+#' and offical names used in replacement of original species names.
+#'
+#' @param data Dataframe with columns `taxon_id` and `species`
+#' @param green_list Dataframe of standard taxonomy with
+#' columns `taxon_id` and `taxon`
+#'
+#' @return Dataframe
+#' 
+rename_taxa <- function (data, green_list) {
+  
+  data %>%
+    left_join(select(green_list, taxon_id, taxon), by = "taxon_id") %>%
+    assert(not_na, taxon) %>%
+    select(-species, -taxon_id)
   
 }
 

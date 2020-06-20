@@ -4,7 +4,7 @@ k_vals <- 2:10
 # Define analysis plan
 plan <- drake_plan (
 
-  # Load and process raw data ----
+  # Load and process data ----
   
   # Load basic world map.
   world_map = ggplot2::map_data("world") %>%
@@ -16,23 +16,21 @@ plan <- drake_plan (
   ebihara_2019_data = unzip_ebihara_2019(
     dryad_zip_file = file_in("data_raw/doi_10.5061_dryad.4362p32__v4.zip"), 
     exdir = "data_raw/ebihara_2019",
-    produces_1 = file_out("data_raw/ebihara_2019/FernGreenListV1.01E.xls"),
-    produces_2 = file_out("data_raw/ebihara_2019/ESM1.csv"),
-    produces_3 = file_out("data_raw/ebihara_2019/ESM2.csv"),
-    produces_4 = file_out("data_raw/ebihara_2019/japan_pterido_rbcl_cipres.zip"),
-    produces_5 = file_out("data_raw/ebihara_2019/2_grid_cells_all.csv"),
-    produces_6 = file_out("data_raw/ebihara_2019/ppgi_taxonomy.csv")
+    produces_1 = file_out("data_raw/ebihara_2019/FernGreenListV1.01E.xls"), # Green List
+    produces_2 = file_out("data_raw/ebihara_2019/ESM1.csv"), # Reproductive mode data
+    produces_3 = file_out("data_raw/ebihara_2019/japan_pterido_rbcl_cipres.zip"), # rbcL tree
+    produces_4 = file_out("data_raw/ebihara_2019/ppgi_taxonomy.csv") # PPGI taxonomy
   ),
   
-  # Lodd Pteridophyte Phylogeny Group I (PPGI) taxonomy,
+  # Load Pteridophyte Phylogeny Group I (PPGI) taxonomy,
   # modified slightly for ferns of Japan
   ppgi = read_csv(file_in("data_raw/ebihara_2019/ppgi_taxonomy.csv")) %>%
     modify_ppgi,
   
-  # Load Fern Green List (conservation status for each species)
+  # Load Fern Green List (official taxonomy + conservation status for each species)
   green_list = read_excel(file_in("data_raw/ebihara_2019/FernGreenListV1.01E.xls")) %>% 
     tidy_japan_names(),
-
+  
   # Load reproductive mode data (one row per species)
   repro_data_raw = read_csv(
     file_in("data_raw/ebihara_2019/ESM1.csv"),
@@ -40,40 +38,23 @@ plan <- drake_plan (
 
   repro_data = process_repro_data(repro_data_raw),
   
-  # Load environmental data
-  ja_env_raw_path = target("data/ja_env_data.csv", format = "file"),
-  
-  ja_env_raw = read_csv(
-    ja_env_raw_path,
-    col_types = "cnnnnnnnnnn"
-  ) %>%
-    rename(site = secondary_grid_code),
+  # Load raw occurrence data of pteridophytes in Japan, excluding hybrids (717 taxa)
+  occ_point_data_raw = readxl::read_excel(
+    file_in("data_raw/JP_pterid_excl_hyb200620.xlsx"),
+    col_types = c("text", "numeric", "numeric", "text", "text", "text", "text"),
+    col_names = c("species", "longitude", "latitude", "date", "tns_barcode", "herbarium_code", "taxon_id"),
+    skip = 1),
 
-  # List of all 10 km grid cells across Japan
-  all_cells_raw = read_csv(
-    file_in("data_raw/ebihara_2019/2_grid_cells_all.csv"),
-    col_types = "cnn") %>%
-    rename(site = id, latitude = y, longitude = x) %>%
-    assert(is_uniq, site),
+  # - standardize names to Green List
+  occ_point_data = rename_taxa(occ_point_data_raw, green_list),
   
-  # Combine into list of 10 km grid cells with environment
-  all_cells = left_join(all_cells_raw, ja_env_raw, by = "site"),
-  
-  # Load raw occurrence data of pteridophytes in Japan.
-  # Occurrences are actual point data (one specimen per lat/long)
-  # NOTE: this is a subset of all taxa (total 727 taxa, so probably excludes hybrids)
-  occ_point_data_raw = readr::read_csv(
-    file_in("data_raw/ja_fern_occs_raw.csv"),
-    col_types = "lcnncccccc"),
-  
-  # Subset to just ferns (682 taxa)
+  # Subset to just ferns (674 taxa)
   occ_point_data_ferns = subset_occ_point_data(
-    occ_point_data_raw = occ_point_data_raw,
+    occ_point_data_raw = occ_point_data,
     ppgi = ppgi
   ),
   
   # Generate datasets at different spatial scales: 
-  # 0.1 degree ~ 10 km x 10 km,
   # 0.2 degree ~ 20 km x 20 km,
   # 0.4 degree ~ 40 km x 40 km
   comm_scaled_list = target(
@@ -83,7 +64,7 @@ plan <- drake_plan (
     lon = "longitude",
     lat = "latitude",
     species = "taxon"),
-    transform = map(scale = c(0.1, 0.2, 0.4))
+    transform = map(scale = c(0.2, 0.4))
   ),
   
   # Check coverage at each scale
@@ -92,58 +73,23 @@ plan <- drake_plan (
     transform = map(comm_scaled_list, .id = scale)
   ),
   
-  # Load occurrence data of ferns and lycophytes, including hybrids (total 1089 taxa)
-  # Occurrences are presences in a set of 10 x 10 km2 grid
-  # cells across Japan, not actual occurrence points of specimens.
-  occ_data_raw = read_csv(
-    file_in("data_raw/ebihara_2019/ESM2.csv"),
-    col_types = "cccnnccc"
-  ),
+  # Decide that 0.2 scale is optimal, use this for downstream analyses
+  comm_ferns = comm_scaled_list_0.2[["comm_dat"]],
   
-  # - occurrence data of ferns and lycophytes, including hybrids (total 1089 taxa)
-  pteridos = process_occ_data(
-    occ_data_raw = occ_data_raw, 
-    all_cells = all_cells, 
-    ppgi = ppgi),
-
-  # - occurrence data of ferns only, including hybrids (total 1043 taxa)
-  ferns =
-    pteridos %>%
-    assert(not_na, class) %>%
-    filter(class == "Polypodiopsida"),
-  
-  ferns_endemic = left_join(ferns, green_list, by = "taxon_id") %>%
-    mutate(endemic = replace_na(endemic, "no")) %>%
-    filter(endemic == "Endemic"),
-  
-  pteridos_endemic = left_join(pteridos, green_list, by = "taxon_id") %>%
-    mutate(endemic = replace_na(endemic, "no")) %>%
-    filter(endemic == "Endemic"),
-
-  # Make tibble mapping taxon IDs to taxon names
-  taxon_id_map = make_taxon_id_map(pteridos),
-
   # Read in phylogenetic tree of all pteridophyte
   # taxa based on rbcL gene, NOT including hybrids (706 taxa total)
   japan_pterido_tree = read_nexus_in_zip(
     file_in("data_raw/ebihara_2019/japan_pterido_rbcl_cipres.zip"),
     "japan_pterido_rbcl_cipres/infile.nex.con.tre")[[2]] %>%
     format_tip_labels %>%
-    rename_tree(taxon_id_map),
+    rename_tree(green_list),
   
-  # Make community matrices, limited to taxa in tree (so, excluding hybrids).
-  # Rows are sites, columns are species.
-  comm = target(
-    make_comm_matrix(occ_data, taxa_list = japan_pterido_tree$tip.label),
-    transform = map(occ_data = c(pteridos, ferns, pteridos_endemic, ferns_endemic))
-  ),
-
   # Format trait data
   raw_trait_data_path = target("data_raw/JpFernLUCID_forJoel.xlsx", format = "file"),
   
   traits_for_dist = format_traits(
     path_to_lucid_traits = raw_trait_data_path,
-    taxon_id_map = taxon_id_map),
+    taxon_id_map = green_list),
 
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
