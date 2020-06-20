@@ -59,7 +59,9 @@ process_repro_data <- function (data) {
         TRUE ~ FALSE
       )
     ) %>%
-    rename(rbcl_genbank_no = rbc_l_gen_bank_accession_no) %>%
+    rename(
+      rbcl_genbank_no = rbc_l_gen_bank_accession_no,
+      species = taxon_name) %>%
     mutate(rbcl_genbank_no = str_remove_all(rbcl_genbank_no, "\\*"))
   
 }
@@ -205,6 +207,25 @@ rename_taxa <- function (data, green_list) {
   
 }
 
+#' Subset a community to only endemic taxa
+#'
+#' @param comm Community matrix with colnames as species
+#' @param green_list Dataframe with columns `taxon` and `endemic`
+#'
+#' @return Subsetted community matrix
+#' 
+subset_comm_to_endemic <- function (comm, green_list) {
+  
+  endemic_taxa <-
+    green_list %>%
+    filter(!is.na(endemic)) %>%
+    verify(all(endemic == "Endemic")) %>%
+    pull(taxon)
+  
+  comm[,colnames(comm) %in% endemic_taxa]
+  
+}
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)
@@ -213,24 +234,20 @@ rename_taxa <- function (data, green_list) {
 #' and one column indicating "site"
 #' @param repro_data Reproductive data, including columns 
 #' for reproductive type (`sexual_diploid`, `sexual_polyploid`)
-#' @param taxon_id_map Tibble mapping taxon names to taxon ID numbers
 #'
 #' @return Tibble with percentage of sexual diploids per cell
 #' 
-calc_sex_dip <- function (comm, repro_data, taxon_id_map) {
+calc_sex_dip <- function (comm, repro_data) {
   
   comm %>%
     rownames_to_column("site") %>%
     # Convert comm to long
-    pivot_longer(names_to = "taxon", values_to = "abundance", -site) %>%
+    pivot_longer(names_to = "taxon", values_to = "abundance", -site) %>% 
     filter(abundance > 0) %>%
-    # Join taxon IDs
-    left_join(taxon_id_map, by = "taxon") %>%
-    assert(not_na, taxon_id) %>%
     # Join reproductive data
-    left_join(repro_data, by = "taxon_id") %>%
+    left_join(repro_data, by = "taxon") %>%
     # Calculate percent sexual diploid per site
-    assert(not_na, sexual_diploid) %>%
+    assert(not_na, sexual_diploid, taxon) %>%
     group_by(site) %>%
     summarize(
       num_sex_dip = sum(sexual_diploid), # `sexual_diploid` is logical; TRUE for sex diploids, FALSE otherwise
@@ -238,7 +255,8 @@ calc_sex_dip <- function (comm, repro_data, taxon_id_map) {
       .groups = "drop"
     ) %>%
     ungroup %>%
-    mutate(percent_sex_dip = num_sex_dip / num_total)
+    mutate(percent_sex_dip = num_sex_dip / num_total) %>%
+    as_tibble()
   
 }
 

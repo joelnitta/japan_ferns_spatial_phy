@@ -36,7 +36,8 @@ plan <- drake_plan (
     file_in("data_raw/ebihara_2019/ESM1.csv"),
     col_types = "cccccnnnnn"),
 
-  repro_data = process_repro_data(repro_data_raw),
+  repro_data = process_repro_data(repro_data_raw) %>%
+    rename_taxa(green_list),
   
   # Load raw occurrence data of pteridophytes in Japan, excluding hybrids (717 taxa)
   occ_point_data_raw = readxl::read_excel(
@@ -74,10 +75,15 @@ plan <- drake_plan (
   ),
   
   # Decide that 0.2 scale is optimal, use this for downstream analyses
-  comm_ferns = comm_scaled_list_0.2[["comm_dat"]],
+  comm_ferns = comm_scaled_list_0.2[["comm_dat"]] %>% phyloregion::sparse2dense() %>% as.data.frame(),
+  
+  comm_ferns_endemic = subset_comm_to_endemic(
+    comm = comm_ferns,
+    green_list = green_list
+  ),
   
   # Read in phylogenetic tree of all pteridophyte
-  # taxa based on rbcL gene, NOT including hybrids (706 taxa total)
+  # taxa based on rbcL gene, not including hybrids (706 taxa total)
   japan_pterido_tree = read_nexus_in_zip(
     file_in("data_raw/ebihara_2019/japan_pterido_rbcl_cipres.zip"),
     "japan_pterido_rbcl_cipres/infile.nex.con.tre")[[2]] %>%
@@ -96,17 +102,16 @@ plan <- drake_plan (
   
   # Analyze reproductive mode ----
   
-  percent_sex_dip = target(
-    calc_sex_dip(comm, repro_data = repro_data, taxon_id_map = taxon_id_map),
-    transform = map(comm, .id = occ_data)
-  ),
+  percent_sex_dip = calc_sex_dip(
+    comm = comm_ferns, 
+    repro_data = repro_data),
 
   # Analyze standard effect size (SES) of diversity metrics ----
   
-  # ses_div = target(
-  #   run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("mpd", "pd", "pe", "rpe")),
-  #   transform = map(comm, .id = occ_data)
-  # )
+  ses_div = target(
+    run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("pd", "pe", "rpe")),
+    transform = map(comm = c(comm_ferns, comm_ferns_endemic), .names = c("ferns", "ferns_endemic"))
+  )
   
   # 
   # # Make richness matrix (number of species per
