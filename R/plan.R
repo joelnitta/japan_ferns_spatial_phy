@@ -110,7 +110,7 @@ plan <- drake_plan (
   
   ses_div = target(
     run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("pd", "pe", "rpe")),
-    transform = map(comm = c(comm_ferns, comm_ferns_endemic), .names = c("ferns", "ferns_endemic"))
+    transform = map(comm = c(comm_ferns, comm_ferns_endemic), .names = c("ses_div_ferns", "ses_div_ferns_endemic"))
   )
   
   # 

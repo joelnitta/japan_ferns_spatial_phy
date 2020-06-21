@@ -1620,26 +1620,44 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' 
 run_ses_analysis <- function(comm_df, phy, n_reps, metrics, trait_distances = NULL) {
   
-  # Use only tips that are in the community
-  phy <- ape::keep.tip(phy, colnames(comm_df))
-  
-  assert_that(
-    isTRUE(
-      all.equal(
-        sort(colnames(comm_df)),
-        sort(phy$tip.label)
-      )
-    ),
-    msg = "Tip names don't match between community and phylogeny"
-  )
-  
-  # Make alternative tree with equal branch lengths
-  phy_alt <- phy
-  phy_alt$edge.length <- rep(length(phy_alt$edge.length), 1)
-  # rescale so total phy length is 1
-  phy_alt$edge.length <- phy_alt$edge.length / sum(phy_alt$edge.length)
-  # rescale original phy so total length is 1
-  phy$edge.length <- phy$edge.length / sum(phy$edge.length)
+  # If running any phylogenetic metrics, 
+  # first match tips of tree and column names of community data frame
+  if (any(str_detect(metrics, "mpd|mntd|pd|pe|rpe"))) {
+    
+    # Use only taxa that are in common between phylogeny and community
+    taxa_keep <- intersect(phy$tip.label, colnames(comm_df))
+    
+    n_taxa_to_drop_from_tree <- setdiff(phy$tip.label, taxa_keep) %>% length
+    
+    if (n_taxa_to_drop_from_tree > 0) message (glue::glue("Dropping {n_taxa_to_drop_from_tree} taxa from the tree that are missing from the community"))
+    
+    n_taxa_to_drop_from_comm <- setdiff(colnames(comm_df), taxa_keep) %>% length
+    
+    if (n_taxa_to_drop_from_comm > 0) message (glue::glue("Dropping {n_taxa_to_drop_from_comm} taxa from the community that are missing from the tree"))
+    
+    phy <- ape::keep.tip(phy, taxa_keep)
+    
+    comm_df <- comm_df[,taxa_keep]
+    
+    assert_that(
+      isTRUE(
+        all.equal(
+          sort(colnames(comm_df)),
+          sort(phy$tip.label)
+        )
+      ),
+      msg = "Tip names don't match between community and phylogeny"
+    )
+    
+    # Make alternative tree with equal branch lengths
+    phy_alt <- phy
+    phy_alt$edge.length <- rep(length(phy_alt$edge.length), 1)
+    # rescale so total phy length is 1
+    phy_alt$edge.length <- phy_alt$edge.length / sum(phy_alt$edge.length)
+    # rescale original phy so total length is 1
+    phy$edge.length <- phy$edge.length / sum(phy$edge.length)
+    
+  }
   
   # Calculate biodiversity metrics for random communities
   random_vals <-
