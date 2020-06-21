@@ -239,8 +239,18 @@ subset_comm_to_endemic <- function (comm, green_list) {
 #' 
 calc_sex_dip <- function (comm, repro_data) {
   
+  # First subset comm and repro_data to the species in common
+  taxa_keep <- intersect(colnames(comm), repro_data$taxon)
+  
+  n_taxa_to_drop_from_comm <- setdiff(colnames(comm), taxa_keep) %>% length()
+  
+  if (n_taxa_to_drop_from_comm > 0) message (glue::glue("Dropping {n_taxa_to_drop_from_comm} species in community missing from reproductive data"))
+  
+  comm <- comm[,taxa_keep]
+  
   comm %>%
     rownames_to_column("site") %>%
+    as_tibble() %>%
     # Convert comm to long
     pivot_longer(names_to = "taxon", values_to = "abundance", -site) %>% 
     filter(abundance > 0) %>%
@@ -255,8 +265,7 @@ calc_sex_dip <- function (comm, repro_data) {
       .groups = "drop"
     ) %>%
     ungroup %>%
-    mutate(percent_sex_dip = num_sex_dip / num_total) %>%
-    as_tibble()
+    mutate(percent_sex_dip = num_sex_dip / num_total)
   
 }
 
