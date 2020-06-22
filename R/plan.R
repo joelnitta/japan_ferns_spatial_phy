@@ -75,9 +75,9 @@ plan <- drake_plan (
   ),
   
   # Decide that 0.2 scale is optimal, use this for downstream analyses
-  comm_ferns = comm_scaled_list_0.2[["comm_dat"]] %>% phyloregion::sparse2dense() %>% as.data.frame(),
+  comm_ferns = comm_from_points2comm(comm_scaled_list_0.2),
   
-  shape_ferns = comm_scaled_list_0.2[["poly_shp"]] %>% sf::st_as_sf(),
+  shape_ferns = shape_from_points2comm(comm_scaled_list_0.2),
     
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
@@ -138,7 +138,13 @@ plan <- drake_plan (
     comm_df = comm_ferns, 
     phy = japan_pterido_tree,
     k = 12
-  )
+  ),
+  
+  # Ecostructure ----
+  
+  species_motifs_ferns = ecostructure::ecos_fit(
+      dat = comm_ferns,
+      K = 8, tol = 0.1, num_trials = 1)
     
   # 
   # # Make richness matrix (number of species per

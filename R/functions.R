@@ -226,6 +226,38 @@ subset_comm_to_endemic <- function (comm, green_list) {
   
 }
 
+#' Extract community dataframe from points2comm()
+#' 
+#' Also converts the community dataframe to presence/absence
+#'
+#' @param data Output of phyloregion::points2comm()
+#'
+#' @return Dataframe
+#' 
+comm_from_points2comm <- function (data) {
+  
+  data[["comm_dat"]] %>%
+    phyloregion::sparse2dense() %>% 
+    as.data.frame() %>%
+    mutate_all(~ifelse(. > 0, 1, 0)) %>%
+    assert(in_set(c(0,1)), everything()) %>%
+    assert(not_na, everything())
+  
+}
+
+#' Extract shape dataframe from points2comm()
+#'
+#' @param data Output of phyloregion::points2comm()
+#'
+#' @return Dataframe (sf object)
+#' 
+shape_from_points2comm <- function (data) {
+  
+  data[["poly_shp"]] %>% sf::st_as_sf()
+  
+}
+
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)
