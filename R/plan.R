@@ -77,6 +77,8 @@ plan <- drake_plan (
   # Decide that 0.2 scale is optimal, use this for downstream analyses
   comm_ferns = comm_scaled_list_0.2[["comm_dat"]] %>% phyloregion::sparse2dense() %>% as.data.frame(),
   
+  shape_ferns = comm_scaled_list_0.2[["poly_shp"]] %>% sf::st_as_sf(),
+    
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
     green_list = green_list
