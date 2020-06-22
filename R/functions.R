@@ -236,10 +236,16 @@ subset_comm_to_endemic <- function (comm, green_list) {
 #' 
 comm_from_points2comm <- function (data) {
   
+  # Convert input to "dense" dataframe
   data[["comm_dat"]] %>%
     phyloregion::sparse2dense() %>% 
     as.data.frame() %>%
-    mutate_all(~ifelse(. > 0, 1, 0)) %>%
+    # Temporarily store rownames in "site" column so tidyverse doesn't obliterate them
+    rownames_to_column("site") %>%
+    # Convert to presence-absence
+    mutate_if(is.numeric, ~ifelse(. > 0, 1, 0)) %>%
+    column_to_rownames("site") %>%
+    # Make sure everything is 0-1
     assert(in_set(c(0,1)), everything()) %>%
     assert(not_na, everything())
   
