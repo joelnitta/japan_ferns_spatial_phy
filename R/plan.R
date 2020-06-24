@@ -75,9 +75,9 @@ plan <- drake_plan (
   ),
   
   # Decide that 0.2 scale is optimal, use this for downstream analyses
-  comm_ferns = comm_scaled_list_0.2[["comm_dat"]] %>% phyloregion::sparse2dense() %>% as.data.frame(),
+  comm_ferns = comm_from_points2comm(comm_scaled_list_0.2),
   
-  shape_ferns = comm_scaled_list_0.2[["poly_shp"]] %>% sf::st_as_sf(),
+  shape_ferns = shape_from_points2comm(comm_scaled_list_0.2),
     
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
@@ -111,10 +111,41 @@ plan <- drake_plan (
   # Analyze standard effect size (SES) of diversity metrics ----
   
   ses_div = target(
-    run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("pd", "pe", "rpe")),
+    run_ses_analysis(comm, japan_pterido_tree, n_reps = 999, metrics = c("mpd", "mntd", "pd", "pe", "rpe")),
     transform = map(comm = c(comm_ferns, comm_ferns_endemic), .names = c("ses_div_ferns", "ses_div_ferns_endemic"))
-  )
+  ),
   
+  # Analyze phyloregions
+  
+  # - Assess optimal K-value for clustering by taxonomy
+  # (plot this, then choose K manually)
+  k_taxonomy = find_k_taxonomy(comm_ferns),
+  
+  # - Assess optimal K-value for clustering by phylogeny
+  # (plot this, then choose K manually)
+  k_phylogeny = find_k_phylogeny(
+    comm_df = comm_ferns,
+    phy = japan_pterido_tree,
+  ),
+  
+  # - Cluster by taxonomy
+  regions_taxonomy = cluster_taxonomic_regions(
+    comm_df = comm_ferns, 
+    k = 8),
+  
+  # - Cluster by phylogeny
+  regions_phylogeny = cluster_phylo_regions(
+    comm_df = comm_ferns, 
+    phy = japan_pterido_tree,
+    k = 12
+  ),
+  
+  # Ecostructure ----
+  
+  species_motifs_ferns = ecostructure::ecos_fit(
+      dat = comm_ferns,
+      K = 8, tol = 0.1, num_trials = 1)
+    
   # 
   # # Make richness matrix (number of species per
   # # 10 km grid cell).

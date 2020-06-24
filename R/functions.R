@@ -226,6 +226,44 @@ subset_comm_to_endemic <- function (comm, green_list) {
   
 }
 
+#' Extract community dataframe from points2comm()
+#' 
+#' Also converts the community dataframe to presence/absence
+#'
+#' @param data Output of phyloregion::points2comm()
+#'
+#' @return Dataframe
+#' 
+comm_from_points2comm <- function (data) {
+  
+  # Convert input to "dense" dataframe
+  data[["comm_dat"]] %>%
+    phyloregion::sparse2dense() %>% 
+    as.data.frame() %>%
+    # Temporarily store rownames in "site" column so tidyverse doesn't obliterate them
+    rownames_to_column("site") %>%
+    # Convert to presence-absence
+    mutate_if(is.numeric, ~ifelse(. > 0, 1, 0)) %>%
+    column_to_rownames("site") %>%
+    # Make sure everything is 0-1
+    assert(in_set(c(0,1)), everything()) %>%
+    assert(not_na, everything())
+  
+}
+
+#' Extract shape dataframe from points2comm()
+#'
+#' @param data Output of phyloregion::points2comm()
+#'
+#' @return Dataframe (sf object)
+#' 
+shape_from_points2comm <- function (data) {
+  
+  data[["poly_shp"]] %>% sf::st_as_sf()
+  
+}
+
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)
@@ -1855,6 +1893,174 @@ combine_presabs_mat <- function(comm_for_ecos_global_cropped, comm_pteridos_rena
   combined[rowSums(combined) > 0, colSums(combined) > 0]
   
 }
+
+# Phyloregion ----
+
+#' Find optimal K for clustering by taxonomy
+#'
+#' @param comm_df Input community matrix in data.frame format (communities as rows,
+#' species as columns, with row names and column names)
+#' @param k_max Maximum number of clusters to assign
+#'
+#' @return a list containing the following as returned from the GMD package (Zhao et al. 2011):
+#' - k: optimal number of clusters (bioregions)
+#' - totbss: total between-cluster sum-of-square
+#' - tss: total sum of squares of the data
+#' - ev: explained variance given k
+#' 
+find_k_taxonomy <- function (comm_df, k_max = 20) {
+  
+  # Convert input dataframe to sparse
+  comm_sparse <- phyloregion::dense2sparse(comm_df)
+  
+  # Calculate taxonomic beta diversity
+  bc <- phyloregion::beta_diss(comm_sparse, index.family = "sorensen")
+  
+  # Select the best clustering algorithm
+  method_scores <- phyloregion::select_linkage(bc[[1]])
+  
+  # The values used for `method` in phyloregion::phyloregion() are
+  # slightly different from the output of phyloregion::select_linkage(),
+  # so adjust appropriately
+  
+  method_names <- c(
+    ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
+    Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
+    WPGMC = "median",  UPGMC = "centroid")
+  
+  method_select <- method_names[names(method_scores[1])]
+  
+  # Find the optimal K value
+  phyloregion::optimal_phyloregion(bc[[1]], method = method_select, k = k_max)
+  
+}
+
+#' Find optimal K for clustering by phylogeny
+#'
+#' @param comm_df Input community matrix in data.frame format (communities as rows,
+#' species as columns, with row names and column names)
+#' @param k_max Maximum number of clusters to assign
+#' @param phy Phylogenetic tree
+#'
+#' @return a list containing the following as returned from the GMD package (Zhao et al. 2011):
+#' - k: optimal number of clusters (bioregions)
+#' - totbss: total between-cluster sum-of-square
+#' - tss: total sum of squares of the data
+#' - ev: explained variance given k
+#' 
+find_k_phylogeny <- function (comm_df, k_max = 20, phy) {
+  
+  # Use only taxa that are in common between phylogeny and community
+  subsetted_data <- picante::match.phylo.comm(phy = phy, comm = comm_df)
+  phy <- subsetted_data[["phy"]]
+  comm_df <- subsetted_data[["comm"]]
+  
+  # Convert input dataframe to sparse
+  comm_sparse <- phyloregion::dense2sparse(comm_df)
+  
+  # Calculate taxonomic beta diversity
+  bc <- phyloregion::phylobeta(comm_sparse, phy, index.family = "sorensen")
+  
+  # Select the best clustering algorithm
+  method_scores <- phyloregion::select_linkage(bc[[1]])
+  
+  # The values used for `method` in phyloregion::phyloregion() are
+  # slightly different from the output of phyloregion::select_linkage(),
+  # so adjust appropriately
+  
+  method_names <- c(
+    ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
+    Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
+    WPGMC = "median",  UPGMC = "centroid")
+  
+  method_select <- method_names[names(method_scores[1])]
+  
+  # Find the optimal K value
+  phyloregion::optimal_phyloregion(bc[[1]], method = method_select, k = k_max)
+  
+}
+
+#' Cluster regions by taxonomy
+#'
+#' @param comm_df Input community matrix in data.frame format (communities as rows,
+#' species as columns, with row names and column names)
+#' @param k Number of clusters to assign
+#'
+#' @return Dataframe
+#' 
+cluster_taxonomic_regions <- function (comm_df, k) {
+  
+  # Convert input dataframe to sparse
+  comm_sparse <- phyloregion::dense2sparse(comm_df)
+  
+  # Calculate taxonomic beta diversity
+  bc <- phyloregion::beta_diss(comm_sparse, index.family = "sorensen")
+  
+  # Select the best clustering algorithm
+  method_scores <- phyloregion::select_linkage(bc[[1]])
+  
+  # The values used for `method` in phyloregion::phyloregion() are
+  # slightly different from the output of phyloregion::select_linkage(),
+  # so adjust appropriately
+  
+  method_names <- c(
+    ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
+    Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
+    WPGMC = "median",  UPGMC = "centroid")
+  
+  method_select <- method_names[names(method_scores[1])]
+  
+  # Assign taxonomic regions based on clustering
+  regions <- phyloregion::phyloregion(bc[[1]], k = k, method = method_select)
+  
+  regions[["membership"]] %>%
+    as_tibble()
+}
+
+#' Cluster regions by phylogenetic distance
+#'
+#' @param comm_df Input community matrix in data.frame format (communities as rows,
+#' species as columns, with row names and column names)
+#' @param k Number of clusters to assign
+#' @param phy Phylogenetic tree
+#'
+#' @return Dataframe
+#' 
+cluster_phylo_regions <- function (comm_df, phy, k) {
+  
+  # Use only taxa that are in common between phylogeny and community
+  subsetted_data <- picante::match.phylo.comm(phy = phy, comm = comm_df)
+  phy <- subsetted_data[["phy"]]
+  comm_df <- subsetted_data[["comm"]]
+  
+  # Convert input dataframe to sparse
+  comm_sparse <- phyloregion::dense2sparse(comm_df)
+  
+  # Calculate phylogenetic beta diversity
+  bc <- phyloregion::phylobeta(comm_sparse, phy, index.family = "sorensen")
+  
+  # Select the best clustering algorithm
+  method_scores <- phyloregion::select_linkage(bc[[1]])
+  
+  # The values used for `method` in phyloregion::phyloregion() are
+  # slightly different from the output of phyloregion::select_linkage(),
+  # so adjust appropriately
+  
+  method_names <- c(
+    ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
+    Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
+    WPGMC = "median",  UPGMC = "centroid")
+  
+  method_select <- method_names[names(method_scores[1])]
+  
+  # Assign regions based on clustering
+  regions <- phyloregion::phyloregion(bc[[1]], k = k, method = method_select)
+  
+  regions[["membership"]] %>%
+    as_tibble()
+}
+
+
 
 # Ecostructure ----
 
