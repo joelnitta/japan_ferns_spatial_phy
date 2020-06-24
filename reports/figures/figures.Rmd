@@ -1,5 +1,5 @@
 ---
-title: "figures"
+title: "Results"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -88,9 +88,15 @@ k_phylogeny$df %>%
   theme(legend.position = "none")
 ```
 
-Redundancy (number of specimens per species) is generally high throughout the country, but lower in Hokkaido and some coastal areas and small islands. Species richness is highest in southern Kyushu and on Yakushima Island, and lowest on Hokkaido and low-lying coastal areas. Raw MPD is uniform throughout, but SES of MPD shows clustering in mountainous areas of Honshu and overdispersion in souther Kyushu and islands further south.
+Redundancy (number of specimens per species) is generally high throughout the country, but lower in Hokkaido and some coastal areas and small islands (Fig 1B). Species richness is highest in southern Kyushu and on Yakushima Island, and lowest on Hokkaido and low-lying coastal areas (Fig 1A). Raw MPD is mostly uniform throughout (Fig 1C), but SES of MPD shows clustering in mountainous areas of Honshu and overdispersion in souther Kyushu and islands further south (Fig 1D).
 
-```{r diversity-plots, fig.width = 8, fig.height = 8}
+Phylogenetic endemism (PE) is extremeley low throughout except for in some of the southern islands (Fig 2A). SES of PE is high starting in southern Kyushu and southwards, including the Ogasawara islands (Fig 2B). Results of CANAPE (Categorical Analysis of Palaeo and Neo Endemism) indicate hotspots of mixed endemism in the southern islands, but no neo- or paleo-endemism (Fig 2E). It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). This is especially the case for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. To account for this, we also analyzed a dataset including only species endemic to Japan (Fig 2C, D, and F). The patterns are generally similar to the full dataset, indicating that the southern islands are genuine hotspots of endemicity.
+
+Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (Fig 3A). Using phylogenetic distances produced similar results, except that most grid cells in Okinawa and the Ogawara Islands grouped into the same cluster.
+
+Analysis of ecological structure using species names with the same number of clusters as the taxonomic bioregions (K = 8) revealed high amounts of turnover throughout Honshu that mostly tracks latitude and elevation.
+
+```{r diversity-plots, fig.width = 10, fig.height=7.5}
 # Richness
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
   geom_sf(color = "transparent") +
@@ -151,7 +157,7 @@ a + b + c + d  +
 
 **Figure 1**. Taxonomic and phylogenetic diversity of the ferns of Japan. A, richness. B, sampling redundancy. C, mean phylogenetic distance (MPD). D, Standard effect size of MPD.
 
-```{r endem-plots, fig.width = 8, fig.height = 10}
+```{r endem-plots, fig.width = 10, fig.height=11.5}
 # PE
 a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs)) +
   geom_sf(color = "transparent") +
@@ -213,18 +219,18 @@ a + b + c + d + e + f +
 
 **Figure 2**. Phylogenetic endemism of the ferns of Japan. A, phylogenetic endemism (PE). B, Standard effect size (SES) of PE. C, PE of endemic taxa only. D, SES of PE of endemic taxa only. E, Categorical analysis of neo- and paleo- endemism (CANAPE) results. F, CANAPE results for endemic taxa only.
 
-```{r bioregion-plots, fig.width = 8}
+```{r bioregion-plots, fig.width = 10, fig.height=4.5}
 # Taxonomic bioregions
 a <- ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
   geom_sf(color = "transparent") +
-  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Safe") +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
   map_theme
 
 # Phylogenetic bioregions
 b <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
   geom_sf(color = "transparent") +
   labs(fill = "Cluster") +
-  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Safe") +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
   map_theme
 
 a + b +
@@ -232,7 +238,7 @@ a + b +
   plot_annotation(tag_levels = 'A')
 ```
 
-**Figure 3**. Regionalization of the ferns of Japan. A, taxonomic regionalization. B, phylogenetic regionalization.
+**Figure 3**. Bioregions of the ferns of Japan. A, taxonomic bioregions B, phylogenetic bioregions.
 
 ```{r ecostructure}
 tweak <- 0.75
@@ -269,8 +275,8 @@ ecos_plot_pie2(
     coords = omega_centroids,
     long_lim = c(121, 148),
     lat_lim = c(23, 47),
-    color = carto_pal(8, "Safe"),
-    blank_bg = "grey10",
+    color = carto_pal(8, "Bold"),
+    blank_bg = "grey90",
     path = here::here(
       "reports/figures/species_motifs_ferns.png"
     )
@@ -280,4 +286,4 @@ ecos_plot_pie2(
 
 ![](species_motifs_ferns.png)
 
-**Figure 3**. Ecological structure of the ferns of Japan. K = 8.
+**Figure 4**. Ecological structure of the ferns of Japan based on species' occurrences. K = 8.
