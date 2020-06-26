@@ -66,8 +66,7 @@ RUN apt-get update \
 RUN mkdir renv
 
 # Modify Rprofile.site so renv uses /renv for project library, and doesn't use the cache
-RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site \
-  && echo 'renv::settings$use.cache(FALSE)' >> /usr/local/lib/R/etc/Rprofile.site
+RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site
 
 # Initialize a 'dummy' project and restore the renv library.
 # Since the library path is specified as above, the library will be restored to /renv
