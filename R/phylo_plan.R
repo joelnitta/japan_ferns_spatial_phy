@@ -28,7 +28,7 @@ plan <- drake_plan(
     japan_rbcL = japan_rbcL),
   
   # Infer tree
-  plastome_tree = jntools::fasttree(combined_alignment),
+  plastome_tree = jntools::fasttree(plastome_alignment),
   
   # Root tree on bryophytes
   plastome_tree_rooted = ape::root(
