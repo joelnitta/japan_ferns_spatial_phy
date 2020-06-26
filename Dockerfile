@@ -65,8 +65,9 @@ RUN apt-get update \
 # Create directory for renv project library
 RUN mkdir renv
 
-# Modify Rprofile.site so renv uses /renv for project library
-RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site
+# Modify Rprofile.site so renv uses /renv for project library, and doesn't use the cache
+RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site \
+  && echo 'renv::settings$use.cache(FALSE)' >> /usr/local/lib/R/etc/Rprofile.site
 
 # Initialize a 'dummy' project and restore the renv library.
 # Since the library path is specified as above, the library will be restored to /renv
@@ -100,6 +101,7 @@ RUN git clone https://github.com/blackrim/treePL.git \
   && ./configure \
   && make \
   && echo '/usr/lib64' > /etc/ld.so.conf.d/lib64.conf \
+  && ldconfig \
   && cp treePL /usr/local/bin
 
 ### gnparser ###
