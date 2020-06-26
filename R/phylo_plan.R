@@ -1,4 +1,4 @@
-phylo_plan <- drake_plan(
+plan <- drake_plan(
   
   # Read in green list for standardizing names
   green_list = read_greenlist_from_zip("data_raw/doi_10.5061_dryad.4362p32__v4.zip") %>% 
