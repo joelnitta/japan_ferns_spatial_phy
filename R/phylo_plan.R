@@ -28,7 +28,10 @@ plan <- drake_plan(
     japan_rbcL = japan_rbcL),
   
   # Infer tree
-  plastome_tree = jntools::fasttree(plastome_alignment),
+  plastome_tree = jntools::iqtree(
+      plastome_alignment,
+      m = "GTR+I+G", bb = 1000, nt = "AUTO",
+      redo = FALSE, echo = TRUE, wd = here::here("iqtree")),
   
   # Root tree on bryophytes
   plastome_tree_rooted = ape::root(
@@ -79,6 +82,12 @@ plan <- drake_plan(
     wd = here::here("treepl"),
     nthreads = 7,
     echo = TRUE
-  )
+  ),
+  
+  # Subset to just pteridophytes in Japan
+  japan_pterido_tree_dated = ape::keep.tip(treepl_dating_results, rownames(japan_rbcL)),
+  
+  # Write out results
+  japan_pterido_tree_dated_out = ape::write.tree(japan_pterido_tree_dated, "japan_pterido_tree_dated.tre")
   
 )
