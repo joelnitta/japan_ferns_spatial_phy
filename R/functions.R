@@ -2874,7 +2874,7 @@ combine_ja_rbcL_with_global <- function (broad_alignment_list, japan_rbcL) {
   reduced[["rbcL"]] <- c(as.list(reduced[["rbcL"]]), as.list(japan_rbcL)) %>%
     ips::mafft(exec = "/usr/bin/mafft") %>%
     # Trim any column that is >90% gaps
-    ips::deleteGaps(nmax = nrow(.)*0.9)
+    ips::deleteGaps(gap.max = nrow(.)*0.9)
   
   # Concatenate genes
   concatenate_genes(reduced)
