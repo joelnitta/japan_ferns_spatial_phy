@@ -71,6 +71,13 @@
       "Repository": "CRAN",
       "Hash": "bbff70c8c0357b5b88238c83f680fcd3"
     },
+    "LearnBayes": {
+      "Package": "LearnBayes",
+      "Version": "2.15.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b2dd5e3f910f1ac390f847f35e8c2396"
+    },
     "MASS": {
       "Package": "MASS",
       "Version": "7.3-51.6",
@@ -183,6 +190,13 @@
       "Repository": "CRAN",
       "Hash": "afb4cb7b51681e837275748658f28738"
     },
+    "adegenet": {
+      "Package": "adegenet",
+      "Version": "2.1.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0952bb0e4924be641265a6984d9e1955"
+    },
     "animation": {
       "Package": "animation",
       "Version": "2.6",
@@ -196,6 +210,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "82370851316f464d3b04fd6f84ecfcb7"
+    },
+    "apex": {
+      "Package": "apex",
+      "Version": "1.0.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "efa2aeb2b8bba66b428bd9cffa5c26eb"
     },
     "askpass": {
       "Package": "askpass",
@@ -435,6 +456,13 @@
       "Repository": "CRAN",
       "Hash": "2ba60a82dd9b6ca3cee0d8e2574cdf0e"
     },
+    "deldir": {
+      "Package": "deldir",
+      "Version": "0.1-25",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f9c25b772f8477d41b583b3d29a33aec"
+    },
     "desc": {
       "Package": "desc",
       "Version": "1.2.0",
@@ -609,6 +637,13 @@
       "Repository": "CRAN",
       "Hash": "24af5fc67dbeaac6d776a8e6630aacd9"
     },
+    "gdata": {
+      "Package": "gdata",
+      "Version": "2.18.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "465ccb84427f5fe2c54f8620666db131"
+    },
     "generics": {
       "Package": "generics",
       "Version": "0.0.2",
@@ -650,6 +685,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f43e0d5e85ccb0a4045670c0607ee504"
+    },
+    "gmodels": {
+      "Package": "gmodels",
+      "Version": "2.18.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "beb8ca96406a2828f25e49ab17001c39"
     },
     "gridExtra": {
       "Package": "gridExtra",
@@ -742,19 +784,19 @@
       "Repository": "CRAN",
       "Hash": "d521cf9db39ca79250a00029661fb7cd"
     },
-    "iNEXT": {
-      "Package": "iNEXT",
-      "Version": "2.0.20",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "2d0ed52460656d80e4190d20aa1a164a"
-    },
     "igraph": {
       "Package": "igraph",
       "Version": "1.2.5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "3878c30ce67cdb7f2d7f72554e37f476"
+    },
+    "ips": {
+      "Package": "ips",
+      "Version": "0.0.11",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f6a501236dadc8b7afea144c499787e7"
     },
     "isoband": {
       "Package": "isoband",
@@ -1227,13 +1269,6 @@
       "Repository": "CRAN",
       "Hash": "c66b930d20bb6d858cd18e1cebcfae5c"
     },
-    "remotes": {
-      "Package": "remotes",
-      "Version": "2.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "57c3009534f805f0f6476ffee68483cc"
-    },
     "rentrez": {
       "Package": "rentrez",
       "Version": "1.2.2",
@@ -1367,12 +1402,26 @@
       "Repository": "CRAN",
       "Hash": "8c75fb64420e2aafadbc258e2797c459"
     },
+    "segmented": {
+      "Package": "segmented",
+      "Version": "1.2-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6c68f376126e3b086978bda4727a96a3"
+    },
     "selectr": {
       "Package": "selectr",
       "Version": "0.4-2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "3838071b66e0c566d55cc26bd6e27bf4"
+    },
+    "seqinr": {
+      "Package": "seqinr",
+      "Version": "3.6-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "149d176bf3a470545c910f9ce1cee9a4"
     },
     "sf": {
       "Package": "sf",
@@ -1423,12 +1472,26 @@
       "Repository": "CRAN",
       "Hash": "3290eebc34ba4df5e213878d54c1e623"
     },
+    "spData": {
+      "Package": "spData",
+      "Version": "0.3.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "db4dcccda98dedc3133b556a5036b92d"
+    },
     "spam": {
       "Package": "spam",
       "Version": "2.5-1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "efe6e43f90ee66c765fdaea2bf2cf7e6"
+    },
+    "spdep": {
+      "Package": "spdep",
+      "Version": "1.1-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4b550ca01798c27b717b7e3cd4d0f4b9"
     },
     "storr": {
       "Package": "storr",
