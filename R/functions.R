@@ -186,6 +186,32 @@ subset_occ_point_data <- function(occ_point_data_raw, ppgi) {
   
 }
 
+#' Subset occurrence point data to only ferns
+#'
+#' @param phy Phylogeny
+#' @param ppgi Pteridophyte phylogeny group I taxonomy
+#'
+#' @return Phylogeny subset to ferns only
+#' 
+subset_tree <- function(phy, ppgi) {
+  
+  tips_keep <-
+  tibble(tip = phy$tip.label) %>%
+    mutate(genus = str_split(tip, "_") %>% map_chr(1)) %>%
+    # Add higher-level taxonomy
+    left_join(ppgi, by = "genus") %>%
+    assert(not_na, class) %>%
+    # Filter to only ferns
+    filter(class == "Polypodiopsida") %>%
+    # Check for missing data
+    assert(not_na, tip) %>%
+    assert(is_uniq, tip) %>%
+    pull(tip)
+  
+  ape::keep.tip(phy, tips_keep)
+  
+}
+
 #' Rename taxa in data by taxon ID code
 #'
 #' The `green_list` has the official taxon names. These

@@ -84,13 +84,14 @@ plan <- drake_plan (
     green_list = green_list
   ),
   
-  # Read in phylogenetic tree of all pteridophyte
-  # taxa based on rbcL gene, not including hybrids (706 taxa total)
-  japan_pterido_tree = read_nexus_in_zip(
-    file_in("data_raw/ebihara_2019/japan_pterido_rbcl_cipres.zip"),
-    "japan_pterido_rbcl_cipres/infile.nex.con.tre")[[2]] %>%
-    format_tip_labels %>%
-    rename_tree(green_list),
+  # Read in ultrametric phylogenetic tree of all pteridophytes,
+  # not including hybrids (706 taxa total)
+  japan_pterido_tree = ape::read.tree("data_raw/japan_pterido_tree_dated.tre"),
+  
+  # - subset to only ferns
+  japan_fern_tree = subset_tree(
+    phy = japan_pterido_tree, 
+    ppgi = ppgi),
   
   # Format trait data
   raw_trait_data_path = target("data_raw/JpFernLUCID_forJoel.xlsx", format = "file"),
@@ -125,7 +126,7 @@ plan <- drake_plan (
   # (plot this, then choose K manually)
   k_phylogeny = find_k_phylogeny(
     comm_df = comm_ferns,
-    phy = japan_pterido_tree,
+    phy = japan_fern_tree,
   ),
   
   # - Cluster by taxonomy
@@ -136,7 +137,7 @@ plan <- drake_plan (
   # - Cluster by phylogeny
   regions_phylogeny = cluster_phylo_regions(
     comm_df = comm_ferns, 
-    phy = japan_pterido_tree,
+    phy = japan_fern_tree,
     k = 12
   ),
   
