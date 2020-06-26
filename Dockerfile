@@ -6,11 +6,29 @@ ARG DEBIAN_FRONTEND=noninteractive
 ### Install APT packages ###
 ############################
 
+# gcc through libtool for treePL
+# cmake, libeigen3-dev for IQTREE
 # libmagick for animation->magick->phytools
 # the rest are same dependencies as rocker/geospatial
 # https://hub.docker.com/r/rocker/geospatial/dockerfile
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
+    mafft \
+    fasttree \
+    gcc \
+    g++ \
+    libnlopt-dev \
+    libnlopt0 \
+    libcolpack-dev \
+    make \
+    libomp-dev \
+    build-essential \
+    autoconf \
+    autotools-dev \
+    automake \
+    libtool \
+    cmake \
+    libeigen3-dev \
     lbzip2 \
     libfftw3-dev \
     libgeos-dev \
@@ -69,7 +87,23 @@ ENV APPS_HOME=/apps
 RUN mkdir $APPS_HOME
 WORKDIR $APPS_HOME
 
+### treePL ###
+RUN git clone https://github.com/blackrim/treePL.git \
+  && cd $APPS_HOME/treePL/deps/ \
+  && tar xvzf adol-c_git_saved.tar.gz \
+  && cd $APPS_HOME/treePL/deps/adol-c/ \
+  && ./update_versions.sh \
+  && ./configure --with-openmp-flag=-fopenmp --prefix=/usr \
+  && make \
+  && make install \
+  && cd $APPS_HOME/treePL/src \
+  && ./configure \
+  && make \
+  && echo '/usr/lib64' > /etc/ld.so.conf.d/lib64.conf \
+  && cp treePL /usr/local/bin
+
 ### gnparser ###
+WORKDIR $APPS_HOME
 ENV APP_NAME=gnparser
 ENV VERSION=0.14.1
 ENV DEST=$APPS_HOME/$APP_NAME/$VERSION
@@ -77,5 +111,16 @@ RUN wget https://gitlab.com/gogna/gnparser/uploads/7d6ed7e3b1eee0fd6c9ae51f5bf71
   && tar xf $APP_NAME-v$VERSION-linux.tar.gz \
   && rm $APP_NAME-v$VERSION-linux.tar.gz \
   && mv "$APP_NAME" /usr/local/bin/
+  
+### IQ Tree ###
+WORKDIR $APPS_HOME
+ENV APP_NAME=IQ-TREE
+RUN git clone https://github.com/Cibiv/$APP_NAME.git && \
+	cd $APP_NAME && \
+	mkdir build && \
+	cd build && \
+	cmake -DIQTREE_FLAGS=omp .. && \
+	make && \
+	cp iqtree /usr/local/bin
 
 WORKDIR /home/rstudio/
