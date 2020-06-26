@@ -2822,3 +2822,573 @@ compose_lat_el_plots <- function (alpha_div, main_title) {
   wrap_plots(c(ses_plots,richness_plots), ncol = 2, nrow = 3)
   
 }
+
+# Phylogeneic analysis ----
+
+#' Read in Japan rbcL alignment from the downloaded Dryad zip file
+#'
+#' @param zip_folder Path to downloaded Dryad zip file
+#'
+#' @return List of class DNAbin; DNA alignment
+#' 
+read_ja_rbcL_from_zip <- function (zip_folder) {
+  
+  temp_dir <- tempdir()
+  
+  unzip(zip_folder, exdir = temp_dir)
+  
+  unzip(fs::path(temp_dir, "japan_pterido_rbcl_cipres.zip"), exdir = temp_dir)
+  
+  ape::read.nexus.data(fs::path(temp_dir, "japan_pterido_rbcl_cipres/infile.nex")) %>%
+    as.DNAbin
+  
+}
+
+#' Read in Green List from the downloaded Dryad zip file
+#'
+#' @param zip_folder Path to downloaded Dryad zip file
+#'
+#' @return Dataframe
+#' 
+read_greenlist_from_zip <- function (zip_folder) {
+  
+  temp_dir <- tempdir()
+  
+  unzip(zip_folder, exdir = temp_dir)
+  
+  readxl::read_excel(fs::path(temp_dir, "FernGreenListV1.01E.xls"))
+  
+}
+
+#' Combine Japanese rbcL sequences with globally sampled genes
+#'
+#' @param broad_alignment_list List of DNA alignments, including one called "rbcL"
+#' @param japan_rbcL List of class DNAbin; rbcL sequences of ferns from Japan
+#'
+combine_ja_rbcL_with_global <- function (broad_alignment_list, japan_rbcL) {
+  
+  # Remove Japan names from broad alignment list
+  reduced <- map(broad_alignment_list, ~magrittr::extract(., !(rownames(.) %in% rownames(japan_rbcL)),))
+  
+  # Add Japan rbcL sequences back, align with mafft
+  reduced[["rbcL"]] <- c(as.list(reduced[["rbcL"]]), as.list(japan_rbcL)) %>%
+    ips::mafft(exec = "/usr/bin/mafft") %>%
+    # Trim any column that is >90% gaps
+    ips::deleteGaps(nmax = nrow(.)*0.9)
+  
+  # Concatenate genes
+  concatenate_genes(reduced)
+}
+
+#' Concatenate a list of aligned genes
+#'
+#' @param dna_list List of matrices of class DNAbin
+#'
+#' @return Matrix of class DNAbin
+#'
+#' @examples
+#' data(woodmouse)
+#' gene_1 <- woodmouse[,1:100]
+#' gene_2 <- woodmouse[,101:200]
+#' woodmouse_genes <- list(gene_1, gene_2)
+#' concatenate_genes(woodmouse_genes)
+concatenate_genes <- function (dna_list) {
+  require(apex)
+  
+  assertthat::assert_that(is.list(dna_list))
+  assertthat::assert_that(all(lapply(dna_list, class) == "DNAbin"), 
+                          msg = "All elements of dna_list must be of class DNAbin")
+  assertthat::assert_that(all(sapply(dna_list, is.matrix)), 
+                          msg = "All elements of dna_list must be matrices")
+  
+  # Check that there are no duplicate sequence names (species) within a gene
+  map_df(dna_list, ~rownames(.) %>% tibble(species = .), .id = "gene") %>%
+    assert_rows(col_concat, is_uniq, species, gene, error_fun = assertr::error_stop)
+  
+  dna_multi <- new("multidna", dna_list) 
+  apex::concatenate(dna_multi)
+}
+
+
+#' Format Japan rbcL sequence names
+#'
+#' @param alignment DNA alignment of rbcL gene for Japanese ferns with names coded
+#' as numeric taxon IDs
+#' @param taxon_id_map Dataframe of standard taxonomy with
+#' columns `taxon_id` and `taxon`
+#'
+#' @return Renamed DNA alignment with species as names instead of codes
+#'
+rename_alignment <- function (alignment, taxon_id_map) {
+  
+  new_names <-
+    tibble(name = rownames(alignment)) %>%
+    mutate(taxon_id = str_split(name, "_") %>% map_chr(2)) %>%
+    left_join(taxon_id_map, by = "taxon_id") %>%
+    assert(not_na, taxon) %>%
+    assert(is_uniq, taxon) %>%
+    pull(taxon)
+  
+  rownames(alignment) <- new_names
+  
+  alignment
+  
+}
+
+#' Concatenate a list of aligned genes
+#'
+#' @param dna_list List of matrices of class DNAbin
+#'
+#' @return Matrix of class DNAbin
+#'
+#' @examples
+#' data(woodmouse)
+#' gene_1 <- woodmouse[,1:100]
+#' gene_2 <- woodmouse[,101:200]
+#' woodmouse_genes <- list(gene_1, gene_2)
+#' concatenate_genes(woodmouse_genes)
+concatenate_genes <- function (dna_list) {
+  require(apex)
+  
+  assertthat::assert_that(is.list(dna_list))
+  assertthat::assert_that(all(lapply(dna_list, class) == "DNAbin"), 
+                          msg = "All elements of dna_list must be of class DNAbin")
+  assertthat::assert_that(all(sapply(dna_list, is.matrix)), 
+                          msg = "All elements of dna_list must be matrices")
+  
+  # Check that there are no duplicate sequence names (species) within a gene
+  map_df(dna_list, ~rownames(.) %>% tibble(species = .), .id = "gene") %>%
+    assert_rows(col_concat, is_uniq, species, gene, error_fun = assertr::error_stop)
+  
+  dna_multi <- new("multidna", dna_list) 
+  apex::concatenate(dna_multi)
+}
+
+# Dating with treePL ----
+
+#' Read in calibration and configure dates for treepl
+#'
+#' @param date_file_path Path to CSV file with treepl dates.
+#' Must include at least the following columns:
+#' - clade: name of clade
+#' - taxon_1: representative taxon 1
+#' - taxon_2: representative taxon 2. The MRCA of the two taxa defines the clade
+#' - age: Age to assign to clade (in millions of years)
+#' - age_type: 'min', 'max' or 'fixed'
+#' 
+#' @return Tibble with columns for use in treepl config file.
+#'
+load_calibration_dates <- function(date_file_path) {
+  read_csv(date_file_path) %>%
+    janitor::clean_names() %>%
+    select(clade, age, age_type, taxon_1, taxon_2) %>%
+    assert(is_uniq, clade) %>%
+    assert(not_na, clade, age, age_type, taxon_1, taxon_2) %>%
+    mutate(mrca = glue("mrca = {clade} {taxon_1} {taxon_2}")) %>%
+    mutate(
+      min_dates = case_when(
+        age_type %in% c("min", "fixed") ~ glue("min = {clade} {age}"),
+        TRUE ~ NA_character_),
+      max_dates = case_when(
+        age_type %in% c("max", "fixed") ~ glue("max = {clade} {age}"),
+        TRUE ~ NA_character_))
+} 
+
+#' Do an initial treepl run to determine optimal
+#' smoothing parameters with random cross-validation.
+#' 
+#' Requires treepl to be installed and on PATH.
+#' 
+#' For more details on treepl options, see
+#' https://github.com/blackrim/treePL/wiki
+#'
+#' @param phy List of class "phy"; phylogeny
+#' @param alignment List of class "DNAbin"; alignment
+#' @param calibration_dates Calibration points read in with
+#' load_calibration_dates()
+#' @param write_tree Logical; should the phylogeny be written to working
+#' directory before running treePL?
+#' @param cvstart Start value for cross-validation
+#' @param cvstop Stop value for cross-validation
+#' @param cvsimaniter Start the number of cross validation simulated annealing 
+#' iterations, default = 5000 for cross-validation
+#' @param plsimaniter the number of penalized likelihood simulated annealing 
+#' iterations, default = 5000
+#' @param seed Seed for random number generator
+#' @param thorough Logical; should the "thorough" setting in
+#' treePL be used?
+#' @param wd Working directory to run all treepl analyses
+#' @param echo Logical; should the output be printed to the screen?
+#'
+run_treepl_cv <- function (
+  phy, alignment, calibration_dates, 
+  write_tree = TRUE,
+  cvstart = "1000", cvstop = "0.1",
+  cvsimaniter = "5000", 
+  plsimaniter = "5000",
+  nthreads = "1",
+  seed,
+  thorough = TRUE, wd, echo) {
+  
+  # Check that all taxa are in tree
+  taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
+  
+  assertthat::assert_that(all(taxa %in% phy$tip.label),
+                          msg = glue::glue(
+                            "Taxa in calibration dates not present in tree: 
+                            {taxa[!taxa %in% phy$tip.label]}"))
+  
+  # Write tree to working directory
+  phy_name <- deparse(substitute(phy))
+  phy_path <- fs::path_ext_set(phy_name, "tre")
+  if(isTRUE(write_tree)) {ape::write.tree(phy, fs::path(wd, phy_path))}
+  
+  # Get number of sites in alignment
+  num_sites <- dim(alignment)[2]
+  
+  outfile_path <- fs::path_ext_set(paste0(phy_name, "_cv"), "out")
+  
+  # Write config file to working directory
+  treepl_config <- c(
+    glue("treefile = {phy_path}"),
+    glue("numsites = {num_sites}"),
+    calibration_dates$mrca,
+    calibration_dates %>% filter(!is.na(min_dates)) %>% pull(min_dates),
+    calibration_dates %>% filter(!is.na(max_dates)) %>% pull(max_dates),
+    glue("cvstart = {cvstart}"),
+    glue("cvstop = {cvstop}"),
+    glue("cvsimaniter = {cvsimaniter}"),
+    glue("plsimaniter = {plsimaniter}"),
+    glue("cvoutfile = {outfile_path}"),
+    glue("seed = {seed}"),
+    glue("nthreads = {nthreads}"),
+    "randomcv"
+  )
+  
+  if(thorough) treepl_config <- c(treepl_config, "thorough")
+  
+  readr::write_lines(treepl_config, fs::path(wd, "treepl_cv_config"))
+  
+  # Run treePL
+  processx::run("treePL", "treepl_cv_config", wd = wd, echo = echo)
+  
+  # Return cross-validation results
+  read_lines(fs::path(wd, outfile_path))
+  
+}
+
+#' Do an initial treepl run to determine optimal
+#' smoothing parameters with random cross-validation.
+#' 
+#' Requires treepl to be installed and on PATH.
+#' 
+#' For more details on treepl options, see
+#' https://github.com/blackrim/treePL/wiki
+#'
+#' @param phy List of class "phy"; phylogeny
+#' @param alignment List of class "DNAbin"; alignment
+#' @param calibration_dates Calibration points read in with
+#' load_calibration_dates()
+#' @param write_tree Logical; should the phylogeny be written to working
+#' directory before running treePL? Can be FALSE if it is already there from
+#' run_treepl_initial().
+#' @param cv_results Output of run_treepl_cv() so the best smoothing
+#' parameter can be selected.
+#' @param cvsimaniter Start the number of cross validation simulated annealing 
+#' iterations, default = 5000 for cross-validation
+#' @param plsimaniter the number of penalized likelihood simulated annealing 
+#' iterations, default = 5000
+#' @param seed Seed for random number generator
+#' @param thorough Logical; should the "thorough" setting in
+#' treePL be used?
+#' @param wd Working directory to run all treepl analyses
+#' @param echo Logical; should the output be printed to the screen?
+#'
+run_treepl_prime <- function (
+  phy, alignment, calibration_dates, 
+  cv_results,
+  write_tree = FALSE,
+  cvsimaniter = "5000", 
+  plsimaniter = "5000",
+  nthreads = "1",
+  seed,
+  thorough = TRUE, wd, echo) {
+  
+  # Check that all taxa are in tree
+  taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
+  
+  assertthat::assert_that(all(taxa %in% phy$tip.label),
+                          msg = glue::glue(
+                            "Taxa in calibration dates not present in tree: 
+                            {taxa[!taxa %in% phy$tip.label]}"))
+  
+  # Write tree to working directory
+  phy_name <- deparse(substitute(phy))
+  phy_path <- fs::path_ext_set(phy_name, "tre")
+  if(isTRUE(write_tree)) {ape::write.tree(phy, fs::path(wd, phy_path))}
+  
+  # Get number of sites in alignment
+  num_sites <- dim(alignment)[2]
+  
+  # Get best smoothing parameter
+  # Select the optimum smoothing value (smallest chisq) from cross-validation
+  # The raw output looks like this:
+  # chisq: (1000) 6.7037e+30
+  # chisq: (100) 3673.45
+  # etc.
+  best_smooth <-
+    tibble(cv_result = cv_results) %>%
+    mutate(smooth = str_match(cv_result, "\\((.*)\\)") %>% 
+             magrittr::extract(,2) %>%
+             parse_number()) %>%
+    mutate(chisq = str_match(cv_result, "\\) (.*)$") %>% 
+             magrittr::extract(,2) %>%
+             parse_number()) %>%
+    arrange(chisq) %>%
+    slice(1) %>%
+    pull(smooth)
+  
+  # Write config file to working directory
+  treepl_config <- c(
+    glue("treefile = {phy_path}"),
+    glue("numsites = {num_sites}"),
+    calibration_dates$mrca,
+    calibration_dates %>% filter(!is.na(min_dates)) %>% pull(min_dates),
+    calibration_dates %>% filter(!is.na(max_dates)) %>% pull(max_dates),
+    glue("cvsimaniter = {cvsimaniter}"),
+    glue("plsimaniter = {plsimaniter}"),
+    glue("seed = {seed}"),
+    glue("smooth = {best_smooth}"),
+    glue("nthreads = {nthreads}"),
+    "prime"
+  )
+  
+  if(thorough) treepl_config <- c(treepl_config, "thorough")
+  
+  readr::write_lines(treepl_config, fs::path(wd, "treepl_prime_config"))
+  
+  # Run treePL
+  results <- processx::run("treePL", "treepl_prime_config", wd = wd, echo = echo)
+  
+  # Return stdout
+  read_lines(results$stdout)
+  
+}
+
+#' Run treePL
+#' 
+#' Requires treepl to be installed and on PATH.
+#' 
+#' For more details on treepl options, see
+#' https://github.com/blackrim/treePL/wiki
+#'
+#' @param phy List of class "phy"; phylogeny
+#' @param alignment List of class "DNAbin"; alignment
+#' @param calibration_dates Calibration points read in with
+#' load_calibration_dates()
+#' @param priming_results Results of running treePL with `prime` option to
+#' determine optional parameters. Output of run_treepl_prime().
+#' @param cv_results Results of running treePL with cross-validation to
+#' determine optimal rate-smoothing parameter. Output of run_treepl_cv().
+#' @param write_tree Logical; should the phylogeny be written to working
+#' directory before running treePL? Can be FALSE if it is already there from
+#' run_treepl_initial().
+#' @param cvsimaniter Start the number of cross validation simulated annealing 
+#' iterations, default = 5000 for cross-validation
+#' @param plsimaniter the number of penalized likelihood simulated annealing 
+#' iterations, default = 5000
+#' @param seed Seed for random number generator
+#' @param thorough Logical; should the "thorough" setting in
+#' treePL be used?
+#' @param wd Working directory to run all treepl analyses
+#' @param echo Logical; should the output be printed to the screen?
+#'
+run_treepl <- function (
+  phy, alignment, calibration_dates, 
+  priming_results,
+  cv_results,
+  write_tree = FALSE,
+  cvsimaniter = "5000", 
+  plsimaniter = "5000",
+  nthreads = "1",
+  seed,
+  thorough = TRUE, wd, echo) {
+  
+  # Check that all taxa are in tree
+  taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
+  
+  assertthat::assert_that(all(taxa %in% phy$tip.label),
+                          msg = glue::glue(
+                            "Taxa in calibration dates not present in tree: 
+                            {taxa[!taxa %in% phy$tip.label]}"))
+  
+  # Write tree to working directory
+  phy_name <- deparse(substitute(phy))
+  phy_path <- fs::path_ext_set(phy_name, "tre")
+  if(isTRUE(write_tree)) {ape::write.tree(phy, fs::path(wd, phy_path))}
+  
+  # Get number of sites in alignment
+  num_sites <- dim(alignment)[2]
+  
+  # Get best smoothing parameter
+  # Select the optimum smoothing value (smallest chisq) from cross-validation
+  # The raw output looks like this:
+  # chisq: (1000) 6.7037e+30
+  # chisq: (100) 3673.45
+  # etc.
+  best_smooth <-
+    tibble(cv_result = cv_results) %>%
+    mutate(smooth = str_match(cv_result, "\\((.*)\\)") %>% 
+             magrittr::extract(,2) %>%
+             parse_number()) %>%
+    mutate(chisq = str_match(cv_result, "\\) (.*)$") %>% 
+             magrittr::extract(,2) %>%
+             parse_number()) %>%
+    arrange(chisq) %>%
+    slice(1) %>%
+    pull(smooth)
+  
+  # Set name of output file
+  outfile_path <- fs::path_ext_set(paste0(phy_name, "_dated"), "tre")
+  
+  # Write config file to working directory
+  treepl_config <- c(
+    glue("treefile = {phy_path}"),
+    glue("numsites = {num_sites}"),
+    glue("smooth = {best_smooth}"),
+    calibration_dates$mrca,
+    calibration_dates %>% filter(!is.na(min_dates)) %>% pull(min_dates),
+    calibration_dates %>% filter(!is.na(max_dates)) %>% pull(max_dates),
+    glue("cvsimaniter = {cvsimaniter}"),
+    glue("plsimaniter = {plsimaniter}"),
+    glue("seed = {seed}"),
+    glue("nthreads = {nthreads}"),
+    glue("outfile = {outfile_path}"),
+    # Include specifications from priming
+    priming_results %>% extract(., str_detect(., "opt =")),
+    priming_results %>% extract(., str_detect(., "optad =")),
+    priming_results %>% extract(., str_detect(., "optcvad ="))
+  )
+  
+  if(thorough) treepl_config <- c(treepl_config, "thorough")
+  
+  readr::write_lines(treepl_config, fs::path(wd, "treepl_config"))
+  
+  # Run treePL
+  processx::run("treePL", "treepl_config", wd = wd, echo = echo)
+  
+  # Read in tree
+  ape::read.tree(fs::path(wd, outfile_path))
+  
+}
+
+#' Remove duplicate sequences from an alignment or tree,
+#' and replace with representatives of sequence groups
+#' (groups of identical sequences)
+#'
+#' @param rbcL_combined_alignment Combined rbcL alignment including
+#' all rbcL and platome sequences
+#' @param plastome_metadata_renamed Source of names of plastome sequences 
+#' @param calibration_dates Tibble of taxa to be used for dating.
+#' Need to check that calibration taxa are not amongst those that
+#' will get removed by de-duplication.
+#'
+#' @return List, including:
+#' grouped_alignment = Alignment with duplicate seqs removed and relabeled as groups
+#' group_table = Tibble matching representative sequences to original duplicate
+#' sequences so they can be added back in later.
+remove_dup_seqs <- function (
+  rbcL_combined_alignment, 
+  plastome_metadata_renamed,
+  calibration_dates) {
+  
+  ### Cluster identical sequences ###
+  
+  # It takes a very long time to run distance matrix on the full
+  # alignment (> 50,000 characters), and I'm pretty sure we don't
+  # have any identical plastome sequences. So remove these from
+  # rbcL_combined_alignment, and check for identical seqs in the
+  # remainder.
+  
+  # Replace spaces with underscores in species names
+  # for matching to alignment names
+  plastome_species <- plastome_metadata_renamed$species %>% str_replace_all(" ", "_") %>% unique
+  
+  rbcL_to_check <- rbcL_combined_alignment[
+    !rownames(rbcL_combined_alignment) %in% plastome_species,]
+  
+  # Calculate raw distance matrix with pairwise deletion
+  # of sites with missing data
+  dist_mat <- dist.dna(rbcL_to_check, pairwise.deletion = TRUE, model = "raw")
+  
+  # Cluster the distances
+  clusters <- hclust(dist_mat)
+  
+  # Find the minimum non-zero height
+  min_diff_height <-
+    clusters$height %>% unique %>% sort %>% extract(2)
+  
+  # Find groups of sequences with minimum non-zero height.
+  # i.e., groups of identical sequences
+  seq_groups <- cutree(clusters, h = min_diff_height)
+  
+  # Make a tibble mapping each taxon to its sequence group,
+  # only keep those with > 1 taxon (duplicate seqs)
+  seq_groups_tibble <- 
+    tibble(seq_group = seq_groups) %>%
+    mutate(taxon = names(seq_groups)) %>%
+    mutate(label = glue("group_{seq_group}")) %>%
+    add_count(seq_group) %>%
+    filter(n > 1) %>%
+    # Make sure none of the duplicate sequences are used for date calibration
+    assert(function(x) !x %in% calibration_dates$taxon_1, taxon) %>%
+    assert(function(x) !x %in% calibration_dates$taxon_2, taxon) %>%
+    arrange(seq_group, taxon) %>%
+    mutate(rep_seq = ifelse(duplicated(seq_group), FALSE, TRUE))
+  
+  # Make a tibble of "representative" taxa, one per seq group
+  # (arbitrarily choose by alph. order)
+  rep_taxa_tibble <- seq_groups_tibble %>%
+    filter(rep_seq == TRUE)
+  
+  ### Remove dups from alignment ###
+  
+  # Subset alignment to only "representative" seqs, rename
+  # by sequence group
+  pterido_rbcl_aln_rep_taxa <-
+    rbcL_combined_alignment[rep_taxa_tibble$taxon, ]
+  
+  rownames(pterido_rbcl_aln_rep_taxa) <- rep_taxa_tibble$label
+  
+  # Remove all dup. seqs from alignment
+  pterido_rbcl_aln_dups_removed <-
+    rbcL_combined_alignment[!rownames(rbcL_combined_alignment) %in% seq_groups_tibble$taxon, ]
+  
+  # Make combined alignment with uniq seqs plus "rep" seqs named by seq group
+  rbcL_combined_alignment_grouped <-
+    rbind(pterido_rbcl_aln_dups_removed, pterido_rbcl_aln_rep_taxa)
+  
+  # Double-check: make sure all sequences are present in alignment
+  # after restoring dup taxa
+  tibble(label = rownames(rbcL_combined_alignment_grouped)) %>%
+    left_join(seq_groups_tibble) %>%
+    mutate(taxon = ifelse(is.na(taxon), label, taxon)) %>%
+    assert(not_na, taxon) %>%
+    assert(is_uniq, taxon) %>%
+    verify(isTRUE(
+      all.equal(
+        sort(taxon),
+        sort(rownames(rbcL_combined_alignment))
+      )
+    ), success_fun = success_logical)
+  
+  ### Format output ###
+  # Return list: de-duplicated alignment and 
+  # tibble matching group names to original sequences to add them
+  # back in later
+  list(
+    grouped_alignment = rbcL_combined_alignment_grouped,
+    group_table = seq_groups_tibble
+  )
+  
+}
