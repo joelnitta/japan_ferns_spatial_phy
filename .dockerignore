@@ -1,0 +1,11 @@
+code
+*_cache
+iqtree
+reports
+results
+temp
+.gitignore
+*.R
+*.job
+*.Rproj
+*.sh
