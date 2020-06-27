@@ -288,6 +288,13 @@
       "Repository": "CRAN",
       "Hash": "02563604223d76cf643aa1e872e8eeef"
     },
+    "bookdown": {
+      "Package": "bookdown",
+      "Version": "0.20",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "31ed5641f4a91cf113de490e0bb006b8"
+    },
     "boot": {
       "Package": "boot",
       "Version": "1.3-24",
@@ -1341,10 +1348,10 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.2",
+      "Version": "2.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "aa82ab08b203d5a32a5b5f404e80c399"
+      "Hash": "202260e1b2c410edc086d5b8f1ed946e"
     },
     "rncl": {
       "Package": "rncl",
