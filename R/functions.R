@@ -834,7 +834,7 @@ make_trait_dist_matrix <- function (traits_for_dist) {
     column_to_rownames("taxon")
   
   # Run gowdis with trait weightings
-  FD::gowdis(traits_df, w = trait_categories$final_weight)
+  FD::gowdis(traits_df, w = trait_categories$final_weight) %>% as.matrix()
   
 }
 
@@ -1551,7 +1551,7 @@ rename_tree <- function (tree, taxon_id_map) {
 #' @return List of vectors. Each vector is a biodiversity metric measured on the
 #' random community, in the same order as the rows in the input community.
 #' 
-calc_biodiv_random <- function (comm_df, phy, phy_alt, n_iterations, trait_distances, metrics) {
+calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iterations, trait_distances = NULL, metrics) {
   
   # Make sure selection of metrics is OK
   assert_that(is.character(metrics))
@@ -1691,26 +1691,19 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' (_obs_z), and p-value (_obs_p) are given. Type of phylogenetic endemism (neo, paleo, or mixed)
 #' is given as "endem_type".
 #' 
-run_ses_analysis <- function(comm_df, phy, n_reps, metrics, trait_distances = NULL) {
+run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distances = NULL) {
+  
+  # Make dummy phy_alt in case this isn't being used
+  phy_alt <- NULL
   
   # If running any phylogenetic metrics, 
   # first match tips of tree and column names of community data frame
-  if (any(str_detect(metrics, "mpd|mntd|pd|pe|rpe"))) {
+  if (any(str_detect(metrics, "^mpd$|^mntd$|^pd$|^pe$|^rpe$"))) {
     
     # Use only taxa that are in common between phylogeny and community
-    taxa_keep <- intersect(phy$tip.label, colnames(comm_df))
-    
-    n_taxa_to_drop_from_tree <- setdiff(phy$tip.label, taxa_keep) %>% length
-    
-    if (n_taxa_to_drop_from_tree > 0) message (glue::glue("Dropping {n_taxa_to_drop_from_tree} taxa from the tree that are missing from the community"))
-    
-    n_taxa_to_drop_from_comm <- setdiff(colnames(comm_df), taxa_keep) %>% length
-    
-    if (n_taxa_to_drop_from_comm > 0) message (glue::glue("Dropping {n_taxa_to_drop_from_comm} taxa from the community that are missing from the tree"))
-    
-    phy <- ape::keep.tip(phy, taxa_keep)
-    
-    comm_df <- comm_df[,taxa_keep]
+    subsetted_data <- picante::match.phylo.comm(phy = phy, comm = comm_df)
+    phy <- subsetted_data[["phy"]]
+    comm_df <- subsetted_data[["comm"]]
     
     assert_that(
       isTRUE(
@@ -1732,12 +1725,26 @@ run_ses_analysis <- function(comm_df, phy, n_reps, metrics, trait_distances = NU
     
   }
   
+  # If running any trait metrics, 
+  # use only taxa that are in common between traits and community
+  if (any(str_detect(metrics, "^mpd_morph$|^mntd_morph$"))) {
+    
+    assertthat::assert_that(isTRUE(all.equal(
+      colnames(trait_distances),
+      rownames(trait_distances)
+    )))
+
+    taxa_keep <- intersect(colnames(trait_distances), colnames(comm_df))
+    trait_distances <- trait_distances[taxa_keep, taxa_keep]
+    comm_df <- comm_df[,taxa_keep]
+  }
+  
   # Calculate biodiversity metrics for random communities
   random_vals <-
     purrr::rerun(
       n_reps, 
       # Use 10,000 iterations (swaps) for each null community
-      calc_biodiv_random(comm_df, phy, phy_alt, 10000, metrics = metrics)
+      calc_biodiv_random(comm_df, phy, phy_alt, 10000, metrics = metrics, trait_distances = trait_distances)
     )
   
   # Calculate biodiversity metrics for observed community
