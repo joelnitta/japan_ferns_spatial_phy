@@ -68,12 +68,6 @@ plan <- drake_plan (
     transform = map(scale = c(0.2, 0.4))
   ),
   
-  # Check coverage at each scale
-  # comm_scaled_coverage = target(
-  #   calculate_coverage(comm_scaled_list),
-  #   transform = map(comm_scaled_list, .id = scale)
-  # ),
-  
   # Decide that 0.2 scale is optimal, use this for downstream analyses
   comm_ferns = comm_from_points2comm(comm_scaled_list_0.2),
   
@@ -150,14 +144,25 @@ plan <- drake_plan (
   regions_phylogeny = cluster_phylo_regions(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
-    k = 12
+    k = 7
   ),
 
   # Ecostructure ----
 
   species_motifs_ferns = ecostructure::ecos_fit(
       dat = comm_ferns,
-      K = 8, tol = 0.1, num_trials = 1)
+      K = 8, tol = 0.1, num_trials = 1),
+  
+  # Write out manuscript ----
+  ms = rmarkdown::render(
+    knitr_in("ms/manuscript.Rmd"),
+    output_dir = here::here("results"),
+    quiet = TRUE),
+  
+  si = rmarkdown::render(
+    knitr_in("ms/SI.Rmd"),
+    output_dir = here::here("results"),
+    quiet = TRUE)
 
   # # Make richness matrix (number of species per
   # # 10 km grid cell).

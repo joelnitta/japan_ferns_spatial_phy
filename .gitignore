@@ -24,7 +24,7 @@ cached_zip/
 wc*/
 results/
 libs/
-references_raw.bib
+main_library.bib
 working*
 treepl
 iqtree

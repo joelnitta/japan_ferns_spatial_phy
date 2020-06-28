@@ -1,12 +1,12 @@
 ---
-title: "Exploring dimensions of biodiversity in Japanese ferns and lycophytes"
-bibliography: "references.bib"
-mainfont: Times New Roman.ttf
-fontsize: 12pt
+title: "Exploring dimensions of biodiversity in Japanese ferns"
+bibliography: "main_library.bib"
+mainfont: Roboto-Regular.ttf
+fontsize: 11pt
 mainfontoptions: 
-- BoldFont=Times New Roman Bold.ttf
-- ItalicFont=Times New Roman Italic.ttf
-- BoldItalicFont=Times New Roman Bold Italic.ttf
+- BoldFont=Roboto-Bold.ttf
+- ItalicFont=Roboto-Italic.ttf
+- BoldItalicFont=Roboto-BoldItalic.ttf
 output: 
   bookdown::pdf_document2:
     citation_package: none # Use pandoc default, otherwise csl can't be used for reference formatting
@@ -24,43 +24,40 @@ header-includes:
 editor_options: 
   chunk_output_type: console
 # nocite: | 
-#   @Vogel1968, @Wollenweber2000
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = TRUE)
 ```
 
-```{r load-packages, cache = FALSE}
-library(drake)
-library(knitr)
-library(patchwork)
-library(scales)
-library(scico)
-library(magrittr)
-library(broom)
-library(tidyverse)
-```
-
 ```{r load-data, cache = FALSE}
-# Set cache
-ja_fern_cache <- new_cache(here::here("ja_fern_cache"))
+# NOTE: This Rmd is meant to be knit as part of the drake plan (R/plan.R).
+# If using interactively, run `source("_drake.R")` first.
 
-source(here::here("code/functions.R"))
-
-# Load targets
 loadd(list = c(
-  "all_cells",
-  "alpha_div_pteridos",
-  "alpha_div_ferns",
-  "alpha_div_ferns_ns",
-  "occ_data_ferns",
-  "occ_data_ferns_north",
-  "occ_data_pteridos",
-  "traits_for_dist",
-  "world_map"), 
-  cache = ja_fern_cache)
+  "occ_point_data_ferns",
+  "ses_phy_ferns",
+  "ses_phy_ferns_endemic",
+  "ses_traits_ferns",
+  "shape_ferns",
+  "k_taxonomy",
+  "k_phylogeny",
+  "regions_taxonomy",
+  "regions_phylogeny",
+  "species_motifs_ferns"
+),
+cache = ja_fern_cache)
 
+phylo_cache <- new_cache(here::here("phylo_cache"))
+
+loadd(list = c(
+  "plastome_calibration_dates",
+  "plastome_tree"
+),
+cache = phylo_cache)
+
+# Load captions
+source(here::here("ms/captions.R"))
 ```
 
 <!-- Remove page numbers -->
@@ -74,7 +71,7 @@ loadd(list = c(
 
 Joel H. Nitta^1^ and Atsushi Ebihara^2^
 
-^1^Department of Botany, National Museum of Natural History, Smithsonian Institute, Washington, D.C., 20013, U.S.A.
+^1^Department of Biological Sciences, Graduate School of Science, The University of Tokyo, 2-11-16 Yayoi, Bunkyo-ku, Tokyo 113-0032, Japan
 
 ^2^Department of Botany, National Museum of Nature and Science, 4-1-1 Amakubo, Tsukuba-shi, Ibaraki, 305-0005, Japan  
 
@@ -86,7 +83,7 @@ Author for correspondence:
 
 ## Abstract
 
-The pteridophytes (ferns and lycophytes) of Japan are one of the best-characterized regional floras in the world due to decades of intensive collection and taxonomic revision. We combined phylogenetic, functional, and environmental datasets to explore the spatial distribution of biodiversity in the pteridophytes of Japan.
+The ferns of Japan are one of the best-characterized regional floras in the world due to decades of intensive collection and taxonomic revision. We combined phylogenetic, functional, and environmental datasets to explore the spatial distribution of biodiversity in the ferns of Japan.
 
 **Key words:** biodiversity, biogeography, phylogenetic diversity. 
 
@@ -94,29 +91,63 @@ The pteridophytes (ferns and lycophytes) of Japan are one of the best-characteri
 
 ## Introduction
 
+Characterizing biodiversity is important for two reasons: to understand the processes generating it, and to conserve it.
+
+Most past studies of biodiversity only focus on one dimension: richness.
+
+Recently tools and data are available to analyze additional dimensions (in particular phylogenetic dimensions). Furthermore, better ways to characterize biological regions ("bioregions") are also available, rather than simply using expert opinion or other ad-hoc characterizations.
+
+Incorporating two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide particularly powerful insights into the processes structuring biodiversity and suggest conservation priorities.
+
+However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data or can be lead astray.
+
+Ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are very densely sampled. Japan is situated along a latitudinal gradient spanning highly season temperate areas in the north to subtropical, mostly aseasonal islands in the south.
+
+Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity, reveal its spatial structure, and assess drivers of community assembly.
+
 ## Materials and Methods
 
 ### Study Site
 
-Our data include all ferns and lycophytes known to occur within the political boundaries of Japan (20° to 45° N, 122° to 153° E). Japan consists of four main islands and thousands of smaller ones. Our data exclude islands smaller than XX km^2^. The climate is subtropical in the south and highly seasonal in other parts of the country.
+Our data include all ferns known to occur within the political boundaries of Japan (20° to 45° N, 122° to 153° E). Japan consists of four main islands and thousands of smaller ones. The climate is subtropical in the south and highly seasonal in other parts of the country.
 
 ### Occurrence data
 
-We used occurrence data of ferns and lycophytes in Japan compiled from > 200,000 vouchered specimens including 721 non-hybrid taxa (species, subspecies, and varieties) and 371 interspecific hybrids (1090 taxa total) [@Ebihara2019b]. The data are formatted as taxon presences in 10 km × 10 km grid cells (hereafter '10 km cells'). The 10 km grid cells correspond to the secondary level of basic grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) (`r nrow(all_cells) %>% comma` 10 km cells total).
+We used occurrence data of ferns in Japan comprising `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` vouchered specimens representing `r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` non-hybrid taxa (species, subspecies, and varieties). All specimens are housed at herbaria in Japan, and taxonomy follows the Japan Green List v. 1.01 (http://www.rdplants.org/gl/).
+
+Any analysis of biodiversity must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1, 0.2, or 0.4 degree grid-cells for defining communities (co-occurring species). At each size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2 degree grid-cells are optimal for our dataset, so we used this for all subsequent analyses.
 
 ### Trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b] (\tab \@ref(tab:traits-table)). Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens. All qualitative traits in binary format; e.g., a single trait with three states is formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately. Quantitative traits include aspects of leaf size (e.g., frond length, frond width, stipe length, etc.). Qualitative traits include aspects of leaf morphology (e.g., margin shape, leaf color, indusia shape, spore arrangement, etc.).
+We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens. All qualitative traits in binary format; e.g., a single trait with three states is formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately. Quantitative traits include aspects of leaf size (e.g., frond length, frond width, stipe length, etc.). Qualitative traits include aspects of leaf morphology (e.g., margin shape, leaf color, indusia shape, spore arrangement, etc.).
 
 We used ploidy level and breeding system data in @Ebihara2019b.
 
-### Statistical analysis
+### Phylogenetic analysis
 
-We used two distance-based metrics to quantify alpha biodiversity, mean phylogenetic distance (MPD; the mean distance between all co-occurring taxa in a community) and mean nearest taxon distance (MNTD; the mean distance between closest taxon pairs in a community) [@Webb2000; @Webb2002]. Although MPD and MNTD were originally formulated for phylogenetic distances, they can be applied to any type of distance matrix. We calculated phylogenetic distances from the phylogenetic tree using the \function{cophenetic} function in R v. 3.6.0 [@RCoreTeam2019]. We calculated functional distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R pacakge \package{FD} [@Laliberte2011]. We weighted quantitative and qualitative traits equally, and weighted each binary component trait of each qualitative trait equally. We log-transformed and scaled quantitative traits prior to calculating distances.
+Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils availabsle for molecular dating. Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total). We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. We then trimmed the tree to Japanese taxa only and used this for all further analyses.  
 
-Since observed values of MPD and MNTD are known to correlate with species richness [@Swenson2014], we determined whether communities are overdispersed (i.e., diverse) or clustered (i.e., depauperate), by calculating the standard effect size (SES) of MPD and MNTD. We compared observed values to those of a null distribution of 999 random communities with the \function{ses.mpd} and \function{ses.mntd} functions in the \package{picante} R package [@Kembel2010]. Random communities were each generated using 10,000 iterations of the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities. Positive values of SES of MPD and MNTD indicate overdispersion, and negative values indicate clustering. We hereafter refer to the SES of phylogenetic and functional MPD and MNTD as MPD~phy~ and MNTD~phy~, and MPD~func~ and MTND~func~, respectively.
+### Analysis of biodiversity and endemism
 
-A large number of primarily tropical fern lineages only occur in the far-southern islands of Japan: `r setdiff(occ_data_ferns$genus, occ_data_ferns_north$genus) %>% length` genera and `r setdiff(occ_data_ferns$family, occ_data_ferns_north$family) %>% length` families (`r setdiff(occ_data_ferns$family, occ_data_ferns_north$family) %>% paste(collapse = ", ")`) do not occur north of 30.1 degrees latitude. When these lineages are included in the randomization procedure to calculate SES of MPD and MNTD, they may contribute long branches that bias the northern communities towards clustering. Lycophytes, which occur on long branches, may have a similar effect. Therefore, we calculated phylogenetic diversity for three datasets: pteridophytes (ferns and lycophytes), ferns, and ferns separately north and south of 30.1 degrees latitude (corresponding to the Tokara strait, hereafter referred to as "ferns_NS").
+We measured taxanomic diversity using species richness.
+
+We measured phylogenetic diversity using the mean phylogenetic distance between all co-occurring taxa in a community (MPD) [@Webb2000; @Webb2002]. We calculated distances from the phylogenetic tree using the \function{cophenetic} function in R v. 4.0.0 [@RCoreTeam2019] and MPD using the \function{mpd} function in the R \package{picante}.
+
+For morphological diversity, we first calculated morphological distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R package \package{FD} [@Laliberte2011]. We weighted quantitative and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled quantitative traits prior to calculating distances. We then used the morphological distances as input into the \function{mpd} function to calculate mean morphological distance (MMD).
+
+We measured phylogenetic endemism (PE) [@Rosauer2009], which is the sum of all branches at a site inversely weighted by their range, using the \function{phylo{\_}endemism} function in the R package \package{phyloregion}. 
+
+Observed values of MPD, MMD, and PE are known to be closely related to species richness, and tend to saturate at high values of richness. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of species by calculating their standard effect sizes (SES), defined as the difference between the observed value and the mean of a pool of random values, divided by the standard deviation of the random values. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then calculated SES of each metric.
+
+We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable to those calculated for the null distribution. We used the same set of null communities as for SES of PE, and carried out CANAPE using custom R scripts.
+
+It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. To account for this, we also calculated all endemism-related metrics using a dataset including only species endemic to Japan.
+
+### Analysis of bioregions and ecological structure
+
+We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20. \package{phyloregion} provides a function to automatically select *k* from a range of test values, but we found the results to be unreliable. We therefore evaluated the explained variance at each value of *k*, then selected *k* that provided the greatest increase in variance relative to the previous value (`r s_figure("k-plot")`).
+
+We analyzed ecological structure using the framework of @White2019 and their R package \package{ecostructure}. This method involves fitting the community matrix to a grade of membership model, which allows communities have partial membership in multiple groups [@White2019]. Like bioregion analysis, this method also requires selecting the number of clusters (in this context called "motifs" after @White2019) to fit the model. We initially tested values of *k* from 1 to 20 and inspected the log-likelihood for each, but found that it continually improved without reaching a clear optimum. We therefore used the same *k* that was selected for taxonomic bioregions.
 
 ### Data accessibility
 
@@ -124,37 +155,25 @@ Code to replicate all analyses, figures, and this manuscript are available at ht
 
 ## Results
 
-### Richness
+### Taxonomic, phylogenetic, and morphological diversity
 
-Richness of pteridophytes in Japan roughly follows the latitudinal species gradient, with more species in the south (\fig \@ref(fig:div-pteridos)a). Richness tended to increase with elevation (\fig \@ref(fig:div-el)a).
+Species richness is highest in southern Kyushu and on Yakushima Island, and lowest on Hokkaido and low-lying coastal areas (`r figure("diversity")`A). Sampling redundancy is generally high throughout the country, with a peak just north of Tokyo, but lower in Hokkaido and some coastal areas and small islands (`r figure("diversity")`B). Raw MPD is mostly uniform throughout (`r figure("diversity")`C). SES of MPD shows clustering in some parts of central Honshu, with overdispersion both in the northern half of the country and from southern Kyushu to the south (`r figure("diversity")`D). Morphological diversity shows a similar pattern to phylogenetic diversity, but with more extreme overdispersion and clustering (`r figure("diversity")`F).
 
-### Phylogenetic diversity
+### Phylogenetic endemism
 
-Standard effect sizes of mean phylogenetic diversity (MPD~phy~) and mean nearest taxon distance (MNTD~phy~) were either not correlated or only very weakly correlated (\rval^2^ < 0.005) with species richness (\fig \@ref(fig:phy-div-rich)), indicating that our null models successfully decoupled measures of phylogenetic diversity and richness.
+Phylogenetic endemism (PE) is extremeley low throughout except for in some of the southern islands (`r figure("endemism")`A). SES of PE is high starting in southern Kyushu and southwards, including the Ogasawara islands (`r figure("endemism")`B). Results of CANAPE (Categorical Analysis of Palaeo and Neo Endemism) indicate hotspots of mixed endemism in the southern islands, but no neo- and very little paleo-endemism (`r figure("endemism")`C). When we analyzed patterns of endemicity with a reduced dataset including only taxa endemic to Japan to account for the border effect, patterns were generally similar to the full dataset, indicating that the southern islands are genuine hotspots of endemicity (`r s_figure("endemism-restricted")`).
 
-Values of MPD~phy~ are clustered in mountainous areas and overdispersed along the coasts of the main islands of Japan (\fig \@ref(fig:div-pteridos)b), with similar patterns between pteridophytes and ferns (\fig \@ref(fig:mpd-phy)). The pattern is similar in the "ferns_NS" dataset, except that the strength of both clustering and overdispersion is weaker in the main islands of Japan, and the pattern of overdispersion on the islands of Amami-oshima in sourthern Japan reverses to clustering (\fig \@ref(fig:mpd-phy)).
+### Bioregions
 
-The signal of clustering is much stronger when measured with MNTD~phy~, especially in mountainous areas of central Honshu (\fig \@ref(fig:div-pteridos)c). Patterns are similar between all three datasets except that MNTD~phy~ values are smaller in the "ferns_NS" dataset (\fig \@ref(fig:mntd-phy)).
+Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Using phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B).
 
-Values of MPD and MNTD decrease significantly with elevation across all datasets (\fig \@ref(fig:div-el)b, c).
+### Ecological structure
 
-### Functional diversity
-
-Values of (MPD~func~) and (MNTD~func~) were very weakly negatively correlated (\rval^2^ < 0.01) with species richness (\fig \@ref(fig:func-div-rich)).
-
-When measured with MPD~func~, pteridophytes were overdispersed in Hokkaido, northern Honshu, and the smaller islands south of Kyushu, but clustered in southern Honshu, Shikoku, and Kyushu (\fig \@ref(fig:div-pteridos)d). Patterns were similar across datasets except for a reversal in MPD values on the islands of Amami-oshima in the "ferns_NS" dataset (\fig \@ref(fig:mpd-func)), similar to that observed for phylogenetic diversity (\fig \@ref(fig:mpd-phy)).
-
-Less spatial structure was evident in MNTD~func~, with more clustering overall (\fig \@ref(fig:div-pteridos)e). Patterns were similar across datasets (\fig \@ref(fig:mntd-func)).
-
-Functional diversity increased with elevation when measured with MPD~func~, but not MNTD~func~ (\fig \@ref(fig:div-el)d, e).
-
-### Breeding system
-
-Sexual diploid taxa tend to be distributed in northern latitudes (\fig \@ref(fig:div-pteridos)f).
-
-Somewhat surprisingly, MPD and MNTD show a weak negative relationship with the percentage of sexual diploid taxa (\fig \@ref(fig:compare-pd-sexdip)). We expected that since many apogamous (non-sexual) taxa have identical or very similar DNA sequences to their sexual relatives that communities with more apogamous taxa would be more clustered and communities with more sexual diploids would be overdispersed. It seems that communities with many non-sexual taxa actually tend to include distantly related taxa rather than sister pairs of sexual and non-sexual species.
+Ecological structure partly resembled bioregions, with most sites in Hokkaido and northern Honshu belonging to the same motifs (dark-green and purple), and sites in Okinawa also mostly belonging to another motif (grey) (`r figure("ecostructure")`). However, the grade-of-membership model also revealed complex ecological structure that mostly tracks latitude and elevation, with particularly high turnover in the southern half of Honshu. A single motif united low-richness sites (dark purple).
 
 ## Discussion
+
+TBD
 
 ## Acknowledgements
 
@@ -166,382 +185,254 @@ Somewhat surprisingly, MPD and MNTD show a weak negative relationship with the p
 
 \clearpage
 
-<!-- Figure Legends -->
-
-**\fig \@ref(fig:div-pteridos).** Alpha diversity of ferns and lycophytes in Japan. **a** species richness. **b** Phylogenetic mean phylogenetic distance (MPD~phy~). **c** Phylogenetic mean nearest taxon distance (MNTD~phy~). **d** Morphological MPD (MPD~morph~). **e** Morphological MNTD (MNTD~morph~). 
-
-**\fig \@ref(fig:div-el).** Relationship between alpha diversity metrics and elevation (m) in native Japanese pteridophytes. Blue trendline shows significant linear model fit with confidence interval in pink. **a** species richness. **b** Phylogenetic mean phylogenetic distance (MPD~phy~). **c** Phylogenetic mean nearest taxon distance (MNTD~phy~). **d** Morphological MPD (MPD~morph~). **e** Morphological MNTD (MNTD~morph~). 
-
-\clearpage
-
 <!-- Figures -->
 
-```{r div-pteridos, fig.height = 9, fig.width = 7, fig.cap = "Alpha diversity of ferns and lycophytes in Japan"}
+```{r plot-prep}
+tax_regions_data <- regions_taxonomy %>%
+  mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
 
-# pterido richness
-  a <- make_diversity_map(
-    div_data = alpha_div_pteridos, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "richness", 
-    metric_title = "No. species ",
-    label = "a") +
-    scale_fill_scico(palette = "bamako", na.value="grey")
-  
-  # pterido_phy_mpd
-  b <- make_diversity_map(
-    div_data = alpha_div_pteridos, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "phy_mpd_obs_z", 
-    metric_title = "SES of MPD",
-    label = "b"
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3)
-    ))
-  
-  # pterido_phy_mntd
-  c <- make_diversity_map(
-    div_data = alpha_div_pteridos, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "phy_mntd_obs_z", 
-    metric_title = "SES of MNTD",
-    label = "c"
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3)
-    ))
-  
-  # pterido_func_mpd
-  d <- make_diversity_map(
-    div_data = alpha_div_pteridos, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "func_mpd_obs_z", 
-    metric_title = "SES of MPD",
-    label = "d"
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3)
-    ))
-  
-  # pterido_func_mntd
-  e <- make_diversity_map(
-    div_data = alpha_div_pteridos, 
-    world_map = world_map, 
-    occ_data = occ_data_pteridos, 
-    div_metric = "func_mntd_obs_z", 
-    metric_title = "SES of MNTD",
-    label = "e"
-  ) + scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3)
-    ))
-  
-  f <- make_diversity_map(
-  div_data = alpha_div_pteridos, 
-  world_map = world_map, 
-  occ_data = occ_data_pteridos, 
-  div_metric = "percent_sex_dip",
-  metric_title = "% sex. diploid",
-  label = "f"
-)  +
-    scale_fill_scico(palette = "bamako", na.value="grey")
-  
-  a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
+phy_regions_data <- regions_phylogeny %>%
+  mutate(phylo_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
 
-ggsave(here::here("ms/fig_1.pdf"), width = 7, height = 9, units = "in")
+ses_div_ferns_spatial <-
+  shape_ferns %>%
+  left_join(categorize_endemism(ses_phy_ferns), by = c(grids = "site")) %>%
+  left_join(ses_traits_ferns, by = c(grids = "site")) %>%
+  mutate(redundancy = 1 - (richness/abundance)) %>%
+  left_join(tax_regions_data, by = "grids") %>%
+  left_join(phy_regions_data, by = "grids")
+
+ses_div_ferns_endemic_spatial <-
+shape_ferns %>%
+  left_join(categorize_endemism(ses_phy_ferns_endemic), by = c(grids = "site"))
+
+map_theme <- theme(
+    panel.grid.major = element_line(color = "white", size = 0.2),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
+  )
+
 ```
 
-```{r div-el, fig.height = 3.5, fig.width = 7, fig.cap = "Relationship between alpha diversity metrics and elevation"}
-a <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "richness", "Elevation (m)", "Richness") +
-  labs(title = "a", x = "Elevation (m)")
-b <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "phy_mpd_obs_z", "Elevation (m)", "MPDphy") +
-  labs(title = "b", x = "Elevation (m)")
-c <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "phy_mntd_obs_z", "Elevation (m)", "MNTDphy") +
-  labs(title = "c", x = "Elevation (m)")
-d <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "func_mpd_obs_z", "Elevation (m)", "MPDfunc") +
-  labs(title = "d", x = "Elevation (m)")
-e <- make_scatter_with_lm(alpha_div_pteridos, "elevation", "func_mntd_obs_z", "Elevation (m)", "MNTDfunc") +
-  labs(title = "e", x = "Elevation (m)")
-a + b + c + d + e + plot_layout(ncol = 3, nrow = 2)
+```{r diversity, fig.width = 7, fig.height = 9}
+# Richness
+a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
+  geom_sf(color = "transparent") +
+  scale_fill_viridis_c() +
+  labs(fill = "Richness \n (n spp.)") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
 
-ggsave(here::here("ms/fig_2.pdf"), width = 7, height = 3.5, units = "in")
+# Sampling rendundancy
+b <- ggplot(ses_div_ferns_spatial, aes(fill = redundancy)) +
+  geom_sf(color = "transparent") +
+  scale_fill_viridis_c() +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  labs(fill = "Redundancy") +
+  map_theme +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+# MPD
+c <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_obs)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "MPD") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  scale_fill_viridis_c() +
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
+
+# SES MPD
+d <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES MPD") +
+  scale_fill_scico(
+    palette = "romaO",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, pd_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, pd_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+# Raw morph diversity
+e <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_morph_obs)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "MMD") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  scale_fill_viridis_c() +
+  map_theme
+
+# SES of morph diversity
+f <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_morph_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES MMD") +
+  scale_fill_scico(
+    palette = "romaO",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, mpd_morph_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, mpd_morph_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.y = element_blank()
+  )
+
+a + b + c + d + e + f +
+  plot_layout(ncol = 2) +
+  plot_annotation(tag_levels = 'A')
+
+ggsave(here::here("results/Fig_1.pdf"), width = 7, height = 9, units = "in")
 ```
+
+**`r figure("diversity")`**. `r figure_cap("diversity")` **A**, richness. **B**, sampling redundancy. **C**, mean phylogenetic distance (MPD). **D**, Standard effect size (SES) of MPD. **E**, mean morphological distance (MMD) **F**, SES of MMD.
 
 \clearpage
 
-\beginsupplement
+```{r endemism, fig.width = 7, fig.height = 6}
+# PE
+a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_viridis_c() + 
+  labs(fill = "PE") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
 
-## Supporting Information
+# SES PE
+b <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES PE") +
+  scale_fill_scico(
+    palette = "romaO",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, pe_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, pe_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.y = element_blank()
+  )
+
+# CANAPE
+c <- ggplot(ses_div_ferns_spatial, aes(fill = endem_type)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "Endemism\ntype") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme
+
+a + b + c +
+  plot_layout(ncol = 2) +
+  plot_annotation(tag_levels = 'A')
+
+ggsave(here::here("results/Fig_2.pdf"), width = 7, height = 6, units = "in")
+```
+
+**`r figure("endemism")`**. `r figure_cap("endemism")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, Categorical analysis of neo- and paleo-endemism (CANAPE).
 
 \clearpage
 
-```{r traits-table, results = "asis"}
-make_trait_summary(traits_for_dist) %>%
-knitr::kable(
-  booktabs = TRUE,
-  caption = 'Traits used in this study.'
+```{r bioregions, fig.width = 7, fig.height = 3}
+# Taxonomic bioregions
+a <- ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
+  geom_sf(color = "transparent") +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme
+
+# Phylogenetic bioregions
+b <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "Cluster") +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme
+
+a + b +
+  plot_layout(ncol = 2) +
+  plot_annotation(tag_levels = 'A')
+
+ggsave(here::here("results/Fig_3.pdf"), width = 7, height = 3, units = "in")
+```
+
+**`r figure("bioregions")`**. `r figure_cap("bioregions")` **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances into *k* = 8 or 7 groups, respectively, using the R package \package{phyloregion}.
+
+\clearpage
+
+```{r ecostructure}
+tweak <- 0.75
+
+sites <- ses_div_ferns_spatial %>%
+  pull(grids)
+
+centroids <-
+ses_div_ferns_spatial %>%
+  select(geometry) %>%
+  mutate(centroid = sf::st_centroid(geometry)) %>%
+  sf::st_coordinates(x = .$centroid) %>%
+  as_tibble() %>%
+  mutate(site = sites)
+
+omega <-
+species_motifs_ferns$omega %>%
+  as.data.frame %>%
+  rownames_to_column("site") %>%
+  left_join(centroids, by = "site") %>%
+  column_to_rownames("site")
+
+omega_centroids <- select(omega, X, Y) %>% # longitude, latitude
+  as.matrix()
+
+omega <- select(omega, -X, -Y)
+
+ecos_plot_pie2(
+    omega = omega,
+    image_width = 6000*tweak,
+    image_height = 4800*tweak,
+    radius = 0.08,
+    no_map = TRUE,
+    coords = omega_centroids,
+    long_lim = c(121, 148),
+    lat_lim = c(23, 47),
+    color = carto_pal(8, "Bold"),
+    blank_bg = "grey90",
+    path = here::here("results/species_motifs_ferns.png")
 )
+
 ```
 
-\clearpage
+![](`r here::here("results/species_motifs_ferns.png")`)
 
-```{r phy-div-rich, fig.height = 4, fig.width = 7, fig.cap = "Relationship between phylogenetic diversity and richness. Phylogenetic diversity metrics include standard effect size (SES) of mean phylogenetic diversity (MPD~phy~) or mean nearest taxon distance (MNTD~phy~) using functional trait distances in native pteridophytes, ferns, or ferns calculated separately north and south of 30.1 latitude of Japan. Blue trendline shows significant linear model fit (*P* < 0.05) with 96% confidence interval in pink."}
-a <- make_scatter_with_lm(alpha_div_pteridos, "richness", "phy_mpd_obs_z", "Richness", "MPDphy") +
-  labs(title = "Pteridophytes", x = "")
-b <- make_scatter_with_lm(alpha_div_ferns, "richness", "phy_mpd_obs_z", "Richness", "MPDphy") +
-  labs(title = "Ferns", y = "", x = "")
-c <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "phy_mpd_obs_z", "Richness", "MPDphy") +
-  labs(title = "Ferns (NS separate)", y = "", x = "")
-d <- make_scatter_with_lm(alpha_div_pteridos, "richness", "phy_mntd_obs_z", "Richness", "MNTDphy")
-e <- make_scatter_with_lm(alpha_div_ferns, "richness", "phy_mntd_obs_z", "Richness", "MNTDphy") +
-  labs(y = "")
-f <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "phy_mntd_obs_z", "Richness", "MNTDphy") +
-  labs(y = "")
-a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
-```
-
-```{r mpd-phy, fig.height = 7, fig.width = 7, fig.cap = "Phylogenetic standard effect size of mean phylogenetic distance (MPD~phy~) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. Native taxa of Japan excluding hybrids."}
-# pterido mpd
-a <- make_diversity_map(
-  div_data = alpha_div_pteridos, 
-  world_map = world_map, 
-  occ_data = occ_data_pteridos, 
-  div_metric = "phy_mpd_obs_z", 
-  metric_title = "MPDphy",
-  label = "a") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3)
-    ))
-
-b <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "phy_mpd_obs_z", 
-  metric_title = "MPDphy",
-  label = "b") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3)
-    ))
-
-c <- make_diversity_map(
-  div_data = alpha_div_ferns_ns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "phy_mpd_obs_z", 
-  metric_title = "MPDphy",
-  label = "c") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns_ns, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns_ns, phy_mpd_obs_z, "abs", 3)
-    ))
-  
-a + b + c + plot_layout(ncol = 2, nrow = 2)
-```
-
-```{r mntd-phy, fig.height = 7, fig.width = 7, fig.cap = "Phylogenetic standard effect size of mean nearest taxon distance (MNTD~phy~) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. Native taxa of Japan excluding hybrids."}
-# pterido mpd
-a <- make_diversity_map(
-  div_data = alpha_div_pteridos, 
-  world_map = world_map, 
-  occ_data = occ_data_pteridos, 
-  div_metric = "phy_mntd_obs_z", 
-  metric_title = "MNTDphy",
-  label = "a") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, phy_mpd_obs_z, "abs", 3)
-    ))
-
-b <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "phy_mntd_obs_z", 
-  metric_title = "MNTDphy",
-  label = "b") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns, phy_mpd_obs_z, "abs", 3)
-    ))
-
-c <- make_diversity_map(
-  div_data = alpha_div_ferns_ns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "phy_mntd_obs_z", 
-  metric_title = "MNTDphy",
-  label = "c") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns_ns, phy_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns_ns, phy_mpd_obs_z, "abs", 3)
-    ))
-  
-a + b + c + plot_layout(ncol = 2, nrow = 2)
-```
-
-```{r func-div-rich, fig.height = 4, fig.width = 7, fig.cap = "Relationship between functional diversity and richness. Functional diversity metrics include standard effect size (SES) of mean phylogenetic diversity (MPD~func~) or mean nearest taxon distance (MNTD~func~) using functional trait distances in native pteridophytes, ferns, or ferns calculated separately north and south of 30.1 latitude of Japan. Blue trendline shows significant linear model fit (*P* < 0.05) with 96% confidence interval in pink."}
-a <- make_scatter_with_lm(alpha_div_pteridos, "richness", "func_mpd_obs_z", "Richness", "MPDfunc") +
-  labs(title = "Pteridophytes", x = "")
-b <- make_scatter_with_lm(alpha_div_ferns, "richness", "func_mpd_obs_z", "Richness", "MPDfunc") +
-  labs(title = "Ferns", y = "", x = "")
-c <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "func_mpd_obs_z", "Richness", "MPDfunc") +
-  labs(title = "Ferns (NS separate)", y = "", x = "")
-d <- make_scatter_with_lm(alpha_div_pteridos, "richness", "func_mntd_obs_z", "Richness", "MNTDfunc")
-e <- make_scatter_with_lm(alpha_div_ferns, "richness", "func_mntd_obs_z", "Richness", "MNTDfunc") +
-  labs(y = "")
-f <- make_scatter_with_lm(alpha_div_ferns_ns, "richness", "func_mntd_obs_z", "Richness", "MNTDfunc") +
-  labs(y = "")
-a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
-```
-
-```{r mpd-func, fig.height = 7, fig.width = 7, fig.cap = "Functional standard effect size of mean phylogenetic distance (MPD~func~) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. Native taxa of Japan excluding hybrids."}
-# pterido mpd
-a <- make_diversity_map(
-  div_data = alpha_div_pteridos, 
-  world_map = world_map, 
-  occ_data = occ_data_pteridos, 
-  div_metric = "func_mpd_obs_z", 
-  metric_title = "MPDfunc",
-  label = "a") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, func_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, func_mpd_obs_z, "abs", 3)
-    ))
-
-b <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "func_mpd_obs_z", 
-  metric_title = "MPDfunc",
-  label = "b") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns, func_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns, func_mpd_obs_z, "abs", 3)
-    ))
-
-c <- make_diversity_map(
-  div_data = alpha_div_ferns_ns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "func_mpd_obs_z", 
-  metric_title = "MPDfunc",
-  label = "c") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns_ns, func_mpd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns_ns, func_mpd_obs_z, "abs", 3)
-    ))
-  
-a + b + c + plot_layout(ncol = 2, nrow = 2)
-```
-
-```{r mntd-func, fig.height = 7, fig.width = 7, fig.cap = "Functional standard effect size of mean nearest taxon distance (MNTD~func~) of: a) pteridophytes, b) ferns, c) ferns analyzed separately north and south of 30.1 degrees latitude. Native taxa of Japan excluding hybrids."}
-# pterido mpd
-a <- make_diversity_map(
-  div_data = alpha_div_pteridos, 
-  world_map = world_map, 
-  occ_data = occ_data_pteridos, 
-  div_metric = "func_mntd_obs_z", 
-  metric_title = "MNTDfunc",
-  label = "a") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_pteridos, func_mntd_obs_z, "abs", 3), 
-      get_limit(alpha_div_pteridos, func_mntd_obs_z, "abs", 3)
-    ))
-
-b <- make_diversity_map(
-  div_data = alpha_div_ferns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "func_mntd_obs_z", 
-  metric_title = "MNTDfunc",
-  label = "b") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns, func_mntd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns, func_mntd_obs_z, "abs", 3)
-    ))
-
-c <- make_diversity_map(
-  div_data = alpha_div_ferns_ns, 
-  world_map = world_map, 
-  occ_data = occ_data_ferns, 
-  div_metric = "func_mntd_obs_z", 
-  metric_title = "MNTDfunc",
-  label = "c") + 
-  scale_fill_scico(
-    palette = "vik", 
-    na.value="dark grey",
-    limits = c(
-      -get_limit(alpha_div_ferns_ns, func_mntd_obs_z, "abs", 3), 
-      get_limit(alpha_div_ferns_ns, func_mntd_obs_z, "abs", 3)
-    ))
-  
-a + b + c + plot_layout(ncol = 2, nrow = 2)
-```
-
-```{r compare-pd-sexdip, fig.cap = "Relationship between standard effect size of mean phylogenetic distance (MPD~phy~) and mean nearest taxon distance (MNTD~phy~) of native Japanese pteridophytes and percent sexual diploid taxa in each community. Blue trendline shows significant linear model fit with confidence interval in pink."}
-a <- make_scatter_with_lm(alpha_div_pteridos, "percent_sex_dip", "phy_mpd_obs_z", "% sexual diploid", "MPDphy") +
-  labs(title = "Pteridophytes", x = "")
-b <- make_scatter_with_lm(alpha_div_ferns, "percent_sex_dip", "phy_mpd_obs_z", "% sexual diploid", "MPD") +
-  labs(title = "Ferns", y = "", x = "")
-c <- make_scatter_with_lm(alpha_div_ferns_ns, "percent_sex_dip", "phy_mpd_obs_z", "% sexual diploid", "MPDphy") +
-  labs(title = "Ferns (NS separate)", y = "", x = "")
-d <- make_scatter_with_lm(alpha_div_pteridos, "percent_sex_dip", "phy_mntd_obs_z", "% sexual diploid", "MNTDphy")
-e <- make_scatter_with_lm(alpha_div_ferns, "percent_sex_dip", "phy_mntd_obs_z", "% sexual diploid", "MNTD") +
-  labs(y = "")
-f <- make_scatter_with_lm(alpha_div_ferns_ns, "percent_sex_dip", "phy_mntd_obs_z", "% sexual diploid", "MNTDphy") +
-  labs(y = "")
-a + b + c + d + e + f + plot_layout(ncol = 3, nrow = 2)
-```
+**`r figure("ecostructure")`**. `r figure_cap("ecostructure")`. Pie charts represent the proportional contribution of each site to each of *k* = 8 spatial motifs, fit with a grade-of-membership model based on the community matrix using the R package \package{ecostructure}. 

@@ -21,6 +21,8 @@ library(scico)
 library(clustermq)
 library(magrittr)
 library(glue)
+library(patchwork)
+library(rcartocolor)
 library(tidyverse)
 
 # Resolve conflicts
