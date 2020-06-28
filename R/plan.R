@@ -1,5 +1,5 @@
 # Set vector of k-values to use for ecostructure
-k_vals <- 2:10
+k_vals <- 2:20
 
 # Define analysis plan
 plan <- drake_plan (
@@ -69,10 +69,16 @@ plan <- drake_plan (
   ),
   
   # Decide that 0.2 scale is optimal, use this for downstream analyses
+  
+  # - extract community matrix
   comm_ferns = comm_from_points2comm(comm_scaled_list_0.2),
   
-  shape_ferns = shape_from_points2comm(comm_scaled_list_0.2),
+  # - extract geographic shapes, richness, and number of specimens
+  shape_ferns = shape_from_points2comm(comm_scaled_list_0.2) %>%
+    # calculate redundancy
+    mutate(redundancy = 1 - (richness/abundance)),
     
+  # - make community matrix subset to taxa endemic to Japan
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
     green_list = green_list
@@ -80,7 +86,9 @@ plan <- drake_plan (
   
   # Read in ultrametric phylogenetic tree of all pteridophytes,
   # not including hybrids (706 taxa total)
-  japan_pterido_tree = ape::read.tree("data_raw/japan_pterido_tree_dated.tre"),
+  japan_pterido_tree_path = target("data_raw/japan_pterido_tree_dated.tre", format = "file"),
+  
+  japan_pterido_tree = ape::read.tree(japan_pterido_tree_path),
   
   # - subset to only ferns
   japan_fern_tree = subset_tree(
@@ -106,7 +114,7 @@ plan <- drake_plan (
   # Analyze standard effect size (SES) of diversity metrics ----
 
   ses_phy = target(
-    run_ses_analysis(comm, japan_fern_tree, n_reps = 999, metrics),
+    run_ses_analysis(comm, japan_fern_tree, n_reps = 999, metrics) %>% categorize_endemism,
     transform = map(
       comm = c(comm_ferns, comm_ferns_endemic),
       metrics = c(
@@ -149,9 +157,12 @@ plan <- drake_plan (
 
   # Ecostructure ----
 
-  species_motifs_ferns = ecostructure::ecos_fit(
-      dat = comm_ferns,
-      K = 8, tol = 0.1, num_trials = 1),
+  species_motifs_ferns = target(
+      ecostructure::ecos_fit(
+        comm_ferns,
+        K = K, tol = 0.1, num_trials = 1),
+      transform = map(K = !!k_vals)
+    ),
   
   # Write out manuscript ----
   ms = rmarkdown::render(

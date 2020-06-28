@@ -189,22 +189,23 @@ TBD
 
 ```{r plot-prep}
 tax_regions_data <- regions_taxonomy %>%
-  mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
+  mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  select(grids, taxonomic_cluster)
 
 phy_regions_data <- regions_phylogeny %>%
-  mutate(phylo_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
+  mutate(phylo_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  select(grids, phylo_cluster)
 
 ses_div_ferns_spatial <-
   shape_ferns %>%
-  left_join(categorize_endemism(ses_phy_ferns), by = c(grids = "site")) %>%
+  left_join(ses_phy_ferns, by = c(grids = "site")) %>%
   left_join(ses_traits_ferns, by = c(grids = "site")) %>%
-  mutate(redundancy = 1 - (richness/abundance)) %>%
   left_join(tax_regions_data, by = "grids") %>%
   left_join(phy_regions_data, by = "grids")
 
 ses_div_ferns_endemic_spatial <-
 shape_ferns %>%
-  left_join(categorize_endemism(ses_phy_ferns_endemic), by = c(grids = "site"))
+  left_join(ses_phy_ferns_endemic, by = c(grids = "site"))
 
 map_theme <- theme(
     panel.grid.major = element_line(color = "white", size = 0.2),
@@ -436,3 +437,23 @@ ecos_plot_pie2(
 ![](`r here::here("results/species_motifs_ferns.png")`)
 
 **`r figure("ecostructure")`**. `r figure_cap("ecostructure")`. Pie charts represent the proportional contribution of each site to each of *k* = 8 spatial motifs, fit with a grade-of-membership model based on the community matrix using the R package \package{ecostructure}. 
+
+\clearpage
+
+```{r diversity-by-cluster}
+ses_div_ferns_spatial %>%
+  filter(taxonomic_cluster %in% c(1,2,3,4)) %>%
+  as_tibble %>%
+  select(mpd_obs_z, mpd_morph_obs_z, pe_obs_z, taxonomic_cluster) %>%
+  pivot_longer(names_to = "var", values_to = "value", -taxonomic_cluster) %>%
+  ggplot(aes(x = taxonomic_cluster, y = value)) +
+  geom_jitter() +
+  geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.5) +
+  facet_wrap(vars(var)) +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+  )
+```
+
+Standard effect size (SES) of mean phylogenetic distance (MPD), mean morphological distance (MMD), and phylogenetic endemism (PE) by taxonomic bioregion (top four regions with the most sites only shown). 
