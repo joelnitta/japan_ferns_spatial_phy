@@ -120,13 +120,6 @@
       "Repository": "CRAN",
       "Hash": "07a8bd218526e939d07fada5a950e5be"
     },
-    "RcppEigen": {
-      "Package": "RcppEigen",
-      "Version": "0.3.3.7.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "c6faf038ba4346b1de19ad7c99b8f94a"
-    },
     "RcppProgress": {
       "Package": "RcppProgress",
       "Version": "0.4.2",
@@ -154,6 +147,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "1a0cc3e473b7c0f63424d55eeae39515"
+    },
+    "SpatialPack": {
+      "Package": "SpatialPack",
+      "Version": "0.3-819",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "11df2e7f6cd8643d13febd58bde123d8"
     },
     "WikidataR": {
       "Package": "WikidataR",
@@ -684,13 +684,6 @@
       "Repository": "CRAN",
       "Hash": "eee36211f74e4dbc80eae9d504b58f0b"
     },
-    "ggforce": {
-      "Package": "ggforce",
-      "Version": "0.3.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b7132d67f9814af0536cd5761be94314"
-    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.3.1",
@@ -1197,13 +1190,6 @@
       "Repository": "CRAN",
       "Hash": "03b7076c234cb3331288919983326c55"
     },
-    "polyclip": {
-      "Package": "polyclip",
-      "Version": "1.10-0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "cb167f328b3ada4ec5cf67a7df4c900a"
-    },
     "praise": {
       "Package": "praise",
       "Version": "1.0.0",
@@ -1656,13 +1642,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "847a9d113b78baca4a9a8639609ea228"
-    },
-    "tweenr": {
-      "Package": "tweenr",
-      "Version": "1.0.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "fc77eb5297507cccfa3349a606061030"
     },
     "txtq": {
       "Package": "txtq",
