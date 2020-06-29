@@ -91,13 +91,9 @@ The ferns of Japan are one of the best-characterized regional floras in the worl
 
 ## Introduction
 
-Characterizing biodiversity is important for two reasons: to understand the processes generating it, and to conserve it.
+Characterizing the spatial distribution of biodiversity is a major goal of evolutionary biology for two reasons: to understand the processes generating it, and to conserve it. The vast majority of studies seeking to understand the spatial distribution of biodiversity focus on one metric, species richness. Much progress has been made documenting hotspots of exceptional species richness, the processes generating them, and enabling conservation strategies to preserve them. However, richness alone cannot provide a complete picture of biodiversity. All organisms are related by descent from a common ancestor, and these evolutionary relationships must be taken into account to obtain a full understanding of biodiversity.
 
-Most past studies of biodiversity only focus on one dimension: richness.
-
-Recently tools and data are available to analyze additional dimensions (in particular phylogenetic dimensions). Furthermore, better ways to characterize biological regions ("bioregions") are also available, rather than simply using expert opinion or other ad-hoc characterizations.
-
-Incorporating two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide particularly powerful insights into the processes structuring biodiversity and suggest conservation priorities.
+Presumably, the main reason phylogeny has not been taken into account more promimently in biodiversity studies is because data (DNA sequences) and analytical tools have only become available relatively recently. These tools and datasets now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity and phylogenetic endemism. Better ways to characterize biological regions ("bioregions") are also available, rather than relying on ad-hoc characterizations. Furthermore, incorporating these two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide particularly powerful insights into the processes structuring biodiversity and suggest conservation priorities.
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data or can be lead astray.
 
