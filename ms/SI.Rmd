@@ -204,3 +204,124 @@ ggsave(here::here("results/Fig_S1.pdf"), width = 7, height = 6, units = "in")
 ```
 
 **`r s_figure("endemism-restricted")`**. `r s_figure_cap("endemism-restricted")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, Categorical analysis of neo- and paleo-endemism (CANAPE).
+
+```{r biplots}
+
+loadd(ses_phy_ferns, cache = ja_fern_cache)
+loadd(ses_traits_ferns, cache = ja_fern_cache)
+loadd(shape_ferns, cache = ja_fern_cache)
+
+# Helper function for making a scatterplot
+scatterplot <- function(data, x_var, y_var, x_lab, y_lab) {
+  ggplot(data, aes(x = .data[[x_var]], y = .data[[y_var]])) +
+    geom_point(alpha = 0.5) +
+    labs(
+      x = x_lab,
+      y = y_lab
+    )
+}
+
+# Join data
+ses_comp <-
+ses_phy_ferns %>%
+  select(site, mpd_obs, pe_obs, mpd_obs_z, pe_obs_z) %>%
+  left_join(
+    select(ses_traits_ferns, site, mpd_morph_obs, mpd_morph_obs_z),
+    by = "site"
+  ) %>%
+  left_join(
+    as_tibble(shape_ferns) %>% select(site = grids, richness),
+    by = "site"
+  )
+
+# Raw metrics ----
+
+# Make dataframe of arguments to feed into plotting function
+# - includes all non-duplicated combinations of raw diversity metrics
+raw_comparisons <-
+  cross_df(
+    list(
+      x_var = c("mpd_obs", "pe_obs", "mpd_morph_obs", "richness"),
+      y_var = c("mpd_obs", "pe_obs", "mpd_morph_obs")
+    ),
+    .filter = `==` # filter out exact duplicates
+  ) %>%
+  # Remove reversed duplicates
+  # https://stackoverflow.com/questions/22756392/deleting-reversed-duplicates-with-r
+  group_by(grp = paste(pmax(x_var, y_var), pmin(x_var, y_var), sep = "_")) %>%
+  # Use factors to keep the preferred combination of x and y
+  mutate(x_var = as.factor(x_var) %>% fct_relevel("pe_obs", "mpd_morph_obs", "richness")) %>%
+  mutate(y_var = as.factor(y_var) %>% fct_relevel("mpd_obs", "pe_obs", "mpd_morph_obs")) %>%
+  arrange(x_var, y_var) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(-grp) %>%
+  # Convert x_var and y_var back to character for plotting function
+  mutate(across(c(x_var, y_var), as.character)) %>%
+  # Add labels
+  mutate(
+    x_lab = case_when(
+      x_var == "mpd_morph_obs" ~ "MMD",
+      x_var == "mpd_obs" ~ "MPD",
+      x_var == "pe_obs" ~ "PE",
+      x_var == "richness" ~ "Richness"
+    ),
+    y_lab = case_when(
+      y_var == "mpd_morph_obs" ~ "MMD",
+      y_var == "mpd_obs" ~ "MPD",
+      y_var == "pe_obs" ~ "PE",
+      y_var == "richness" ~ "Richness"
+    )
+  )
+
+# Make plot
+pmap(raw_comparisons, scatterplot, data = ses_comp) %>%
+wrap_plots() +
+  plot_annotation(tag_levels = 'A')
+
+# SES metrics ----
+
+# Make dataframe of arguments to feed into plotting function
+# - includes all non-duplicated combinations of raw diversity metrics
+ses_comparisons <-
+  cross_df(
+    list(
+      x_var = c("mpd_obs_z", "pe_obs_z", "mpd_morph_obs_z", "richness"),
+      y_var = c("mpd_obs_z", "pe_obs_z", "mpd_morph_obs_z")
+    ),
+    .filter = `==` # filter out exact duplicates
+  ) %>%
+  # Remove reversed duplicates
+  # https://stackoverflow.com/questions/22756392/deleting-reversed-duplicates-with-r
+  group_by(grp = paste(pmax(x_var, y_var), pmin(x_var, y_var), sep = "_")) %>%
+  # Use factors to keep the preferred combination of x and y
+  mutate(x_var = as.factor(x_var) %>% fct_relevel("pe_obs_z", "mpd_morph_obs_z", "richness")) %>%
+  mutate(y_var = as.factor(y_var) %>% fct_relevel("mpd_obs_z", "pe_obs_z", "mpd_morph_obs_z")) %>%
+  arrange(x_var, y_var) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(-grp) %>%
+  # Convert x_var and y_var back to character for plotting function
+  mutate(across(c(x_var, y_var), as.character)) %>%
+  # Add labels
+  mutate(
+    x_lab = case_when(
+      x_var == "mpd_morph_obs_z" ~ "SES MMD",
+      x_var == "mpd_obs_z" ~ "SES MPD",
+      x_var == "pe_obs_z" ~ "SES PE",
+      x_var == "richness" ~ "Richness"
+    ),
+    y_lab = case_when(
+      y_var == "mpd_morph_obs_z" ~ "SES MMD",
+      y_var == "mpd_obs_z" ~ "SES MPD",
+      y_var == "pe_obs_z" ~ "SES PE",
+      y_var == "richness" ~ "Richness"
+    )
+  )
+
+# Make plot
+pmap(ses_comparisons, scatterplot, data = ses_comp) %>%
+  wrap_plots() +
+  plot_annotation(tag_levels = 'A')
+```
+
