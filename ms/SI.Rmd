@@ -48,14 +48,6 @@ loadd(list = c(
 ),
 cache = ja_fern_cache)
 
-phylo_cache <- new_cache(here::here("phylo_cache"))
-
-loadd(list = c(
-  "plastome_calibration_dates",
-  "plastome_tree"
-),
-cache = phylo_cache)
-
 # Load captions
 source(here::here("ms/captions.R"))
 ```
@@ -73,22 +65,23 @@ source(here::here("ms/captions.R"))
 
 ```{r plot-prep}
 tax_regions_data <- regions_taxonomy %>%
-  mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
+  mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  select(grids, taxonomic_cluster)
 
 phy_regions_data <- regions_phylogeny %>%
-  mutate(phylo_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
+  mutate(phylo_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  select(grids, phylo_cluster)
 
 ses_div_ferns_spatial <-
   shape_ferns %>%
-  left_join(categorize_endemism(ses_phy_ferns), by = c(grids = "site")) %>%
+  left_join(ses_phy_ferns, by = c(grids = "site")) %>%
   left_join(ses_traits_ferns, by = c(grids = "site")) %>%
-  mutate(redundancy = 1 - (richness/abundance)) %>%
   left_join(tax_regions_data, by = "grids") %>%
   left_join(phy_regions_data, by = "grids")
 
 ses_div_ferns_endemic_spatial <-
 shape_ferns %>%
-  left_join(categorize_endemism(ses_phy_ferns_endemic), by = c(grids = "site"))
+  left_join(ses_phy_ferns_endemic, by = c(grids = "site"))
 
 map_theme <- theme(
     panel.grid.major = element_line(color = "white", size = 0.2),
@@ -148,6 +141,7 @@ a + b +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
 
+ggsave(result_file("k-plot", "pdf"), width = 7, height = 3, units = "in")
 ```
 
 **`r s_figure("k-plot")`**. `r s_figure_cap("k-plot")` **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Shape indicates optimal *k* selected by \function{optimal{\_}phyloregion} function in the R package \package{phyloregion} (circle, non-optimal; triangle, optimal); color indicates optimal *k* selected manually (black, non-optimal; red, optimal; see Methods).
@@ -200,17 +194,12 @@ a + b + c +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(here::here("results/Fig_S1.pdf"), width = 7, height = 6, units = "in")
+ggsave(result_file("endemism-restricted", "pdf"), width = 7, height = 6, units = "in")
 ```
 
 **`r s_figure("endemism-restricted")`**. `r s_figure_cap("endemism-restricted")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, Categorical analysis of neo- and paleo-endemism (CANAPE).
 
-```{r biplots}
-
-loadd(ses_phy_ferns, cache = ja_fern_cache)
-loadd(ses_traits_ferns, cache = ja_fern_cache)
-loadd(shape_ferns, cache = ja_fern_cache)
-
+```{r biplot-prep}
 # Helper function for making a scatterplot
 scatterplot <- function(data, x_var, y_var, x_lab, y_lab) {
   ggplot(data, aes(x = .data[[x_var]], y = .data[[y_var]])) +
@@ -221,20 +210,10 @@ scatterplot <- function(data, x_var, y_var, x_lab, y_lab) {
     )
 }
 
-# Join data
-ses_comp <-
-ses_phy_ferns %>%
-  select(site, mpd_obs, pe_obs, mpd_obs_z, pe_obs_z) %>%
-  left_join(
-    select(ses_traits_ferns, site, mpd_morph_obs, mpd_morph_obs_z),
-    by = "site"
-  ) %>%
-  left_join(
-    as_tibble(shape_ferns) %>% select(site = grids, richness),
-    by = "site"
-  )
+```
 
-# Raw metrics ----
+```{r raw-biplot, fig.width = 7, fig.height = 6}
+## Biplots of raw metrics ##
 
 # Make dataframe of arguments to feed into plotting function
 # - includes all non-duplicated combinations of raw diversity metrics
@@ -275,11 +254,17 @@ raw_comparisons <-
   )
 
 # Make plot
-pmap(raw_comparisons, scatterplot, data = ses_comp) %>%
+pmap(raw_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
 wrap_plots() +
   plot_annotation(tag_levels = 'A')
 
-# SES metrics ----
+ggsave(result_file("raw-biplot", "pdf"), width = 7, height = 6, units = "in")
+```
+
+**`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism.
+
+```{r ses-biplot, fig.width = 7, fig.height = 6}
+## Biplots of SES metrics ##
 
 # Make dataframe of arguments to feed into plotting function
 # - includes all non-duplicated combinations of raw diversity metrics
@@ -320,8 +305,11 @@ ses_comparisons <-
   )
 
 # Make plot
-pmap(ses_comparisons, scatterplot, data = ses_comp) %>%
+pmap(ses_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
   wrap_plots() +
   plot_annotation(tag_levels = 'A')
+
+ggsave(result_file("ses-biplot", "pdf"), width = 7, height = 6, units = "in")
 ```
 
+**`r s_figure("ses-biplot")`**. `r s_figure_cap("ses-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism.

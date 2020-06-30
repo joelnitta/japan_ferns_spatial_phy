@@ -3425,3 +3425,27 @@ remove_dup_seqs <- function (
   )
   
 }
+
+# Manuscript rendering ----
+
+#' Generate a path to save a results file
+#' 
+#' Only works for figures or tables cited in text, and outputs
+#' files to the "results" folder
+#'
+#' @param name Name of cited figure or table, as defined in `captions.R`
+#' @param extension Extension to use for file
+#'
+#' @return String.
+#' 
+result_file <- function (name, extension) {
+  
+  fs::path(
+    here::here("results"),
+    s_figure(name) %>% 
+      str_remove_all("\\.") %>% 
+      str_replace_all(" ", "_")
+  ) %>%
+    fs::path_ext_set(extension)
+}
+
