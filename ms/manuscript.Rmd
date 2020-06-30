@@ -167,6 +167,10 @@ Analysis of biogeographic regions using taxonomy (species names) resulted in the
 
 Ecological structure partly resembled bioregions, with most sites in Hokkaido and northern Honshu belonging to the same motifs (dark-green and purple), and sites in Okinawa also mostly belonging to another motif (grey) (`r figure("ecostructure")`). However, the grade-of-membership model also revealed complex ecological structure that mostly tracks latitude and elevation, with particularly high turnover in the southern half of Honshu. A single motif united low-richness sites (dark purple).
 
+### Relationships between metrics
+
+Raw values of MPD and MMD showed high variance and low species richness, then merged towards a single value at high species richness, as expected (`r s_figure("raw-biplot")`D, E). Raw PE was linearly correlated with species richness (`r s_figure("raw-biplot")`F). Both raw and SES values of MPD and MMD were highly correlated (`r s_figure("raw-biplot")`A, `r s_figure("ses-biplot")`A, B). SES values of MPD, MMD, and PE were all positively correlated (`r s_figure("ses-biplot")`A, B, C). None of the SES values were correlated with richness (`r s_figure("ses-biplot")`D, E, F).
+
 ## Discussion
 
 TBD

@@ -64,6 +64,7 @@ source(here::here("ms/captions.R"))
 # Supplemental Information
 
 ```{r plot-prep}
+# Combine bioregion results, biodiversity metrics, and shape data into single dataframe
 tax_regions_data <- regions_taxonomy %>%
   mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
   select(grids, taxonomic_cluster)
@@ -79,15 +80,18 @@ ses_div_ferns_spatial <-
   left_join(tax_regions_data, by = "grids") %>%
   left_join(phy_regions_data, by = "grids")
 
+# - same for endemic species
 ses_div_ferns_endemic_spatial <-
 shape_ferns %>%
   left_join(ses_phy_ferns_endemic, by = c(grids = "site"))
 
+# Define ggplot2 theme for maps
 map_theme <- theme(
     panel.grid.major = element_line(color = "white", size = 0.2),
     axis.ticks = element_blank(),
     axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
   )
+
 ```
 
 ```{r k-plot, fig.width = 7, fig.height = 3}
@@ -200,16 +204,26 @@ ggsave(result_file("endemism-restricted", "pdf"), width = 7, height = 6, units =
 **`r s_figure("endemism-restricted")`**. `r s_figure_cap("endemism-restricted")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, Categorical analysis of neo- and paleo-endemism (CANAPE).
 
 ```{r biplot-prep}
-# Helper function for making a scatterplot
-scatterplot <- function(data, x_var, y_var, x_lab, y_lab) {
-  ggplot(data, aes(x = .data[[x_var]], y = .data[[y_var]])) +
+# Extract centroids
+centroids <- sf::st_centroid(ses_div_ferns_spatial$geometry) %>%
+  sf::st_coordinates()
+
+# Define helper function for making a scatterplot
+scatterplot <- function(data, x_var, y_var, x_lab, y_lab, label, annotate) {
+  p <- ggplot(data, aes(x = .data[[x_var]], y = .data[[y_var]])) +
     geom_point(alpha = 0.5) +
     labs(
       x = x_lab,
       y = y_lab
     )
+  
+  # Add annotation and trendline if annotate = TRUE
+  if(annotate) p <- p +
+      annotate("label", x = Inf, y = Inf, label = label, hjust = 1, vjust = 1, label.size = 0, fill = "transparent") +
+      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
+  
+  p
 }
-
 ```
 
 ```{r raw-biplot, fig.width = 7, fig.height = 6}
@@ -251,8 +265,35 @@ raw_comparisons <-
       y_var == "pe_obs" ~ "PE",
       y_var == "richness" ~ "Richness"
     )
-  )
-
+  ) %>%
+  # Run modified t-test
+  mutate(
+    test_res = map2(
+      .x = x_var, 
+      .y = y_var, 
+      ~SpatialPack::modified.ttest(ses_div_ferns_spatial[[.x]], ses_div_ferns_spatial[[.y]], centroids)),
+    # Extract relevant stats from results
+    cor = map_dbl(test_res, pluck("corr")),
+    pval = map_dbl(test_res, pluck("p.value"))
+    ) %>%
+  # Generate label
+  mutate(
+    cor_lab = glue("r = {round(cor, 3)}"),
+    pval_lab = glue("p = {round(pval, 3)}"),
+    label = glue::glue("{cor_lab}\n{ifelse(pval < 0.001, 'p < 0.001', pval_lab)}")
+  ) %>%
+  # Specify which plots to annotate
+  mutate(
+    annotate = case_when(
+      x_var == "mpd_morph_obs" & y_var == "mpd_obs" & pval < 0.05 ~ TRUE,
+      x_var == "mpd_morph_obs" & y_var == "pe_obs" & pval < 0.05 ~ TRUE,
+      x_var == "mpd_obs" & y_var == "pe_obs" & pval < 0.05 ~ TRUE,
+      x_var == "richness" & y_var == "pe_obs" & pval < 0.05  ~ TRUE,
+      TRUE ~ FALSE
+    )
+  ) %>%
+  select(x_var, y_var, x_lab, y_lab, label, annotate)
+  
 # Make plot
 pmap(raw_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
 wrap_plots() +
@@ -261,7 +302,7 @@ wrap_plots() +
 ggsave(result_file("raw-biplot", "pdf"), width = 7, height = 6, units = "in")
 ```
 
-**`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism.
+**`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; *p* value and correlation (r) only shown for *p* < 0.05; correlations between MPD and MMD with richness not expected to be linear, so were not tested.
 
 ```{r ses-biplot, fig.width = 7, fig.height = 6}
 ## Biplots of SES metrics ##
@@ -302,7 +343,31 @@ ses_comparisons <-
       y_var == "pe_obs_z" ~ "SES PE",
       y_var == "richness" ~ "Richness"
     )
-  )
+  ) %>%
+  # Run modified t-test
+  mutate(
+    test_res = map2(
+      .x = x_var, 
+      .y = y_var, 
+      ~SpatialPack::modified.ttest(ses_div_ferns_spatial[[.x]], ses_div_ferns_spatial[[.y]], centroids)),
+    # Extract relevant stats from results
+    cor = map_dbl(test_res, pluck("corr")),
+    pval = map_dbl(test_res, pluck("p.value"))
+    ) %>%
+  # Generate label
+  mutate(
+    cor_lab = glue("r = {round(cor, 3)}"),
+    pval_lab = glue("p = {round(pval, 3)}"),
+    label = glue::glue("{cor_lab}\n{ifelse(pval < 0.001, 'p < 0.001', pval_lab)}")
+  ) %>%
+  # Specify which plots to annotate
+  mutate(
+    annotate = case_when(
+      pval < 0.05 ~ TRUE,
+      TRUE ~ FALSE
+    )
+  ) %>%
+  select(x_var, y_var, x_lab, y_lab, label, annotate)
 
 # Make plot
 pmap(ses_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
@@ -312,4 +377,5 @@ pmap(ses_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
 ggsave(result_file("ses-biplot", "pdf"), width = 7, height = 6, units = "in")
 ```
 
-**`r s_figure("ses-biplot")`**. `r s_figure_cap("ses-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism.
+**`r s_figure("ses-biplot")`**. `r s_figure_cap("ses-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; all combinations tested, but *p* value and correlation (r) only shown for *p* < 0.05.
+
