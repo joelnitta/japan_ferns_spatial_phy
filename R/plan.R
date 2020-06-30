@@ -152,7 +152,7 @@ plan <- drake_plan (
   regions_phylogeny = cluster_phylo_regions(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
-    k = 7
+    k = 6
   ),
 
   # Ecostructure ----

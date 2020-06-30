@@ -117,7 +117,7 @@ a <- k_taxonomy$df %>%
     legend.position = "none"
   )
 
-k_phylogeny_select <- 7
+k_phylogeny_select <- 6
 
 b <- k_phylogeny$df %>%
   as_tibble() %>%
