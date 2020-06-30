@@ -27,7 +27,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
 ```
 
 ```{r load-data, cache = FALSE}
@@ -143,7 +143,7 @@ It is possible that endemism may be affected by species that are actually wide-r
 
 We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20. \package{phyloregion} provides a function to automatically select *k* from a range of test values, but we found the results to be unreliable. We therefore evaluated the explained variance at each value of *k*, then selected *k* that provided the greatest increase in variance relative to the previous value (`r s_figure("k-plot")`).
 
-We analyzed ecological structure using the framework of @White2019 and their R package \package{ecostructure}. This method involves fitting the community matrix to a grade of membership model, which allows communities have partial membership in multiple groups [@White2019]. Like bioregion analysis, this method also requires selecting the number of clusters (in this context called "motifs" after @White2019) to fit the model. We initially tested values of *k* from 1 to 20 and inspected the log-likelihood for each, but found that it continually improved without reaching a clear optimum. We therefore used the same *k* that was selected for taxonomic bioregions.
+We analyzed ecological structure using the framework of @White2019 and their R package \package{ecostructure}. This method involves fitting the community matrix to a grade of membership model, which allows communities have partial membership in multiple groups [@White2019]. Like bioregion analysis, this method also requires selecting the number of clusters (in this context called "motifs" after @White2019) to fit the model. We initially tested values of *k* from 2 to 20 and inspected the log-likelihood for each, but found that it continually improved without reaching a clear optimum (`r s_figure("k-plot-ecos")`). We therefore used the same *k* that was selected for taxonomic bioregions.
 
 ### Data accessibility
 

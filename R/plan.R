@@ -164,6 +164,11 @@ plan <- drake_plan (
       transform = map(K = !!k_vals)
     ),
   
+  species_motifs_ferns_combined = target(
+    list(species_motifs_ferns) %>% set_names(k_vals),
+    transform = combine(species_motifs_ferns)
+  ),
+  
   # Write out manuscript ----
   ms = rmarkdown::render(
     knitr_in("ms/manuscript.Rmd"),
