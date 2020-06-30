@@ -44,7 +44,7 @@ loadd(list = c(
   "k_phylogeny",
   "regions_taxonomy",
   "regions_phylogeny",
-  "species_motifs_ferns"
+  "species_motifs_ferns_8L"
 ),
 cache = ja_fern_cache)
 
@@ -403,7 +403,7 @@ ses_div_ferns_spatial %>%
   mutate(site = sites)
 
 omega <-
-species_motifs_ferns$omega %>%
+species_motifs_ferns_8L$omega %>%
   as.data.frame %>%
   rownames_to_column("site") %>%
   left_join(centroids, by = "site") %>%
