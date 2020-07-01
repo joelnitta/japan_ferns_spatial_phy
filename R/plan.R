@@ -49,11 +49,10 @@ plan <- drake_plan (
   # - standardize names to Green List
   occ_point_data = rename_taxa(occ_point_data_raw, green_list),
   
-  # Subset to just ferns (674 taxa)
-  occ_point_data_ferns = subset_occ_point_data(
-    occ_point_data_raw = occ_point_data,
-    ppgi = ppgi
-  ),
+  # - subset to just ferns (674 taxa)
+  occ_point_data_ferns = subset_to_ferns(occ_point_data, ppgi) %>%
+    # check for missing data
+    assert(not_na, longitude, latitude, taxon),
   
   # Generate datasets at different spatial scales: 
   # 0.2 degree ~ 20 km x 20 km,
@@ -95,12 +94,13 @@ plan <- drake_plan (
     phy = japan_pterido_tree, 
     ppgi = ppgi),
   
-  # Format trait data
+  # Format trait data, subset to ferns
   raw_trait_data_path = target("data_raw/JpFernLUCID_forJoel.xlsx", format = "file"),
   
   traits_for_dist = format_traits(
     path_to_lucid_traits = raw_trait_data_path,
-    taxon_id_map = green_list),
+    taxon_id_map = green_list) %>%
+    subset_to_ferns(ppgi),
 
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
@@ -169,6 +169,11 @@ plan <- drake_plan (
     transform = combine(species_motifs_ferns)
   ),
   
+  # Traits ----
+  
+  # Run NMDS on traits
+  traits_nmds = vegan::metaMDS(trait_distance_matrix, k = 3),
+  
   # Write out manuscript ----
   ms = rmarkdown::render(
     knitr_in("ms/manuscript.Rmd"),
@@ -178,7 +183,7 @@ plan <- drake_plan (
   si = rmarkdown::render(
     knitr_in("ms/SI.Rmd"),
     output_dir = here::here("results"),
-    quiet = TRUE)
+    quiet = TRUE),
 
   # # Make richness matrix (number of species per
   # # 10 km grid cell).

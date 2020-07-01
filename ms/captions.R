@@ -18,6 +18,7 @@ s_fig_nums(name = "k-plot-ecos", "Selection of *k* for ecological structure anal
 s_fig_nums(name = "endemism-restricted", "Phylogenetic endemism of the ferns of Japan, restricted dataset including only taxa endemic to Japan.")
 s_fig_nums(name = "raw-biplot", "Relationships between raw biodiversity metrics of the ferns of Japan.")
 s_fig_nums(name = "ses-biplot", "Relationships between standard effect size (SES) of biodiversity metrics of the ferns of Japan.")
+s_fig_nums(name = "traits-nmds", "Trait space of the ferns of Japan.")
 
 # - SI tables
 # s_table_nums <- captioner::captioner(prefix = "Table S", auto_space = FALSE, suffix = ": ")

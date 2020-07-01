@@ -161,18 +161,18 @@ process_occ_data <- function (occ_data_raw, all_cells, ppgi) {
   
 }
 
-#' Subset occurrence point data to only ferns
+#' Subset data to only ferns
 #'
-#' @param occ_point_data_raw Raw occurrence point data (one row per specimen)
+#' @param data Input dataframe with column "taxon"
 #' @param ppgi Pteridophyte phylogeny group I taxonomy
 #'
 #' @return Dataframe subset to ferns only
 #' 
-subset_occ_point_data <- function(occ_point_data_raw, ppgi) {
+subset_to_ferns <- function(data, ppgi) {
   
-  cols_keep <- colnames(occ_point_data_raw)
+  cols_keep <- colnames(data)
   
-  occ_point_data_raw %>%
+  data %>%
     mutate(genus = str_split(taxon, " |_") %>% map_chr(1)) %>%
     assert(not_na, genus) %>%
     # Add higher-level taxonomy
@@ -180,8 +180,6 @@ subset_occ_point_data <- function(occ_point_data_raw, ppgi) {
     assert(not_na, class) %>%
     # Filter to only ferns
     filter(class == "Polypodiopsida") %>%
-    # Check for missing data
-    assert(not_na, longitude, latitude, taxon) %>%
     select(all_of(cols_keep))
   
 }
@@ -849,15 +847,14 @@ make_trait_dist_matrix <- function (traits_for_dist) {
 #'
 #' @return GGPlot object
 #'
-make_trait_nmds_plot <- function (nmds, ppgi, taxon_id_map) {
+make_trait_nmds_plot <- function (nmds, ppgi) {
   
   nmds_points = nmds[["points"]] %>%
     as.data.frame %>%
-    rownames_to_column("taxon_id") %>%
+    rownames_to_column("taxon") %>%
     as_tibble %>%
-    left_join(taxon_id_map) %>%
     mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
-    left_join(ppgi) %>%
+    left_join(ppgi, by = "genus") %>%
     mutate(
       order = factor(order),
       family = factor(family))
@@ -865,7 +862,7 @@ make_trait_nmds_plot <- function (nmds, ppgi, taxon_id_map) {
   a <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = order, shape = order)) +
     geom_point() +
     scale_shape_manual(values = 1:n_distinct(nmds_points$order)) +
-    labs(title = "Pteridophytes")
+    labs(title = "Ferns")
   
   nmds_points_polypod <- filter(nmds_points, order == "Polypodiales")
   

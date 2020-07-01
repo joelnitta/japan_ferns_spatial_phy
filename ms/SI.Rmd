@@ -45,7 +45,9 @@ loadd(list = c(
   "regions_taxonomy",
   "regions_phylogeny",
   "species_motifs_ferns",
-  "species_motifs_ferns_combined"
+  "species_motifs_ferns_combined",
+  "traits_nmds",
+  "ppgi"
 ),
 cache = ja_fern_cache)
 
@@ -402,3 +404,39 @@ ggsave(result_file("ses-biplot", "pdf"), width = 7, height = 6, units = "in")
 
 **`r s_figure("ses-biplot")`**. `r s_figure_cap("ses-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; all combinations tested, but *p* value and correlation (r) only shown for *p* < 0.05.
 
+```{r trait-space, fig.width = 8, fig.height = 8}
+# Extract points, join to PPGI
+nmds_points <- traits_nmds[["points"]] %>%
+  as.data.frame %>%
+  rownames_to_column("taxon") %>%
+  as_tibble %>%
+  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+  left_join(ppgi, by = "genus") %>%
+  mutate(
+    order = factor(order),
+    family = factor(family))
+
+# A: all ferns
+a <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = order, shape = order)) +
+  geom_point() +
+  scale_shape_manual(values = 1:n_distinct(nmds_points$order)) +
+  labs(title = "A. Ferns")
+
+# B: Polypods only
+nmds_points_polypod <- filter(nmds_points, order == "Polypodiales")
+
+b <- ggplot(nmds_points_polypod, aes(x = MDS1, y = MDS2, color = family, shape = family)) +
+  geom_point() +
+  scale_shape_manual(values = 1:n_distinct(nmds_points_polypod$family)) +
+  labs(title = "B. Polypodiales") +
+  guides(
+    color = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2))
+
+a + b + 
+  plot_layout(nrow = 2)
+
+ggsave(result_file("traits-nmds", "pdf"), width = 8, height = 8, units = "in")
+```
+
+**`r s_figure("traits-nmds")`**. `r s_figure_cap("traits-nmds")` Interspecific trait distances calculated using Gower's method with 16 traits, then projected into trait space using nonmetric multidimensional scaling (NMDS). **A**, All ferns. **B**, Polypodiales. Taxonomy follows PPGI.
