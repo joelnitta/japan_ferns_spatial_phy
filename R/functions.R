@@ -3430,16 +3430,16 @@ remove_dup_seqs <- function (
 #' Only works for figures or tables cited in text, and outputs
 #' files to the "results" folder
 #'
-#' @param name Name of cited figure or table, as defined in `captions.R`
+#' @param result_num Number of result, e.g. "Fig. 2"
 #' @param extension Extension to use for file
 #'
 #' @return String.
 #' 
-result_file <- function (name, extension) {
+result_file <- function (result_num, extension) {
   
   fs::path(
     here::here("results"),
-    s_figure(name) %>% 
+    result_num %>%
       str_remove_all("\\.") %>% 
       str_replace_all(" ", "_")
   ) %>%

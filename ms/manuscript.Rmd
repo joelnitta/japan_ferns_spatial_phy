@@ -69,11 +69,13 @@ source(here::here("ms/captions.R"))
 <!-- Don't indent -->
 \setlength{\parindent}{0ex}
 
-Joel H. Nitta^1^ and Atsushi Ebihara^2^
+Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1^, and Atsushi Ebihara^3^
 
 ^1^Department of Biological Sciences, Graduate School of Science, The University of Tokyo, 2-11-16 Yayoi, Bunkyo-ku, Tokyo 113-0032, Japan
 
-^2^Department of Botany, National Museum of Nature and Science, 4-1-1 Amakubo, Tsukuba-shi, Ibaraki, 305-0005, Japan  
+^2^University and Jepson Herbaria, University of California, Berkeley, CA 94720‐2465, USA
+
+^3^Department of Botany, National Museum of Nature and Science, 4-1-1 Amakubo, Tsukuba-shi, Ibaraki, 305-0005, Japan  
 
 Author for correspondence:  
 *Joel H. Nitta*  
@@ -169,7 +171,7 @@ Ecological structure partly resembled bioregions, with most sites in Hokkaido an
 
 ### Relationships between metrics
 
-Raw values of MPD and MMD showed high variance and low species richness, then merged towards a single value at high species richness, as expected (`r s_figure("raw-biplot")`D, E). Raw PE was linearly correlated with species richness (`r s_figure("raw-biplot")`F). Both raw and SES values of MPD and MMD were highly correlated (`r s_figure("raw-biplot")`A, `r s_figure("ses-biplot")`A, B). SES values of MPD, MMD, and PE were all positively correlated (`r s_figure("ses-biplot")`A, B, C). None of the SES values were correlated with richness (`r s_figure("ses-biplot")`D, E, F).
+Raw values of MPD and MMD showed high variance and low species richness, then merged towards a single value at high species richness, as expected (`r s_figure("raw-biplot")`K, O). Raw PE was linearly correlated with species richness (`r s_figure("raw-biplot")`M). Both raw and SES values of MPD and MMD were highly correlated (`r s_figure("raw-biplot")`D, `r s_figure("ses-biplot")`D). SES values of MPD, MMD, and PE were all positively correlated (`r s_figure("ses-biplot")`). None of the SES values were correlated with richness (`r s_figure("ses-biplot")`).
 
 ## Discussion
 
@@ -280,7 +282,10 @@ e <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_morph_obs)) +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   scale_fill_viridis_c() +
-  map_theme
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
 
 # SES of morph diversity
 f <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_morph_obs_z)) +
@@ -298,21 +303,48 @@ f <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_morph_obs_z)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   map_theme +
   theme(
+    axis.text.x = element_blank(),
     axis.text.y = element_blank()
   )
 
-a + b + c + d + e + f +
+g <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "MMD") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  scale_fill_viridis_c() +
+  map_theme
+
+h <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES PD") +
+  scale_fill_scico(
+    palette = "romaO",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, pd_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, pd_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.y = element_blank()
+  )
+
+a + b + c + d + e + f + g + h +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(here::here("results/Fig_1.pdf"), width = 7, height = 9, units = "in")
+ggsave(result_file(figure("diversity"), "pdf"), width = 7, height = 9, units = "in")
 ```
 
-**`r figure("diversity")`**. `r figure_cap("diversity")` **A**, richness. **B**, sampling redundancy. **C**, mean phylogenetic distance (MPD). **D**, Standard effect size (SES) of MPD. **E**, mean morphological distance (MMD) **F**, SES of MMD.
+**`r figure("diversity")`**. `r figure_cap("diversity")` **A**, richness. **B**, sampling redundancy. **C**, mean phylogenetic distance (MPD). **D**, Standard effect size (SES) of MPD. **E**, mean morphological distance (MMD) **F**, SES of MMD. **G**, phylogenetic diversity (PD) **H**, SES of PD.
 
 \clearpage
 
-```{r endemism, fig.width = 7, fig.height = 6}
+```{r endemism, fig.width = 7, fig.height = 8}
 # PE
 a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs)) +
   geom_sf(color = "transparent") +
@@ -344,22 +376,53 @@ b <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_z)) +
     axis.text.y = element_blank()
   )
 
+# RPE
+c <- ggplot(ses_div_ferns_spatial, aes(fill = rpe_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_viridis_c() + 
+  labs(fill = "RPE") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
+
+# SES RPE
+d <- ggplot(ses_div_ferns_spatial, aes(fill = rpe_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES RPE") +
+  scale_fill_scico(
+    palette = "romaO",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, rpe_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, rpe_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.y = element_blank()
+  )
+
 # CANAPE
-c <- ggplot(ses_div_ferns_spatial, aes(fill = endem_type)) +
+e <- ggplot(ses_div_ferns_spatial, aes(fill = endem_type)) +
   geom_sf(color = "transparent") +
   labs(fill = "Endemism\ntype") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   map_theme
 
-a + b + c +
+a + b + c + d + e +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(here::here("results/Fig_2.pdf"), width = 7, height = 6, units = "in")
+ggsave(result_file(figure("endemism"), "pdf"), width = 7, height = 8, units = "in")
 ```
 
-**`r figure("endemism")`**. `r figure_cap("endemism")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, Categorical analysis of neo- and paleo-endemism (CANAPE).
+**`r figure("endemism")`**. `r figure_cap("endemism")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, relative phylogenetic endemism (RPE). **D**, SES of RPE. **E**, Categorical analysis of neo- and paleo-endemism (CANAPE).
 
 \clearpage
 
@@ -385,7 +448,7 @@ a + b +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(here::here("results/Fig_3.pdf"), width = 7, height = 3, units = "in")
+ggsave(result_file(figure("bioregions"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
 **`r figure("bioregions")`**. `r figure_cap("bioregions")` **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances into *k* = 8 or 7 groups, respectively, using the R package \package{phyloregion}.

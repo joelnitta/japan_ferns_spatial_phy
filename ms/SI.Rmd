@@ -148,7 +148,7 @@ a + b +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(result_file("k-plot", "pdf"), width = 7, height = 3, units = "in")
+ggsave(result_file(s_figure("k-plot"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
 **`r s_figure("k-plot")`**. `r s_figure_cap("k-plot")` **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Shape indicates optimal *k* selected by \function{optimal{\_}phyloregion} function in the R package \package{phyloregion} (circle, non-optimal; triangle, optimal); color indicates optimal *k* selected manually (black, non-optimal; red, optimal; see Methods).
@@ -172,14 +172,14 @@ ggplot(log_l, aes(x = k, y = log_l)) +
     x = "Number of clusters") +
   theme(legend.position = "none")
 
-ggsave(result_file("k-plot-ecos", "pdf"), width = 4, height = 3, units = "in")
+ggsave(result_file(s_figure("k-plot-ecos"), "pdf"), width = 4, height = 3, units = "in")
 ```
 
 **`r s_figure("k-plot-ecos")`**. `r s_figure_cap("k-plot-ecos")` Red indicates optimal *k* selected manually (*k* = 8, same as for taxonomic bioregions).
 
 \clearpage
 
-```{r endemism-restricted, fig.width = 7, fig.height = 6}
+```{r endemism-restricted, fig.width = 7, fig.height = 8}
 # PE (endemic)
 a <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = pe_obs)) +
   geom_sf(color = "transparent") +
@@ -208,25 +208,55 @@ b <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = pe_obs_z)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   map_theme +
   theme(
-    axis.text.y = element_blank()
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank()
   )
 
+# RPE
+c <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = rpe_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_viridis_c() + 
+  labs(fill = "RPE") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
+
+# SES RPE
+d <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = rpe_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES RPE") +
+  scale_fill_scico(
+    palette = "romaO",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_endemic_spatial, rpe_obs_z, "abs"),
+      get_limit(ses_div_ferns_endemic_spatial, rpe_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(axis.text.y = element_blank())
+
 # CANAPE (endemic)
-c <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = endem_type)) +
+e <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = endem_type)) +
   geom_sf(color = "transparent") +
   labs(fill = "Endemism\ntype") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   map_theme
 
-a + b + c + 
+a + b + c + d + e +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(result_file("endemism-restricted", "pdf"), width = 7, height = 6, units = "in")
+ggsave(result_file(s_figure("endemism-restricted"), "pdf"), width = 7, height = 8, units = "in")
 ```
 
-**`r s_figure("endemism-restricted")`**. `r s_figure_cap("endemism-restricted")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, Categorical analysis of neo- and paleo-endemism (CANAPE).
+**`r s_figure("endemism-restricted")`**. `r s_figure_cap("endemism-restricted")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, relative phylogenetic endemism (RPE). **D**, SES of RPE. **E**, Categorical analysis of neo- and paleo-endemism (CANAPE).
 
 ```{r biplot-prep}
 # Extract centroids
@@ -234,7 +264,7 @@ centroids <- sf::st_centroid(ses_div_ferns_spatial$geometry) %>%
   sf::st_coordinates()
 
 # Define helper function for making a scatterplot
-scatterplot <- function(data, x_var, y_var, x_lab, y_lab, label, annotate) {
+scatterplot <- function(data, x_var, y_var, x_lab, y_lab, label, annotate, loc) {
   p <- ggplot(data, aes(x = .data[[x_var]], y = .data[[y_var]])) +
     geom_point(alpha = 0.5) +
     labs(
@@ -243,37 +273,57 @@ scatterplot <- function(data, x_var, y_var, x_lab, y_lab, label, annotate) {
     )
   
   # Add annotation and trendline if annotate = TRUE
-  if(annotate) p <- p +
-      annotate("label", x = Inf, y = Inf, label = label, hjust = 1, vjust = 1, label.size = 0, fill = "transparent") +
+  if(annotate & loc == "UL") p <- p +
+      annotate("label", x = -Inf, y = Inf, label = label, hjust = 0, vjust = 1, label.size = 0, size = 3, fill = "transparent") +
+      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
+  
+  if(annotate & loc == "UR") p <- p +
+      annotate("label", x = Inf, y = Inf, label = label, hjust = 1, vjust = 1, label.size = 0, size = 3, fill = "transparent") +
+      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
+  
+  if(annotate & loc == "LL") p <- p +
+      annotate("label", x = -Inf, y = -Inf, label = label, hjust = 0, vjust = 0, label.size = 0, size = 3, fill = "transparent") +
+      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
+  
+  if(annotate & loc == "LR") p <- p +
+      annotate("label", x = Inf, y = -Inf, label = label, hjust = 1, vjust = 0, label.size = 0, size = 3, fill = "transparent") +
       geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
   
   p
 }
 ```
 
-```{r raw-biplot, fig.width = 7, fig.height = 6}
+```{r raw-biplot, fig.width = 8, fig.height = 10}
 ## Biplots of raw metrics ##
+
+# Set up x and y variables as factors so they can be ordered appropriately in the plot
+x_vars <-
+  c("mpd_obs", "pd_obs", "pe_obs", "rpe_obs", "mpd_morph_obs", "richness") %>%
+  factor() %>%
+  fct_relevel(as.character(.))
+
+y_vars <- c("mpd_obs", "pd_obs", "pe_obs", "rpe_obs", "mpd_morph_obs") %>%
+  factor() %>%
+  fct_relevel(as.character(.))
 
 # Make dataframe of arguments to feed into plotting function
 # - includes all non-duplicated combinations of raw diversity metrics
 raw_comparisons <-
   cross_df(
     list(
-      x_var = c("mpd_obs", "pe_obs", "mpd_morph_obs", "richness"),
-      y_var = c("mpd_obs", "pe_obs", "mpd_morph_obs")
+      x_var = x_vars,
+      y_var = y_vars
     ),
     .filter = `==` # filter out exact duplicates
   ) %>%
   # Remove reversed duplicates
   # https://stackoverflow.com/questions/22756392/deleting-reversed-duplicates-with-r
-  group_by(grp = paste(pmax(x_var, y_var), pmin(x_var, y_var), sep = "_")) %>%
-  # Use factors to keep the preferred combination of x and y
-  mutate(x_var = as.factor(x_var) %>% fct_relevel("pe_obs", "mpd_morph_obs", "richness")) %>%
-  mutate(y_var = as.factor(y_var) %>% fct_relevel("mpd_obs", "pe_obs", "mpd_morph_obs")) %>%
+  group_by(grp = paste(pmax(as.character(x_var), as.character(y_var)), pmin(as.character(x_var), as.character(y_var)), sep = "_")) %>%
   arrange(x_var, y_var) %>%
   slice(1) %>%
   ungroup() %>%
   select(-grp) %>%
+  arrange(x_var, y_var) %>%
   # Convert x_var and y_var back to character for plotting function
   mutate(across(c(x_var, y_var), as.character)) %>%
   # Add labels
@@ -281,91 +331,17 @@ raw_comparisons <-
     x_lab = case_when(
       x_var == "mpd_morph_obs" ~ "MMD",
       x_var == "mpd_obs" ~ "MPD",
+      x_var == "pd_obs" ~ "PD",
+      x_var == "rpe_obs" ~ "RPE",
       x_var == "pe_obs" ~ "PE",
       x_var == "richness" ~ "Richness"
     ),
     y_lab = case_when(
       y_var == "mpd_morph_obs" ~ "MMD",
       y_var == "mpd_obs" ~ "MPD",
+      y_var == "pd_obs" ~ "PD",
+      y_var == "rpe_obs" ~ "RPE",
       y_var == "pe_obs" ~ "PE",
-      y_var == "richness" ~ "Richness"
-    )
-  ) %>%
-  # Run modified t-test
-  mutate(
-    test_res = map2(
-      .x = x_var, 
-      .y = y_var, 
-      ~SpatialPack::modified.ttest(ses_div_ferns_spatial[[.x]], ses_div_ferns_spatial[[.y]], centroids)),
-    # Extract relevant stats from results
-    cor = map_dbl(test_res, pluck("corr")),
-    pval = map_dbl(test_res, pluck("p.value"))
-    ) %>%
-  # Generate label
-  mutate(
-    cor_lab = glue("r = {round(cor, 3)}"),
-    pval_lab = glue("p = {round(pval, 3)}"),
-    label = glue::glue("{cor_lab}\n{ifelse(pval < 0.001, 'p < 0.001', pval_lab)}")
-  ) %>%
-  # Specify which plots to annotate
-  mutate(
-    annotate = case_when(
-      x_var == "mpd_morph_obs" & y_var == "mpd_obs" & pval < 0.05 ~ TRUE,
-      x_var == "mpd_morph_obs" & y_var == "pe_obs" & pval < 0.05 ~ TRUE,
-      x_var == "mpd_obs" & y_var == "pe_obs" & pval < 0.05 ~ TRUE,
-      x_var == "richness" & y_var == "pe_obs" & pval < 0.05  ~ TRUE,
-      TRUE ~ FALSE
-    )
-  ) %>%
-  select(x_var, y_var, x_lab, y_lab, label, annotate)
-  
-# Make plot
-pmap(raw_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
-wrap_plots() +
-  plot_annotation(tag_levels = 'A')
-
-ggsave(result_file("raw-biplot", "pdf"), width = 7, height = 6, units = "in")
-```
-
-**`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; *p* value and correlation (r) only shown for *p* < 0.05; correlations between MPD and MMD with richness not expected to be linear, so were not tested.
-
-```{r ses-biplot, fig.width = 7, fig.height = 6}
-## Biplots of SES metrics ##
-
-# Make dataframe of arguments to feed into plotting function
-# - includes all non-duplicated combinations of raw diversity metrics
-ses_comparisons <-
-  cross_df(
-    list(
-      x_var = c("mpd_obs_z", "pe_obs_z", "mpd_morph_obs_z", "richness"),
-      y_var = c("mpd_obs_z", "pe_obs_z", "mpd_morph_obs_z")
-    ),
-    .filter = `==` # filter out exact duplicates
-  ) %>%
-  # Remove reversed duplicates
-  # https://stackoverflow.com/questions/22756392/deleting-reversed-duplicates-with-r
-  group_by(grp = paste(pmax(x_var, y_var), pmin(x_var, y_var), sep = "_")) %>%
-  # Use factors to keep the preferred combination of x and y
-  mutate(x_var = as.factor(x_var) %>% fct_relevel("pe_obs_z", "mpd_morph_obs_z", "richness")) %>%
-  mutate(y_var = as.factor(y_var) %>% fct_relevel("mpd_obs_z", "pe_obs_z", "mpd_morph_obs_z")) %>%
-  arrange(x_var, y_var) %>%
-  slice(1) %>%
-  ungroup() %>%
-  select(-grp) %>%
-  # Convert x_var and y_var back to character for plotting function
-  mutate(across(c(x_var, y_var), as.character)) %>%
-  # Add labels
-  mutate(
-    x_lab = case_when(
-      x_var == "mpd_morph_obs_z" ~ "SES MMD",
-      x_var == "mpd_obs_z" ~ "SES MPD",
-      x_var == "pe_obs_z" ~ "SES PE",
-      x_var == "richness" ~ "Richness"
-    ),
-    y_lab = case_when(
-      y_var == "mpd_morph_obs_z" ~ "SES MMD",
-      y_var == "mpd_obs_z" ~ "SES MPD",
-      y_var == "pe_obs_z" ~ "SES PE",
       y_var == "richness" ~ "Richness"
     )
   ) %>%
@@ -390,19 +366,123 @@ ses_comparisons <-
     annotate = case_when(
       pval < 0.05 ~ TRUE,
       TRUE ~ FALSE
+    ),
+    # annotate in upper-right corner for mpd_morph_obs + rpe_obs,
+    # upper-left otherwise
+    loc = case_when(
+      y_var == "mpd_morph_obs" & x_var == "rpe_obs" ~ "UR",
+      TRUE ~ "UL"
     )
   ) %>%
-  select(x_var, y_var, x_lab, y_lab, label, annotate)
+  select(x_var, y_var, x_lab, y_lab, label, annotate, loc)
+  
+# Make plot
+pmap(raw_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
+wrap_plots() +
+  plot_layout(ncol = 3) +
+  plot_annotation(tag_levels = 'A')
+
+ggsave(result_file(s_figure("raw-biplot"), "pdf"), width = 8, height = 10, units = "in")
+```
+
+**`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PD, phylogenetic diversity; PE, phylogenetic endemism; RPE, relative phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; *p* value and correlation (r) only shown for *p* < 0.05.
+
+```{r ses-biplot, fig.width = 8, fig.height = 10}
+## Biplots of SES metrics ##
+
+# Set up x and y variables as factors so they can be ordered appropriately in the plot
+x_vars <-
+  c("mpd_obs_z", "pd_obs_z", "pe_obs_z", "rpe_obs_z", "mpd_morph_obs_z", "richness") %>%
+  factor() %>%
+  fct_relevel(as.character(.))
+
+y_vars <- c("mpd_obs_z", "pd_obs_z", "pe_obs_z", "rpe_obs_z", "mpd_morph_obs_z") %>%
+  factor() %>%
+  fct_relevel(as.character(.))
+
+# Make dataframe of arguments to feed into plotting function
+# - includes all non-duplicated combinations of raw diversity metrics
+ses_comparisons <-
+  cross_df(
+    list(
+      x_var = x_vars,
+      y_var = y_vars
+    ),
+    .filter = `==` # filter out exact duplicates
+  ) %>%
+  # Remove reversed duplicates
+  # https://stackoverflow.com/questions/22756392/deleting-reversed-duplicates-with-r
+  group_by(grp = paste(pmax(as.character(x_var), as.character(y_var)), pmin(as.character(x_var), as.character(y_var)), sep = "_")) %>%
+  arrange(x_var, y_var) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(-grp) %>%
+  arrange(x_var, y_var) %>%
+  # Convert x_var and y_var back to character for plotting function
+  mutate(across(c(x_var, y_var), as.character)) %>%
+  # Add labels
+  mutate(
+    x_lab = case_when(
+      x_var == "mpd_morph_obs_z" ~ "SES MMD",
+      x_var == "mpd_obs_z" ~ "SES MPD",
+      x_var == "pd_obs_z" ~ "SES PD",
+      x_var == "pe_obs_z" ~ "SES PE",
+      x_var == "rpe_obs_z" ~ "SES RPE",
+      x_var == "richness" ~ "Richness"
+    ),
+    y_lab = case_when(
+      y_var == "mpd_morph_obs_z" ~ "SES MMD",
+      y_var == "mpd_obs_z" ~ "SES MPD",
+      y_var == "pd_obs_z" ~ "SES PD",
+      y_var == "pe_obs_z" ~ "SES PE",
+      y_var == "rpe_obs_z" ~ "SES RPE",
+      y_var == "richness" ~ "Richness"
+    )
+  ) %>%
+  # Run modified t-test
+  mutate(
+    test_res = map2(
+      .x = x_var, 
+      .y = y_var, 
+      ~SpatialPack::modified.ttest(ses_div_ferns_spatial[[.x]], ses_div_ferns_spatial[[.y]], centroids)),
+    # Extract relevant stats from results
+    cor = map_dbl(test_res, pluck("corr")),
+    pval = map_dbl(test_res, pluck("p.value"))
+    ) %>%
+  # Generate label
+  mutate(
+    cor_lab = glue("r = {round(cor, 3)}"),
+    pval_lab = glue("p = {round(pval, 3)}"),
+    label = glue::glue("{cor_lab}\n{ifelse(pval < 0.001, 'p < 0.001', pval_lab)}")
+  ) %>%
+  # Specify which plots to annotate
+  mutate(
+    annotate = case_when(
+      pval < 0.05 ~ TRUE,
+      TRUE ~ FALSE
+    ),
+    # annotate in upper-right corner for mpd_morph_obs + rpe_obs,
+    # upper-left otherwise
+    loc = case_when(
+      y_var == "mpd_morph_obs_z" & x_var == "pd_obs_z" ~ "LR",
+      y_var == "rpe_obs_z" & x_var == "pe_obs_z" ~ "LR",
+      y_var == "mpd_morph_obs_z" & x_var == "pe_obs_z" ~ "LR",
+      y_var == "pd_obs_z" & x_var == "richness" ~ "UR",
+      TRUE ~ "UL"
+    )
+  ) %>%
+  select(x_var, y_var, x_lab, y_lab, label, annotate, loc)
 
 # Make plot
 pmap(ses_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
-  wrap_plots() +
+wrap_plots() +
+  plot_layout(ncol = 3) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(result_file("ses-biplot", "pdf"), width = 7, height = 6, units = "in")
+ggsave(result_file(s_figure("ses-biplot"), "pdf"), width = 8, height = 10, units = "in")
 ```
 
-**`r s_figure("ses-biplot")`**. `r s_figure_cap("ses-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PE, phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; all combinations tested, but *p* value and correlation (r) only shown for *p* < 0.05.
+**`r s_figure("ses-biplot")`**. `r s_figure_cap("ses-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PD, phylogenetic diversity; PE, phylogenetic endemism; RPE, relative phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; *p* value and correlation (r) only shown for *p* < 0.05.
 
 ```{r trait-space, fig.width = 8, fig.height = 8}
 # Extract points, join to PPGI
@@ -436,7 +516,7 @@ b <- ggplot(nmds_points_polypod, aes(x = MDS1, y = MDS2, color = family, shape =
 a + b + 
   plot_layout(nrow = 2)
 
-ggsave(result_file("traits-nmds", "pdf"), width = 8, height = 8, units = "in")
+ggsave(result_file(s_figure("traits-nmds"), "pdf"), width = 8, height = 8, units = "in")
 ```
 
 **`r s_figure("traits-nmds")`**. `r s_figure_cap("traits-nmds")` Interspecific trait distances calculated using Gower's method with 16 traits, then projected into trait space using nonmetric multidimensional scaling (NMDS). **A**, All ferns. **B**, Polypodiales. Taxonomy follows PPGI.
