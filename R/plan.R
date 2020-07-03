@@ -118,7 +118,7 @@ plan <- drake_plan (
     transform = map(
       comm = c(comm_ferns, comm_ferns_endemic),
       metrics = c(
-        c("mpd", "pd", "pe", "rpe"),
+        c("mpd", "pd", "rpd", "pe", "rpe"),
         c("pd", "pe", "rpe")
       ),
       .names = c("ses_phy_ferns", "ses_phy_ferns_endemic"))

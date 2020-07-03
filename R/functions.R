@@ -1556,18 +1556,18 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iteration
     length(metrics) > 0,
     msg = "At least one biodiversity metric must be selected")
   assert_that(
-    all(metrics %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "pe", "rpe")),
-    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'"
+    all(metrics %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "rpd", "pe", "rpe")),
+    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'rpd', 'pe', or 'rpe'"
   )
   
   # Make sure names match between community and tree
-  if (any(metrics %in% c("mpd", "mntd", "pd", "pe", "rpe"))) assert_that(isTRUE(
+  if (any(metrics %in% c("mpd", "mntd", "pd", "rpd", "pe", "rpe"))) assert_that(isTRUE(
     all.equal(sort(phy$tip.label), sort(colnames(comm_df)))
   ))
   
   # Make sure phylogeny has been rescaled to total branch length of 1 for RPE
-  if (any(metrics %in% c("rpe"))) assert_that(isTRUE(all.equal(sum(phy$edge.length), 1)))
-  if (any(metrics %in% c("rpe"))) assert_that(isTRUE(all.equal(sum(phy_alt$edge.length), 1)))
+  if (any(metrics %in% c("rpe", "rpd"))) assert_that(isTRUE(all.equal(sum(phy$edge.length), 1)))
+  if (any(metrics %in% c("rpe", "rpd"))) assert_that(isTRUE(all.equal(sum(phy_alt$edge.length), 1)))
   
   # Convert comm to sparse matrix format for phyloregions
   comm_sparse <- phyloregion::dense2sparse(comm_df)
@@ -1586,6 +1586,8 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iteration
   mpd_morph <- NULL
   mntd_morph <- NULL
   pd <- NULL
+  pd_alt <- NULL
+  rpd <- NULL
   pe <- NULL
   pe_alt <- NULL
   rpe <- NULL
@@ -1596,6 +1598,8 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iteration
   if ("mpd_morph" %in% metrics) mpd_morph <- picante::mpd(random_comm, trait_distances)
   if ("mntd_morph" %in% metrics) mntd_morph <- picante::mntd(random_comm, trait_distances)
   if ("pd" %in% metrics) pd <- phyloregion::PD(random_comm_sparse, phy)
+  if ("rpd" %in% metrics) pd_alt <- phyloregion::PD(random_comm_sparse, phy_alt)
+  if ("rpd" %in% metrics) rpd <- pd / pd_alt
   if ("pe" %in% metrics) pe <- phyloregion::phylo_endemism(random_comm_sparse, phy, weighted = TRUE)
   if ("rpe" %in% metrics) pe_alt <- phyloregion::phylo_endemism(random_comm_sparse, phy_alt, weighted = TRUE)
   if ("rpe" %in% metrics) rpe <- pe / pe_alt
@@ -1607,6 +1611,8 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iteration
     mpd_morph = mpd_morph,
     mntd_morph = mntd_morph,
     pd = pd,
+    pd_alt = pd_alt,
+    rpd = rpd,
     pe = pe,
     pe_alt = pe_alt,
     rpe = rpe
@@ -1631,8 +1637,8 @@ get_ses <- function (random_vals, obs_vals, metric) {
   assert_that(is.string(metric))
   
   assert_that(
-    metric %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "pe", "rpe", "pe_alt"),
-    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'"
+    metric %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "rpd", "pd_alt", "pe", "rpe", "pe_alt"),
+    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'rpd', 'pe', or 'rpe'"
   )
   
   random_vals_trans <- transpose(random_vals)
@@ -1680,7 +1686,7 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' @param phy Input phylogeny with total branch length scaled to 1
 #' @param n_reps Number of random communities to replicate
 #' @param metrics Names of metrics to calculate. Must one or more of
-#' 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'
+#' 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'rpd', pe', or 'rpe'
 #'
 #' @return Tibble. For each of the biodiversity metrics, the observed value (_obs), 
 #' mean of the random values (_rand_mean), SD of the random values (_rand_sd), 
@@ -1695,7 +1701,7 @@ run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distanc
   
   # If running any phylogenetic metrics, 
   # first match tips of tree and column names of community data frame
-  if (any(str_detect(metrics, "^mpd$|^mntd$|^pd$|^pe$|^rpe$"))) {
+  if (any(str_detect(metrics, "^mpd$|^mntd$|^pd$|^rpd$|^pe$|^rpe$"))) {
     
     # Use only taxa that are in common between phylogeny and community
     subsetted_data <- picante::match.phylo.comm(phy = phy, comm = comm_df)
@@ -1751,6 +1757,8 @@ run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distanc
   ses_mpd_morph <- NULL
   ses_mntd_morph <- NULL
   ses_pd <- NULL
+  ses_pd_alt <- NULL
+  ses_rpd <- NULL
   ses_pe <- NULL
   ses_pe_alt <- NULL
   ses_rpe <- NULL
@@ -1776,6 +1784,14 @@ run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distanc
     pd_obs <- phyloregion::PD(dense2sparse(comm_df), phy)
     ses_pd <- get_ses(random_vals, pd_obs, "pd")}
   
+  if ("rpd" %in% metrics) {
+    pd_alt_obs <- phyloregion::PD(dense2sparse(comm_df), phy_alt)
+    ses_pd_alt <- get_ses(random_vals, pd_alt_obs, "pd_alt")}
+  
+  if ("rpd" %in% metrics) {
+    rpd_obs <- pd_obs / pd_alt_obs
+    ses_rpd <- get_ses(random_vals, rpd_obs, "rpd")}
+  
   if ("pe" %in% metrics) {
     pe_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy, weighted = TRUE)
     ses_pe <- get_ses(random_vals, pe_obs, "pe")}
@@ -1796,6 +1812,8 @@ run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distanc
     ses_mpd_morph,
     ses_mntd_morph,
     ses_pd,
+    ses_pd_alt,
+    ses_rpd,
     ses_pe,
     ses_pe_alt,
     ses_rpe
