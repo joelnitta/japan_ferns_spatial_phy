@@ -832,7 +832,7 @@ make_trait_dist_matrix <- function (traits_for_dist) {
     column_to_rownames("taxon")
   
   # Run gowdis with trait weightings
-  FD::gowdis(traits_df, w = trait_categories$final_weight) %>% as.matrix()
+  FD::gowdis(traits_df, w = trait_categories$final_weight)
   
 }
 
@@ -1543,12 +1543,12 @@ rename_tree <- function (tree, taxon_id_map) {
 #' @param phy_alt Alternative phylogeny where all branches are of equal length, scaled to 1
 #' @param n_iterations Number of iterations to use when shuffling random community
 #' @param metrics Names of metrics to calculate. Must one or more of
-#' 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'pe', or 'rpe'
+#' 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'
 #'
 #' @return List of vectors. Each vector is a biodiversity metric measured on the
 #' random community, in the same order as the rows in the input community.
 #' 
-calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iterations, trait_distances = NULL, metrics) {
+calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, trait_tree = NULL, trait_tree_alt = NULL, n_iterations, metrics) {
   
   # Make sure selection of metrics is OK
   assert_that(is.character(metrics))
@@ -1556,18 +1556,32 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iteration
     length(metrics) > 0,
     msg = "At least one biodiversity metric must be selected")
   assert_that(
-    all(metrics %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "rpd", "pe", "rpe")),
-    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'rpd', 'pe', or 'rpe'"
+    all(metrics %in% c("pd", "rpd", "fd", "rfd", "pe", "rpe")),
+    msg = "Biodiversity metrics may only be selected from 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'"
   )
   
   # Make sure names match between community and tree
-  if (any(metrics %in% c("mpd", "mntd", "pd", "rpd", "pe", "rpe"))) assert_that(isTRUE(
+  if (any(metrics %in% c("pd", "pe"))) assert_that(isTRUE(
     all.equal(sort(phy$tip.label), sort(colnames(comm_df)))
   ))
   
-  # Make sure phylogeny has been rescaled to total branch length of 1 for RPE
+  if (any(metrics %in% c("rpd", "rpe"))) assert_that(isTRUE(
+    all.equal(sort(phy_alt$tip.label), sort(colnames(comm_df)))
+  ))
+  
+  if (any(metrics %in% c("fd"))) assert_that(isTRUE(
+    all.equal(sort(trait_tree$tip.label), sort(colnames(comm_df)))
+  ))
+  
+  if (any(metrics %in% c("rfd"))) assert_that(isTRUE(
+    all.equal(sort(trait_tree_alt$tip.label), sort(colnames(comm_df)))
+  ))
+  
+  # Make sure phylogeny has been rescaled to total branch length of 1 for RPE or RFD
   if (any(metrics %in% c("rpe", "rpd"))) assert_that(isTRUE(all.equal(sum(phy$edge.length), 1)))
   if (any(metrics %in% c("rpe", "rpd"))) assert_that(isTRUE(all.equal(sum(phy_alt$edge.length), 1)))
+  if (any(metrics %in% c("rfd"))) assert_that(isTRUE(all.equal(sum(trait_tree$edge.length), 1)))
+  if (any(metrics %in% c("rfd"))) assert_that(isTRUE(all.equal(sum(trait_tree_alt$edge.length), 1)))
   
   # Convert comm to sparse matrix format for phyloregions
   comm_sparse <- phyloregion::dense2sparse(comm_df)
@@ -1576,43 +1590,37 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, n_iteration
   random_comm <- picante::randomizeMatrix(comm_df, null.model = "independentswap", iterations = n_iterations)
   random_comm_sparse <- phyloregion::dense2sparse(random_comm)
   
-  # Get phylogenetic distances
-  if (any(metrics %in% c("mpd", "mntd"))) phy_distances <- cophenetic(phy)
-  
   # Calculate statistics for random community
   # - set up null vectors first
-  mpd <- NULL
-  mntd <- NULL
-  mpd_morph <- NULL
-  mntd_morph <- NULL
   pd <- NULL
   pd_alt <- NULL
   rpd <- NULL
+  fd <- NULL
+  fd_alt <- NULL
+  rfd <- NULL
   pe <- NULL
   pe_alt <- NULL
   rpe <- NULL
   
   # - calculate selected metrics
-  if ("mpd" %in% metrics) mpd <- picante::mpd(random_comm, phy_distances)
-  if ("mntd" %in% metrics) mntd <- picante::mntd(random_comm, phy_distances)
-  if ("mpd_morph" %in% metrics) mpd_morph <- picante::mpd(random_comm, trait_distances)
-  if ("mntd_morph" %in% metrics) mntd_morph <- picante::mntd(random_comm, trait_distances)
   if ("pd" %in% metrics) pd <- phyloregion::PD(random_comm_sparse, phy)
   if ("rpd" %in% metrics) pd_alt <- phyloregion::PD(random_comm_sparse, phy_alt)
   if ("rpd" %in% metrics) rpd <- pd / pd_alt
+  if ("fd" %in% metrics) fd <- phyloregion::PD(random_comm_sparse, trait_tree)
+  if ("rfd" %in% metrics) fd_alt <- phyloregion::PD(random_comm_sparse, trait_tree_alt)
+  if ("rfd" %in% metrics) rfd <- fd / fd_alt
   if ("pe" %in% metrics) pe <- phyloregion::phylo_endemism(random_comm_sparse, phy, weighted = TRUE)
   if ("rpe" %in% metrics) pe_alt <- phyloregion::phylo_endemism(random_comm_sparse, phy_alt, weighted = TRUE)
   if ("rpe" %in% metrics) rpe <- pe / pe_alt
   
   # Output results
   list(
-    mpd = mpd,
-    mntd = mntd,
-    mpd_morph = mpd_morph,
-    mntd_morph = mntd_morph,
     pd = pd,
     pd_alt = pd_alt,
     rpd = rpd,
+    fd = fd,
+    fd_alt = fd_alt,
+    rfd = rfd,
     pe = pe,
     pe_alt = pe_alt,
     rpe = rpe
@@ -1637,8 +1645,8 @@ get_ses <- function (random_vals, obs_vals, metric) {
   assert_that(is.string(metric))
   
   assert_that(
-    metric %in% c("mpd", "mntd", "mpd_morph", "mntd_morph", "pd", "rpd", "pd_alt", "pe", "rpe", "pe_alt"),
-    msg = "Biodiversity metrics may only be selected from 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'rpd', 'pe', or 'rpe'"
+    all(metric %in% c("pd", "pd_alt", "rpd", "fd", "fd_alt", "rfd", "pe", "pe_alt", "rpe")),
+    msg = "Biodiversity metrics may only be selected from 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'"
   )
   
   random_vals_trans <- transpose(random_vals)
@@ -1665,16 +1673,12 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' Run standard effect size analysis for a set of biodiversity metrics
 #' 
 #' The biodiversity metrics analyzed include:
-#'   - mpd: Mean phylogenetic distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
-#'   - mntd: Mean nearest taxon distance (not abundance weighted) (Webb 2000 https://doi.org/10.1086/303378)
-#'   - mpd_morph: Same as mpd, but measured using a distance matrix based on morphological traits
-#'   - mntd_morph: Same as mntd, but measured using a distance matrix based on morphological traits
 #'   - pd: Phylogenetic diversity (Faith 1992 https://doi.org/10.1016/0006-3207(92)91201-3)
-#'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)
-#'   - pe: Phylogenetic endemism calculated with an alternate tree where all the branch lengths are equal
+#'   - rpd: Relative phylogenetic diversity
+#'   - fd: Functional diversity
+#'   - rfd: Relative functional diveristy
+#'   - pe: Phylogenetic endemism (Rosauer 2009 https://doi.org/10.1111/j.1365-294x.2009.04311.x)\
 #'   - rpe: Relative phylogenetic endemism (Mishler 2014 https://doi.org/10.1038/ncomms5473)
-#'   
-#' Also categorizes phylogenetic endemism using CANAPE (Mishler 2014 https://doi.org/10.1038/ncomms5473)
 #'   
 #' The independent swap method of Gotelli (2000) is used to generate random communities, which randomizes
 #' the community matrix while maintaining species occurrence frequency and
@@ -1686,7 +1690,7 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' @param phy Input phylogeny with total branch length scaled to 1
 #' @param n_reps Number of random communities to replicate
 #' @param metrics Names of metrics to calculate. Must one or more of
-#' 'mpd', 'mntd', 'mpd_morph', 'mntd_morph', 'pd', 'rpd', pe', or 'rpe'
+#' 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'
 #'
 #' @return Tibble. For each of the biodiversity metrics, the observed value (_obs), 
 #' mean of the random values (_rand_mean), SD of the random values (_rand_sd), 
@@ -1694,14 +1698,30 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' (_obs_z), and p-value (_obs_p) are given. Type of phylogenetic endemism (neo, paleo, or mixed)
 #' is given as "endem_type".
 #' 
-run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distances = NULL) {
+run_ses_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, n_reps, metrics) {
   
-  # Make dummy phy_alt in case this isn't being used
+  # Make dummy phy_alt and trait_tree_alt in case one of these isn't being analyzed
   phy_alt <- NULL
+  trait_tree <- NULL
+  trait_tree_alt <- NULL
   
-  # If running any phylogenetic metrics, 
+  # If running both phylogenetic and functional metrics,
+  # subset to only taxa with represented in all datasets
+  if (any(str_detect(metrics, "^pd$|^rpd$|^pe$|^rpe$")) & any(str_detect(metrics, "^fd$|^rfd$"))) {
+    
+    # Convert distances to matrix for subsetting
+    trait_distances <- as.matrix(trait_distances)
+    
+    taxa_keep <- intersect(phy$tip.label, colnames(comm_df), colnames(trait_distances))
+    phy <- ape::keep.tip(phy, taxa_keep)
+    comm_df <- comm_df[,colnames(comm_df) %in% taxa_keep]
+    trait_distances <- trait_distances[taxa_keep, taxa_keep] %>% as.dist()
+    
+  }
+  
+  # If analyzing phylogenetic diversity, 
   # first match tips of tree and column names of community data frame
-  if (any(str_detect(metrics, "^mpd$|^mntd$|^pd$|^rpd$|^pe$|^rpe$"))) {
+  if (any(str_detect(metrics, "^pd$|^rpd$|^pe$|^rpe$"))) {
     
     # Use only taxa that are in common between phylogeny and community
     subsetted_data <- picante::match.phylo.comm(phy = phy, comm = comm_df)
@@ -1728,76 +1748,92 @@ run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distanc
     
   }
   
-  # If running any trait metrics, 
+  # If analyzing function diversity, 
   # use only taxa that are in common between traits and community
-  if (any(str_detect(metrics, "^mpd_morph$|^mntd_morph$"))) {
+  if (any(str_detect(metrics, "^fd$|^rfd$"))) {
     
-    assertthat::assert_that(isTRUE(all.equal(
-      colnames(trait_distances),
-      rownames(trait_distances)
-    )))
-
-    taxa_keep <- intersect(colnames(trait_distances), colnames(comm_df))
-    trait_distances <- trait_distances[taxa_keep, taxa_keep]
-    comm_df <- comm_df[,taxa_keep]
+    trait_tree <- hclust(trait_distances, method = "average") %>%
+      ape::as.phylo()
+    
+    # Use only taxa that are in common between phylogeny and community
+    subsetted_data <- picante::match.phylo.comm(phy = trait_tree, comm = comm_df)
+    trait_tree <- subsetted_data[["phy"]]
+    comm_df <- subsetted_data[["comm"]]
+    
+    assert_that(
+      isTRUE(
+        all.equal(
+          sort(colnames(comm_df)),
+          sort(trait_tree$tip.label)
+        )
+      ),
+      msg = "Tip names don't match between community and traits"
+    )
+    
+    # Make alternative tree with equal branch lengths
+    trait_tree_alt <- trait_tree
+    trait_tree_alt$edge.length <- rep(length(trait_tree_alt$edge.length), 1)
+    # rescale so total tree length is 1
+    trait_tree_alt$edge.length <- trait_tree_alt$edge.length / sum(trait_tree_alt$edge.length)
+    # rescale original tree so total length is 1
+    trait_tree$edge.length <- trait_tree$edge.length / sum(trait_tree$edge.length)
+    
   }
+  
+  # Make sparse community df
+  comm_df_sparse <- phyloregion::dense2sparse(comm_df)
   
   # Calculate biodiversity metrics for random communities
   random_vals <-
     purrr::rerun(
       n_reps, 
       # Use 10,000 iterations (swaps) for each null community
-      calc_biodiv_random(comm_df, phy, phy_alt, 10000, metrics = metrics, trait_distances = trait_distances)
+      calc_biodiv_random(comm_df, phy, phy_alt, trait_tree, trait_tree_alt, 10000, metrics = metrics)
     )
   
   # Calculate biodiversity metrics for observed community
   # - set up null vectors first
-  ses_mpd <- NULL
-  ses_mntd <- NULL
-  ses_mpd_morph <- NULL
-  ses_mntd_morph <- NULL
   ses_pd <- NULL
   ses_pd_alt <- NULL
   ses_rpd <- NULL
+  ses_fd <- NULL
+  ses_fd_alt <- NULL
+  ses_rfd <- NULL
   ses_pe <- NULL
   ses_pe_alt <- NULL
   ses_rpe <- NULL
   
   # - calculate selected metrics
-  if ("mpd" %in% metrics) {
-    mpd_obs <- picante::mpd(as.matrix(comm_df), cophenetic(phy))
-    ses_mpd <- get_ses(random_vals, mpd_obs, "mpd")}
-  
-  if ("mntd" %in% metrics) {
-    mntd_obs <- picante::mntd(as.matrix(comm_df), cophenetic(phy))
-    ses_mntd <- get_ses(random_vals, mntd_obs, "mntd")}
-  
-  if ("mpd_morph" %in% metrics) {
-    mpd_morph_obs <- picante::mpd(as.matrix(comm_df), trait_distances)
-    ses_mpd_morph <- get_ses(random_vals, mpd_morph_obs, "mpd_morph")}
-  
-  if ("mntd_morph" %in% metrics) {
-    mntd_morph_obs <- picante::mntd(as.matrix(comm_df), trait_distances)
-    ses_mntd_morph <- get_ses(random_vals, mntd_morph_obs, "mntd_morph")}
-  
   if ("pd" %in% metrics) {
-    pd_obs <- phyloregion::PD(dense2sparse(comm_df), phy)
+    pd_obs <- phyloregion::PD(comm_df_sparse, phy)
     ses_pd <- get_ses(random_vals, pd_obs, "pd")}
   
   if ("rpd" %in% metrics) {
-    pd_alt_obs <- phyloregion::PD(dense2sparse(comm_df), phy_alt)
+    pd_alt_obs <- phyloregion::PD(comm_df_sparse, phy_alt)
     ses_pd_alt <- get_ses(random_vals, pd_alt_obs, "pd_alt")}
   
   if ("rpd" %in% metrics) {
     rpd_obs <- pd_obs / pd_alt_obs
     ses_rpd <- get_ses(random_vals, rpd_obs, "rpd")}
   
+  if ("fd" %in% metrics) {
+    fd_obs <- phyloregion::PD(comm_df_sparse, trait_tree)
+    ses_fd <- get_ses(random_vals, fd_obs, "fd")}
+  
+  if ("rfd" %in% metrics) {
+    fd_alt_obs <- phyloregion::PD(comm_df_sparse, trait_tree_alt)
+    ses_fd_alt <- get_ses(random_vals, fd_alt_obs, "fd_alt")}
+  
+  if ("rfd" %in% metrics) {
+    rfd_obs <- fd_obs / fd_alt_obs
+    ses_rfd <- get_ses(random_vals, rfd_obs, "rfd")}
+  
   if ("pe" %in% metrics) {
-    pe_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy, weighted = TRUE)
+    pe_obs <- phyloregion::phylo_endemism(comm_df_sparse, phy, weighted = TRUE)
     ses_pe <- get_ses(random_vals, pe_obs, "pe")}
   
   if ("rpe" %in% metrics) {
-    pe_alt_obs <- phyloregion::phylo_endemism(dense2sparse(comm_df), phy_alt, weighted = TRUE)
+    pe_alt_obs <- phyloregion::phylo_endemism(comm_df_sparse, phy_alt, weighted = TRUE)
     ses_pe_alt <- get_ses(random_vals, pe_obs, "pe_alt")}
   
   if ("rpe" %in% metrics) {
@@ -1807,13 +1843,12 @@ run_ses_analysis <- function(comm_df, phy = NULL, n_reps, metrics, trait_distanc
   
   # Combine results
   bind_cols(
-    ses_mpd,
-    ses_mntd,
-    ses_mpd_morph,
-    ses_mntd_morph,
     ses_pd,
     ses_pd_alt,
     ses_rpd,
+    ses_fd,
+    ses_fd_alt,
+    ses_rfd,
     ses_pe,
     ses_pe_alt,
     ses_rpe

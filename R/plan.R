@@ -112,22 +112,27 @@ plan <- drake_plan (
     repro_data = repro_data),
 
   # Analyze standard effect size (SES) of diversity metrics ----
-
+  
   ses_phy = target(
-    run_ses_analysis(comm, japan_fern_tree, n_reps = 999, metrics) %>% categorize_endemism,
+    run_ses_analysis(
+      comm = comm, 
+      phy = japan_fern_tree, 
+      n_reps = 999, 
+      metrics = metrics) %>% 
+      categorize_endemism,
     transform = map(
       comm = c(comm_ferns, comm_ferns_endemic),
       metrics = c(
-        c("mpd", "pd", "rpd", "pe", "rpe"),
-        c("pd", "pe", "rpe")
+        c("pd", "rpd", "pe", "rpe"),
+        c("pe", "rpe")
       ),
       .names = c("ses_phy_ferns", "ses_phy_ferns_endemic"))
   ),
 
   ses_traits_ferns = run_ses_analysis(
-    comm_ferns,
+    comm = comm_ferns,
     n_reps = 999,
-    metrics = "mpd_morph",
+    metrics = c("fd", "rfd"),
     trait_distances = trait_distance_matrix),
 
   # Analyze phyloregions
@@ -179,11 +184,11 @@ plan <- drake_plan (
     knitr_in("ms/manuscript.Rmd"),
     output_dir = here::here("results"),
     quiet = TRUE),
-  
+   
   si = rmarkdown::render(
     knitr_in("ms/SI.Rmd"),
     output_dir = here::here("results"),
-    quiet = TRUE),
+    quiet = TRUE)
 
   # # Plot and write out traits dendrogram
   # # traits_dendrogram = make_traits_dendrogram(trait_distance_matrix, taxon_id_map),

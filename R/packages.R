@@ -23,6 +23,7 @@ library(magrittr)
 library(glue)
 library(patchwork)
 library(rcartocolor)
+library(ggtext)
 library(tidyverse)
 
 # Resolve conflicts

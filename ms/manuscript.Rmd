@@ -210,116 +210,67 @@ shape_ferns %>%
   left_join(ses_phy_ferns_endemic, by = c(grids = "site"))
 
 map_theme <- theme(
-    panel.grid.major = element_line(color = "white", size = 0.2),
+    panel.grid.major = element_line(color = "grey95", size = 0.1),
+    panel.background = element_rect(fill = "grey60"),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
+  )
+
+map_theme_light <- theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey90"),
     axis.ticks = element_blank(),
     axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
   )
 
 ```
 
-```{r diversity, fig.width = 7, fig.height = 9}
+```{r richness, width = 7, height = 4}
 # Richness
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
   geom_sf(color = "transparent") +
-  scale_fill_viridis_c() +
-  labs(fill = "Richness \n (n spp.)") +
+  scale_fill_scico(palette = "lajolla") + 
+  labs(fill = "Richness") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme +
-  theme(
-    axis.text.x = element_blank()
-  )
+  map_theme
 
 # Sampling rendundancy
 b <- ggplot(ses_div_ferns_spatial, aes(fill = redundancy)) +
   geom_sf(color = "transparent") +
-  scale_fill_viridis_c() +
+  scale_fill_scico(palette = "lajolla") + 
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   labs(fill = "Redundancy") +
   map_theme +
   theme(
-    axis.text.x = element_blank(),
     axis.text.y = element_blank()
   )
 
-# MPD
-c <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_obs)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "MPD") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  scale_fill_viridis_c() +
-  map_theme +
-  theme(
-    axis.text.x = element_blank()
-  )
+a + b + 
+  plot_layout(ncol = 2) +
+  plot_annotation(tag_levels = 'A')
 
-# SES MPD
-d <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES MPD") +
-  scale_fill_scico(
-    palette = "romaO",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_spatial, pd_obs_z, "abs"),
-      get_limit(ses_div_ferns_spatial, pd_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank()
-  )
+ggsave(result_file(figure("richness"), "pdf"), width = 7, height = 4, units = "in")
+```
 
-# Raw morph diversity
-e <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_morph_obs)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "MMD") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  scale_fill_viridis_c() +
-  map_theme +
-  theme(
-    axis.text.x = element_blank()
-  )
+**`r figure("richness")`**. `r figure_cap("diversity")` **A**, richness. **B**, sampling redundancy.
 
-# SES of morph diversity
-f <- ggplot(ses_div_ferns_spatial, aes(fill = mpd_morph_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES MMD") +
-  scale_fill_scico(
-    palette = "romaO",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_spatial, mpd_morph_obs_z, "abs"),
-      get_limit(ses_div_ferns_spatial, mpd_morph_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  # highlight only significant cells
-  # gghighlight(mpd_morph_obs_p > 0.975 | mpd_morph_obs_p < 0.025) +
-  map_theme +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank()
-  )
-
+```{r diversity, fig.width = 7, fig.height = 9}
 # PD
-g <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
+a <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
   geom_sf(color = "transparent") +
-  labs(fill = "MMD") +
+  labs(fill = "PD") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  scale_fill_viridis_c() +
-  map_theme
+  scale_fill_scico(palette = "lajolla") + 
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
 
 # SES of PD
-h <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs_z)) +
+b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs_z)) +
   geom_sf(color = "transparent") +
   labs(fill = "SES PD") +
   scale_fill_scico(
@@ -332,33 +283,109 @@ h <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs_z)) +
     )) +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+# RPD
+c <- ggplot(ses_div_ferns_spatial, aes(fill = rpd_obs)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "RPD") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  scale_fill_scico(palette = "lajolla") + 
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
+
+# SES of RPD
+d <- ggplot(ses_div_ferns_spatial, aes(fill = rpd_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES RPD") +
+  scale_fill_scico(
+    palette = "roma",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   # highlight only significant cells
   # gghighlight(pd_obs_p > 0.975 | pd_obs_p < 0.025) +
   map_theme +
   theme(
+    axis.text.x = element_blank(),
     axis.text.y = element_blank()
   )
 
-# To add: RPD
-# ggplot(ses_div_ferns_spatial, aes(fill = rpd_obs_z)) +
-#   geom_sf(color = "transparent") +
-#   labs(fill = "SES RPD") +
-#   scale_fill_scico(
-#     palette = "romaO",
-#     na.value="grey80",
-#     direction = -1,
-#     limits = c(
-#       -get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs"),
-#       get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs")
-#     )) +
-#   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-#   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-#   # highlight only significant cells
-#   # gghighlight(rpd_obs_p > 0.95 | rpd_obs_p < 0.05) +
-#   map_theme +
-#   theme(
-#     axis.text.y = element_blank()
-#   )
+# FD
+e <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "FD") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  scale_fill_scico(palette = "lajolla") + 
+  map_theme +
+  theme(
+    axis.text.x = element_blank()
+  )
+
+# SES of FD
+f <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES FD") +
+  scale_fill_scico(
+    palette = "roma",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, fd_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, fd_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  # highlight only significant cells
+  # gghighlight(mpd_morph_obs_p > 0.975 | mpd_morph_obs_p < 0.025) +
+  map_theme +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+# RFD
+g <- ggplot(ses_div_ferns_spatial, aes(fill = rfd_obs)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "RFD") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  scale_fill_scico(palette = "lajolla") + 
+  map_theme
+
+# SES of RFD
+h <- ggplot(ses_div_ferns_spatial, aes(fill = rfd_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES RFD") +
+  scale_fill_scico(
+    palette = "roma",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, rfd_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, rfd_obs_z, "abs")
+    )) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  # highlight only significant cells
+  # gghighlight(rfd_obs_p > 0.975 | rfd_obs_p < 0.025) +
+  map_theme +
+  theme(
+    axis.text.y = element_blank()
+  )
 
 a + b + c + d + e + f + g + h +
   plot_layout(ncol = 2) +
@@ -367,7 +394,7 @@ a + b + c + d + e + f + g + h +
 ggsave(result_file(figure("diversity"), "pdf"), width = 7, height = 9, units = "in")
 ```
 
-**`r figure("diversity")`**. `r figure_cap("diversity")` **A**, richness. **B**, sampling redundancy. **C**, mean phylogenetic distance (MPD). **D**, Standard effect size (SES) of MPD. **E**, mean morphological distance (MMD) **F**, SES of MMD. **G**, phylogenetic diversity (PD) **H**, SES of PD.
+**`r figure("diversity")`**. `r figure_cap("diversity")` **A**, Phylogenetic diversity (PD). **B**, Standard effect size (SES) of PD. **C**, Relative phylogenetic diversity (RPD). **D**, SES of RPD. **E**, Functional diversity (FD). **F**, SES of FD **G**, Relative functional diversity (RFD) **H**, SES of RFD. 
 
 \clearpage
 
@@ -375,7 +402,7 @@ ggsave(result_file(figure("diversity"), "pdf"), width = 7, height = 9, units = "
 # PE
 a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs)) +
   geom_sf(color = "transparent") +
-  scale_fill_viridis_c() + 
+  scale_fill_scico(palette = "lajolla") + 
   labs(fill = "PE") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
@@ -384,22 +411,23 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs)) +
     axis.text.x = element_blank()
   )
 
-# SES PE
-b <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_p)) +
+# PE rank
+b <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_rank)) +
   geom_sf(color = "transparent") +
-  labs(fill = "SES PE") +
-  scale_fill_viridis_c() +
+  labs(fill = "Rank PE") +
+  scale_fill_scico(palette = "lajolla") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   map_theme +
   theme(
+    axis.text.x = element_blank(),
     axis.text.y = element_blank()
   )
 
 # RPE
 c <- ggplot(ses_div_ferns_spatial, aes(fill = rpe_obs)) +
   geom_sf(color = "transparent") +
-  scale_fill_viridis_c() + 
+  scale_fill_scico(palette = "lajolla") +
   labs(fill = "RPE") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
@@ -413,7 +441,7 @@ d <- ggplot(ses_div_ferns_spatial, aes(fill = rpe_obs_z)) +
   geom_sf(color = "transparent") +
   labs(fill = "SES RPE") +
   scale_fill_scico(
-    palette = "romaO",
+    palette = "roma",
     na.value="grey80",
     direction = -1,
     limits = c(
@@ -427,13 +455,25 @@ d <- ggplot(ses_div_ferns_spatial, aes(fill = rpe_obs_z)) +
     axis.text.y = element_blank()
   )
 
-# CANAPE
-e <- ggplot(ses_div_ferns_spatial, aes(fill = endem_type)) +
+# CANAPE, full dataset
+# set color scheme
+canape_cols <- c(
+  "neo" = "#E41A1C", # Color brewer set1 red
+  "paleo" = "#377EB8", # Color brewer blue
+  "mixed" = "#984EA3", # Color brewer purple
+  "none" = "#FFFFCC" # Scico lajolla faintest color
+)
+
+e <- 
+  ses_div_ferns_spatial %>%
+  mutate(endem_type = replace_na(endem_type, "none")) %>%
+  ggplot(aes(fill = endem_type)) +
   geom_sf(color = "transparent") +
   labs(fill = "Endemism\ntype") +
+  scale_fill_manual(values = canape_cols, breaks = c("neo", "paleo", "mixed", "none"), labels = c("Neo", "Paleo", "Mixed", "Not endemic")) + 
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme
+  map_theme_light
 
 a + b + c + d + e +
   plot_layout(ncol = 2) +
@@ -453,7 +493,7 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
   scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme
+  map_theme_light
 
 # Phylogenetic bioregions
 b <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
@@ -462,7 +502,7 @@ b <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
   scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme
+  map_theme_light
 
 a + b +
   plot_layout(ncol = 2) +
@@ -523,20 +563,116 @@ ecos_plot_pie2(
 
 \clearpage
 
-```{r diversity-by-cluster}
+```{r diversity-by-cluster, fig.width = 7, fig.height = 7}
+data <-
 ses_div_ferns_spatial %>%
   filter(taxonomic_cluster %in% c(1,2,3,4)) %>%
   as_tibble %>%
-  select(mpd_obs_z, mpd_morph_obs_z, pe_obs_z, taxonomic_cluster) %>%
-  pivot_longer(names_to = "var", values_to = "value", -taxonomic_cluster) %>%
-  ggplot(aes(x = taxonomic_cluster, y = value)) +
-  geom_jitter() +
-  geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.5) +
-  facet_wrap(vars(var)) +
+  select(pd_obs_z, rpd_obs_z, fd_obs_z, rfd_obs_z, pe_obs_rank, taxonomic_cluster)
+
+cluster_cols <- carto_pal(8, "Bold")[1:4] %>%
+  set_names(1:4)
+
+a <- ggplot(data, aes(x = taxonomic_cluster, y = pd_obs_z)) +
+  geom_jitter(aes(color = taxonomic_cluster)) +
+  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES PD",
+    x = "Cluster",
+    color = "Cluster"
+  ) +
+  theme_bw() +
   theme(
     panel.grid.minor.x = element_blank(),
     panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank()
   )
+
+b <- ggplot(data, aes(x = taxonomic_cluster, y = rpd_obs_z)) +
+  geom_jitter(aes(color = taxonomic_cluster)) +
+  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES RPD",
+    x = "Cluster",
+    color = "Cluster"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+c <- ggplot(data, aes(x = taxonomic_cluster, y = fd_obs_z)) +
+  geom_jitter(aes(color = taxonomic_cluster)) +
+  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES FD",
+    x = "Cluster",
+    color = "Cluster"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+d <- ggplot(data, aes(x = taxonomic_cluster, y = rfd_obs_z)) +
+  geom_jitter(aes(color = taxonomic_cluster)) +
+  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES RFD",
+    x = "Cluster",
+    color = "Cluster"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.title.x = element_blank()
+  )
+
+e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_rank)) +
+  geom_jitter(aes(color = taxonomic_cluster)) +
+  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "Rank PE",
+    x = "Cluster",
+    color = "Cluster"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    
+  )
+
+a + b + c + d + e +
+  plot_layout(ncol = 2) +
+plot_annotation(
+  tag_levels = 'A'
+) &
+  theme(legend.position = "none")
+  
+ggsave(result_file(figure("div-by-tax-region"), "pdf"), width = 7, height = 7, units = "in")
+
 ```
 
-Standard effect size (SES) of mean phylogenetic distance (MPD), mean morphological distance (MMD), and phylogenetic endemism (PE) by taxonomic bioregion (top four regions with the most sites only shown). 
+**`r figure("div-by-tax-region")`**. `r figure_cap("div-by-tax-region")`. **A**, Standard effect size (SES) of phylogenetic diversity (PD). **B**, SES of relative PD (RPD). **C**, SES of functional diversity (FD). **D**, SES of relative FD (RFD). **E**, rank of observed phylogenetic endemism (PE) out of 999 random communities. Only top four clusters with the most sites shown.

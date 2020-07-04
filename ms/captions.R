@@ -2,7 +2,8 @@
 
 # - Figures
 fig_nums <- captioner::captioner(prefix = "Fig.")
-fig_nums(name = "diversity", caption = "Taxonomic, phylogenetic, and morphological diversity of the ferns of Japan.")
+fig_nums(name = "richness", caption = "Taxonomic diversity of the ferns of Japan.")
+fig_nums(name = "diversity", caption = "Phylogenetic and morphological diversity of the ferns of Japan.")
 fig_nums(name = "endemism", caption = "Phylogenetic endemism of the ferns of Japan.")
 fig_nums(name = "bioregions", caption = "Bioregions of the ferns of Japan.")
 fig_nums(name = "ecostructure", caption = "Ecological structure of the ferns of Japan.")
