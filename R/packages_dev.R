@@ -3,3 +3,7 @@
 # but included here so renv knows to keep them around
 library(remotes)
 library(visNetwork)
+
+# considering these...
+library(ggtext)
+library(gghighlight)
