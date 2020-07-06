@@ -29,4 +29,4 @@ drake_config(
 )
 
 # - serial
-# drake_config(plan, verbose = 1, cache = ja_fern_cache, seed = 0)
+# drake_config(plan, verbose = 1, cache = ja_fern_cache, seed = 0, envir = envir)
