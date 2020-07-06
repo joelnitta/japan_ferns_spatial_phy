@@ -14,6 +14,7 @@ table_nums(name = "traits-used", caption = "Fern traits used in this study")
 
 # - SI figures
 s_fig_nums <- captioner::captioner(prefix = "Fig. S", auto_space = FALSE, suffix = ": ")
+s_fig_nums(name = "grain-size", "Analysis of different grain sizes on sampling redundancy.")
 s_fig_nums(name = "k-plot", "Selection of *k* for bioregions.")
 s_fig_nums(name = "k-plot-ecos", "Selection of *k* for ecological structure analysis.")
 s_fig_nums(name = "endemism-restricted", "Phylogenetic endemism of the ferns of Japan, restricted dataset including only taxa endemic to Japan.")

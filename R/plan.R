@@ -54,20 +54,19 @@ plan <- drake_plan (
     # check for missing data
     assert(not_na, longitude, latitude, taxon),
   
-  # Generate datasets at different spatial scales: 
-  # 0.2 degree ~ 20 km x 20 km,
-  # 0.4 degree ~ 40 km x 40 km
-  comm_scaled_list = target(
-    phyloregion::points2comm(
+  # Calculate richness, abundance, and redundancy at three scales: 
+  # 0.1, 0.2, 0.3, and 0.4 degrees
+  richness_by_res = map_df(
+    c("0.1" = 0.1, "0.2" = 0.2, "0.3" = 0.3, "0.4" = 0.4), 
+    ~richness_from_points(occ_point_data_ferns, .), .id = "res"),
+  
+  # Decide that 0.2 scale is optimal, use this for downstream analyses
+  comm_scaled_list_0.2 = phyloregion::points2comm(
     dat = occ_point_data_ferns,
-    res = scale,
+    res = 0.2,
     lon = "longitude",
     lat = "latitude",
     species = "taxon"),
-    transform = map(scale = c(0.2, 0.4))
-  ),
-  
-  # Decide that 0.2 scale is optimal, use this for downstream analyses
   
   # - extract community matrix
   comm_ferns = comm_from_points2comm(comm_scaled_list_0.2),

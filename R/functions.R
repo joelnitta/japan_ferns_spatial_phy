@@ -287,6 +287,42 @@ shape_from_points2comm <- function (data) {
   
 }
 
+#' Calculate richness of grid cells from occurrence points
+#'
+#' Also abundance and redundancy
+#'
+#' @param occ_point_data Occurrence point data, with columns
+#' 'taxon', 'longitude', and 'latitude'
+#' @param resol Degree of resolution to use for defining grid cells
+#'
+#' @return Tibble with richness, abundance, and redundancy
+#' per grid cell
+#'
+richness_from_points <- function(occ_point_data, resol) {
+  occ_point_data %>%
+    # Rename for comm_from_points()
+    select(species = taxon, decimallongitude = longitude, decimallatitude = latitude) %>%
+    comm_from_points(resol = resol, abun = TRUE) %>%
+    as_tibble %>%
+    clean_names() %>%
+    # Convert lat and long columns to site name
+    mutate(site = paste(longitude_x, latitude_y, sep = "_")) %>%
+    select(-longitude_x, -latitude_y) %>%
+    # Convert to long format
+    pivot_longer(values_to = "abundance", names_to = "taxon", -site) %>%
+    assert(not_na, abundance) %>%
+    # Add column for species presence
+    mutate(present = ifelse(abundance > 0, 1, 0)) %>%
+    assert(not_na, present) %>%
+    assert(in_set(c(0,1)), present) %>%
+    group_by(site) %>%
+    summarize(
+      abundance = sum(abundance),
+      richness = sum(present),
+      .groups = "drop"
+    ) %>%
+    mutate(redundancy = 1 - (richness/abundance))
+}
 
 # Reproductive mode ----
 
@@ -2147,6 +2183,28 @@ cluster_phylo_regions <- function (comm_df, phy, k) {
 
 # Ecostructure ----
 
+#' Count abundance
+#'
+#' Counts number of times an integer in a vector
+#' occurrs out of a given set of integers.
+#'
+#' @param cells Numeric vector
+#' @param all_cells Numeric vector
+#'
+#' @return Named numeric vector
+#'
+#' @examples
+#' count_abun(c(10, 10, 12), c(10, 12, 14))
+count_abun <- function(cells, all_cells) {
+  cells <- as.factor(as.factor(cells))
+  abun_occur <- tabulate(cells)
+  names(abun_occur) <- levels(cells)
+  abun <- numeric(length(all_cells))
+  names(abun) <- all_cells
+  abun[names(abun_occur)] <- abun_occur
+  abun
+}
+
 #' Make community matrix from species' occurrences
 #'
 #' A grid is defined according to xmn, xmx, ymn, ymx, and reso of square
@@ -2161,7 +2219,7 @@ cluster_phylo_regions <- function (comm_df, phy, k) {
 #' @param xmx Maximum longitude used to construct the presence-absence grid.
 #' @param ymn Minimum latitude used to construct the presence-absence grid.
 #' @param ymx Maximum latitude used to construct the presence-absence grid.
-#' @param reso Degree of spatial resolution used to construct the presence-absence grid.
+#' @param resol Degree of spatial resolution used to construct the presence-absence grid.
 #' @param crs Character or object of class CRS. PROJ.4 type description of a
 #' Coordinate Reference System (map projection) used to construct the
 #' presence-absence grid.

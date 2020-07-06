@@ -35,6 +35,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 # If using interactively, run `source("_drake.R")` first.
 
 loadd(list = c(
+  "richness_by_res",
   "occ_point_data_ferns",
   "ses_phy_ferns",
   "ses_phy_ferns_endemic",
@@ -103,6 +104,69 @@ map_theme_light <- theme(
     axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
   )
 ```
+
+```{r grain-size, fig.width = 7, fig.height = 3}
+# Helper function to format resolution labels
+degree_lab <- function (x) {
+  as.numeric(x) %>% 
+    scales::number(suffix = "\u00b0", accuracy = 0.1)
+}
+
+# Summarize redundancy statistics by grain size
+redundancy_summary <-
+  richness_by_res %>%
+  mutate(above_50 = ifelse(redundancy > 0.5, 1, 0)) %>%
+  mutate(singleton = ifelse(redundancy == 0, 1, 0)) %>%
+  group_by(res) %>%
+  summarize(
+    n_total = n(),
+    n_above_50 = sum(above_50),
+    n_singletons = sum(singleton),
+    percent_above_50 = n_above_50/n_total,
+    percent_singletons = n_singletons/ n_total,
+    .groups = "drop"
+  )
+
+# Percent of grid cells with redundancy > 0.5 by grain size
+a <- ggplot(redundancy_summary, aes(x = res, y = percent_above_50)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_discrete(labels = degree_lab) +
+  labs(
+    x = "Resolution",
+    y = "Redundancy > 0.5"
+  )
+
+# Percent of grid cells with redundancy = 0 by grain size
+b <- ggplot(redundancy_summary, aes(x = res, y = percent_singletons)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_discrete(labels = degree_lab) +
+  labs(
+    x = "Resolution",
+    y = "Redundancy = 0"
+  )
+
+# Distribution of redundancy by grain size
+c <- ggplot(redund_by_res, aes(x = redundancy, y = res)) +
+  geom_density_ridges(scale = 1.5) + 
+  scale_y_discrete(expand = c(0, 0), labels = degree_lab) +     # will generally have to set the `expand` option
+  scale_x_continuous(expand = c(0, 0)) +   # for both axes to remove unneeded padding
+  coord_cartesian(clip = "off") + # to avoid clipping of the very top of the top ridgeline
+  labs(
+    x = "Redundancy",
+    y = "Resolution"
+  )
+
+a + b + c +
+  plot_annotation(tag_levels = 'A')
+
+ggsave(result_file(s_figure("grain-size"), "pdf"), width = 7, height = 3, units = "in")
+```
+
+**`r s_figure("grain-size")`**. `r s_figure_cap("grain-size")` **A**, Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). **B**, Percent of grid cells with redundancy = 0 by grain size. **C**, Distribution of redundancy values by grain size.
+
+\clearpage
 
 ```{r k-plot, fig.width = 7, fig.height = 3}
 k_taxonomy_select <- 8
