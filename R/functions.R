@@ -227,43 +227,6 @@ shape_from_points2comm <- function (data) {
   
 }
 
-#' Calculate richness of grid cells from occurrence points
-#'
-#' Also abundance and redundancy
-#'
-#' @param occ_point_data Occurrence point data, with columns
-#' 'taxon', 'longitude', and 'latitude'
-#' @param resol Degree of resolution to use for defining grid cells
-#'
-#' @return Tibble with richness, abundance, and redundancy
-#' per grid cell
-#'
-richness_from_points <- function(occ_point_data, resol) {
-  occ_point_data %>%
-    # Rename for comm_from_points()
-    select(species = taxon, decimallongitude = longitude, decimallatitude = latitude) %>%
-    comm_from_points(resol = resol, abun = TRUE) %>%
-    as_tibble %>%
-    clean_names() %>%
-    # Convert lat and long columns to site name
-    mutate(site = paste(longitude_x, latitude_y, sep = "_")) %>%
-    select(-longitude_x, -latitude_y) %>%
-    # Convert to long format
-    pivot_longer(values_to = "abundance", names_to = "taxon", -site) %>%
-    assert(not_na, abundance) %>%
-    # Add column for species presence
-    mutate(present = ifelse(abundance > 0, 1, 0)) %>%
-    assert(not_na, present) %>%
-    assert(in_set(c(0,1)), present) %>%
-    group_by(site) %>%
-    summarize(
-      abundance = sum(abundance),
-      richness = sum(present),
-      .groups = "drop"
-    ) %>%
-    mutate(redundancy = 1 - (richness/abundance))
-}
-
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)
@@ -1619,139 +1582,115 @@ count_abun <- function(cells, all_cells) {
 
 #' Make community matrix from species' occurrences
 #'
-#' A grid is defined according to xmn, xmx, ymn, ymx, and reso of square
-#' cells where x and y values correspond to latitude and longitude. This
-#' is then filled in with the species occurrences, and converted to a
-#' community matrix where the rows are cells and columns are species.
-#'
-#' @param species_coods Dataframe of species occurrences. Must include
-#' columns "species", "decimallongitude", and "decimallatitude".
+#' @param species_coods Dataframe of species occurrences.
 #' No missing values allowed.
-#' @param xmn Minimum longitude used to construct the presence-absence grid.
-#' @param xmx Maximum longitude used to construct the presence-absence grid.
-#' @param ymn Minimum latitude used to construct the presence-absence grid.
-#' @param ymx Maximum latitude used to construct the presence-absence grid.
 #' @param resol Degree of spatial resolution used to construct the presence-absence grid.
+#' @param species Name of column to use for species
+#' @param lat Name of column to use for latitude
+#' @param long Name of column to use for longitude
 #' @param crs Character or object of class CRS. PROJ.4 type description of a
 #' Coordinate Reference System (map projection) used to construct the
 #' presence-absence grid.
-#' @param rownames Logical; should the rownames of the matrix be the
-#' coordinates of each grid cell? If FALSE, separate columns will be
-#' created for grid cell coordinates. Warning: setting rownames on a large
-#' matrix may require a large amount of memory and is not recommended.
-#' @param abun Logical; should the cells of the matrix be species' abundances?
-#' If false, values of the cell will indicate presence (1) or absence (0) of
-#' each species.
 #'
-#' @return Matrix
+#' @return List of two items, "comm_dat" is the community dataframe in
+#' sparse format; poly_shp is the distribution map as a simple features dataframe
 #'
 #' @examples
 #' # Make test data set of 10 species with 100 occurrences total.
-#' test_data <- data.frame(species = letters[1:10],
-#'   decimallongitude = runif(100, -2, 2),
+#' test_data <- data.frame(taxon = letters[1:10],
+#'   longitude = runif(100, -2, 2),
 #'   decimallatitude = runif(100, -2, 2),
-#'   stringsAsFactors = FALSE)
+#'   latitude = FALSE)
 #' # Presence/absence
 #' comm_from_points(test_data)
 #' # Abundance
 #' comm_from_points(test_data, abun = TRUE)
-
 comm_from_points <- function(species_coods,
-                             xmn = -180, xmx = 180,
-                             ymn = -90, ymx = 90,
                              resol = 1,
-                             crs = sp::CRS("+proj=longlat +datum=WGS84"),
-                             rownames = FALSE,
-                             abun = FALSE) {
+                             species = "taxon",
+                             lon = "longitude",
+                             lat = "latitude",
+                             crs = sp::CRS("+proj=longlat +datum=WGS84")) {
+  
+  species_coods <- as.data.frame(species_coods)
+  species_coods <- species_coods[, c(species, lon, lat)]
+  names(species_coods) <- c("species", "longitude", "latitude")
   
   checkr::check_data(
     species_coods,
     values = list(
       species = "a",
-      decimallongitude = 1,
-      decimallatitude = 1
+      longitude = 1,
+      latitude = 1
     )
   )
   
-  assertr::verify(species_coods, decimallongitude <= 180, success_logical)
+  assertr::verify(species_coods, longitude <= 180, success_logical)
   
-  assertr::verify(species_coods, decimallatitude <= 90, success_logical)
+  assertr::verify(species_coods, latitude <= 90, success_logical)
   
   assertthat::assert_that(!is.factor(species_coods$species))
   
   # Create empty raster
   r <- raster::raster(
     resolution = resol,
-    xmn = xmn,
-    xmx = xmx,
-    ymn = ymn,
-    ymx = ymx,
+    xmn = -180,
+    xmx = 180,
+    ymn = -90,
+    ymx = 90,
     crs = crs)
   
   ### Extract cell IDs from points by species
-  
   # Coordinates must be long, lat for raster
   # (which assumes x, y position in that order)
-  species_coods <- species_coods[,c("species", "decimallongitude", "decimallatitude")]
   
   # Extract cell IDs from points by species
-  species_coods <- tidyr::nest(species_coods, data = c(decimallongitude, decimallatitude))
+  species_coods_nested <- tidyr::nest(species_coods, data = c(longitude, latitude))
   
   # raster::cellFromXY needs data to be data.frame, not tibble
-  species_coods <- dplyr::mutate(species_coods, data = purrr::map(data, as.data.frame))
+  species_coods_nested <- dplyr::mutate(species_coods_nested, data = purrr::map(data, as.data.frame))
   
   cells_occur <- purrr::map(
-    species_coods$data,
+    species_coods_nested$data,
     ~ raster::cellFromXY(xy = ., object = r)
   )
   
-  names(cells_occur) <- species_coods$species
-  
-  rm(species_coods)
+  names(cells_occur) <- species_coods_nested$species
   
   # Get vector of non-empty cells
   non_empty_cells <- sort(unique(unlist(cells_occur)))
   
-  # Convert list of cell occurrences from cell IDs to vector
-  # the length of non_empty_cells with 1 (or number of times for abundance)
-  # for each cell where that species occurs.
+  # Subset raster to non-empty cells
+  r_sub <- raster::rasterFromCells(r, non_empty_cells)
   
-  if(isTRUE(abun)) {
-    # abudance
-    cells_occur <- purrr::map(cells_occur, count_abun, all_cells = non_empty_cells)
-  } else {
-    # presence/absence
-    cells_occur <- purrr::map(cells_occur, ~as.numeric(non_empty_cells %in% .))
-  }
+  # Get its extent
+  e <- raster::extent(r_sub)
   
-  # Combine these into a matrix
-  pres_abs_mat <- t(do.call(rbind, cells_occur))
+  # Convert to spatial polygons dataframe
+  p <- as(e, "SpatialPolygons")
   
-  rm(cells_occur)
+  # Make polygons grid at same extent as sample points
+  m <- sp::SpatialPolygonsDataFrame(p, data.frame(sp = "x"))
+  m <- fishnet(mask = m, res = resol)
   
-  # Add coordinates
+  # Overlay points onto grid
+  dat <- as.data.frame(species_coods)
+  dat <- dat[complete.cases(dat), ]
+  sp::coordinates(dat) <- ~longitude + latitude
   
-  # Make vector of xy (lat/long) coordinates in raster,
-  # named by cell ID.
+  sp::proj4string(dat) <- sp::proj4string(m)
+  x <- sp::over(dat, m)
+  y <- cbind(as.data.frame(dat), x)
+  y <- y[complete.cases(y), ]
+  Y <- phyloregion::long2sparse(y)
+  tmp <- data.frame(grids = row.names(Y), abundance = rowSums(as.matrix(Y)), 
+                    richness = rowSums(as.matrix(Y > 0)))
+  z <- sp::merge(m, tmp, by = "grids")
+  z <- z[!is.na(z@data$richness), ] %>% sf::st_as_sf()
   
-  # When setting names, assumes cell ID naming order goes
-  # from upper-left most cell
-  # to bottom right-most cell (as in raster docs).
-  cell_xy <- raster::xyFromCell(r, 1:raster::ncell(r))
-  cell_xy <- cell_xy[non_empty_cells,]
-  
-  if(isTRUE(rownames)) {
-    cell_xy <- paste(cell_xy[,"x"], cell_xy[,"y"], sep = "_")
-    rownames(pres_abs_mat) <- cell_xy
-  } else {
-    colnames(cell_xy) <- c("Longitude(x)", "Latitude(y)")
-    pres_abs_mat <- cbind(cell_xy, pres_abs_mat)
-  }
-  
-  return(pres_abs_mat)
+  return(list(comm_dat = Y, poly_shp = z))
   
 }
-
 
 #' Convert community tibble into matrix for ecostructure
 #'

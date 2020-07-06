@@ -3,7 +3,7 @@ k_vals <- 2:20
 
 # Define analysis plan
 plan <- drake_plan (
-
+  
   # Load and process data ----
   
   # Load basic world map.
@@ -35,7 +35,7 @@ plan <- drake_plan (
   repro_data_raw = read_csv(
     file_in("data_raw/ebihara_2019/ESM1.csv"),
     col_types = "cccccnnnnn"),
-
+  
   repro_data = process_repro_data(repro_data_raw) %>%
     rename_taxa(green_list),
   
@@ -45,7 +45,7 @@ plan <- drake_plan (
     col_types = c("text", "numeric", "numeric", "text", "text", "text", "text"),
     col_names = c("species", "longitude", "latitude", "date", "tns_barcode", "herbarium_code", "taxon_id"),
     skip = 1),
-
+  
   # - standardize names to Green List
   occ_point_data = rename_taxa(occ_point_data_raw, green_list),
   
@@ -54,20 +54,19 @@ plan <- drake_plan (
     # check for missing data
     assert(not_na, longitude, latitude, taxon),
   
-  # Calculate richness, abundance, and redundancy at three scales: 
+  # Calculate richness, abundance, and redundancy at four scales: 
   # 0.1, 0.2, 0.3, and 0.4 degrees
-  richness_by_res = map_df(
-    c("0.1" = 0.1, "0.2" = 0.2, "0.3" = 0.3, "0.4" = 0.4), 
-    ~richness_from_points(occ_point_data_ferns, .), .id = "res"),
+  comm_scaled_list = target(
+    comm_from_points(
+      species_coods = occ_point_data_ferns,
+      res = scale,
+      lon = "longitude",
+      lat = "latitude",
+      species = "taxon"),
+    transform = map(scale = c(0.1, 0.2, 0.3, 0.4))
+  ),
   
   # Decide that 0.2 scale is optimal, use this for downstream analyses
-  comm_scaled_list_0.2 = phyloregion::points2comm(
-    dat = occ_point_data_ferns,
-    res = 0.2,
-    lon = "longitude",
-    lat = "latitude",
-    species = "taxon"),
-  
   # - extract community matrix
   comm_ferns = comm_from_points2comm(comm_scaled_list_0.2),
   
@@ -75,7 +74,7 @@ plan <- drake_plan (
   shape_ferns = shape_from_points2comm(comm_scaled_list_0.2) %>%
     # calculate redundancy
     mutate(redundancy = 1 - (richness/abundance)),
-    
+  
   # - make community matrix subset to taxa endemic to Japan
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
@@ -100,7 +99,7 @@ plan <- drake_plan (
     path_to_lucid_traits = raw_trait_data_path,
     taxon_id_map = green_list) %>%
     subset_to_ferns(ppgi),
-
+  
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
   
@@ -109,7 +108,7 @@ plan <- drake_plan (
   percent_sex_dip = calc_sex_dip(
     comm = comm_ferns, 
     repro_data = repro_data),
-
+  
   # Analyze standard effect size (SES) of diversity metrics ----
   
   ses_phy = target(
@@ -127,31 +126,31 @@ plan <- drake_plan (
       ),
       .names = c("ses_phy_ferns", "ses_phy_ferns_endemic"))
   ),
-
+  
   ses_traits_ferns = run_ses_analysis(
     comm = comm_ferns,
     n_reps = 999,
     metrics = c("fd", "rfd"),
     trait_distances = trait_distance_matrix),
-
+  
   # Analyze phyloregions
-
+  
   # - Assess optimal K-value for clustering by taxonomy
   # (plot this, then choose K manually)
   k_taxonomy = find_k_taxonomy(comm_ferns),
-
+  
   # - Assess optimal K-value for clustering by phylogeny
   # (plot this, then choose K manually)
   k_phylogeny = find_k_phylogeny(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
   ),
-
+  
   # - Cluster by taxonomy
   regions_taxonomy = cluster_taxonomic_regions(
     comm_df = comm_ferns,
     k = 8),
-
+  
   # - Cluster by phylogeny
   regions_phylogeny = cluster_phylo_regions(
     comm_df = comm_ferns,
@@ -183,10 +182,10 @@ plan <- drake_plan (
     knitr_in("ms/manuscript.Rmd"),
     output_dir = here::here("results"),
     quiet = TRUE),
-   
+  
   si = rmarkdown::render(
     knitr_in("ms/SI.Rmd"),
     output_dir = here::here("results"),
     quiet = TRUE)
-
+  
 )

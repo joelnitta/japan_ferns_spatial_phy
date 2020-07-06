@@ -35,6 +35,10 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 # If using interactively, run `source("_drake.R")` first.
 
 loadd(list = c(
+  "comm_scaled_list_0.1",
+  "comm_scaled_list_0.2",
+  "comm_scaled_list_0.3",
+  "comm_scaled_list_0.4",
   "richness_by_res",
   "occ_point_data_ferns",
   "ses_phy_ferns",
@@ -112,9 +116,20 @@ degree_lab <- function (x) {
     scales::number(suffix = "\u00b0", accuracy = 0.1)
 }
 
+# Combine results of building community matrices at different grain sizes
+redundancy_by_res <- 
+  list(
+    "0.1" = comm_scaled_list_0.1$poly_shp,
+    "0.2" = comm_scaled_list_0.2$poly_shp,
+    "0.3" = comm_scaled_list_0.3$poly_shp,
+    "0.4" = comm_scaled_list_0.4$poly_shp) %>%
+  map_df(~as_tibble(.) %>% select(grids, abundance, richness), .id = "res") %>%
+  # Calculate redundancy
+  mutate(redundancy = 1 - (richness/abundance))
+
 # Summarize redundancy statistics by grain size
 redundancy_summary <-
-  richness_by_res %>%
+  redundancy_by_res %>%
   mutate(above_50 = ifelse(redundancy > 0.5, 1, 0)) %>%
   mutate(singleton = ifelse(redundancy == 0, 1, 0)) %>%
   group_by(res) %>%
@@ -148,7 +163,7 @@ b <- ggplot(redundancy_summary, aes(x = res, y = percent_singletons)) +
   )
 
 # Distribution of redundancy by grain size
-c <- ggplot(redund_by_res, aes(x = redundancy, y = res)) +
+c <- ggplot(redundancy_by_res, aes(x = redundancy, y = res)) +
   geom_density_ridges(scale = 1.5) + 
   scale_y_discrete(expand = c(0, 0), labels = degree_lab) +     # will generally have to set the `expand` option
   scale_x_continuous(expand = c(0, 0)) +   # for both axes to remove unneeded padding

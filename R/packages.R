@@ -24,6 +24,7 @@ library(glue)
 library(patchwork)
 library(rcartocolor)
 library(ggtext)
+library(ggridges)
 library(tidyverse)
 
 # Resolve conflicts
