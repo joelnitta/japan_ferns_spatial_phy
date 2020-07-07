@@ -144,8 +144,6 @@ It is possible that endemism may be affected by species that are actually wide-r
 
 We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20. \package{phyloregion} provides a function to automatically select *k* from a range of test values, but we found the results to be unreliable. We therefore evaluated the explained variance at each value of *k*, then selected *k* that provided the greatest increase in variance relative to the previous value (`r s_figure("k-plot")`).
 
-We analyzed ecological structure using the framework of @White2019 and their R package \package{ecostructure}. This method involves fitting the community matrix to a grade of membership model, which allows communities have partial membership in multiple groups [@White2019]. Like bioregion analysis, this method also requires selecting the number of clusters (in this context called "motifs" after @White2019) to fit the model. We initially tested values of *k* from 2 to 20 and inspected the log-likelihood for each, but found that it continually improved without reaching a clear optimum (`r s_figure("k-plot-ecos")`). We therefore used the same *k* that was selected for taxonomic bioregions.
-
 ### Data accessibility
 
 Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_biogeo. Raw and processed data are openly available from the Dryad repository at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
@@ -163,10 +161,6 @@ Phylogenetic endemism (PE) is extremeley low throughout except for in some of th
 ### Bioregions
 
 Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Using phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B).
-
-### Ecological structure
-
-Ecological structure partly resembled bioregions, with most sites in Hokkaido and northern Honshu belonging to the same motifs (dark-green and purple), and sites in Okinawa also mostly belonging to another motif (grey) (`r figure("ecostructure")`). However, the grade-of-membership model also revealed complex ecological structure that mostly tracks latitude and elevation, with particularly high turnover in the southern half of Honshu. A single motif united low-richness sites (dark purple).
 
 ### Relationships between metrics
 
