@@ -227,6 +227,43 @@ shape_from_points2comm <- function (data) {
   
 }
 
+#' Filter occurrence points using a polygon mask
+#'
+#' @param occ_point_data Occurrence points dataframe,
+#' including columns for taxon, longitude, and latitude
+#' @param shape_file Path to shape file to use as mask
+#'
+#' @return Filtered data points
+filter_occ_points <- function(occ_point_data, shape_file) {
+  
+  # Read in shape file to use for mask
+  # (here, the second-degree mesh map of Japan)
+  second_degree_mesh <- sf::st_read(shape_file) %>%
+    select(id)
+  
+  # Set projection
+  st_crs(second_degree_mesh) <- sp::CRS("+proj=longlat +datum=WGS84")
+  
+  # Convert point data to SF object,
+  # with same projection
+  occ_point_data <- sf::st_as_sf(occ_point_data, coords = c("longitude", "latitude"), crs = sp::CRS("+proj=longlat +datum=WGS84"))
+  
+  # Join point data to mesh map
+  sf::st_join(occ_point_data, second_degree_mesh, join = sf::st_within) %>%
+    # Filter to only those with a grid ID (so, those that are within the mesh map)
+    filter(!is.na(id)) %>%
+    # Convert to tibble with columns for taxon, longitude, and latitude
+    as_tibble() %>%
+    mutate(coords = sf::st_coordinates(geometry)) %>%
+    select(taxon, coords) %>%
+    mutate(
+      coords = as.data.frame(coords),
+      longitude = coords$X,
+      latitude = coords$Y) %>%
+    select(-coords)
+  
+}
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)

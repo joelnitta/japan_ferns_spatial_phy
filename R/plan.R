@@ -44,12 +44,17 @@ plan <- drake_plan (
     skip = 1),
   
   # - standardize names to Green List
-  occ_point_data = rename_taxa(occ_point_data_raw, green_list),
-  
-  # - subset to just ferns (674 taxa)
-  occ_point_data_ferns = subset_to_ferns(occ_point_data, ppgi) %>%
+  occ_point_data = rename_taxa(occ_point_data_raw, green_list) %>%
     # check for missing data
     assert(not_na, longitude, latitude, taxon),
+  
+  # - filter to only points in second-degree mesh
+  occ_point_data_filtered = filter_occ_points(
+    occ_point_data = occ_point_data,
+    shape_file = file_in("data_raw/mesh2R/mesh2R.shp")),
+  
+  # - subset to just ferns (674 taxa)
+  occ_point_data_ferns = subset_to_ferns(occ_point_data_filtered, ppgi),
   
   # Calculate richness, abundance, and redundancy at four scales: 
   # 0.1, 0.2, 0.3, and 0.4 degrees
