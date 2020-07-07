@@ -719,6 +719,13 @@
       "Repository": "CRAN",
       "Hash": "c013a50b19695daf04853679e1bc105a"
     },
+    "ggridges": {
+      "Package": "ggridges",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b5c4e55a3856dff3c05595630a40edfc"
+    },
     "ggtext": {
       "Package": "ggtext",
       "Version": "0.1.0",
@@ -844,6 +851,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "d521cf9db39ca79250a00029661fb7cd"
+    },
+    "iNEXT": {
+      "Package": "iNEXT",
+      "Version": "2.0.20",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2d0ed52460656d80e4190d20aa1a164a"
     },
     "igraph": {
       "Package": "igraph",
@@ -1362,7 +1376,7 @@
       "Package": "renv",
       "Version": "0.10.0",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Hash": "0d3f1c2b63e70b3d918246b4e2ca59b7"
     },
     "reprex": {
@@ -1413,6 +1427,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "202260e1b2c410edc086d5b8f1ed946e"
+    },
+    "rnaturalearth": {
+      "Package": "rnaturalearth",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "946d1b43d7aba91dfa804f02302a5125"
     },
     "rncl": {
       "Package": "rncl",
