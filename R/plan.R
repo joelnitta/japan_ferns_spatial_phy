@@ -48,13 +48,15 @@ plan <- drake_plan (
     # check for missing data
     assert(not_na, longitude, latitude, taxon),
   
-  # - filter to only points in second-degree mesh
-  occ_point_data_filtered = filter_occ_points(
-    occ_point_data = occ_point_data,
-    shape_file = file_in("data_raw/mesh2R/mesh2R.shp")),
-  
   # - subset to just ferns (674 taxa)
-  occ_point_data_ferns = subset_to_ferns(occ_point_data_filtered, ppgi),
+  occ_point_data_ferns_unfiltered = subset_to_ferns(occ_point_data, ppgi),
+  
+  # - filter to only points in second-degree mesh
+  # Shape file downloaded from http://gis.biodic.go.jp/
+  # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
+  occ_point_data_ferns = filter_occ_points(
+    occ_point_data = occ_point_data_ferns_unfiltered,
+    shape_file = file_in("data_raw/mesh2/mesh2.shp")),
   
   # Calculate richness, abundance, and redundancy at four scales: 
   # 0.1, 0.2, 0.3, and 0.4 degrees
@@ -146,14 +148,12 @@ plan <- drake_plan (
     metrics = c("fd", "rfd"),
     trait_distances = trait_distance_matrix),
   
-  # Analyze phyloregions
+  # Analyze bioregions ----
   
   # - Assess optimal K-value for clustering by taxonomy
-  # (plot this, then choose K manually)
   k_taxonomy = find_k_taxonomy(comm_ferns),
   
   # - Assess optimal K-value for clustering by phylogeny
-  # (plot this, then choose K manually)
   k_phylogeny = find_k_phylogeny(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
@@ -162,15 +162,16 @@ plan <- drake_plan (
   # - Cluster by taxonomy
   regions_taxonomy = cluster_taxonomic_regions(
     comm_df = comm_ferns,
-    k = 8),
+    k = k_taxonomy[["optimal"]][["k"]]
+  ),
   
   # - Cluster by phylogeny
   regions_phylogeny = cluster_phylo_regions(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
-    k = 6
+    k = k_phylogeny[["optimal"]][["k"]]
   ),
-
+  
   # Traits ----
   
   # Run NMDS on traits

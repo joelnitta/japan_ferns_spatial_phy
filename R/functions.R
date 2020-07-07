@@ -239,14 +239,11 @@ filter_occ_points <- function(occ_point_data, shape_file) {
   # Read in shape file to use for mask
   # (here, the second-degree mesh map of Japan)
   second_degree_mesh <- sf::st_read(shape_file) %>%
-    select(id)
-  
-  # Set projection
-  st_crs(second_degree_mesh) <- sp::CRS("+proj=longlat +datum=WGS84")
+    select(id = NAME)
   
   # Convert point data to SF object,
-  # with same projection
-  occ_point_data <- sf::st_as_sf(occ_point_data, coords = c("longitude", "latitude"), crs = sp::CRS("+proj=longlat +datum=WGS84"))
+  # with same projection as shape file
+  occ_point_data <- sf::st_as_sf(occ_point_data, coords = c("longitude", "latitude"), crs = st_crs(second_degree_mesh))
   
   # Join point data to mesh map
   sf::st_join(occ_point_data, second_degree_mesh, join = sf::st_within) %>%
