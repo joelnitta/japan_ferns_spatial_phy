@@ -264,6 +264,30 @@ filter_occ_points <- function(occ_point_data, shape_file) {
   
 }
 
+#' Filter a community dataframe by sampling redundancy
+#' 
+#' Only those communities exceeding the minimum sampling redundancy
+#' will be kept
+#'
+#' @param comm Community data matrix, with species as columns and
+#' rows as sites (rownames are site names)
+#' @param shape Spatial dataframe including columns for "grids" (community
+#' site name) and redundancy
+#' @param cutoff Redundancy cutoff value to use
+#'
+#' @return Dataframe
+#' 
+filter_comm_by_redun <- function (comm, shape, cutoff = 0.1) {
+  
+  grids_keep <-
+    shape %>%
+    filter(redundancy > cutoff) %>%
+    pull(grids)
+  
+  comm[rownames(comm) %in% grids_keep,]
+  
+}
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)

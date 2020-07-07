@@ -69,13 +69,24 @@ plan <- drake_plan (
   ),
   
   # Decide that 0.2 scale is optimal, use this for downstream analyses
-  # - extract community matrix
-  comm_ferns = comm_from_points2comm(comm_scaled_list_0.2),
   
   # - extract geographic shapes, richness, and number of specimens
-  shape_ferns = shape_from_points2comm(comm_scaled_list_0.2) %>%
+  shape_ferns_full = shape_from_points2comm(comm_scaled_list_0.2) %>%
     # calculate redundancy
     mutate(redundancy = 1 - (richness/abundance)),
+  
+  # - extract community matrix
+  comm_ferns_full = comm_from_points2comm(comm_scaled_list_0.2),
+  
+  # - subset geographic shapes to redundancy > 0.1
+  shape_ferns = filter(shape_ferns_full, redundancy > 0.1),
+  
+  # - subset community matrix to communities with redundancy > 0.1
+  comm_ferns = filter_comm_by_redun(
+    comm = comm_ferns_full,
+    shape = shape_ferns,
+    cutoff = 0.1
+  ),
   
   # - make community matrix subset to taxa endemic to Japan
   comm_ferns_endemic = subset_comm_to_endemic(
