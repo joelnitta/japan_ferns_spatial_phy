@@ -241,30 +241,6 @@ ggsave(result_file(s_figure("k-plot"), "pdf"), width = 7, height = 3, units = "i
 
 \clearpage
 
-```{r k-plot-ecos, fig.width = 4, fig.height = 3}
-# Extract log likelihoods for each value of K from ecostructure results
-log_l <- map_dbl(species_motifs_ferns_combined, ~pluck(., "L")) %>%
-  tibble(k = names(.) %>% parse_number, log_l = .) %>%
-  mutate(
-    optimal_manual = ifelse(k == k_taxonomy_select, TRUE, FALSE)
-  )
-
-ggplot(log_l, aes(x = k, y = log_l)) +
-  geom_line() +
-  geom_point(aes(color = optimal_manual), size = 2.5) +
-  scale_color_manual(values = c("TRUE" = "#E31A1C", "FALSE" = "black")) +
-  labs(
-    y = "Log likelihood",
-    x = "Number of clusters") +
-  theme(legend.position = "none")
-
-ggsave(result_file(s_figure("k-plot-ecos"), "pdf"), width = 4, height = 3, units = "in")
-```
-
-**`r s_figure("k-plot-ecos")`**. `r s_figure_cap("k-plot-ecos")` Red indicates optimal *k* selected manually (*k* = 8, same as for taxonomic bioregions).
-
-\clearpage
-
 ```{r endemism-restricted, fig.width = 7, fig.height = 8}
 # PE (endemic)
 # FIXME: cells with zero species should be NA, not zero PE

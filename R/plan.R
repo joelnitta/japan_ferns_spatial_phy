@@ -1,6 +1,3 @@
-# Set vector of k-values to use for ecostructure
-k_vals <- 2:20
-
 # Define analysis plan
 plan <- drake_plan (
   
@@ -158,20 +155,6 @@ plan <- drake_plan (
     k = 6
   ),
 
-  # Ecostructure ----
-
-  species_motifs_ferns = target(
-      ecostructure::ecos_fit(
-        comm_ferns,
-        K = K, tol = 0.1, num_trials = 1),
-      transform = map(K = !!k_vals)
-    ),
-  
-  species_motifs_ferns_combined = target(
-    list(species_motifs_ferns) %>% set_names(k_vals),
-    transform = combine(species_motifs_ferns)
-  ),
-  
   # Traits ----
   
   # Run NMDS on traits
