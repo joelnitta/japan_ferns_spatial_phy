@@ -36,6 +36,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 
 loadd(list = c(
   "occ_point_data_ferns",
+  "occ_point_data_ferns_unfiltered",
   "ses_phy_ferns",
   "ses_phy_ferns_endemic",
   "ses_traits_ferns",
@@ -100,7 +101,7 @@ However, a comprehensive understanding of the relationships between richness and
 
 Ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are very densely sampled. Japan is situated along a latitudinal gradient spanning highly season temperate areas in the north to subtropical, mostly aseasonal islands in the south.
 
-Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity, reveal its spatial structure, and assess drivers of community assembly.
+Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail. We ask the following questions in our study system, the ferns of Japan: 1. How is biodiversity distributed? 2. How is biodiversity structured? 3. How well is biodiversity protected?
 
 ## Materials and Methods
 
@@ -110,15 +111,13 @@ Our data include all ferns known to occur within the political boundaries of Jap
 
 ### Occurrence data
 
-We used occurrence data of ferns in Japan comprising `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` vouchered specimens representing `r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` non-hybrid taxa (species, subspecies, and varieties). All specimens are housed at herbaria in Japan, and taxonomy follows the Japan Green List v. 1.01 (http://www.rdplants.org/gl/).
+We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (species, subspecies, and varieties). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html). The final cleaned occurrence dataset included `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` specimens (`r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` taxa).
 
-Any analysis of biodiversity must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1, 0.2, or 0.4 degree grid-cells for defining communities (co-occurring species). At each size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2 degree grid-cells are optimal for our dataset, so we used this for all subsequent analyses.
+A necessary step in any analysis of biodiversity is to set the grain size used to define communities. This decision must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1, 0.2, 0.3, and 0.4 degree grid-cells for defining communities (co-occurring species). At each size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2 degree grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 (mostly cells along the coast with very low land area) and used this for subsequent analyses.
 
 ### Trait data
 
 We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens. All qualitative traits in binary format; e.g., a single trait with three states is formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately. Quantitative traits include aspects of leaf size (e.g., frond length, frond width, stipe length, etc.). Qualitative traits include aspects of leaf morphology (e.g., margin shape, leaf color, indusia shape, spore arrangement, etc.).
-
-We used ploidy level and breeding system data in @Ebihara2019b.
 
 ### Phylogenetic analysis
 
@@ -126,7 +125,7 @@ Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the J
 
 ### Analysis of biodiversity and endemism
 
-We measured taxanomic diversity using species richness.
+We measured taxonomic diversity using taxonomic richness.
 
 We measured phylogenetic diversity using the mean phylogenetic distance between all co-occurring taxa in a community (MPD) [@Webb2000; @Webb2002]. We calculated distances from the phylogenetic tree using the \function{cophenetic} function in R v. 4.0.0 [@RCoreTeam2019] and MPD using the \function{mpd} function in the R \package{picante}.
 
@@ -140,7 +139,7 @@ We tested whether endemic areas have an over-representation of old (paleoendemic
 
 It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. To account for this, we also calculated all endemism-related metrics using a dataset including only species endemic to Japan.
 
-### Analysis of bioregions and ecological structure
+### Analysis of bioregions
 
 We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20. \package{phyloregion} provides a function to automatically select *k* from a range of test values, but we found the results to be unreliable. We therefore evaluated the explained variance at each value of *k*, then selected *k* that provided the greatest increase in variance relative to the previous value (`r s_figure("k-plot")`).
 

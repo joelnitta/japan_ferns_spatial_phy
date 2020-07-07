@@ -109,6 +109,48 @@ map_theme_light <- theme(
   )
 ```
 
+```{r sampling-curve, fig.width = 4, fig.height = 3}
+# Format fern abundances (no hybrids) as numeric vector
+fern_abun <-
+  occ_point_data_ferns %>%
+  group_by(taxon) %>%
+  count(sort = TRUE) %>%
+  pull(n)
+
+# Run iNEXT
+inext_out <- iNEXT::iNEXT(fern_abun, q=0, datatype="abundance")
+
+# create subset of observed points to add to plot as dots
+observed_data <- inext_out$iNextEst[inext_out$iNextEst$method == "observed",]
+
+# check estimated completeness
+est_completeness <- inext_out$iNextEst %>% filter(method == "observed") %>% pull(SC) %>% scales::percent()
+rich_interval <- glue::glue("{observed_data$qD.LCL %>% round} to {observed_data$qD.UCL %>% round}")
+completeness_interval <- glue::glue("{observed_data$SC.LCL %>% scales::percent()} to {observed_data$SC.UCL %>% scales::percent()}")
+
+# Make iNEXT plot
+inext_out$iNextEst %>%
+  filter(method != "observed") %>%
+  ggplot(aes(x=m, y=qD)) +
+  geom_ribbon(aes(ymin = qD.LCL, ymax = qD.UCL), fill = "grey70") +
+  geom_line(aes(linetype=method), size=0.8) +
+  scale_linetype_manual(values=c("dotted", "solid", "solid")) +
+  geom_point(data=observed_data, size=3) +
+  scale_y_continuous("Richness") +
+  scale_x_continuous("No. specimens") +
+  theme_minimal() +
+  theme(
+    legend.position="bottom", 
+    legend.title=element_blank()
+  )
+
+ggsave(result_file(s_figure("sampling-curve"), "pdf"), width = 4, height = 3, units = "in")
+```
+
+**`r s_figure("sampling-curve")`**. `r s_figure_cap("sampling-curve")` Grey shading indicates 95% confidence interval (not visible where it does not extend beyond the fitted line). Point indicates observed taxonomic richness (`r observed_data$qD` taxa, 95% confidence interval `r rich_interval` taxa). Taxa include species, subspecies, and varieties, excluding hybrids. Sampling completeness is estimated to be `r est_completeness` (95% confidence interval `r completeness_interval`).
+
+\clearpage
+
 ```{r grain-size, fig.width = 7, fig.height = 3}
 # Helper function to format resolution labels
 degree_lab <- function (x) {
@@ -179,26 +221,22 @@ a + b + c +
 ggsave(result_file(s_figure("grain-size"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
-**`r s_figure("grain-size")`**. `r s_figure_cap("grain-size")` **A**, Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). **B**, Percent of grid cells with redundancy = 0 by grain size. **C**, Distribution of redundancy values by grain size.
+**`r s_figure("grain-size")`**. `r s_figure_cap("grain-size")` **A**, Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). **B**, Percent of grid cells with redundancy = 0 by grain size. **C**, Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 0.1 to 0.2 degree grid-cells, but less improvement as grain size is increased beyond 0.2 degrees.
 
 \clearpage
 
 ```{r k-plot, fig.width = 7, fig.height = 3}
-k_taxonomy_select <- 8
-
 a <- k_taxonomy$df %>%
   as_tibble() %>%
   mutate(
     optimal_auto = ifelse(k == k_taxonomy$optimal$k, TRUE, FALSE),
-    optimal_manual = ifelse(k == k_taxonomy_select, TRUE, FALSE),
-    label = ifelse(k == k_taxonomy_select, glue::glue("k = {k}"), "")
+    label = ifelse(k == k_taxonomy$optimal$k, glue::glue("k = {k}"), "")
   ) %>%
   ggplot(aes(x = k, y = ev)) +
   geom_path() +
-  geom_point(aes(color = optimal_manual, shape = optimal_auto), size = 2.5) +
+  geom_point(aes(color = optimal_auto), size = 2.5) +
   geom_text(aes(label = label), vjust = 0, nudge_y = 0.02, size = 4) +
   scale_color_manual(values = c("TRUE" = "#E31A1C", "FALSE" = "black")) +
-  scale_shape_manual(values = c("TRUE" = 17, "FALSE" = 16)) +
   labs(
     y = "Explained variance",
     x = "Number of clusters") +
@@ -206,28 +244,24 @@ a <- k_taxonomy$df %>%
     legend.position = "none"
   )
 
-k_phylogeny_select <- 6
+k_phylogeny_select <- 8
 
 b <- k_phylogeny$df %>%
   as_tibble() %>%
   mutate(
     optimal_auto = ifelse(k == k_phylogeny$optimal$k, TRUE, FALSE),
-    optimal_manual = ifelse(k == k_phylogeny_select, TRUE, FALSE),
-    label = ifelse(k == k_phylogeny_select, glue::glue("k = {k}"), "")
+    label = ifelse(k == k_phylogeny$optimal$k, glue::glue("k = {k}"), "")
   ) %>%
   ggplot(aes(x = k, y = ev)) +
   geom_path() +
-  geom_point(aes(color = optimal_manual, shape = optimal_auto), size = 2.5) +
+  geom_point(aes(color = optimal_auto), size = 2.5) +
   geom_text(aes(label = label), vjust = 0, nudge_y = 0.02, size = 4) +
   scale_color_manual(values = c("TRUE" = "#E31A1C", "FALSE" = "black")) +
-  scale_shape_manual(values = c("TRUE" = 17, "FALSE" = 16)) +
   labs(
     y = "Explained variance",
-    x = "Number of clusters",
-    shape = "Optimal k\n(auto)",
-    color = "Optimal k\n(manual)") +
+    x = "Number of clusters") +
   theme(
-    axis.title.y = element_blank()
+    legend.position = "none"
   )
 
 a + b +
@@ -237,7 +271,7 @@ a + b +
 ggsave(result_file(s_figure("k-plot"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
-**`r s_figure("k-plot")`**. `r s_figure_cap("k-plot")` **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Shape indicates optimal *k* selected by \function{optimal{\_}phyloregion} function in the R package \package{phyloregion} (circle, non-optimal; triangle, optimal); color indicates optimal *k* selected manually (black, non-optimal; red, optimal; see Methods).
+**`r s_figure("k-plot")`**. `r s_figure_cap("k-plot")` **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Color indicates optimal *k* selected selected by \function{optimal{\_}phyloregion} function in the R package \package{phyloregion} (black, non-optimal; red, optimal; see Methods).
 
 \clearpage
 
