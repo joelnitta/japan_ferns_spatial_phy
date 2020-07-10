@@ -236,6 +236,19 @@ shape_from_points2comm <- function (data) {
 #' @return Filtered data points
 filter_occ_points <- function(occ_point_data, shape_file) {
   
+  # Remove duplicates (same species collected on same day at same site)
+  occ_point_data <-
+    occ_point_data %>%
+    # only about 3,000 have date missing. conservatively consider these the same day.
+    mutate(date = replace_na(date, "missing")) %>%
+    assert(not_na, taxon, longitude, latitude, date) %>%
+    group_by(taxon, longitude, latitude, date) %>%
+    summarize(
+      n = n(),
+      .groups = "drop"
+    )
+  
+  
   # Read in shape file to use for mask
   # (here, the second-degree mesh map of Japan)
   second_degree_mesh <- sf::st_read(shape_file) %>%
