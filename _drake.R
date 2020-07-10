@@ -1,6 +1,11 @@
+# Specify non-global environment
+# to get around captioner modifying global env
+# (cf https://github.com/ropensci/drake/issues/749)
+envir <- new.env(parent = globalenv())
+
 # Load packages, functions, and plan
 source("R/packages.R")
-source("R/functions.R")
+source("R/functions.R", local = envir)
 source("R/plan.R")
 
 # Setup cache
@@ -9,11 +14,6 @@ options(rstudio_drake_cache = ja_fern_cache)
 
 # Specify parallel back-end
 options(clustermq.scheduler = "multicore")
-
-# Specify non-global environment
-# to get around captioner modifying global env
-# (cf https://github.com/ropensci/drake/issues/749)
-envir <- new.env(parent = globalenv())
 
 # Configure settings for making plan
 # (choose either parallel or serial, comment-out the other)
