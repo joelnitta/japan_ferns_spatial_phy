@@ -553,7 +553,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
       )) %>%
     select(-contains("leaf_sorus_indusium_presence_absence")) %>%
     rename(leaf_sorus_false_indusium_present = leaf_sorus_false_indusium)
-  
+ 
   #### Clean up numeric traits ###
   # Replace missing (0 or 3) with NA,
   # take the mean of the range of normal values otherwise
@@ -607,15 +607,6 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   # Combine all numeric and categorical traits
   traits_for_dist <- left_join(traits_numeric_combined_trans, traits_binary, by = "taxon")
   
-  # Drop any traits that have only one state
-  drop_single_state <-
-    map_df(traits_for_dist, n_distinct) %>%
-    gather(trait, n_states) %>%
-    filter(n_states == 1) %>%
-    pull(trait)
-  
-  traits_for_dist <- traits_for_dist[,!colnames(traits_for_dist) %in% drop_single_state]
-  
   # Fix some taxon names (synonyms)
   traits_for_dist <-
   traits_for_dist %>%
@@ -648,12 +639,116 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
     filter(traits_for_dist, !(taxon %in% taxon_id_map$taxon)) %>%
     pull(taxon)
   
+  # Drop any missing names
   traits_for_dist <- filter(traits_for_dist, taxon %in% taxon_id_map$taxon)
     
-  assertthat::validate_that(
+  msg <- assertthat::validate_that(
     length(missing_taxon_id) == 0,
     msg = glue::glue("The following taxa in the trait data could not be verified in the taxa list and have been dropped: {paste(missing_taxon_id, collapse = ', ')}")
   )
+  
+  if(is.character(msg)) message(msg)
+  
+  ### Find correlated traits to drop ###
+  
+  # helper function to identify static traits
+  get_static_traits <- function (data) {
+    data %>%
+      pivot_longer(names_to = "trait", values_to = "value", -taxon) %>%
+      group_by(trait) %>%
+      count(value) %>%
+      ungroup %>%
+      filter(!is.na(value)) %>%
+      select(trait) %>%
+      count(trait) %>%
+      filter(n < 2) %>%
+      pull(trait)
+  }
+  
+  # helper function to identify low-variance traits
+  # (less than two occurrences of a given trait state)
+  get_low_var_traits <- function (data) {
+    data %>% 
+      pivot_longer(names_to = "trait", values_to = "value", -taxon) %>%
+      group_by(trait) %>%
+      count(value) %>%
+      filter(!is.na(value)) %>%
+      filter(n < 3) %>%
+      pull(trait)
+  }
+  
+  # To calculate Pearson's correlation co-efficient, 
+  # can't allow any missing traits, so use a subset of the data
+  traits_corr_test <- ggplot2::remove_missing(traits_for_dist)
+  
+  # First make vector of any static trait (only a single trait state)
+  traits_corr_static <- 
+    traits_corr_test %>%
+    select(all_of(colnames(traits_binary))) %>% # consider binary traits only
+    get_static_traits
+  
+  # Next make a vector of any trait with less than two occurrences of a given trait state
+  traits_corr_low_var <-
+    traits_corr_test %>%
+    select(all_of(colnames(traits_binary))) %>% # consider binary traits only
+    get_low_var_traits
+  
+  # Drop the low and non-varying traits, drop the "taxon" column
+  traits_corr_test <- select(traits_corr_test, -any_of(c(traits_corr_static, traits_corr_low_var))) %>%
+    select(-taxon)
+  
+  # Calculate correlations
+  correlations <- cor(traits_corr_test)
+  
+  # Select columns to remove with absolute correlation > 0.6
+  traits_correlated_to_drop <- caret::findCorrelation(correlations, cutoff = 0.6) %>%
+    magrittr::extract(colnames(traits_corr_test), .)
+  
+  ### Drop zero and low-variance traits from full dataframe ###
+  
+  # Vector of any static trait (only a single trait state)
+  traits_static <- 
+    traits_for_dist %>%
+    select(all_of(colnames(traits_binary))) %>% # consider binary traits only
+    get_static_traits
+  
+  # Next make a vector of any trait with less than two occurrences of a given trait state
+  traits_low_var <-
+    traits_for_dist %>%
+    select(all_of(colnames(traits_binary))) %>% # consider binary traits only
+    get_low_var_traits
+  
+  # Drop correlated and non-varying traits from full dataframe
+  traits_to_drop <- c(traits_static, traits_low_var, traits_correlated_to_drop) %>% unique()
+  traits_for_dist <- select(traits_for_dist, -any_of(traits_to_drop))
+  
+  # There are still a few traits left once we use the full data that are correlated.
+  # Manually remove these.
+  still_correlated <- c(
+    "leaf_sorus_shape_globular",
+    "leaf_sorus_indusium_shape_globular",
+    "leaf_lamina_vennation_unbrached_single",
+    "leaf_sorus_shape_not_forming_distinc_sorus"
+  )
+  
+  traits_for_dist %>%
+    select(-taxon) %>%
+    corrr::correlate() %>%
+    pivot_longer(-rowname, names_to = "var2") %>%
+    rename(var1 = rowname) %>%
+    arrange(desc(value)) %>%
+    filter(value > 0.6) %>%
+    verify(all(var1 %in% still_correlated)) %>%
+    verify(all(var2 %in% still_correlated), success_fun = success_logical)
+  
+  traits_for_dist <- select(traits_for_dist, -leaf_sorus_shape_globular, -leaf_lamina_vennation_unbrached_single)
+  
+  # Verify that observed correlations in final data are less than 0.65
+  traits_for_dist %>%
+    select(-taxon) %>%
+    corrr::correlate() %>%
+    pivot_longer(-rowname) %>%
+    assert(within_bounds(-0.65, 0.65), value, success_fun = success_logical)
   
   traits_for_dist
   
