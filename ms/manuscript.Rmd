@@ -37,14 +37,9 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 loadd(list = c(
   "occ_point_data_ferns",
   "occ_point_data_ferns_unfiltered",
-  "ses_phy_ferns",
-  "ses_phy_ferns_endemic",
-  "ses_traits_ferns",
-  "shape_ferns",
+  "ses_div_ferns_spatial",
   "k_taxonomy",
-  "k_phylogeny",
-  "regions_taxonomy",
-  "regions_phylogeny"
+  "k_phylogeny"
 ),
 cache = ja_fern_cache)
 
@@ -182,24 +177,10 @@ TBD
 <!-- Figures -->
 
 ```{r plot-prep}
-tax_regions_data <- regions_taxonomy %>%
-  mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  select(grids, taxonomic_cluster)
-
-phy_regions_data <- regions_phylogeny %>%
-  mutate(phylo_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  select(grids, phylo_cluster)
-
-ses_div_ferns_spatial <-
-  shape_ferns %>%
-  left_join(ses_phy_ferns, by = c(grids = "site")) %>%
-  left_join(ses_traits_ferns, by = c(grids = "site")) %>%
-  left_join(tax_regions_data, by = "grids") %>%
-  left_join(phy_regions_data, by = "grids")
-
-ses_div_ferns_endemic_spatial <-
-shape_ferns %>%
-  left_join(ses_phy_ferns_endemic, by = c(grids = "site"))
+# Change cluster to factor
+ses_div_ferns_spatial <- ses_div_ferns_spatial %>%
+  mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
 
 map_theme <- theme(
     panel.grid.major = element_line(color = "grey95", size = 0.1),

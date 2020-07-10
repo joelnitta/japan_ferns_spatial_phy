@@ -39,18 +39,11 @@ loadd(list = c(
   "comm_scaled_list_0.2",
   "comm_scaled_list_0.3",
   "comm_scaled_list_0.4",
-  "richness_by_res",
   "occ_point_data_ferns",
-  "ses_phy_ferns",
-  "ses_phy_ferns_endemic",
-  "ses_traits_ferns",
-  "shape_ferns",
+  "ses_div_ferns_spatial",
+  "ses_div_ferns_endemic_spatial",
   "k_taxonomy",
   "k_phylogeny",
-  "regions_taxonomy",
-  "regions_phylogeny",
-  "species_motifs_ferns",
-  "species_motifs_ferns_combined",
   "traits_nmds",
   "ppgi"
 ),
@@ -72,27 +65,6 @@ source(here::here("ms/captions.R"))
 # Supplemental Information
 
 ```{r plot-prep}
-# Combine bioregion results, biodiversity metrics, and shape data into single dataframe
-tax_regions_data <- regions_taxonomy %>%
-  mutate(taxonomic_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  select(grids, taxonomic_cluster)
-
-phy_regions_data <- regions_phylogeny %>%
-  mutate(phylo_cluster = as.factor(cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  select(grids, phylo_cluster)
-
-ses_div_ferns_spatial <-
-  shape_ferns %>%
-  left_join(ses_phy_ferns, by = c(grids = "site")) %>%
-  left_join(ses_traits_ferns, by = c(grids = "site")) %>%
-  left_join(tax_regions_data, by = "grids") %>%
-  left_join(phy_regions_data, by = "grids")
-
-# - same for endemic species
-ses_div_ferns_endemic_spatial <-
-shape_ferns %>%
-  left_join(ses_phy_ferns_endemic, by = c(grids = "site"))
-
 # Define ggplot2 theme for maps
 map_theme <- theme(
     panel.grid.major = element_line(color = "grey95", size = 0.1),

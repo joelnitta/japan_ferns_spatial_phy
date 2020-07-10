@@ -51,7 +51,7 @@ plan <- drake_plan (
   # - subset to just ferns (674 taxa)
   occ_point_data_ferns_unfiltered = subset_to_ferns(occ_point_data, ppgi),
   
-  # - filter to only points in second-degree mesh
+  # - filter out duplicates, restrict to only points in second-degree mesh
   # Shape file downloaded from http://gis.biodic.go.jp/
   # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
   occ_point_data_ferns = filter_occ_points(
@@ -176,6 +176,23 @@ plan <- drake_plan (
   
   # Run NMDS on traits
   traits_nmds = vegan::metaMDS(trait_distance_matrix, k = 3),
+  
+  # Combine results ----
+  
+  # Combine spatial data, alpha diversity, and regions
+  
+  # - All ferns
+  ses_div_ferns_spatial =
+    shape_ferns %>%
+    left_join(ses_phy_ferns, by = c(grids = "site")) %>%
+    left_join(ses_traits_ferns, by = c(grids = "site")) %>%
+    left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
+    left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids"),
+  
+  # - Japan endemics only
+  ses_div_ferns_endemic_spatial =
+    shape_ferns %>%
+    left_join(ses_phy_ferns_endemic, by = c(grids = "site")),
   
   # Write out manuscript ----
   ms = rmarkdown::render(
