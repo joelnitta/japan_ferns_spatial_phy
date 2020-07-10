@@ -1,0 +1,267 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["default-fonts", "default", "custom.css"]
+    lib_dir: libs
+    mathjax: default
+    seal: false
+    nature:
+      slideNumberFormat: "" # To turn off slide numbers
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: ["left", "middle", "inverse"]
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, include = TRUE, eval = TRUE, cache = TRUE, dev = "svg")
+```
+
+```{r load-packages, cache = FALSE}
+library(magick)
+# library(gt)
+library(ggtext)
+library(drake)
+library(knitr)
+library(patchwork)
+library(scales)
+library(scico)
+library(magrittr)
+library(broom)
+library(assertr)
+library(sf)
+library(rcartocolor)
+library(tidyverse)
+```
+
+```{r load-data, cache = FALSE}
+# Set cache
+ja_fern_cache <- new_cache(here::here("ja_fern_cache"))
+
+source(here::here("R/functions.R"))
+
+# Load targets
+loadd(list = c(
+  "ses_div_ferns_spatial",
+  "occ_point_data_ferns"),
+  cache = ja_fern_cache)
+
+```
+
+```{r title-slide-image, eval = FALSE}
+# Code to make title slide image, don't need to run when rendering slides
+title_theme <- theme_void() +
+  theme(
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    legend.position = "none",
+     panel.background = element_rect(fill = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+  )
+
+# Change cluster to factor
+ses_div_ferns_spatial <- ses_div_ferns_spatial %>%
+  mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
+
+
+a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  title_theme
+
+b <- ggplot(ses_div_ferns_spatial, aes(fill = rpd_obs_z)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "SES RPD") +
+  scale_fill_scico(
+    palette = "roma",
+    na.value="grey80",
+    direction = -1,
+    limits = c(
+      -get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs"),
+      get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs")
+    )) +
+  title_theme
+
+c <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "Cluster") +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
+  title_theme
+
+a + b + c + plot_layout(ncol = 1)
+
+# Write out here, then crop manually
+ggsave(
+  plot = title_image, 
+  filename = here::here("presentations/bsa_2020-07-27/images/title.png"),
+  dpi = 300)
+
+```
+
+class: inverse, middle, title-slide, big-margin
+background-color: #000000
+background-position: 50% 50%
+background-image: url(images/title_background.png)
+background-size: contain
+
+.pull-left-wide[
+# Exploring dimensions of biodiversity in Japanese ferns
+<br>
+## Joel H. Nitta<sup>1</sup>, Atsushi Ebihara<sup>2</sup>
+
+<sup>1</sup>University of Tokyo<br>
+<span style = 'font-size: 80%;'>https://joelnitta.com</span>
+
+<sup>2</sup>National Museum of Nature and Science, Japan
+
+Botanical Society of America<br><span style = 'font-size: 80%;'>2020.07.27</span>
+]
+
+.pull-right-narrow[
+![](images/title_cropped.png)
+]
+
+---
+class: big-margin
+
+## Biodiversity is a two-sided coin
+
+Characterizing the **distribution of biodiversity** is needed to:
+
+- understand the **processes** generating it
+
+- understand how to **conserve** it
+
+---
+class: big-margin
+
+## Most studies of biodiversity count species
+
+However, taxonomic richness is only one dimension of biodiversity!
+
+We should also consider
+
+- Phylogenetic diversity
+
+- Functional diversity
+
+- How these are related to each other
+
+This requires comprehensive sampling of taxa, DNA, and traits
+
+---
+class: big-margin
+
+## Ferns of Japan
+
+.pull-left[
+
+- One of the best-collected fern floras in the world
+
+- Extensive study by both scientists and amateur societies
+
+]
+
+.pull-right[
+```{r gbif-colls-per-country}
+# Read in pteridophyte GBIF collections per country data from
+# Iwasaki lab presentation
+collections_by_country <- read_csv(here::here("data_raw/gbif_pterido_coll_by_country.csv")) %>%
+  mutate(country = factor(country)) %>%
+  mutate(country = fct_reorder(country, n))
+
+# Plot showing top 10
+ggplot(collections_by_country, aes(x = country, y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "GBIF pteridophyte \ncollections (top 10)",
+    y = "No. collections") +
+  scale_y_continuous(labels = scales::comma) +
+  ggplot2::theme_bw(base_size = 24) +
+  theme(
+    axis.title.y = element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(colour="black"),
+      axis.text.y = ggplot2::element_text(colour="black")
+  )
+```
+]
+
+
+---
+class: big-margin
+
+## Ferns of Japan
+
+.pull-left[
+- One of the best-collected fern floras in the world
+
+- Extensive study by both scientists and amateur societies
+]
+
+.pull-right[
+```{r ja-pterido-coll-curve}
+# Format fern abundances (no hybrids) as numeric vector
+fern_abun <-
+  occ_point_data_ferns %>%
+  group_by(taxon) %>%
+  count(sort = TRUE) %>%
+  pull(n)
+
+# Run iNEXT
+inext_out <- iNEXT::iNEXT(fern_abun, q=0, datatype="abundance")
+
+# create subset of observed points to add to plot as dots
+observed_data <- inext_out$iNextEst[inext_out$iNextEst$method == "observed",]
+
+# check estimated completeness
+est_completeness <- inext_out$iNextEst %>% filter(method == "observed") %>% pull(SC) %>% scales::percent()
+rich_interval <- glue::glue("{observed_data$qD.LCL %>% round} to {observed_data$qD.UCL %>% round}")
+completeness_interval <- glue::glue("{observed_data$SC.LCL %>% scales::percent()} to {observed_data$SC.UCL %>% scales::percent()}")
+
+# Make iNEXT plot
+inext_out$iNextEst %>%
+  filter(method != "observed") %>%
+  ggplot(aes(x=m, y=qD)) +
+  geom_ribbon(aes(ymin = qD.LCL, ymax = qD.UCL), fill = "grey70") +
+  geom_line(aes(linetype=method), size=0.8) +
+  scale_linetype_manual(values=c("dotted", "solid", "solid")) +
+  geom_point(data=observed_data, size=3) +
+  scale_y_continuous("Richness") +
+  scale_x_continuous("No. specimens") +
+  labs(
+    title = "Species collection curve",
+    subtitle = "Japanese ferns (no hybrids)"
+  ) +
+  ggplot2::theme_bw(base_size = 24) +
+  theme(
+    axis.title.y = element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(colour="black"),
+    axis.text.y = ggplot2::element_text(colour="black"),
+    legend.position="bottom", 
+    legend.title=element_blank()
+    )
+
+```
+]
+
+---
+class: big-margin
+
+## Goals of this study
+
+Using the **ferns of Japan** as a study system, seek to understand:
+
+1. How is biodiversity distributed? 
+ 
+2. How is biodiversity structured? 
+ 
+3. How well is biodiversity protected?
+
