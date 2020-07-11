@@ -1,4 +1,5 @@
 ---
+title: "Exploring dimensions of biodiversity in Japanese ferns"
 output:
   xaringan::moon_reader:
     css: ["default-fonts", "default", "custom.css"]
@@ -45,9 +46,32 @@ source(here::here("R/functions.R"))
 # Load targets
 loadd(list = c(
   "ses_div_ferns_spatial",
-  "occ_point_data_ferns"),
+  "occ_point_data_ferns",
+  "protected_areas"),
   cache = ja_fern_cache)
 
+# Read in pteridophyte GBIF collections per country data from
+# Iwasaki lab presentation
+collections_by_country <- read_csv(here::here("data_raw/gbif_pterido_coll_by_country.csv")) %>%
+  mutate(country = factor(country)) %>%
+  mutate(country = fct_reorder(country, n))
+
+# Download high-res map of Japan,
+# crop to spatial div results area
+japan <- rnaturalearth::ne_countries(country = "japan", scale = "large", returnclass = "sf") %>%
+  sf::st_crop(sf::st_bbox(ses_div_ferns_spatial))
+
+# Save currently used data as back-up in case data produced by plan changes
+data <- list(
+  ses_div_ferns_spatial = ses_div_ferns_spatial,
+  occ_point_data_ferns = occ_point_data_ferns,
+  collections_by_country = collections_by_country,
+  japan = japan
+)
+
+
+
+saveRDS(data, here::here("presentations/bsa_2020-07-27/data/data.RDS"))
 ```
 
 ```{r title-slide-image, eval = FALSE}
@@ -168,13 +192,7 @@ class: big-margin
 
 .pull-right[
 ```{r gbif-colls-per-country}
-# Read in pteridophyte GBIF collections per country data from
-# Iwasaki lab presentation
-collections_by_country <- read_csv(here::here("data_raw/gbif_pterido_coll_by_country.csv")) %>%
-  mutate(country = factor(country)) %>%
-  mutate(country = fct_reorder(country, n))
-
-# Plot showing top 10
+# Plot showing top 10 pteridophyte collections in GBIF by country
 ggplot(collections_by_country, aes(x = country, y = n)) +
   geom_col() +
   coord_flip() +
@@ -241,7 +259,6 @@ inext_out$iNextEst %>%
   ) +
   ggplot2::theme_bw(base_size = 24) +
   theme(
-    axis.title.y = element_blank(),
     panel.grid.minor = ggplot2::element_blank(),
     axis.text.x = ggplot2::element_text(colour="black"),
     axis.text.y = ggplot2::element_text(colour="black"),
@@ -265,3 +282,150 @@ Using the **ferns of Japan** as a study system, seek to understand:
  
 3. How well is biodiversity protected?
 
+---
+## Japan is well-protected overall (ca. 30% coverage)
+
+```{r protected-areas, out.width = "120%", fig.asp = 0.7}
+japan_box <- sf::st_bbox(ses_div_ferns_spatial)
+
+status_labels <-
+protected_areas %>%
+  as_tibble %>%
+  select(status, area) %>%
+  group_by(status) %>%
+  summarize(
+    area = sum(area),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    area = as.numeric(area),
+    area_chr = area %>% round %>% scales::number(big.mark = ","),
+    area_percent = area %>% magrittr::divide_by(377900) %>% scales::percent(),
+    label = glue::glue("{str_to_sentence(status)} ({area_percent})") %>% set_names(status)
+) %>%
+  pull(label)
+
+ggplot() +
+  geom_sf(data = japan) +
+  geom_sf(data = protected_areas, aes(fill = status), color = "transparent") +
+  coord_sf(xlim = c(japan_box$xmin, japan_box$xmax), ylim = c(japan_box$ymin, japan_box$ymax)) +
+  labs(
+    fill = "Conservation\nstatus"
+  ) +
+  scale_fill_viridis_d(breaks = names(status_labels), labels = status_labels)
+```
+
+---
+
+## Hotspots of taxonomic richness are well-protected
+
+```{r protected-richness, out.width = "120%", fig.asp = 0.7}
+# Subset to the top 5% for richness
+top_richness <-
+  ses_div_ferns_spatial %>%
+  mutate(rich_quant = ntile(richness, 20)) %>%
+  filter(rich_quant == 20)
+  
+# Join with protected areas data
+st_crs(top_richness) <- st_crs(protected_areas)
+
+protected_richness <- st_join(top_richness, protected_areas) %>%
+  filter(str_detect(rownames(.), "\\.", negate = TRUE))
+
+# Make an inset showing area plotted in Japan
+richness_box <- st_bbox(top_richness)
+
+inset <- 
+  ggplot() +
+  geom_sf(data = japan) +
+  annotate(
+    "rect",
+    xmin = richness_box$xmin,
+    xmax = richness_box$xmax,
+    ymin = richness_box$ymin,
+    ymax = richness_box$ymax,
+    alpha = .2) +
+  theme_void() +
+  theme(
+    plot.background = element_rect(fill = "white", color = "transparent")
+  )
+
+# Crop japan background map to richness area
+japan_cropped_to_richness <- japan
+st_crs(japan_cropped_to_richness) <- st_crs(protected_richness)
+japan_cropped_to_richness <- sf::st_crop(japan_cropped_to_richness, sf::st_bbox(protected_richness))
+
+# plot showing protected status of high richness areas
+richness_initial_plot <- ggplot() +
+  geom_sf(data = japan_cropped_to_richness) +
+  geom_sf(data = protected_richness, aes(fill = status)) + 
+  scale_fill_viridis_d(breaks = c("low", "medium", "high"), labels = c("Low", "Medium", "High")) +
+  labs(
+    title = "Top 5% richness",
+    fill = "Conservation\nstatus"
+  )
+
+# final plot: add inset
+cowplot::ggdraw(richness_initial_plot) +
+  cowplot::draw_plot(inset, 0.8, 0.45, .30, .30, hjust = 1, vjust = 1) 
+```
+---
+
+## Hotspots of phylogenetic endemism are also well-protected
+
+```{r protected-pe, out.width = "120%", fig.asp = 0.7}
+# Subset to top 5% (vs. null) for PE
+sig_pe <-
+  ses_div_ferns_spatial %>%
+  filter(pe_obs_p > 0.95)
+
+# Join with protected areas data
+# this joins raster (PE) with polygon (protected area)
+# if they intersect. So it is a minimum estimation - we will
+# count a grid cell as 'protected' if it intersects any part of
+# a protected polygon.
+st_crs(sig_pe) <- st_crs(protected_areas)
+
+protected_pe <- st_join(sig_pe, protected_areas)
+
+protected_pe <-
+  protected_pe %>%
+  filter(str_detect(rownames(.), "\\.", negate = TRUE))
+
+# Make an inset showing area plotted in Japan
+pe_box <- st_bbox(sig_pe)
+
+inset <- 
+  ggplot() +
+  geom_sf(data = japan) +
+  annotate(
+    "rect",
+    xmin = pe_box$xmin,
+    xmax = pe_box$xmax,
+    ymin = pe_box$ymin,
+    ymax = pe_box$ymax,
+    alpha = .2) +
+  theme_void() +
+  theme(
+    plot.background = element_rect(fill = "white", color = "transparent")
+  )
+
+# Crop japan background map to PE area
+japan_cropped_to_pe <- japan
+st_crs(japan_cropped_to_pe) <- st_crs(protected_pe)
+japan_cropped_to_pe <- sf::st_crop(japan_cropped_to_pe, sf::st_bbox(protected_pe))
+
+# plot showing protected status of high PE areas
+pe_initial_plot <- ggplot() +
+  geom_sf(data = japan_cropped_to_pe) +
+  geom_sf(data = protected_pe, aes(fill = status)) + 
+  scale_fill_viridis_d(breaks = c("low", "medium", "high"), labels = c("Low", "Medium", "High"), na.value = "white") +
+  labs(
+    title = "Significantly high PE",
+    fill = "Conservation\nstatus"
+  )
+
+# final plot: add inset
+cowplot::ggdraw(pe_initial_plot) +
+  cowplot::draw_plot(inset, 0.06, 0.47, .2, .2, hjust = 0, vjust = 0) 
+```
