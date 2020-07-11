@@ -298,6 +298,27 @@ filter_comm_by_redun <- function (comm, shape, cutoff = 0.1) {
   
 }
 
+#' Combine shapes of protected areas in Japan
+#'
+#' @param ... Shape files read in with sf::st_read()
+#'
+#' @return Simple feature collection
+#' 
+combine_protected_areas <- function (...) {
+  
+  bind_rows(...) %>%
+    assert(not_na, status) %>%
+    # Remove all marine areas
+    filter(status != "marine") %>%
+    # Add area
+    mutate(area = st_area(.) %>% units::set_units(km^2)) %>%
+    # Convert status to ordered factor
+    mutate(
+      status = factor(status, ordered = TRUE, levels = c("low", "medium", "high"))
+    )
+  
+}
+
 # Reproductive mode ----
 
 #' Calculate percent of sexual diploid taxa per grid cell (site)

@@ -194,6 +194,105 @@ plan <- drake_plan (
     shape_ferns %>%
     left_join(ses_phy_ferns_endemic, by = c(grids = "site")),
   
+  # Conservation analysis ----
+  
+  ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)
+  # Assign protection levels following Kusamoto et al. 2017
+  # - high: no human activities allowed
+  # - medium: permission required for economic activities
+  # - low: protected area, but none of the above restrictions
+  
+  # 1: wilderness
+  protected_1 = sf::st_read("data_raw/map17/原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝原生自然環境保全地域
+        ZONE == 2 ~ "high", # 2＝特別地区
+        ZONE == 3 ~ "high", # 3＝海中特別地区
+        ZONE == 4 ~ "low" # 4＝普通地区
+      )
+    ),
+  
+  # 2: quasi-national parks
+  protected_2 = sf::st_read("data_raw/map17/国定公園.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝特別保護地区
+        ZONE == 20 ~ "high", # 20＝特別地域
+        ZONE == 21 ~ "medium", # 21＝第1種特別地域
+        ZONE == 22 ~ "medium", # 22＝第2種特別地域
+        ZONE == 23 ~ "medium", # 23＝第3種特別地域
+        ZONE == 3 ~ "low", # 3＝普通地区
+        ZONE == 5 ~ "marine" #5＝海域公園地区
+      )
+    ),
+  
+  # 3: national wildlife protection areas
+  protected_3 = sf::st_read("data_raw/map17/国指定鳥獣保護区.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
+        ZONE == 2 ~ "medium", # 2＝特別保護地区
+      )
+    ),
+  
+  # 4: national parks
+  protected_4 = sf::st_read("data_raw/map17/国立公園.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝特別保護地区
+        ZONE == 20 ~ "high", # 20＝特別地域
+        ZONE == 21 ~ "medium", # 21＝第1種特別地域
+        ZONE == 22 ~ "medium", # 22＝第2種特別地域
+        ZONE == 23 ~ "medium", # 23＝第3種特別地域
+        ZONE == 3 ~ "low", # 3＝普通地区
+        ZONE == 5 ~ "marine" #5＝海域公園地区
+      )
+    ) %>%
+    # Remove protected area in inland sea (marine)
+    filter(NAME != "瀬戸内海"),
+  
+  # 5: prefectural wildlife protection areas
+  protected_5 = sf::st_read("data_raw/map17/都道府県指定鳥獣保護区.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
+        ZONE == 2 ~ "medium", # 2＝特別保護地区
+        ZONE == 3 ~ "low" # not specified, but assume no other special protection
+      )
+    ),
+  
+  # 6: prefectural natural parks
+  protected_6 = sf::st_read("data_raw/map17/都道府県立自然公園.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝特別保護地区
+        ZONE == 20 ~ "high", # 20＝特別地域
+        ZONE == 3 ~ "low" # 3＝普通地区
+      )
+    ),
+  
+  # 7: prefectural protection areas
+  protected_7 = sf::st_read("data_raw/map17/都道府県自然環境保全地域.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 0 ~ "high", # 0＝原生自然環境保全地域
+        ZONE == 2 ~ "high", # 2＝特別地区
+        ZONE == 4 ~ "low" # 4＝普通地区
+      )
+    ),
+  
+  # Combine protected areas into single dataframe
+  protected_areas = combine_protected_areas(
+    protected_1,
+    protected_2,
+    protected_3,
+    protected_4,
+    protected_5,
+    protected_6,
+    protected_7
+  ),
+  
   # Write out manuscript ----
   ms = rmarkdown::render(
     knitr_in("ms/manuscript.Rmd"),
