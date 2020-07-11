@@ -1547,6 +1547,13 @@
       "Repository": "CRAN",
       "Hash": "946d1b43d7aba91dfa804f02302a5125"
     },
+    "rnaturalearthdata": {
+      "Package": "rnaturalearthdata",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0d34b89b43e900467e60f5449226f3e3"
+    },
     "rncl": {
       "Package": "rncl",
       "Version": "0.8.4",
@@ -1651,6 +1658,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "8ecd38ae23eea07aad8d4136f9a2fd63"
+    },
+    "servr": {
+      "Package": "servr",
+      "Version": "0.17",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a59f16bb4cb2280bebe6b7726103af66"
     },
     "sf": {
       "Package": "sf",
@@ -1950,6 +1964,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c3cb513a418e92d15a55f3e8ac9ddc63"
+    },
+    "xaringan": {
+      "Package": "xaringan",
+      "Version": "0.16",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7168ed8f41f3597c6c570477c0d0bf15"
     },
     "xfun": {
       "Package": "xfun",
