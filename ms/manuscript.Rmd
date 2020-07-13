@@ -181,21 +181,6 @@ TBD
 ses_div_ferns_spatial <- ses_div_ferns_spatial %>%
   mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
   mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
-
-map_theme <- theme(
-    panel.grid.major = element_line(color = "grey95", size = 0.1),
-    panel.background = element_rect(fill = "grey60"),
-    axis.ticks = element_blank(),
-    axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
-  )
-
-map_theme_light <- theme(
-    panel.grid.major = element_line(color = "white", size = 0.1),
-    panel.background = element_rect(fill = "grey90"),
-    axis.ticks = element_blank(),
-    axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
-  )
-
 ```
 
 ```{r richness, width = 7, height = 4}

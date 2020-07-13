@@ -2209,6 +2209,32 @@ standard_theme2 <- function () {
     )
 }
 
+map_theme <- function() {
+  theme(
+    panel.grid.major = element_line(color = "grey95", size = 0.1),
+    panel.background = element_rect(fill = "grey60"),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
+  )
+}
+
+map_theme_light <- function () {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey90"),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
+  )
+}
+
+map_theme_pp <- function() {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey70"),
+    axis.ticks = element_blank()
+  )
+}
+
 #' Get the lower, upper, or absolute maximum value
 #' of a variable in a dataframe
 #'
