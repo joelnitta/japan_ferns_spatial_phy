@@ -2235,6 +2235,14 @@ map_theme_pp <- function() {
   )
 }
 
+map_theme_pp_light <- function() {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey90"),
+    axis.ticks = element_blank()
+  )
+}
+
 #' Get the lower, upper, or absolute maximum value
 #' of a variable in a dataframe
 #'
