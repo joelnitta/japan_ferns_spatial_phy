@@ -271,10 +271,13 @@ ggplot(collections_by_country, aes(x = country, y = n)) +
 ]
 
 ---
-class: big-margin
+background-position: 40% 50%
+background-image: url(images/japan_intro.png)
+background-size: contain
 
-## (Very brief) introduction to the biogeography of Japan
+## A (very brief) introduction to the biogeography of Japan
 
+.pull-left[
 - Wide variation in climate from north (subarctic) to south (subtropical)
 
 - Wide variation in elevation
@@ -282,6 +285,7 @@ class: big-margin
 - Tertiary relict flora (never glaciated)
 
 - Main islands continental, southern islands oceanic
+]
 
 ---
 class: big-margin
