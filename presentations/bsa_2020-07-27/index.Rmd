@@ -20,7 +20,7 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, include = TRUE, eval = TRUE, cache = TRUE, dev = "svg")
 ```
 
-```{r load-packages, cache = FALSE}
+```{r load-packages-funcs, cache = FALSE}
 library(conflicted)
 library(magick)
 library(ggtext)
@@ -185,14 +185,15 @@ background-size: contain
 .pull-left-wide[
 # Exploring dimensions of biodiversity in Japanese ferns
 <br>
-## Joel H. Nitta<sup>1</sup>, Atsushi Ebihara<sup>2</sup>
+## Joel H. Nitta<sup>1</sup>, Brent D. Misher<sup>2</sup>, Wataru Iwasaki<sup>1</sup>, Atsushi Ebihara<sup>3</sup>
 
-<sup>1</sup>University of Tokyo<br>
+<sup>1</sup>University of Tokyo, Japan<br>
+
+<sup>2</sup>University of California, Berkeley, USA<br>
+
+<sup>3</sup>National Museum of Nature and Science, Japan
+
 <span style = 'font-size: 80%;'>https://joelnitta.com</span>
-
-<sup>2</sup>National Museum of Nature and Science, Japan
-
-Botanical Society of America<br><span style = 'font-size: 80%;'>2020.07.27</span>
 ]
 
 .pull-right-narrow[
@@ -202,20 +203,9 @@ Botanical Society of America<br><span style = 'font-size: 80%;'>2020.07.27</span
 ---
 class: big-margin
 
-## Biodiversity is a two-sided coin
+## Biodiversity: more than just counting species
 
-Characterizing the **distribution of biodiversity** is needed to:
-
-- understand the **processes** generating it
-
-- understand how to **conserve** it
-
----
-class: big-margin
-
-## Most studies of biodiversity count species
-
-However, taxonomic richness is only one dimension of biodiversity!
+Species richness is only one dimension of biodiversity!
 
 We should also consider
 
@@ -225,18 +215,37 @@ We should also consider
 
 - How these are related to each other
 
-This requires comprehensive sampling of taxa, DNA, and traits
+<img src="images/not_just_species.png" alt="drawing" width="800"/>
 
 ---
 class: big-margin
 
-## Ferns of Japan
+## Biodiversity: more than just counting species
+
+Species richness is only one dimension of biodiversity!
+
+We should also consider
+
+- Phylogenetic diversity
+
+- Functional diversity
+
+- How these are related to each other
+
+**This requires comprehensive sampling of taxa, DNA, and traits**
+
+---
+class: big-margin
+
+## Ferns of Japan: an ideal system for studying biodiversity
 
 .pull-left[
 
+- Diverse flora (ca. 675 spp.)
+
 - One of the best-collected fern floras in the world
 
-- Extensive study by both scientists and amateur societies
+- Data available for DNA, distribution, and traits
 
 ]
 
@@ -264,59 +273,15 @@ ggplot(collections_by_country, aes(x = country, y = n)) +
 ---
 class: big-margin
 
-## Ferns of Japan
+## (Very brief) introduction to the biogeography of Japan
 
-.pull-left[
-- One of the best-collected fern floras in the world
+- Wide variation in climate from north (subarctic) to south (subtropical)
 
-- Extensive study by both scientists and amateur societies
-]
+- Wide variation in elevation
 
-.pull-right[
-```{r ja-pterido-coll-curve}
-# Format fern abundances (no hybrids) as numeric vector
-fern_abun <-
-  occ_point_data_ferns %>%
-  group_by(taxon) %>%
-  count(sort = TRUE) %>%
-  pull(n)
+- Tertiary relict flora (never glaciated)
 
-# Run iNEXT
-inext_out <- iNEXT::iNEXT(fern_abun, q=0, datatype="abundance")
-
-# create subset of observed points to add to plot as dots
-observed_data <- inext_out$iNextEst[inext_out$iNextEst$method == "observed",]
-
-# check estimated completeness
-est_completeness <- inext_out$iNextEst %>% filter(method == "observed") %>% pull(SC) %>% scales::percent()
-rich_interval <- glue::glue("{observed_data$qD.LCL %>% round} to {observed_data$qD.UCL %>% round}")
-completeness_interval <- glue::glue("{observed_data$SC.LCL %>% scales::percent()} to {observed_data$SC.UCL %>% scales::percent()}")
-
-# Make iNEXT plot
-inext_out$iNextEst %>%
-  filter(method != "observed") %>%
-  ggplot(aes(x=m, y=qD)) +
-  geom_ribbon(aes(ymin = qD.LCL, ymax = qD.UCL), fill = "grey70") +
-  geom_line(aes(linetype=method), size=0.8) +
-  scale_linetype_manual(values=c("dotted", "solid", "solid")) +
-  geom_point(data=observed_data, size=3) +
-  scale_y_continuous("Richness") +
-  scale_x_continuous("No. specimens") +
-  labs(
-    title = "Species collection curve",
-    subtitle = "Japanese ferns (no hybrids)"
-  ) +
-  ggplot2::theme_bw(base_size = 24) +
-  theme(
-    panel.grid.minor = ggplot2::element_blank(),
-    axis.text.x = ggplot2::element_text(colour="black"),
-    axis.text.y = ggplot2::element_text(colour="black"),
-    legend.position="bottom", 
-    legend.title=element_blank()
-    )
-
-```
-]
+- Main islands continental, southern islands oceanic
 
 ---
 class: big-margin
@@ -332,31 +297,78 @@ Using the **ferns of Japan** as a study system, seek to understand:
 3. How well is biodiversity protected?
 
 ---
+class: big-margin
+## Data sources
+
+```{r summarize-traits}
+trait_summary <- make_trait_summary(traits_for_dist)
+
+n_binary <- trait_summary %>% filter(trait_type == "binary") %>% nrow()
+n_cont <- trait_summary %>% filter(trait_type == "continuous") %>% nrow()
+n_qual <- trait_summary %>% filter(trait_type == "qualitative") %>% nrow()
+```
+
+**Occurrence data**
+
+- Specimens at herbaria in Japan
+
+- `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` specimens (`r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` taxa)
+
+- Convert to 0.2° (ca. 20 km x 20 km) presence-absence matrix
+
+---
+class: big-margin
+## Data sources
+
+**Phylogenetic tree**
+
+- *rbcL* sequences from Japanese specimens (Ebihara and Nitta 2019)
+
+- Combine with broad sampling from genbank (ca. 60 genes x 4,000 taxa) (Nitta et al., in prep.)
+
+- Infer phylogeny with IQ-TREE (Nguyen et al. 2015)
+
+- Date with 26 fossil calibration points (Testo and Sundue 2016) using treePL (Smith and O'Meara 2012)
+
+- Subset to only Japanese taxa
+
+---
+class: big-margin
+
+## Data sources
+
+**Traits**
+
+- `r nrow(trait_summary)` morphological traits mostly used for ID (Ebihara and Nitta 2019)
+
+  - `r n_binary` binary (e.g., false indusium)
+
+  - `r n_cont` continuous (e.g., stipe length)
+
+  - `r n_qual` qualitative (e.g., indusium shape, lamina texture)
+  
+---
+class: middle, inverse, big-margin
+
+# How is biodiversity distributed? 
+
+---
 ## Species richness is humped-shaped
 
-```{r lat-bins}
-# Bin SES diversity results by latitudinal band (0.2 degree width)
-ses_div_binned <-
+```{r centroids}
+# Convert diversity metrics dataframe to centroids for plotting trends
+ses_div_centroids <-
   ses_div_ferns_spatial %>%
   mutate(
     longitude = sf::st_centroid(geometry) %>% st_coordinates %>% magrittr::extract(,1),
     latitude = sf::st_centroid(geometry) %>% st_coordinates %>% magrittr::extract(,2)) %>%
   as_tibble %>%
-  dplyr::select(-geometry) %>%
-  mutate(
-    latitude = cut_width(latitude, width = 0.2, closed = "left") %>%
-      str_split(",") %>%
-      map_chr(1) %>%
-      parse_number) %>%
-  group_by(latitude) %>%
-  summarize(
-    across(c(richness, pe_obs_rank, contains("obs_z")), ~mean(.x, na.rm = TRUE))
-  )
+  dplyr::select(-geometry)
 
 # Get min and max latitude for setting common limits between
 # maps and trendlines
-ja_lat_min <- ses_div_binned %>% pull(latitude) %>% min()
-ja_lat_max <- ses_div_binned %>% pull(latitude) %>% max()
+ja_lat_min <- ses_div_centroids %>% pull(latitude) %>% min()
+ja_lat_max <- ses_div_centroids %>% pull(latitude) %>% max()
 ```
 
 ```{r richness, out.width = "120%"}
@@ -376,31 +388,23 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
   ) +
   ylim(ja_lat_min, ja_lat_max)
 
-# - line tracking mean richness
-b <-
-  ggplot(ses_div_binned, aes(y = latitude, x = richness)) +
-  geom_path() +
-  labs(
-    x = "No. taxa"
-  ) +
-  theme(
-    panel.background = element_blank(),
-    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
-    panel.grid.minor = element_blank(),
-    axis.title.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.y = element_blank()
-  ) +
-  ylim(ja_lat_min, ja_lat_max)
+# - latitudinal trends
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = richness)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_smooth(se = FALSE) +
+  xlim(ja_lat_min, ja_lat_max) +
+  coord_flip() +
+  labs(y = "No. taxa") +
+  trend_line_theme()
 
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
 
+.footnote[Trendline: General additive model (GAM) with cubic splines]
 ---
 ## Other raw values are correlated with richness
 
-```{r raw-div, out.width = "120%", fig.asp = 0.7}
+```{r raw-div-1, out.width = "120%", fig.asp = 0.7}
 # Richness
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
   geom_sf(color = "transparent") +
@@ -411,13 +415,49 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
 b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
   geom_sf(color = "transparent") +
   scale_fill_scico(palette = "lajolla") + 
-  labs(title = "Phylogenetic diversity") +
+  labs(
+    title = "Phylogenetic diversity",
+    subtitle = "Faith's PD") +
   simple_map_theme()
 
 c <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
   geom_sf(color = "transparent") +
   scale_fill_scico(palette = "lajolla") + 
-  labs(title = "Functional diversity") +
+  labs(
+    title = "Functional diversity",
+    subtitle = "Faith's PD measured\non trait dendrogram") +
+  simple_map_theme()
+
+a + b + c +
+  plot_spacer() + plot_spacer() + plot_spacer() +
+  plot_layout(nrow = 2, heights = c(0.5, 0.5))
+```
+
+---
+## Other raw values are correlated with richness... as expected
+
+```{r raw-div-2, out.width = "120%", fig.asp = 0.7}
+# Richness
+a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") + 
+  labs(title = "Taxonomic richness") +
+  simple_map_theme()
+
+b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") + 
+  labs(
+    title = "Phylogenetic diversity",
+    subtitle = "Faith's PD") +
+  simple_map_theme()
+
+c <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") + 
+  labs(
+    title = "Functional diversity",
+    subtitle = "Faith's PD measured\non trait dendrogram") +
   simple_map_theme()
 
 d <- ggplot(ses_div_ferns_spatial, aes(x = richness, y = pd_obs)) +
@@ -441,30 +481,28 @@ e <- ggplot(ses_div_ferns_spatial, aes(x = richness, y = fd_obs)) +
   jntools::standard_theme()
 
 a + b + c +
-  grid::textGrob("...as expected") + d + e +
+  plot_spacer() + d + e +
   plot_layout(nrow = 2, heights = c(0.5, 0.5))
 ```
 
+.footnote[Trendline: GAM with log-transform]
 ---
-## Compare raw values to random expectation with <u>**S**</u>tandard <u>**E**</u>ffect <u>**S**</u>ize
+class: big-margin
+## Compare raw values to random expectation with<br> <u>**S**</u>tandard <u>**E**</u>ffect <u>**S**</u>ize
 
-.pull-left[
-$SES = \frac{x - mean(x)}{sd(x)}$
+.large[
+.center[
+$SES = \frac{obs - mean(null)}{sd(null)}$
+]
 ]
 
-.pull-right[
-```{r ses-example}
-null <- tibble(value = rnorm(10000))
+SES = 0: not different from random
 
-obs_1 <- 0.95
-obs_2 <- 0.5
-obs_3 <- 0.05
+SES > 0: more diverse than expected
 
-ggplot(null, aes(x = value)) +
-  geom_histogram(bins = 50) +
-  geom_vline(xintercept = 0)
-```
-]
+SES < 0: less diverse than expected
+
+Null distribution: 999 communities randomized using "Independent Swap" (Gotelli, 2000)
 
 ---
 ## Compare raw values to random expectation with <u>**S**</u>tandard <u>**E**</u>ffect <u>**S**</u>ize
@@ -494,28 +532,20 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs_z)) +
     legend.justification=c(0,1), legend.position=c(0,1)
   )
 
-# - line tracking mean SES RPD
-b <-
-  ggplot(ses_div_binned, aes(y = latitude, x = pd_obs_z)) +
-  geom_path() +
-  geom_vline(xintercept = 0, linetype="dashed") +
-  labs(
-    x = "SES PD"
-  ) +
-  ylim(24, 46) +
-  theme(
-    panel.background = element_blank(),
-    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
-    panel.grid.minor = element_blank(),
-    axis.title.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.y = element_blank()
-  )
+# - latitudinal trends
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = pd_obs_z)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_hline(yintercept = 0, linetype="dashed") +
+  geom_smooth(se = FALSE) +
+  xlim(ja_lat_min, ja_lat_max) +
+  coord_flip() +
+  labs(y = "SES PD") +
+  trend_line_theme()
 
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
 
+.footnote[Trendline: GAM with cubic splines]
 ---
 ## Compare branch lengths with <u>**R**</u>elative <u>**P**</u>hylogenetic <u>**D**</u>iversity
 
@@ -549,32 +579,24 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = rpd_obs_z)) +
     legend.justification=c(0,1), legend.position=c(0,1)
   )
 
-# - line tracking mean SES RPD
-b <-
-  ggplot(ses_div_binned, aes(y = latitude, x = rpd_obs_z)) +
-  geom_path() +
-  geom_vline(xintercept = 0, linetype="dashed") +
-  labs(
-    x = "SES RPD"
-  ) +
-  ylim(24, 46) +
-  theme(
-    panel.background = element_blank(),
-    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
-    panel.grid.minor = element_blank(),
-    axis.title.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.y = element_blank()
-  )
+# - latitudinal trends
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = rpd_obs_z)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_hline(yintercept = 0, linetype="dashed") +
+  geom_smooth(se = FALSE) +
+  xlim(ja_lat_min, ja_lat_max) +
+  coord_flip() +
+  labs(y = "SES RPD") +
+  trend_line_theme()
 
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
 
+.footnote[Trendline: GAM with cubic splines]
 ---
 ## <u>**R**</u>elative <u>**F**</u>unctional <u>**D**</u>iversity: functional analog of RPD
 
-RFD also high in the south
+Southern islands have high RFD
 
 ```{r ses-rpd-rfd, out.width = "120%"}
 # SES RPD
@@ -599,29 +621,20 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = rfd_obs_z)) +
     legend.justification=c(0,1), legend.position=c(0,1)
   )
 
-# - line tracking mean SES RPD
-b <-
-  ggplot(ses_div_binned, aes(y = latitude, x = rfd_obs_z)) +
-  geom_path() +
-  geom_vline(xintercept = 0, linetype="dashed") +
-  labs(
-    x = "SES RFD"
-  ) +
-  ylim(24, 46) +
-  theme(
-    panel.background = element_blank(),
-    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
-    panel.grid.minor = element_blank(),
-    axis.title.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.y = element_blank(),
-    plot.margin = margin(l = -1, unit = "inch")
-  )
+# - latitudinal trends
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = rfd_obs_z)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_hline(yintercept = 0, linetype="dashed") +
+  geom_smooth(se = FALSE) +
+  xlim(ja_lat_min, ja_lat_max) +
+  coord_flip() +
+  labs(y = "SES RFD") +
+  trend_line_theme()
 
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
 
+.footnote[Trendline: GAM with cubic splines]
 ---
 ## Phylogenetic endemism: PD weighted by range size
 
@@ -630,10 +643,10 @@ Southern islands are hotspots of endemism
 ```{r pe, out.width = "120%"}
 # PE
 # - map
-a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_rank)) +
+a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_p)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
-  labs(fill = "PE Rank") +
+  scale_fill_scico(palette = "lajolla", labels = scales::percent) + 
+  labs(fill = "PE percentile") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   ylim(ja_lat_min, ja_lat_max) +
@@ -645,17 +658,25 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_rank)) +
   )
 
 # - line tracking mean richness
-b <-
-  ggplot(ses_div_binned, aes(y = latitude, x = pe_obs_rank)) +
-  geom_path() +
-  labs(
-    x = "PE Rank"
-  ) +
-  ylim(ja_lat_min, ja_lat_max) +
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = pe_obs_p)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_hline(yintercept = 0.95, linetype="dashed") +
+  geom_smooth(se = FALSE) +
+  annotate("label", y = 0.95, x = ja_lat_max, label = "95%", size = 2) + 
+  xlim(ja_lat_min, ja_lat_max) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(y = "PE percentile") +
+  coord_flip() +
   trend_line_theme()
 
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
+
+.footnote[Trendline: GAM with cubic splines]
+---
+class: middle, inverse, big-margin
+
+# How is biodiversity structured? 
 
 ---
 ## Most sites fall into four bioregions
@@ -666,7 +687,7 @@ ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
   scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme_light() +
+  map_theme_pp_light() +
   labs(
     title = "Taxonomic bioregions"
   )
@@ -675,7 +696,7 @@ ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
 ---
 ## Taxonomic and phylogenetic bioregions are similar
 
-```{r tax-bioregion, out.width = "120%", fig.asp = 0.7}
+```{r compare-bioregion, out.width = "120%", fig.asp = 0.7}
 a <- ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
   geom_sf(color = "transparent") +
   scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
@@ -687,15 +708,17 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
   ) +
   theme(legend.position = "none")
 
+# (If needed)
 # Swap first two colors to get them to match between taxonomic and phylogenetic plots
-cols_old <- rcartocolor::carto_pal(n = 8,  "Bold")
-cols <- cols_old
-cols[1] <- cols_old[2]
-cols[2] <- cols_old[1]
+# cols_old <- rcartocolor::carto_pal(n = 8,  "Bold")
+# cols <- cols_old
+# cols[1] <- cols_old[2]
+# cols[2] <- cols_old[1]
 
 b <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
   geom_sf(color = "transparent") +
-  scale_fill_manual(values = cols) +
+  # scale_fill_manual(values = cols) +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
   labs(title = "Phylogenetic bioregions") +
@@ -710,30 +733,37 @@ a + b
 ---
 ## Bioregions mostly match traditionally-defined forest types
 
-```{r tax-bioregion, out.width = "120%", fig.asp = 0.7}
-forest_types <- image_read(here::here("presentations/bsa_2020-07-27/images/forest_types_3_eng.png"))
+.pull-left[
+Taxonomic bioregions
 
-b <- cowplot::ggdraw() + 
-  cowplot::draw_image(forest_types)
-
-a <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
+```{r tax-bioregion-forest}
+ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
   geom_sf(color = "transparent") +
-  scale_fill_manual(values = cols) +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  labs(title = "Phylogenetic bioregions") +
   map_theme_pp_light() +
-  theme(
-    axis.text.y = element_blank(),
-    legend.position = "none")
-
-a + b 
+  theme(legend.position = "none")
 ```
+]
+
+.pull-right[
+Forest types
+
+<img src="images/forest_types_eng.png" alt="drawing" width="280"/>
+]
+
+.footnote[Shimizu 2014]
+
+---
+class: middle, inverse, big-margin
+
+# How well is biodiversity protected? 
 
 ---
 ## Japan is well-protected overall (ca. 30% coverage)
 
-```{r protected-areas, out.width = "120%", fig.asp = 0.7}
+```{r protected-areas, out.width = "120%", fig.asp = 0.7, fig.retina=200}
 japan_box <- sf::st_bbox(ses_div_ferns_spatial)
 
 status_labels <-
@@ -767,7 +797,6 @@ ggplot() +
 ```
 
 ---
-
 ## Hotspots of taxonomic richness are well-protected
 
 ```{r protected-richness, out.width = "120%", fig.asp = 0.7}
@@ -823,8 +852,8 @@ richness_initial_plot <- ggplot() +
 cowplot::ggdraw(richness_initial_plot) +
   cowplot::draw_plot(inset, 0.8, 0.45, .30, .30, hjust = 1, vjust = 1) 
 ```
----
 
+---
 ## Hotspots of phylogenetic endemism are also well-protected
 
 ```{r protected-pe, out.width = "120%", fig.asp = 0.7}
@@ -886,3 +915,33 @@ pe_initial_plot <- ggplot() +
 cowplot::ggdraw(pe_initial_plot) +
   cowplot::draw_plot(inset, 0.06, 0.47, .2, .2, hjust = 0, vjust = 0) 
 ```
+
+---
+class: big-margin
+
+## Conclusions
+
+How is biodiversity distributed? 
+
+- Taxonomic diversity highest in Kyushu
+
+- Phylogenetic and functional diversity, phylogenetic endemism highest in Okinawa
+
+How is biodiversity structured?
+
+- Into four major clusters that track major forest types
+ 
+How well is biodiversity protected?
+
+- Well-protected in terms of status
+
+- May be in danger from herbivory by deer
+
+---
+class: big-margin
+
+## Future directions
+
+- Understand the role that hybridization has on diversification (ca. 400 described hybrids!)
+
+- Clarify the role of fern gametophytes in community assembly at broad scales
