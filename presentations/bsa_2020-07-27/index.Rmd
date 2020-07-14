@@ -86,13 +86,17 @@ map_theme_pp_light <- function() {
 source(here::here("R/functions.R"))
 ```
 
-```{r, load_refs, include=FALSE, cache=FALSE}
+```{r, load_refs, includ = FALSE, cache = FALSE}
+# Set bibliography options
 library(RefManageR)
 BibOptions(
   ignore.case = TRUE,
   check.entries = FALSE, 
-  style = "markdown"
+  bib.style = "authoryear", # set style of bibliography as e.g., "Nitta 2020..."
+  style = "text" # set style of citations as plain text (no links)
 )
+
+# Read in bibliography
 bib <- ReadBib(here::here("presentations/bsa_2020-07-27/refs.bib"), check = FALSE)
 ```
 
