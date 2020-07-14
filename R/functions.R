@@ -836,7 +836,7 @@ make_trait_summary <- function (traits_for_dist) {
   
   # Summarize traits
   traits_for_dist %>%
-    select(-taxon_id) %>%
+    dplyr::select(-taxon) %>%
     colnames %>%
     tibble(trait = .) %>%
     left_join(states) %>%
@@ -848,7 +848,7 @@ make_trait_summary <- function (traits_for_dist) {
     # categorical version by name.
     categorize_traits %>%
     add_count(comp_trait) %>%
-    select(comp_trait, trait_type, n) %>%
+    dplyr::select(comp_trait, trait_type, n) %>%
     unique() %>%
     mutate(trait_type = case_when(
       trait_type == "continuous" ~ trait_type,
@@ -858,7 +858,7 @@ make_trait_summary <- function (traits_for_dist) {
     mutate(n_states = case_when(
       trait_type == "qualitative" ~ n
     )) %>%
-    select(trait = comp_trait, trait_type, n_states) %>%
+    dplyr::select(trait = comp_trait, trait_type, n_states) %>%
     arrange(trait_type, trait)
 }
 
@@ -2224,22 +2224,6 @@ map_theme_light <- function () {
     panel.background = element_rect(fill = "grey90"),
     axis.ticks = element_blank(),
     axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
-  )
-}
-
-map_theme_pp <- function() {
-  theme(
-    panel.grid.major = element_line(color = "white", size = 0.1),
-    panel.background = element_rect(fill = "grey70"),
-    axis.ticks = element_blank()
-  )
-}
-
-map_theme_pp_light <- function() {
-  theme(
-    panel.grid.major = element_line(color = "white", size = 0.1),
-    panel.background = element_rect(fill = "grey90"),
-    axis.ticks = element_blank()
   )
 }
 

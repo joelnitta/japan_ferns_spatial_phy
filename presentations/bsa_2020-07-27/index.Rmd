@@ -65,16 +65,34 @@ trend_line_theme <- function () {
     axis.text.y = element_blank()
   )
 }
+
+
+map_theme_pp <- function() {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey70"),
+    axis.ticks = element_blank()
+  )
+}
+
+map_theme_pp_light <- function() {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey90"),
+    axis.ticks = element_blank()
+  )
+}
+
+source(here::here("R/functions.R"))
 ```
 
 ```{r load-data, cache = FALSE}
 # Set cache
 ja_fern_cache <- new_cache(here::here("ja_fern_cache"))
 
-source(here::here("R/functions.R"))
-
 # Load targets
 loadd(list = c(
+  "traits_for_dist",
   "ses_div_ferns_spatial",
   "occ_point_data_ferns",
   "protected_areas"),
