@@ -100,6 +100,13 @@
       "Repository": "CRAN",
       "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
     },
+    "RefManageR": {
+      "Package": "RefManageR",
+      "Version": "1.2.12",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c741c79676cf3c15d7dcc339aa43c9db"
+    },
     "SQUAREM": {
       "Package": "SQUAREM",
       "Version": "2020.3",
@@ -232,6 +239,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f2cf33875b859a757ad919a4471cdc0f"
+    },
+    "bibtex": {
+      "Package": "bibtex",
+      "Version": "0.4.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8d96f3da9e7ec851e14e39c0872ad1ab"
     },
     "bitops": {
       "Package": "bitops",
