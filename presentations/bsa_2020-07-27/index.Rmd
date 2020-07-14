@@ -86,6 +86,16 @@ map_theme_pp_light <- function() {
 source(here::here("R/functions.R"))
 ```
 
+```{r, load_refs, include=FALSE, cache=FALSE}
+library(RefManageR)
+BibOptions(
+  ignore.case = TRUE,
+  check.entries = FALSE, 
+  style = "markdown"
+)
+bib <- ReadBib(here::here("presentations/bsa_2020-07-27/refs.bib"), check = FALSE)
+```
+
 ```{r load-data, cache = FALSE}
 # Set cache
 ja_fern_cache <- new_cache(here::here("ja_fern_cache"))
@@ -326,13 +336,13 @@ class: big-margin
 
 **Phylogenetic tree**
 
-- *rbcL* sequences from Japanese specimens (Ebihara and Nitta 2019)
+- *rbcL* sequences from Japanese specimens `r AutoCite(bib, "Ebihara2019b")`
 
 - Combine with broad sampling from genbank (ca. 60 genes x 4,000 taxa) (Nitta et al., in prep.)
 
-- Infer phylogeny with IQ-TREE (Nguyen et al. 2015)
+- Infer phylogeny with IQ-TREE `r AutoCite(bib, "Nguyen2015")`
 
-- Date with 26 fossil calibration points (Testo and Sundue 2016) using treePL (Smith and O'Meara 2012)
+- Date with 26 fossil calibration points `r AutoCite(bib, "Testo2016a")` using treePL `r AutoCite(bib, "Smith2012")`
 
 - Subset to only Japanese taxa
 
@@ -343,7 +353,7 @@ class: big-margin
 
 **Traits**
 
-- `r nrow(trait_summary)` morphological traits mostly used for ID (Ebihara and Nitta 2019)
+- `r nrow(trait_summary)` morphological traits mostly used for ID `r AutoCite(bib, "Ebihara2019b")`
 
   - `r n_binary` binary (e.g., false indusium)
 
@@ -375,7 +385,7 @@ ja_lat_min <- ses_div_centroids %>% pull(latitude) %>% min()
 ja_lat_max <- ses_div_centroids %>% pull(latitude) %>% max()
 ```
 
-```{r richness, out.width = "120%"}
+```{r richness, out.width = "130%"}
 # Fern richness
 # - map
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
@@ -683,6 +693,17 @@ class: middle, inverse, big-margin
 # How is biodiversity structured? 
 
 ---
+## Classify bioregions using clustering
+
+.middle[
+<img src="images/daru_2017.png" alt="drawing" height="400"/>
+]
+
+(can also use taxonomic distances)
+
+.footnote[`r Citet(bib, "Daru2017")`]
+
+---
 ## Most sites fall into four bioregions
 
 ```{r tax-bioregion, out.width = "120%", fig.asp = 0.7}
@@ -757,7 +778,7 @@ Forest types
 <img src="images/forest_types_eng.png" alt="drawing" width="280"/>
 ]
 
-.footnote[Shimizu 2014]
+.footnote[`r Citet(bib, "shimizu_process_2014")`]
 
 ---
 class: middle, inverse, big-margin
@@ -949,3 +970,21 @@ class: big-margin
 - Understand the role that hybridization has on diversification (ca. 400 described hybrids!)
 
 - Clarify the role of fern gametophytes in community assembly at broad scales
+
+---
+## References
+
+.small[
+```{r, results='asis', echo = FALSE, warning = FALSE}
+PrintBibliography(bib, start = 1, end = 5)
+```
+]
+
+---
+## References
+
+.small[
+```{r, results='asis', echo = FALSE, warning = FALSE}
+PrintBibliography(bib, start = 6, end = 10)
+```
+]
