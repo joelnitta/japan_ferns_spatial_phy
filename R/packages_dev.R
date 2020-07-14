@@ -6,6 +6,7 @@ library(visNetwork)
 library(rnaturalearthdata)
 library(rnaturalearthhires)
 library(miniUI)
+library(lwgeom)
 
 # considering these...
 library(ggtext)
