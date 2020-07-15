@@ -7,7 +7,7 @@ output:
     mathjax: default
     seal: false
     nature:
-      slideNumberFormat: "" # To turn off slide numbers
+      # slideNumberFormat: "" # To turn off slide numbers
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
