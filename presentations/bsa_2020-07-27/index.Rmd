@@ -285,13 +285,9 @@ ggplot(collections_by_country, aes(x = country, y = n)) +
 ]
 
 ---
-background-position: 40% 50%
-background-image: url(images/japan_intro.png)
-background-size: contain
-
 ## A (very brief) introduction to the biogeography of Japan
 
-.pull-left[
+.pull-left-narrow[
 - Wide variation in climate from north (subarctic) to south (subtropical)
 
 - Wide variation in elevation
@@ -299,6 +295,10 @@ background-size: contain
 - Tertiary relict flora (never glaciated)
 
 - Main islands continental, southern islands oceanic
+]
+
+.pull-right-wide[
+<img src="images/japan_intro_cropped.png" alt="drawing" height="580"/>
 ]
 
 ---
@@ -389,7 +389,7 @@ ja_lat_min <- ses_div_centroids %>% pull(latitude) %>% min()
 ja_lat_max <- ses_div_centroids %>% pull(latitude) %>% max()
 ```
 
-```{r richness, out.width = "130%"}
+```{r richness, out.width = "120%"}
 # Fern richness
 # - map
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
@@ -419,8 +419,21 @@ a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
 
 .footnote[Trendline: General additive model (GAM) with cubic splines]
+
 ---
-## Other raw values are correlated with richness
+class: big-margin
+## Measuring diversity with a tree
+
+.center[
+<img src="images/pd.png" alt="drawing" height="250"/>
+]
+
+<u>**P**</u>hylogenetic <u>**D**</u>iversity: Total unique branch length `r AutoCite(bib, "Faith1992")`
+
+<u>**F**</u>unctional <u>**D**</u>iversity: PD, but measured with a trait dendrogram `r AutoCite(bib, "Petchey2002")`
+
+---
+## PD and FD are correlated with richness
 
 ```{r raw-div-1, out.width = "120%", fig.asp = 0.7}
 # Richness
@@ -434,16 +447,14 @@ b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
   geom_sf(color = "transparent") +
   scale_fill_scico(palette = "lajolla") + 
   labs(
-    title = "Phylogenetic diversity",
-    subtitle = "Faith's PD") +
+    title = "Phylogenetic diversity") +
   simple_map_theme()
 
 c <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
   geom_sf(color = "transparent") +
   scale_fill_scico(palette = "lajolla") + 
   labs(
-    title = "Functional diversity",
-    subtitle = "Faith's PD measured\non trait dendrogram") +
+    title = "Functional diversity") +
   simple_map_theme()
 
 a + b + c +
@@ -452,7 +463,7 @@ a + b + c +
 ```
 
 ---
-## Other raw values are correlated with richness... as expected
+## PD and FD are correlated with richness... as expected
 
 ```{r raw-div-2, out.width = "120%", fig.asp = 0.7}
 # Richness
@@ -466,16 +477,14 @@ b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
   geom_sf(color = "transparent") +
   scale_fill_scico(palette = "lajolla") + 
   labs(
-    title = "Phylogenetic diversity",
-    subtitle = "Faith's PD") +
+    title = "Phylogenetic diversity") +
   simple_map_theme()
 
 c <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
   geom_sf(color = "transparent") +
   scale_fill_scico(palette = "lajolla") + 
   labs(
-    title = "Functional diversity",
-    subtitle = "Faith's PD measured\non trait dendrogram") +
+    title = "Functional diversity") +
   simple_map_theme()
 
 d <- ggplot(ses_div_ferns_spatial, aes(x = richness, y = pd_obs)) +
@@ -565,9 +574,25 @@ a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 
 .footnote[Trendline: GAM with cubic splines]
 ---
+background-position: 40% 50%
+background-image: url(images/rpd.png)
+background-size: contain
+
 ## Compare branch lengths with <u>**R**</u>elative <u>**P**</u>hylogenetic <u>**D**</u>iversity
 
-RPD = original branch lengths / all branch lengths equal
+.pull-right[
+Long branches
+
+- Refugium
+
+- Occurrence of a few members of clades that mainly occur outside of the study region
+
+Short branches
+
+- Recently diverged lineages
+
+.small[`r Citet(bib, "Mishler2014")`]
+]
 
 ---
 ## Compare branch lengths with <u>**R**</u>elative <u>**P**</u>hylogenetic <u>**D**</u>iversity
@@ -610,7 +635,7 @@ b <- ggplot(ses_div_centroids, aes(x = latitude, y = rpd_obs_z)) +
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
 
-.footnote[Trendline: GAM with cubic splines]
+.footnote[Trendline: GAM with cubic splines `r NoCite(bib, "Faith1992")`]
 ---
 ## <u>**R**</u>elative <u>**F**</u>unctional <u>**D**</u>iversity: functional analog of RPD
 
@@ -699,7 +724,7 @@ class: middle, inverse, big-margin
 ---
 ## Classify bioregions using clustering
 
-.middle[
+.center[
 <img src="images/daru_2017.png" alt="drawing" height="400"/>
 ]
 
@@ -710,7 +735,7 @@ class: middle, inverse, big-margin
 ---
 ## Most sites fall into four bioregions
 
-```{r tax-bioregion, out.width = "120%", fig.asp = 0.7}
+```{r tax-bioregion, out.width = "120%", fig.asp = 0.6}
 ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
   geom_sf(color = "transparent") +
   scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
@@ -782,7 +807,7 @@ Forest types
 <img src="images/forest_types_eng.png" alt="drawing" width="280"/>
 ]
 
-.footnote[`r Citet(bib, "shimizu_process_2014")`]
+.footnote[`r Citet(bib, "Shimizu2014")`]
 
 ---
 class: middle, inverse, big-margin
@@ -792,7 +817,7 @@ class: middle, inverse, big-margin
 ---
 ## Japan is well-protected overall (ca. 30% coverage)
 
-```{r protected-areas, out.width = "120%", fig.asp = 0.7, fig.retina=200}
+```{r protected-areas, out.width = "120%", fig.asp = 0.65, fig.retina=200}
 japan_box <- sf::st_bbox(ses_div_ferns_spatial)
 
 status_labels <-
@@ -947,6 +972,24 @@ cowplot::ggdraw(pe_initial_plot) +
 
 ---
 class: big-margin
+## A growing threat: herbivory by deer (*Cervus nippon*)
+
+.center[
+<img src="images/deer_damage_1.png" alt="drawing" height="450"/>
+]
+
+---
+class: big-margin
+## A growing threat: herbivory by deer (*Cervus nippon*)
+
+
+
+.center[
+<img src="images/deer_damage_2.png" alt="drawing" height="500"/>
+]
+
+---
+class: big-margin
 
 ## Conclusions
 
@@ -979,7 +1022,7 @@ class: big-margin
 ## References
 
 .small[
-```{r, results='asis', echo = FALSE, warning = FALSE}
+```{r, results='asis', echo = FALSE, warning = FALSE, cache = FALSE}
 PrintBibliography(bib, start = 1, end = 5)
 ```
 ]
@@ -988,7 +1031,7 @@ PrintBibliography(bib, start = 1, end = 5)
 ## References
 
 .small[
-```{r, results='asis', echo = FALSE, warning = FALSE}
+```{r, results='asis', echo = FALSE, warning = FALSE, cache = FALSE}
 PrintBibliography(bib, start = 6, end = 10)
 ```
 ]
