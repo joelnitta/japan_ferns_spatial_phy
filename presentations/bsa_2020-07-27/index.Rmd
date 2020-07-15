@@ -309,7 +309,7 @@ green_list %>%
 ]
 ]
 
-.footnote[.small[Photos A. Ebihara]]
+.footnote[.small[Photos: A. Ebihara]]
 
 ---
 class: big-margin
@@ -366,7 +366,7 @@ ggplot(collections_by_country, aes(x = country, y = n)) +
 ]
 
 .pull-right-wide[
-<img src="images/japan_intro_cropped.png" alt="drawing" height="580"/>
+<img src="images/japan_intro.png" alt="drawing" height="580"/>
 ]
 
 ---
@@ -600,9 +600,7 @@ SES < 0: less diverse than expected
 Null distribution: 999 communities randomized using "Independent Swap" (Gotelli, 2000)
 
 ---
-## Compare raw values to random expectation with <u>**S**</u>tandard <u>**E**</u>ffect <u>**S**</u>ize
-
-PD is mostly clustered throughout
+## SES of PD is mostly clustered throughout
 
 ```{r ses-pd, out.width = "120%"}
 # SES PD
@@ -643,7 +641,7 @@ a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 .footnote[Trendline: GAM with cubic splines]
 ---
 background-position: 40% 50%
-background-image: url(images/rpd.png)
+background-image: url(images/RPD.png)
 background-size: contain
 
 ## Compare branch lengths with <u>**R**</u>elative <u>**P**</u>hylogenetic <u>**D**</u>iversity
@@ -651,21 +649,19 @@ background-size: contain
 .pull-right[
 Long branches
 
-- Refugium
+- Refugia
 
 - Occurrence of a few members of clades that mainly occur outside of the study region
 
 Short branches
 
-- Recently diverged lineages
+- Recently speciation
 
 .small[`r Citet(bib, "Mishler2014")`]
 ]
 
 ---
-## Compare branch lengths with <u>**R**</u>elative <u>**P**</u>hylogenetic <u>**D**</u>iversity
-
-RPD is high in the N and S
+## RPD is high in the north and south
 
 ```{r ses-rpd, out.width = "120%"}
 # SES RPD
@@ -705,9 +701,9 @@ a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 
 .footnote[Trendline: GAM with cubic splines `r NoCite(bib, "Faith1992")`]
 ---
-## <u>**R**</u>elative <u>**F**</u>unctional <u>**D**</u>iversity: functional analog of RPD
+## Southern islands have high RFD
 
-Southern islands have high RFD
+(RFD = functional analog of RPD)
 
 ```{r ses-rpd-rfd, out.width = "120%"}
 # SES RPD
@@ -747,9 +743,9 @@ a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 
 .footnote[Trendline: GAM with cubic splines]
 ---
-## Phylogenetic endemism: PD weighted by range size
+## Southern islands are hotspots of endemism
 
-Southern islands are hotspots of endemism
+(Phylogenetic endemism = PD weighted by range size)
 
 ```{r pe, out.width = "120%"}
 # PE
@@ -1259,6 +1255,23 @@ class: big-margin
 - Understand the role that hybridization has on diversification (ca. 400 described hybrids!)
 
 - Clarify the role of fern gametophytes in community assembly at broad scales
+
+---
+class:: big-margin
+
+# Acknowledgements
+
+.center[
+<img src="images/pags-logo.png" alt="drawing" width="600"/>
+
+<img src="images/shida-no-kai-logo.png" alt="drawing" height="120"/>
+
+Members of the Iwasaki Lab (The University of Tokyo)
+
+Eric Schuettpelz (Smithsonian Institution)
+
+Alexander White (Smithsonian Institution)
+]
 
 ---
 ## References
