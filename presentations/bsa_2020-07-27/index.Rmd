@@ -210,9 +210,6 @@ ggsave(
 
 class: inverse, middle, title-slide, big-margin
 background-color: #000000
-background-position: 50% 50%
-background-image: url(images/title_background.png)
-background-size: contain
 
 .pull-left-wide[
 # Exploring dimensions of biodiversity in Japanese ferns
@@ -1055,7 +1052,7 @@ class: middle, inverse, big-margin
 ---
 ## Japan is well-protected overall (ca. 30% coverage)
 
-```{r protected-areas, out.width = "120%", fig.asp = 0.65, fig.retina=200}
+```{r protected-areas, out.width = "120%", fig.asp = 0.65, dev="png", dpi=200}
 japan_box <- sf::st_bbox(ses_div_ferns_spatial)
 
 status_labels <-
