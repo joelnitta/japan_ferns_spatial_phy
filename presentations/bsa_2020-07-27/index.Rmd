@@ -17,7 +17,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, include = TRUE, eval = TRUE, cache = TRUE, dev = "svg")
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, include = TRUE, eval = TRUE, cache = TRUE, dev = "svg", dev.args=list(bg="transparent"))
 ```
 
 ```{r load-packages-funcs, cache = FALSE}
@@ -96,12 +96,13 @@ map_theme_pp_light <- function() {
 source(here::here("R/functions.R"))
 ```
 
-```{r, load_refs, includ = FALSE, cache = FALSE}
+```{r, load-refs, includ = FALSE, cache = FALSE}
 # Set bibliography options
 library(RefManageR)
 BibOptions(
   ignore.case = TRUE,
-  check.entries = FALSE, 
+  check.entries = FALSE,
+  max.names = 3,
   bib.style = "authoryear", # set style of bibliography as e.g., "Nitta 2020..."
   style = "text" # set style of citations as plain text (no links)
 )
@@ -409,7 +410,7 @@ class: big-margin
 
 - Combine with broad sampling from GenBank
 
-- Infer phylogeny with IQ-TREE `r AutoCite(bib, "Nguyen2015")`
+- Infer phylogeny with IQ-TREE (Nguyen et al., 2015) `r NoCite(bib, "Nguyen2015")`
 
 - Date with 27 fossil calibration points `r AutoCite(bib, "Testo2016a")` using treePL `r AutoCite(bib, "Smith2012")`
 
@@ -652,9 +653,9 @@ Long branches
 
 Short branches
 
-- Recently speciation
+- Recent speciation
 
-.small[`r Citet(bib, "Mishler2014")`]
+.small[Mishler et al. (2014) `r NoCite(bib, "Mishler2014")`]
 ]
 
 ---
@@ -696,7 +697,7 @@ b <- ggplot(ses_div_centroids, aes(x = latitude, y = rpd_obs_z)) +
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ```
 
-.footnote[Trendline: GAM with cubic splines `r NoCite(bib, "Faith1992")`]
+.footnote[Trendline: GAM with cubic splines]
 ---
 ## Southern islands have high RFD
 
@@ -742,7 +743,7 @@ a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ---
 ## Southern islands are hotspots of endemism
 
-(Phylogenetic endemism = PD weighted by range size)
+Phylogenetic endemism = PD weighted by range size (Rosauer et al., 2009) `r NoCite(bib, "Rosauer2009")`
 
 ```{r pe, out.width = "120%"}
 # PE
@@ -790,7 +791,7 @@ class: middle, inverse, big-margin
 
 (can also use taxonomic distances)
 
-.footnote[`r Citet(bib, "Daru2017")`]
+.footnote[`r Citet(bib, c("Daru2017", "Daru2020"))`]
 
 ---
 ## Most sites fall into four bioregions
@@ -808,6 +809,10 @@ ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
 ```
 
 ---
+background-position: 50% 50%
+background-image: url(images/species-background-1.png)
+background-size: contain
+
 ## Most sites fall into four bioregions
 
 ```{r find-top-species}
@@ -899,7 +904,13 @@ plot_top_taxon(top_species$taxon[[3]], ses_div_ferns_spatial, comm_ferns_long) +
 plot_layout(ncol = 2, nrow = 2)
 ```
 
+.footnote[`r NoCite(bib, c("Ebihara2016b", "Ebihara2017"))`]
+
 ---
+background-position: 50% 50%
+background-image: url(images/species-background-2.png)
+background-size: contain
+
 ## Most sites fall into four bioregions
 
 ```{r plot-top-species-cluster-2, out.width = "120%", fig.asp = 0.65}
@@ -922,7 +933,13 @@ plot_top_taxon(top_species$taxon[[6]], ses_div_ferns_spatial, comm_ferns_long) +
 plot_layout(ncol = 2, nrow = 2)
 ```
 
+.footnote[`r NoCite(bib, c("Ebihara2016b", "Ebihara2017"))`]
+
 ---
+background-position: 50% 50%
+background-image: url(images/species-background-3.png)
+background-size: contain
+
 ## Most sites fall into four bioregions
 
 ```{r plot-top-species-cluster-3, out.width = "120%", fig.asp = 0.65}
@@ -945,7 +962,13 @@ plot_top_taxon(top_species$taxon[[9]], ses_div_ferns_spatial, comm_ferns_long) +
 plot_layout(ncol = 2, nrow = 2)
 ```
 
+.footnote[`r NoCite(bib, c("Ebihara2016b", "Ebihara2017"))`]
+
 ---
+background-position: 50% 50%
+background-image: url(images/species-background-4.png)
+background-size: contain
+
 ## Most sites fall into four bioregions
 
 ```{r plot-top-species-cluster-4, out.width = "120%", fig.asp = 0.65}
@@ -982,6 +1005,8 @@ plot_top_taxon(top_species$taxon[[12]], ses_div_ferns_spatial, comm_ferns_long) 
 plot_top_taxon(top_species$taxon[[11]], ses_div_ferns_spatial, comm_ferns_long) +
 plot_layout(ncol = 2, nrow = 2)
 ```
+
+.footnote[`r NoCite(bib, c("Ebihara2016b", "Ebihara2017"))`]
 
 ---
 ## Taxonomic and phylogenetic bioregions are similar
@@ -1270,7 +1295,7 @@ How is biodiversity distributed?
 
 - Taxonomic diversity highest in Kyushu
 
-- Phylogenetic and functional diversity, phylogenetic endemism highest in Okinawa
+- Phylogenetic and functional diversity, phylogenetic endemism highest in southern islands
 ]
 
 .pull-right[
@@ -1397,7 +1422,7 @@ Alexander White (Smithsonian Institution)
 
 .small[
 ```{r, results='asis', echo = FALSE, warning = FALSE, cache = FALSE}
-PrintBibliography(bib, start = 1, end = 6)
+PrintBibliography(bib, start = 1, end = 8)
 ```
 ]
 
@@ -1406,6 +1431,6 @@ PrintBibliography(bib, start = 1, end = 6)
 
 .small[
 ```{r, results='asis', echo = FALSE, warning = FALSE, cache = FALSE}
-PrintBibliography(bib, start = 7, end = 12)
+PrintBibliography(bib, start = 9, end = 16)
 ```
 ]

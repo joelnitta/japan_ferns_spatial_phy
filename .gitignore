@@ -17,6 +17,8 @@ temp
 *.png
 *.log
 *.tar.gz
+*.ppt
+*.pptx
 renv/
 cached_zip/
 *_cache/
