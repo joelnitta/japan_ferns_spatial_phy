@@ -1,21 +1,44 @@
-# Biodiversity of Japanese Ferns and Lycophytes
+# Exploring dimensions of biodiversity in Japanese ferns
 
-## Building the analysis environment
+Code repostitory to run analyses and generate figures and manuscript for Nitta et al. "Exploring dimensions of biodiversity in Japanese ferns".
 
-`conda` is used to maintain a reproducible analysis environment, and `packrat` is used to maintain R package versions. To create the environment, first install conda, or update to the most recent version:
+All code is in [R](https://cran.r-project.org/). The [drake package](https://ropensci.github.io/drake/) is used to manage the workflow. To run all analyses and generate the manuscript, [clone this repository](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository) and run `drake::r_make()`.
+
+## Data
+
+FIXME: Add a description of how to download data
+
+## Reproducible analysis with Docker
+
+This project requires various packages to be installed, and may not work properly if package versions have changed. Therefore, a [Docker image is provided](https://hub.docker.com/r/joelnitta/japan_ferns_biogeo) to run the code reproducibly.
+
+To use it, first [install docker](https://docs.docker.com/install/) and clone this repository.
+
+Navigate to the cloned repository (where `/path/to/repo` is the path on your machine), and launch the container:
 
 ```
-conda update -n base -c defaults conda
+cd /path/to/repo
+docker-compose up -d
 ```
 
-Build the environment from `environment.yml`:
+Enter the container:
 
 ```
-conda env create -f environment.yml
+docker exec -it japan_ferns_biogeo_analysis_1 bash
 ```
 
-Load the environment:
+Inside the container, run `drake::r_make()`:
 
 ```
-source activate japan-ferns-biogeo
+Rscript -e "drake::r_make()"
 ```
+
+You will see the targets being built by `drake`, and the final manuscript should be compiled at the end as `manuscript.pdf` and `manuscript.docx` in the `results` folder. Other figure and table files will also be compiled.
+
+When it's finished, exit the container and take it down:
+
+```
+exit
+docker-compose down
+```
+
