@@ -11,3 +11,6 @@ library(lwgeom)
 # considering these...
 library(ggtext)
 library(gghighlight)
+
+# needed for patchwork to plot ggplot and base together
+library(gridGraphics)

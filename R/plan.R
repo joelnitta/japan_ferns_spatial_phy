@@ -129,7 +129,8 @@ plan <- drake_plan (
   ses_phy = target(
     run_ses_analysis(
       comm = comm, 
-      phy = japan_fern_tree, 
+      phy = japan_fern_tree,
+      null_model = "independentswap",
       n_reps = 999, 
       metrics = metrics) %>% 
       categorize_endemism,
@@ -142,9 +143,29 @@ plan <- drake_plan (
       .names = c("ses_phy_ferns", "ses_phy_ferns_endemic"))
   ),
   
+  ses_phy_trial = target(
+    run_ses_analysis(
+      comm = comm, 
+      phy = japan_fern_tree,
+      null_model = "trialswap",
+      n_reps = 999, 
+      n_iterations = 500000,
+      metrics = metrics) %>% 
+      categorize_endemism,
+    transform = map(
+      comm = c(comm_ferns, comm_ferns_endemic),
+      metrics = c(
+        c("pd", "rpd", "pe", "rpe"),
+        c("pe", "rpe")
+      ),
+      .names = c("ses_trial_phy_ferns", "ses_trial_phy_ferns_endemic"))
+  ),
+  
   ses_traits_ferns = run_ses_analysis(
     comm = comm_ferns,
+    null_model = "independentswap",
     n_reps = 999,
+    n_iterations = 500000,
     metrics = c("fd", "rfd"),
     trait_distances = trait_distance_matrix),
   

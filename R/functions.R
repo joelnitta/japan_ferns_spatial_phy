@@ -1228,7 +1228,11 @@ rename_tree <- function (tree, taxon_id_map) {
 #' @return List of vectors. Each vector is a biodiversity metric measured on the
 #' random community, in the same order as the rows in the input community.
 #' 
-calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, trait_tree = NULL, trait_tree_alt = NULL, n_iterations, metrics) {
+calc_biodiv_random <- function (
+  comm_df, phy = NULL, phy_alt = NULL, 
+  trait_tree = NULL, trait_tree_alt = NULL, 
+  null_model = c("frequency", "richness", "independentswap", "trialswap"), 
+  n_iterations = 1000, metrics) {
   
   # Make sure selection of metrics is OK
   assert_that(is.character(metrics))
@@ -1238,6 +1242,12 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, trait_tree 
   assert_that(
     all(metrics %in% c("pd", "rpd", "fd", "rfd", "pe", "rpe")),
     msg = "Biodiversity metrics may only be selected from 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'"
+  )
+  
+  assert_that(is.character(null_model))
+  assert_that(
+    null_model %in% c("frequency", "richness", "independentswap", "trialswap"),
+    msg = "Null model may only be selected from 'frequency', 'richness', 'independentswap', or 'trialswap'"
   )
   
   # Make sure names match between community and tree
@@ -1267,7 +1277,7 @@ calc_biodiv_random <- function (comm_df, phy = NULL, phy_alt = NULL, trait_tree 
   comm_sparse <- phyloregion::dense2sparse(comm_df)
   
   # Generate random community
-  random_comm <- picante::randomizeMatrix(comm_df, null.model = "independentswap", iterations = n_iterations)
+  random_comm <- picante::randomizeMatrix(comm_df, null.model = null_model, iterations = n_iterations)
   random_comm_sparse <- phyloregion::dense2sparse(random_comm)
   
   # Calculate statistics for random community
@@ -1368,7 +1378,11 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' @param comm_df Input community matrix in data.frame format (communities as rows,
 #' species as columns, with row names and column names)
 #' @param phy Input phylogeny with total branch length scaled to 1
+#' @param null_model Name of null model to use. Must choose from 'frequency', 'richness', 
+#' 'independentswap', or 'trialswap' (see picante::randomizeMatrix).
 #' @param n_reps Number of random communities to replicate
+#' @param n_iterations Number of iterations to use when swapping occurrences to
+#' generate each random community
 #' @param metrics Names of metrics to calculate. Must one or more of
 #' 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'
 #'
@@ -1378,7 +1392,7 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' (_obs_z), and p-value (_obs_p) are given. Type of phylogenetic endemism (neo, paleo, or mixed)
 #' is given as "endem_type".
 #' 
-run_ses_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, n_reps, metrics) {
+run_ses_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_model, n_reps, metrics, n_iterations = 10000) {
   
   # Make dummy phy_alt and trait_tree_alt in case one of these isn't being analyzed
   phy_alt <- NULL
@@ -1420,7 +1434,7 @@ run_ses_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, n_reps
     
     # Make alternative tree with equal branch lengths
     phy_alt <- phy
-    phy_alt$edge.length <- rep(length(phy_alt$edge.length), 1)
+    phy_alt$edge.length <- rep(x = 1, times = length(phy_alt$edge.length))
     # rescale so total phy length is 1
     phy_alt$edge.length <- phy_alt$edge.length / sum(phy_alt$edge.length)
     # rescale original phy so total length is 1
@@ -1452,7 +1466,7 @@ run_ses_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, n_reps
     
     # Make alternative tree with equal branch lengths
     trait_tree_alt <- trait_tree
-    trait_tree_alt$edge.length <- rep(length(trait_tree_alt$edge.length), 1)
+    trait_tree_alt$edge.length <- rep(x = 1, times = length(trait_tree_alt$edge.length))
     # rescale so total tree length is 1
     trait_tree_alt$edge.length <- trait_tree_alt$edge.length / sum(trait_tree_alt$edge.length)
     # rescale original tree so total length is 1
@@ -1467,8 +1481,7 @@ run_ses_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, n_reps
   random_vals <-
     purrr::rerun(
       n_reps, 
-      # Use 10,000 iterations (swaps) for each null community
-      calc_biodiv_random(comm_df, phy, phy_alt, trait_tree, trait_tree_alt, 10000, metrics = metrics)
+      calc_biodiv_random(comm_df, phy, phy_alt, trait_tree, trait_tree_alt, null_model = null_model, n_iterations = n_iterations, metrics = metrics)
     )
   
   # Calculate biodiversity metrics for observed community
