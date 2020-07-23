@@ -1240,8 +1240,8 @@ calc_biodiv_random <- function (
     length(metrics) > 0,
     msg = "At least one biodiversity metric must be selected")
   assert_that(
-    all(metrics %in% c("pd", "rpd", "fd", "rfd", "pe", "rpe")),
-    msg = "Biodiversity metrics may only be selected from 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'"
+    all(metrics %in% c("richness", "pd", "rpd", "fd", "rfd", "pe", "rpe")),
+    msg = "Biodiversity metrics may only be selected from 'richness', 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'"
   )
   
   assert_that(is.character(null_model))
@@ -1291,6 +1291,7 @@ calc_biodiv_random <- function (
   pe <- NULL
   pe_alt <- NULL
   rpe <- NULL
+  richness <- NULL
   
   # - calculate selected metrics
   if ("pd" %in% metrics) pd <- phyloregion::PD(random_comm_sparse, phy)
@@ -1302,6 +1303,7 @@ calc_biodiv_random <- function (
   if ("pe" %in% metrics) pe <- phyloregion::phylo_endemism(random_comm_sparse, phy, weighted = TRUE)
   if ("rpe" %in% metrics) pe_alt <- phyloregion::phylo_endemism(random_comm_sparse, phy_alt, weighted = TRUE)
   if ("rpe" %in% metrics) rpe <- pe / pe_alt
+  if ("richness" %in% metrics) richness <- vegan::specnumber(random_comm)
   
   # Output results
   list(
@@ -1313,7 +1315,8 @@ calc_biodiv_random <- function (
     rfd = rfd,
     pe = pe,
     pe_alt = pe_alt,
-    rpe = rpe
+    rpe = rpe,
+    richness = richness
   ) %>%
     # Only keep non-NULL results
     purrr::compact()
