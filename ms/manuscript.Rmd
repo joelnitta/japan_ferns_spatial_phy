@@ -369,10 +369,10 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs)) +
     axis.text.x = element_blank()
   )
 
-# PE rank
-b <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_rank)) +
+# PE p-value
+b <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_p_upper)) +
   geom_sf(color = "transparent") +
-  labs(fill = "Rank PE") +
+  labs(fill = "PE p-score") +
   scale_fill_scico(palette = "lajolla") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
@@ -478,7 +478,7 @@ data <-
 ses_div_ferns_spatial %>%
   filter(taxonomic_cluster %in% c(1,2,3,4)) %>%
   as_tibble %>%
-  select(pd_obs_z, rpd_obs_z, fd_obs_z, rfd_obs_z, pe_obs_rank, taxonomic_cluster)
+  select(pd_obs_z, rpd_obs_z, fd_obs_z, rfd_obs_z, pe_obs_p_upper, taxonomic_cluster)
 
 cluster_cols <- carto_pal(8, "Bold")[1:4] %>%
   set_names(1:4)
@@ -557,12 +557,12 @@ d <- ggplot(data, aes(x = taxonomic_cluster, y = rfd_obs_z)) +
     axis.title.x = element_blank()
   )
 
-e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_rank)) +
+e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_p_upper)) +
   geom_jitter(aes(color = taxonomic_cluster)) +
   scale_color_manual(values = cluster_cols, breaks = 1:4) +
   geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
   labs(
-    y = "Rank PE",
+    y = "PE p-score",
     x = "Cluster",
     color = "Cluster"
   ) +
@@ -585,4 +585,4 @@ ggsave(result_file(figure("div-by-tax-region"), "pdf"), width = 7, height = 7, u
 
 ```
 
-**`r figure("div-by-tax-region")`**. `r figure_cap("div-by-tax-region")`. **A**, Standard effect size (SES) of phylogenetic diversity (PD). **B**, SES of relative PD (RPD). **C**, SES of functional diversity (FD). **D**, SES of relative FD (RFD). **E**, rank of observed phylogenetic endemism (PE) out of 999 random communities. Only top four clusters with the most sites shown.
+**`r figure("div-by-tax-region")`**. `r figure_cap("div-by-tax-region")`. **A**, Standard effect size (SES) of phylogenetic diversity (PD). **B**, SES of relative PD (RPD). **C**, SES of functional diversity (FD). **D**, SES of relative FD (RFD). **E**, p-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.

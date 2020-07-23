@@ -134,7 +134,7 @@ subset_to_ferns <- function(data, ppgi) {
 subset_tree <- function(phy, ppgi) {
   
   tips_keep <-
-  tibble(tip = phy$tip.label) %>%
+    tibble(tip = phy$tip.label) %>%
     mutate(genus = str_split(tip, "_") %>% map_chr(1)) %>%
     # Add higher-level taxonomy
     left_join(ppgi, by = "genus") %>%
@@ -587,7 +587,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
       )) %>%
     select(-contains("leaf_sorus_indusium_presence_absence")) %>%
     rename(leaf_sorus_false_indusium_present = leaf_sorus_false_indusium)
- 
+  
   #### Clean up numeric traits ###
   # Replace missing (0 or 3) with NA,
   # take the mean of the range of normal values otherwise
@@ -643,7 +643,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   # Fix some taxon names (synonyms)
   traits_for_dist <-
-  traits_for_dist %>%
+    traits_for_dist %>%
     mutate(taxon = case_when(
       # taxon == "Athyrium_nudum" ~ missing
       taxon == "Athyrium_opacum_opacum" ~ "Athyrium_opacum",
@@ -675,7 +675,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   # Drop any missing names
   traits_for_dist <- filter(traits_for_dist, taxon %in% taxon_id_map$taxon)
-    
+  
   msg <- assertthat::validate_that(
     length(missing_taxon_id) == 0,
     msg = glue::glue("The following taxa in the trait data could not be verified in the taxa list and have been dropped: {paste(missing_taxon_id, collapse = ', ')}")
@@ -1140,7 +1140,7 @@ calculate_coverage <- function (comm_list) {
   
   # Extract community matrix and convert to data frame
   comm <-
-  magrittr::extract2(comm_list, "comm_dat") %>%
+    magrittr::extract2(comm_list, "comm_dat") %>%
     phyloregion::sparse2dense() %>%
     as.data.frame()
   
@@ -1323,6 +1323,46 @@ calc_biodiv_random <- function (
   
 }
 
+#' Count number of times one number is higher than others
+#'
+#' @param x Number to count
+#' @param y Vector of numbers to compare
+#'
+#' @return Number of times x is higher than y
+#' 
+#' @examples {
+#' count_higher(4, 1:10)
+#' }
+count_higher <- function (x, y) {
+  
+  assertthat::assert_that(assertthat::is.number(x))
+  assertthat::assert_that(is.numeric(y))
+  assertthat::assert_that(!is.na(x))
+  assertthat::assert_that(!anyNA(y))
+  
+  sum((x > y))
+}
+
+#' Count number of times one number is lower than others
+#'
+#' @param x Number to count
+#' @param y Vector of numbers to compare
+#'
+#' @return Number of times x is lower than y
+#' 
+#' @examples {
+#' count_lower(4, 1:10)
+#' }
+count_lower <- function (x, y) {
+  
+  assertthat::assert_that(assertthat::is.number(x))
+  assertthat::assert_that(is.numeric(y))
+  assertthat::assert_that(!is.na(x))
+  assertthat::assert_that(!anyNA(y))
+  
+  sum((x < y))
+}
+
 #' Extract standard effect size (and other related statistics) for a single
 #' diversity metric given random values and observed values of the metric
 #'
@@ -1351,11 +1391,20 @@ get_ses <- function (random_vals, obs_vals, metric) {
     ) %>%
     transmute(
       obs = obs_val,
+      # Calculate SES
       rand_mean = purrr::map_dbl(random_values, ~mean(., na.rm = TRUE)),
       rand_sd = purrr::map_dbl(random_values, ~sd(., na.rm = TRUE)),
-      obs_rank = purrr::map2_dbl(.x = obs_val, .y = random_values, ~rank(c(.x, .y), ties.method = "average")[[1]]),
       obs_z = (obs_val - rand_mean) / rand_sd,
-      obs_p = obs_rank/(length(random_vals) + 1)
+      # Count number of times observed value is higher than random values
+      obs_c_upper = purrr::map2_dbl(.x = obs_val, .y = random_values, ~count_higher(.x, .y)),
+      # Count number of times observed value is lower than random values
+      obs_c_lower = purrr::map2_dbl(.x = obs_val, .y = random_values, ~count_lower(.x, .y)),
+      # Count the number of non-NA random values used for comparison
+      obs_q = purrr::map_dbl(random_values, ~magrittr::extract(., !is.na(.)) %>% length()),
+      # Calculate p-value for upper tail
+      obs_p_upper = obs_c_upper / obs_q,
+      # Calculate p-value for lower tail
+      obs_p_lower = obs_c_lower / obs_q
     )
   
   colnames(results) <- paste(metric, colnames(results), sep = "_")
@@ -1580,14 +1629,14 @@ run_ses_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_m
 categorize_endemism <- function (df) {
   
   df %>% 
-  mutate(
-    endem_type = case_when(
-      (pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95) & rpe_obs_p >= 0.975 ~ "paleo",
-      (pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95) & rpe_obs_p <= 0.025 ~ "neo",
-      pe_obs_p >= 0.95 | pe_alt_obs_p >= 0.95 ~ "mixed",
-      TRUE ~ NA_character_
+    mutate(
+      endem_type = case_when(
+        (pe_obs_p_upper >= 0.95 | pe_alt_obs_p_upper >= 0.95) & rpe_obs_p_upper >= 0.975 ~ "paleo",
+        (pe_obs_p_upper >= 0.95 | pe_alt_obs_p_upper >= 0.95) & rpe_obs_p_lower >= 0.975~ "neo",
+        pe_obs_p_upper >= 0.95 | pe_alt_obs_p_upper >= 0.95 ~ "mixed",
+        TRUE ~ NA_character_
+      )
     )
-  )
   
 }
 
