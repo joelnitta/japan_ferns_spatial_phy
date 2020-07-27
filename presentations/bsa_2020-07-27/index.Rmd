@@ -595,7 +595,7 @@ SES > 0: more diverse than expected
 
 SES < 0: less diverse than expected
 
-Null distribution: 999 communities randomized using "Independent Swap" (Gotelli, 2000)
+Null distribution: 999 communities randomized using "Independent Swap" `r AutoCite(bib, "Gotelli2000")`
 
 ---
 ## SES of PD is mostly clustered throughout
@@ -1106,6 +1106,9 @@ ggplot() +
   scale_fill_viridis_d(breaks = names(status_labels), labels = status_labels) +
   theme(
     axis.ticks = element_blank()
+  ) + 
+  labs(
+    caption = "Data: Japan Ministry of the Environment\nhttps://www.biodic.go.jp/biodiversity/activity/policy/map/map17/"
   )
 ```
 
