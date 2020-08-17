@@ -124,10 +124,12 @@ plan <- drake_plan (
     comm = comm_ferns, 
     repro_data = repro_data),
   
-  # Analyze standard effect size (SES) of diversity metrics ----
+  # Conduct randomization tests of diversity metrics ----
   
-  ses_phy = target(
-    run_ses_analysis(
+  # Conduct randomization tests of phylogeny-based metrics for all ferns and
+  # ferns endemic to Japan only
+  rand_test_phy = target(
+    run_rand_analysis(
       comm = comm, 
       phy = japan_fern_tree,
       null_model = "independentswap",
@@ -141,10 +143,11 @@ plan <- drake_plan (
         c("pd", "rpd", "pe", "rpe"),
         c("pe", "rpe")
       ),
-      .names = c("ses_phy_ferns", "ses_phy_ferns_endemic"))
+      .names = c("rand_test_phy_ferns", "rand_test_phy_ferns_endemic"))
   ),
   
-  ses_traits_ferns = run_ses_analysis(
+  # Conduct randomization tests of trait-based metrics for all ferns
+  rand_test_traits_ferns = run_rand_analysis(
     comm = comm_ferns,
     null_model = "independentswap",
     n_reps = 999,
@@ -183,20 +186,23 @@ plan <- drake_plan (
   
   # Combine results ----
   
-  # Combine spatial data, alpha diversity, and regions
+  # Combine spatial data, alpha diversity, and regions, add significance and endemism types
   
   # - All ferns
-  ses_div_ferns_spatial =
+  biodiv_ferns_spatial =
     shape_ferns %>%
-    left_join(ses_phy_ferns, by = c(grids = "site")) %>%
-    left_join(ses_traits_ferns, by = c(grids = "site")) %>%
+    left_join(rand_test_phy_ferns, by = c(grids = "site")) %>%
+    left_join(rand_test_traits_ferns, by = c(grids = "site")) %>%
     left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
-    left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids"),
+    left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
+    categorize_endemism() %>%
+    categorize_signif(),
   
   # - Japan endemics only
-  ses_div_ferns_endemic_spatial =
+  biodiv_ferns_endemic_spatial =
     shape_ferns %>%
-    left_join(ses_phy_ferns_endemic, by = c(grids = "site")),
+    left_join(rand_test_phy_ferns_endemic, by = c(grids = "site")) %>%
+    categorize_endemism(),
   
   # Conservation analysis ----
   

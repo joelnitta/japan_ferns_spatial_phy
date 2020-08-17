@@ -37,7 +37,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 loadd(list = c(
   "occ_point_data_ferns",
   "occ_point_data_ferns_unfiltered",
-  "ses_div_ferns_spatial",
+  "biodiv_ferns_spatial",
   "k_taxonomy",
   "k_phylogeny"
 ),
@@ -122,13 +122,13 @@ Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the J
 
 We measured taxonomic diversity using taxonomic richness.
 
-We measured phylogenetic diversity using the mean phylogenetic distance between all co-occurring taxa in a community (MPD) [@Webb2000; @Webb2002]. We calculated distances from the phylogenetic tree using the \function{cophenetic} function in R v. 4.0.0 [@RCoreTeam2019] and MPD using the \function{mpd} function in the R \package{picante}.
+We measured phylogenetic diversity (PD) using the Faith's PD (the total branch length connecting all terminal taxa in a community, including the root of the phylogeny) [@Faith1992] with the \function{PD} function in the R package \package{phyloregion}. To detect areas with unusually long or short branch lengths, we measured relative phylogenetic diversity (RPD), which is a ratio of observed PD to PD measured on a tree where all branch lengths have been set to equal length [@Mishler2014].
 
-For morphological diversity, we first calculated morphological distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R package \package{FD} [@Laliberte2011]. We weighted quantitative and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled quantitative traits prior to calculating distances. We then used the morphological distances as input into the \function{mpd} function to calculate mean morphological distance (MMD).
+We measured functional diversity (FD) following the method of @Petchey2002, which is a functional analog of PD. We first calculated distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R package \package{FD} [@Laliberte2011]. We weighted quantitative and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled quantitative traits prior to calculating distances. We then used the distances to build a trait dendrogram using the \function{hclust} function in the \package{stats} R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above.
 
 We measured phylogenetic endemism (PE) [@Rosauer2009], which is the sum of all branches at a site inversely weighted by their range, using the \function{phylo{\_}endemism} function in the R package \package{phyloregion}. 
 
-Observed values of MPD, MMD, and PE are known to be closely related to species richness, and tend to saturate at high values of richness. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of species by calculating their standard effect sizes (SES), defined as the difference between the observed value and the mean of a pool of random values, divided by the standard deviation of the random values. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then calculated SES of each metric.
+Observed values of PD, FD, and PE are known to be closely related to species richness, and tend to saturate at high values of richness. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of species by calculating their standard effect sizes (SES), defined as the difference between the observed value and the mean of a pool of random values, divided by the standard deviation of the random values. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then calculated SES of each metric.
 
 We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable to those calculated for the null distribution. We used the same set of null communities as for SES of PE, and carried out CANAPE using custom R scripts.
 
@@ -136,7 +136,7 @@ It is possible that endemism may be affected by species that are actually wide-r
 
 ### Analysis of bioregions
 
-We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20. \package{phyloregion} provides a function to automatically select *k* from a range of test values, but we found the results to be unreliable. We therefore evaluated the explained variance at each value of *k*, then selected *k* that provided the greatest increase in variance relative to the previous value (`r s_figure("k-plot")`).
+We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20.
 
 ### Data accessibility
 
