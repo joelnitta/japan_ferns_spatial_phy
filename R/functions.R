@@ -578,15 +578,59 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
       )
     ) %>%
     select(-leaf_lamina_terminal_pinna_absent) %>%
-    # - indusium
+    # - indusium: treat as present if either true or false indusium is present
     mutate(
-      leaf_sorus_indusium_present = case_when(
-        leaf_sorus_indusium_presence_absence_absent == 1 ~ 0,
+      indusium_present = case_when(
+        leaf_sorus_indusium_presence_absence_present == 1 ~ 1,
         leaf_sorus_indusium_presence_absence_present_caducous == 1 ~ 1,
-        TRUE ~ leaf_sorus_indusium_presence_absence_present
-      )) %>%
-    select(-contains("leaf_sorus_indusium_presence_absence")) %>%
-    rename(leaf_sorus_false_indusium_present = leaf_sorus_false_indusium)
+        leaf_sorus_false_indusium == 1 ~ 1,
+        TRUE ~ 0
+      ))
+  
+  # Repair `leaf_lamina_texture_thick_herbaceous`, which is for some reason split across two columns
+  traits_binary <-
+  traits_binary %>%
+    rowwise() %>%
+    # Combine into a single column
+    mutate(leaf_lamina_texture_thick_herbaceous = sum(leaf_lamina_texture_thick_herbaceous_53, leaf_lamina_texture_thick_herbaceous_55, na.rm = TRUE)) %>%
+    ungroup() %>%
+    # Make sure that worked properly
+    assert(in_set(c(0,1)), leaf_lamina_texture_thick_herbaceous) %>%
+    select(-leaf_lamina_texture_thick_herbaceous_53, -leaf_lamina_texture_thick_herbaceous_55)
+
+  # Select only putatively functional traits: frond shape, frond texture, margin shape, presence or absence of indusium
+  
+  # # qualitative traits include:
+  # (* indicates trait to use; others discarded)
+  # *leaf_lamina_shape_sterile_frond 
+  # *leaf_lamina_texture
+  # leaf_lamina_color
+  # leaf_lamina_vennation
+  # leaf_lamina_pseudo_veinlet
+  # leaf_lamina_terminal_pinna_distinct
+  # leaf_lamina_lateral_pinna_shape_fertile
+  # leaf_lamina_lateral_pinna_shape_sterile
+  # leaf_lamina_lateral_pinna_stalk_fertile
+  # *leaf_lamina_margin
+  # leaf_sorus_shape
+  # leaf_sorus_indusium_shape
+  # leaf_sorus_false_indusium_present
+  # leaf_lamina_rhachis_adaxial_side_grooved_present
+  # leaf_lamina_terminal_pinna_present
+  # leaf_sorus_indusium_present
+  
+  traits_binary <-
+  traits_binary %>% 
+    select(
+      taxon,
+      indusium_present,
+      contains("leaf_lamina_shape_sterile_frond"),
+      contains("leaf_lamina_texture"),
+      contains("leaf_lamina_margin")
+    ) %>%
+    rename_with(~str_replace_all(.x, "leaf_lamina_shape_sterile_frond", "shape")) %>%
+    rename_with(~str_replace_all(.x, "leaf_lamina_texture", "texture")) %>%
+    rename_with(~str_replace_all(.x, "leaf_lamina_margin", "margin"))
   
   #### Clean up numeric traits ###
   # Replace missing (0 or 3) with NA,
@@ -628,6 +672,18 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
     mutate(value = na_if(value, -Inf)) %>%
     spread(trait, value) %>%
     rename_all(~str_remove(., "_number"))
+  
+  # Select only putatively functional traits: frond length + width, stipe length, number of pinna pairs
+  # (`leaf_lamina_index_length_width_frond` is the ratio of length to width, but not using)
+  traits_numeric_combined <-
+    traits_numeric_combined %>%
+    select(
+      taxon,
+      frond_length = leaf_lamina_frond_length_cm,
+      frond_width = leaf_lamina_frond_width_cm,
+      stipe_length = leaf_lamina_index_lamina_length_stipe_length_frond,
+      number_pinna_pairs = leaf_lamina_lateral_pinna_of_pairs_frond_number
+    )
   
   # Log-transform and scale numeric traits
   num_trait_names <- select(traits_numeric_combined, -taxon) %>% colnames()
@@ -738,6 +794,8 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   traits_correlated_to_drop <- caret::findCorrelation(correlations, cutoff = 0.6) %>%
     magrittr::extract(colnames(traits_corr_test), .)
   
+  if(length(traits_correlated_to_drop) > 0) message(glue::glue("The following traits have correlation coefficient > 0.6 and will be dropped: {traits_correlated_to_drop}"))
+  
   ### Drop zero and low-variance traits from full dataframe ###
   
   # Vector of any static trait (only a single trait state)
@@ -756,33 +814,12 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   traits_to_drop <- c(traits_static, traits_low_var, traits_correlated_to_drop) %>% unique()
   traits_for_dist <- select(traits_for_dist, -any_of(traits_to_drop))
   
-  # There are still a few traits left once we use the full data that are correlated.
-  # Manually remove these.
-  still_correlated <- c(
-    "leaf_sorus_shape_globular",
-    "leaf_sorus_indusium_shape_globular",
-    "leaf_lamina_vennation_unbrached_single",
-    "leaf_sorus_shape_not_forming_distinc_sorus"
-  )
-  
-  traits_for_dist %>%
-    select(-taxon) %>%
-    corrr::correlate() %>%
-    pivot_longer(-rowname, names_to = "var2") %>%
-    rename(var1 = rowname) %>%
-    arrange(desc(value)) %>%
-    filter(value > 0.6) %>%
-    verify(all(var1 %in% still_correlated)) %>%
-    verify(all(var2 %in% still_correlated), success_fun = success_logical)
-  
-  traits_for_dist <- select(traits_for_dist, -leaf_sorus_shape_globular, -leaf_lamina_vennation_unbrached_single)
-  
-  # Verify that observed correlations in final data are less than 0.65
+  # Verify that observed correlations in final data are less than 0.6
   traits_for_dist %>%
     select(-taxon) %>%
     corrr::correlate() %>%
     pivot_longer(-rowname) %>%
-    assert(within_bounds(-0.65, 0.65), value, success_fun = success_logical)
+    assert(within_bounds(-0.6, 0.6), value, success_fun = success_logical)
   
   traits_for_dist
   
