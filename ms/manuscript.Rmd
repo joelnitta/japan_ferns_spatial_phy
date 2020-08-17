@@ -106,13 +106,13 @@ Our data include all ferns known to occur within the political boundaries of Jap
 
 ### Occurrence data
 
-We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (species, subspecies, and varieties). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html). The final cleaned occurrence dataset included `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` specimens (`r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` taxa).
+We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (species, subspecies, and varieties). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html). The final cleaned occurrence dataset included `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` specimens (`r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` taxa). Hereafter, "taxa" refers to species, subspecies, and varieties unless otherwise indicated.
 
 A necessary step in any analysis of biodiversity is to set the grain size used to define communities. This decision must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1, 0.2, 0.3, and 0.4 degree grid-cells for defining communities (co-occurring species). At each size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2 degree grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 (mostly cells along the coast with very low land area) and used this for subsequent analyses.
 
 ### Trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens. All qualitative traits in binary format; e.g., a single trait with three states is formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately. Quantitative traits include aspects of leaf size (e.g., frond length, frond width, stipe length, etc.). Qualitative traits include aspects of leaf morphology (e.g., margin shape, leaf color, indusia shape, spore arrangement, etc.).
+We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens [@Ebihara2016b; @Ebihara2017]. All qualitative traits in binary format; e.g., a single trait with three states is formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately originally, then averaged. From the original trait list, we selected only traits with putatative ecological function, and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state (`r table("traits-used")`).
 
 ### Phylogenetic analysis
 
@@ -128,7 +128,7 @@ We measured functional diversity (FD) following the method of @Petchey2002, whic
 
 We measured phylogenetic endemism (PE) [@Rosauer2009], which is the sum of all branches at a site inversely weighted by their range, using the \function{phylo{\_}endemism} function in the R package \package{phyloregion}. 
 
-Observed values of PD, FD, and PE are known to be closely related to species richness, and tend to saturate at high values of richness. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of species by calculating their standard effect sizes (SES), defined as the difference between the observed value and the mean of a pool of random values, divided by the standard deviation of the random values. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then calculated SES of each metric.
+Observed values of PD, FD, and PE are known to be closely related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. Statistical significance was assessed using a two-tailed test with alpha = 0.5: observed values > 97.5% or < 0.25% were considered significant.
 
 We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable to those calculated for the null distribution. We used the same set of null communities as for SES of PE, and carried out CANAPE using custom R scripts.
 
@@ -146,7 +146,7 @@ Code to replicate all analyses, figures, and this manuscript are available at ht
 
 ### Taxonomic, phylogenetic, and morphological diversity
 
-Species richness is highest in southern Kyushu and on Yakushima Island, and lowest on Hokkaido and low-lying coastal areas (`r figure("diversity")`A). Sampling redundancy is generally high throughout the country, with a peak just north of Tokyo, but lower in Hokkaido and some coastal areas and small islands (`r figure("diversity")`B). Raw MPD is mostly uniform throughout (`r figure("diversity")`C). SES of MPD shows clustering in some parts of central Honshu, with overdispersion both in the northern half of the country and from southern Kyushu to the south (`r figure("diversity")`D). Morphological diversity shows a similar pattern to phylogenetic diversity, but with more extreme overdispersion and clustering (`r figure("diversity")`F).
+Species richness is highest in southern Kyushu and on Yakushima Island, and lowest on Hokkaido and low-lying coastal areas (`r figure("raw-diversity")`A). Sampling redundancy is generally high throughout the country, with a peak just north of Tokyo, but lower in Hokkaido and some coastal areas and small islands (`r figure("diversity")`B). Raw MPD is mostly uniform throughout (`r figure("rand-diversity")`C). SES of MPD shows clustering in some parts of central Honshu, with overdispersion both in the northern half of the country and from southern Kyushu to the south (`r figure("rand-diversity")`D). Morphological diversity shows a similar pattern to phylogenetic diversity, but with more extreme overdispersion and clustering (`r figure("rand-diversity")`F).
 
 ### Phylogenetic endemism
 
@@ -178,295 +178,194 @@ TBD
 
 ```{r plot-prep}
 # Change cluster to factor
-ses_div_ferns_spatial <- ses_div_ferns_spatial %>%
+biodiv_ferns_spatial <- biodiv_ferns_spatial %>%
   mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
   mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
+
+# Download high-res map of Japan,
+# crop to spatial div results area
+japan <- rnaturalearth::ne_countries(country = "japan", scale = "large", returnclass = "sf") %>%
+  sf::st_crop(sf::st_bbox(biodiv_ferns_spatial))
+
+# Set CRS
+japan_crs <- sf::st_crs(japan)
+
+biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
+
+# Set color palettes
+# Randomization test significance
+signif_cols <-
+  c(
+    "> 0.99" = "#e31a1c", 
+    "> 0.975" = "#fb9a99",
+    "< 0.01" = "#1f78b4", 
+    "< 0.025" = "#a6cee3",
+    "not significant" = "#ffffcc"
+  )
+
+# CANAPE
+canape_cols <-
+  c(
+    "neo" = "#e31a1c", 
+    "paleo" = "#1f78b4",
+    "mixed" = "#6a51a3",
+    "super" = "#4a1486",
+    "not significant" = "#ffffcc"
+  )
 ```
 
-```{r richness, width = 7, height = 4}
+```{r raw-diversity, width = 7, height = 4}
 # Richness
-a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
-  geom_sf(color = "transparent") +
+a <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = richness), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A** Richness</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  labs(fill = "No. taxa") +
   scale_fill_scico(palette = "lajolla") + 
-  labs(fill = "Richness") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  scale_x_continuous(breaks = c(125, 135, 145)) +
+  scale_y_continuous(breaks = c(25, 35, 45)) +
   map_theme()
 
-# Sampling rendundancy
-b <- ggplot(ses_div_ferns_spatial, aes(fill = redundancy)) +
-  geom_sf(color = "transparent") +
+# Raw PD
+b <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_obs), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B** PD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  labs(fill = "Relative\nbranch\nlength") +
   scale_fill_scico(palette = "lajolla") + 
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  labs(fill = "Redundancy") +
+  scale_x_continuous(breaks = c(125, 135, 145)) +
+  scale_y_continuous(breaks = c(25, 35, 45)) +
   map_theme() +
   theme(
     axis.text.y = element_blank()
   )
 
-a + b + 
-  plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = 'A')
+# Raw FD
+c <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_obs), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**C** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  labs(fill = "Relative\nbranch\nlength") +
+  scale_fill_scico(palette = "lajolla") + 
+  scale_x_continuous(breaks = c(125, 135, 145)) +
+  scale_y_continuous(breaks = c(25, 35, 45)) +
+  map_theme() +
+  theme(
+    axis.text.y = element_blank()
+  )
 
-ggsave(result_file(figure("richness"), "pdf"), width = 7, height = 4, units = "in")
+a + b + c +
+  plot_layout(nrow = 1)
+
+ggsave(result_file(figure("raw-diversity"), "pdf"), width = 7, height = 4, units = "in")
 ```
 
-**`r figure("richness")`**. `r figure_cap("diversity")` **A**, richness. **B**, sampling redundancy.
+**`r figure("raw-diversity")`**. `r figure_cap("raw-diversity")` For **B** and **C**, raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths.
 
-```{r diversity, fig.width = 7, fig.height = 9}
+```{r rand-diversity, fig.width = 7, fig.height = 9}
 # PD
-a <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "PD") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  scale_fill_scico(palette = "lajolla") + 
-  map_theme() +
-  theme(
-    axis.text.x = element_blank()
-  )
-
-# SES of PD
-b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES PD") +
-  scale_fill_scico(
-    palette = "romaO",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_spatial, pd_obs_z, "abs"),
-      get_limit(ses_div_ferns_spatial, pd_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+a <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_signif), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A** PD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  scale_fill_manual(values = signif_cols) +
   map_theme() +
   theme(
     axis.text.x = element_blank(),
-    axis.text.y = element_blank()
-  )
+    legend.title = element_blank()
+    )
 
 # RPD
-c <- ggplot(ses_div_ferns_spatial, aes(fill = rpd_obs)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "RPD") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  scale_fill_scico(palette = "lajolla") + 
-  map_theme() +
-  theme(
-    axis.text.x = element_blank()
-  )
-
-# SES of RPD
-d <- ggplot(ses_div_ferns_spatial, aes(fill = rpd_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES RPD") +
-  scale_fill_scico(
-    palette = "roma",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs"),
-      get_limit(ses_div_ferns_spatial, rpd_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  # highlight only significant cells
-  # gghighlight(pd_obs_p > 0.975 | pd_obs_p < 0.025) +
+b <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = rpd_signif), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B** RPD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  labs(fill = "") +
+  scale_fill_manual(values = signif_cols) +
   map_theme() +
   theme(
     axis.text.x = element_blank(),
-    axis.text.y = element_blank()
+    axis.text.y = element_blank(),
+    legend.title = element_blank()
   )
 
 # FD
-e <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "FD") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  scale_fill_scico(palette = "lajolla") + 
+c <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_signif), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**C** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  labs(fill = "") +
+  scale_fill_manual(values = signif_cols) +
+  scale_x_continuous(guide = guide_axis(check.overlap = TRUE)) +
   map_theme() +
-  theme(
-    axis.text.x = element_blank()
-  )
-
-# SES of FD
-f <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES FD") +
-  scale_fill_scico(
-    palette = "roma",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_spatial, fd_obs_z, "abs"),
-      get_limit(ses_div_ferns_spatial, fd_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  # highlight only significant cells
-  # gghighlight(mpd_morph_obs_p > 0.975 | mpd_morph_obs_p < 0.025) +
-  map_theme() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank()
-  )
+  theme(legend.title = element_blank())
 
 # RFD
-g <- ggplot(ses_div_ferns_spatial, aes(fill = rfd_obs)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "RFD") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  scale_fill_scico(palette = "lajolla") + 
+d <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = rfd_signif), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**D** RFD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  labs(fill = "") +
+  scale_fill_manual(values = signif_cols) +
+  scale_x_continuous(guide = guide_axis(check.overlap = TRUE)) +
+  map_theme() +
+  theme(
+    axis.text.y = element_blank(),
+    legend.title = element_blank()
+  )
+
+a + b + c + d + 
+  plot_layout(ncol = 2, nrow = 2, guides = 'collect') &
+  theme(legend.position = "bottom")
+  
+ggsave(result_file(figure("rand-diversity"), "pdf"), width = 7, height = 8, units = "in")
+```
+
+**`r figure("rand-diversity")`**. `r figure_cap("rand-diversity")` **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diveristy (RPD). **C**, Functional diveristy (FD). **D**, relative functional diveristy (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Methods.
+
+\clearpage
+
+```{r endemism, fig.width = 5, fig.height = 5}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = endem_type), color = "transparent", alpha = 0.8) +
+  scale_fill_manual(values = canape_cols) +
+  map_theme() +
+  theme(legend.title = element_blank())
+
+ggsave(result_file(figure("endemism"), "pdf"), width = 5, height = 5, units = "in")
+```
+
+**`r figure("endemism")`**. `r figure_cap("endemism")` 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Methods.
+
+\clearpage
+
+```{r bioregions, fig.width = 7, fig.height = 5}
+# Taxonomic bioregions
+a <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = taxonomic_cluster), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  labs(fill = "Cluster") +
+  scale_fill_carto_d(type = "qualitative", palette = "Bold") +
   map_theme()
 
-# SES of RFD
-h <- ggplot(ses_div_ferns_spatial, aes(fill = rfd_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES RFD") +
-  scale_fill_scico(
-    palette = "roma",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_spatial, rfd_obs_z, "abs"),
-      get_limit(ses_div_ferns_spatial, rfd_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  # highlight only significant cells
-  # gghighlight(rfd_obs_p > 0.975 | rfd_obs_p < 0.025) +
-  map_theme() +
-  theme(
-    axis.text.y = element_blank()
-  )
-
-a + b + c + d + e + f + g + h +
-  plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = 'A')
-
-ggsave(result_file(figure("diversity"), "pdf"), width = 7, height = 9, units = "in")
-```
-
-**`r figure("diversity")`**. `r figure_cap("diversity")` **A**, Phylogenetic diversity (PD). **B**, Standard effect size (SES) of PD. **C**, Relative phylogenetic diversity (RPD). **D**, SES of RPD. **E**, Functional diversity (FD). **F**, SES of FD **G**, Relative functional diversity (RFD) **H**, SES of RFD. 
-
-\clearpage
-
-```{r endemism, fig.width = 7, fig.height = 8}
-# PE
-a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs)) +
-  geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
-  labs(fill = "PE") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme() +
-  theme(
-    axis.text.x = element_blank()
-  )
-
-# PE p-value
-b <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_p_upper)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "PE p-score") +
-  scale_fill_scico(palette = "lajolla") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank()
-  )
-
-# RPE
-c <- ggplot(ses_div_ferns_spatial, aes(fill = rpe_obs)) +
-  geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") +
-  labs(fill = "RPE") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme() +
-  theme(
-    axis.text.x = element_blank()
-  )
-
-# SES RPE
-d <- ggplot(ses_div_ferns_spatial, aes(fill = rpe_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES RPE") +
-  scale_fill_scico(
-    palette = "roma",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_spatial, rpe_obs_z, "abs"),
-      get_limit(ses_div_ferns_spatial, rpe_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme() +
-  theme(
-    axis.text.y = element_blank()
-  )
-
-# CANAPE, full dataset
-# set color scheme
-canape_cols <- c(
-  "neo" = "#E41A1C", # Color brewer set1 red
-  "paleo" = "#377EB8", # Color brewer blue
-  "mixed" = "#984EA3", # Color brewer purple
-  "none" = "#FFFFCC" # Scico lajolla faintest color
-)
-
-e <- 
-  ses_div_ferns_spatial %>%
-  mutate(endem_type = replace_na(endem_type, "none")) %>%
-  ggplot(aes(fill = endem_type)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "Endemism\ntype") +
-  scale_fill_manual(values = canape_cols, breaks = c("neo", "paleo", "mixed", "none"), labels = c("Neo", "Paleo", "Mixed", "Not endemic")) + 
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme_light()
-
-a + b + c + d + e +
-  plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = 'A')
-
-ggsave(result_file(figure("endemism"), "pdf"), width = 7, height = 8, units = "in")
-```
-
-**`r figure("endemism")`**. `r figure_cap("endemism")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, relative phylogenetic endemism (RPE). **D**, SES of RPE. **E**, Categorical analysis of neo- and paleo-endemism (CANAPE).
-
-\clearpage
-
-```{r bioregions, fig.width = 7, fig.height = 3}
-# Taxonomic bioregions
-a <- ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
-  geom_sf(color = "transparent") +
-  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme_light()
-
 # Phylogenetic bioregions
-b <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
-  geom_sf(color = "transparent") +
+b <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = phylo_cluster), color = "transparent", alpha = 0.8) +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
-  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme_light()
+  scale_fill_carto_d(type = "qualitative", palette = "Bold") +
+  map_theme() +
+  theme(
+    axis.text.y = element_blank()
+  )
 
 a + b +
-  plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = 'A')
+  plot_layout(ncol = 2)
 
-ggsave(result_file(figure("bioregions"), "pdf"), width = 7, height = 3, units = "in")
+ggsave(result_file(figure("bioregions"), "pdf"), width = 7, height = 5, units = "in")
 ```
 
 **`r figure("bioregions")`**. `r figure_cap("bioregions")` **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances into *k* = 8 or 7 groups, respectively, using the R package \package{phyloregion}.
@@ -475,7 +374,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), width = 7, height = 3, units = 
 
 ```{r diversity-by-cluster, fig.width = 7, fig.height = 7}
 data <-
-ses_div_ferns_spatial %>%
+biodiv_ferns_spatial %>%
   filter(taxonomic_cluster %in% c(1,2,3,4)) %>%
   as_tibble %>%
   select(pd_obs_z, rpd_obs_z, fd_obs_z, rfd_obs_z, pe_obs_p_upper, taxonomic_cluster)
@@ -571,7 +470,6 @@ e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_p_upper)) +
     panel.grid.minor.x = element_blank(),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.y = element_blank(),
-    
   )
 
 a + b + c + d + e +

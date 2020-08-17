@@ -2380,10 +2380,13 @@ standard_theme2 <- function () {
 
 map_theme <- function() {
   theme(
-    panel.grid.major = element_line(color = "grey95", size = 0.1),
-    panel.background = element_rect(fill = "grey60"),
+    panel.grid.major = element_line(color = "grey60", size = 0.1),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "transparent"),
     axis.ticks = element_blank(),
-    axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = 0.7)
+    axis.text = element_text(color = "grey60"),
+    axis.title = element_blank(),
+    legend.position = "bottom"
   )
 }
 
