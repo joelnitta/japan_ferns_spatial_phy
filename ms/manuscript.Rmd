@@ -120,7 +120,7 @@ Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the J
 
 ### Phylogenetic signal
 
-We tested for phylogenetic signal in continuous traits using two alternative metrics, Blomberg's *K* [@Blomberg2003] and Pagel's lambda [@Pagel1999], as implemented with the \function{phylosig} function in the R package \package{phytools} [@Revell2012]. *K* describes the correlation between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); *K* = 1 under BM, with values < 1  We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the \function{phylo.d} function in the R package \package{caper} [@Orme2018].
+We tested for phylogenetic signal in continuous traits using two alternative metrics, Blomberg's *K* [@Blomberg2003] and Pagel's lambda [@Pagel1999]. *K* describes the ratio between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); lambda is a scaling parameter used to transform the phylogeny such that trait values fit those most closely expected under BM. Both lambda and *K* = 1 under BM; lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). We measured *K* and lambda using the \function{phylosig} function in the R package \package{phytools} [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the \function{phylo.d} function in the R package \package{caper} [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM. 
 
 ### Analysis of biodiversity
 
@@ -180,13 +180,27 @@ Nearly all grid cells in islands south of Kyushu (Ryukyu and Ogasawara) have sig
 
 ### Bioregions
 
-Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Using phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B).
+Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Using phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). The other much smaller clusters are likely artifacts of insufficiently low taxon richness for accurate clustering in a small number of grid cells, and are not discussed further.
+
+Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2. Clusters 3 and 4 also have consistently high PE *p*-scores, whereas clusters 1 and 2 have a much wider variation. Cluster 2 has lower RPD and RFD than cluster 1. Comparison of biodiversity metrics across phylogenetic clusters was similar, except that phylogenetic cluster 3 mostly corresponds to taxonomic clusters 3 and 4 combined.
 
 ### Degree of protection
 
 ## Discussion
 
-TBD
+Here, we provide the first insights into the combined taxonomic, phylogenetic, and functional diversity of the ferns of Japan. Our integrative approach reveals key differences in patterns of biodiversity in different parts of the archipelago. 
+
+### Distribution of biodiversity
+
+The latitudinal hump-shaped pattern of species richness observed in ferns here has been well-documented.
+
+Despite the peak of richness in southern Kyushu, the overwhealming pattern driving phylogenetic and functional diversity is the high diversity of southern islands (Ryukyu and Bonin Isl.).
+
+Another major pattern revealed here is the predominance of long branches in the northern half of Honshu, and the predominance of short branches in the southern half, particularly Kyushu.
+
+### Bioregions
+
+### Conservation status
 
 ## Acknowledgements
 
