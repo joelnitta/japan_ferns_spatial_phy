@@ -107,13 +107,22 @@ plan <- drake_plan (
     phy = japan_pterido_tree, 
     ppgi = ppgi),
   
-  # Format trait data, subset to ferns
+  # Format trait data, subset to ferns in tree
   raw_trait_data_path = target("data_raw/JpFernLUCID_forJoel.xlsx", format = "file"),
   
-  traits_for_dist = format_traits(
+  fern_traits = format_traits(
     path_to_lucid_traits = raw_trait_data_path,
-    taxon_id_map = green_list) %>%
-    subset_to_ferns(ppgi),
+    taxon_id_map = green_list,
+    taxon_keep_list = japan_fern_tree$tip.label),
+  
+  # Transform continuous traits before making distance matrix
+  traits_for_dist = transform_traits(
+    fern_traits,
+    trans_select = c("frond_width", "stipe_length", "number_pinna_pairs"),
+    scale_select = c("frond_width", "stipe_length", "number_pinna_pairs")
+  ) %>%
+    # Make sure all traits are scaled within -1 to 1
+    assert(within_bounds(-1,1), where(is.numeric)),
   
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),

@@ -497,16 +497,17 @@ transform_traits <- function (traits,
 #'
 #' @param path_to_lucid_traits Path to raw trait data
 #' @param taxon_id_map Tibble mapping taxon IDs to taxon names
+#' @param taxon_keep_list Vector of taxon names to keep (others will be dropped)
 #'
 #' @return Tibble
 #'
-format_traits <- function(path_to_lucid_traits, taxon_id_map) {
+format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
   
   # Read in raw trait data for pteridophytes of Japan.
   # These were originally formatted for lucid dichotomous key software.
   # So they are mostly quantitative traits that have been converted to binary format,
   # or numeric traits. There are a lot of traits. One row per taxon.
-  traits <- read_excel(path_to_lucid_traits, skip = 1) %>%
+  traits_raw <- read_excel(path_to_lucid_traits, skip = 1) %>%
     clean_names() %>% 
     select(-x1, -x222) %>%
     rename(taxon = x2) %>%
@@ -516,8 +517,8 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   # Separate out into numeric and binary traits
   # (numeric container "number" in name, assume binary otherwise)
-  traits_numeric <- select(traits, taxon, contains("number"))
-  traits_binary <-  select(traits, -contains("number"))
+  traits_numeric <- select(traits_raw, taxon, contains("number"))
+  traits_binary <-  select(traits_raw, -contains("number"))
   
   ### Cleanup binary traits ###
   
@@ -685,21 +686,12 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
       number_pinna_pairs = leaf_lamina_lateral_pinna_of_pairs_frond_number
     )
   
-  # Log-transform and scale numeric traits
-  num_trait_names <- select(traits_numeric_combined, -taxon) %>% colnames()
-  
-  traits_numeric_combined_trans <- transform_traits(
-    traits_numeric_combined,
-    trans_select = all_of(num_trait_names),
-    scale_select = all_of(num_trait_names)
-  )
-  
   # Combine all numeric and categorical traits
-  traits_for_dist <- left_join(traits_numeric_combined_trans, traits_binary, by = "taxon")
+  traits_combined <- left_join(traits_numeric_combined, traits_binary, by = "taxon")
   
   # Fix some taxon names (synonyms)
-  traits_for_dist <-
-    traits_for_dist %>%
+  traits_combined <-
+    traits_combined %>%
     mutate(taxon = case_when(
       # taxon == "Athyrium_nudum" ~ missing
       taxon == "Athyrium_opacum_opacum" ~ "Athyrium_opacum",
@@ -726,11 +718,11 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   # Convert species names to taxon id codes
   missing_taxon_id <-
-    filter(traits_for_dist, !(taxon %in% taxon_id_map$taxon)) %>%
+    filter(traits_combined, !(taxon %in% taxon_id_map$taxon)) %>%
     pull(taxon)
   
   # Drop any missing names
-  traits_for_dist <- filter(traits_for_dist, taxon %in% taxon_id_map$taxon)
+  traits_combined <- filter(traits_combined, taxon %in% taxon_id_map$taxon)
   
   msg <- assertthat::validate_that(
     length(missing_taxon_id) == 0,
@@ -738,6 +730,9 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   )
   
   if(is.character(msg)) message(msg)
+  
+  # Keep only taxa in taxon keep list
+  traits_combined <- filter(traits_combined, taxon %in% taxon_keep_list)
   
   ### Find correlated traits to drop ###
   
@@ -769,7 +764,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   # To calculate Pearson's correlation co-efficient, 
   # can't allow any missing traits, so use a subset of the data
-  traits_corr_test <- ggplot2::remove_missing(traits_for_dist)
+  traits_corr_test <- ggplot2::remove_missing(traits_combined)
   
   # First make vector of any static trait (only a single trait state)
   traits_corr_static <- 
@@ -800,28 +795,28 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map) {
   
   # Vector of any static trait (only a single trait state)
   traits_static <- 
-    traits_for_dist %>%
+    traits_combined %>%
     select(all_of(colnames(traits_binary))) %>% # consider binary traits only
     get_static_traits
   
   # Next make a vector of any trait with less than two occurrences of a given trait state
   traits_low_var <-
-    traits_for_dist %>%
+    traits_combined %>%
     select(all_of(colnames(traits_binary))) %>% # consider binary traits only
     get_low_var_traits
   
   # Drop correlated and non-varying traits from full dataframe
   traits_to_drop <- c(traits_static, traits_low_var, traits_correlated_to_drop) %>% unique()
-  traits_for_dist <- select(traits_for_dist, -any_of(traits_to_drop))
+  traits_combined <- select(traits_combined, -any_of(traits_to_drop))
   
   # Verify that observed correlations in final data are less than 0.6
-  traits_for_dist %>%
+  traits_combined %>%
     select(-taxon) %>%
     corrr::correlate() %>%
     pivot_longer(-rowname) %>%
     assert(within_bounds(-0.6, 0.6), value, success_fun = success_logical)
   
-  traits_for_dist
+  traits_combined
   
 }
 
