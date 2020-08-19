@@ -193,6 +193,22 @@ plan <- drake_plan (
   # Run NMDS on traits
   traits_nmds = vegan::metaMDS(trait_distance_matrix, k = 3),
   
+  # Analyze phylogenetic signal
+  
+  # - specify continuous traits
+  cont_traits = c("frond_width", "stipe_length", "number_pinna_pairs"),
+  
+  # - analyze phy signal in continuous traits with K and lambda
+  phy_sig_results = map_df(
+    cont_traits,
+    ~analyze_cont_phylosig(selected_trait = ., traits = fern_traits, phy = japan_fern_tree)
+  ),
+  
+  # - analyze phy signal in binary traits with D
+  fern_traits_binary = select(fern_traits, -any_of(cont_traits)),
+  
+  binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree),
+  
   # Combine results ----
   
   # Combine spatial data, alpha diversity, and regions, add significance and endemism types

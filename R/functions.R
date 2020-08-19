@@ -973,6 +973,154 @@ make_traits_dendrogram <- function(trait_distance_matrix, taxon_id_map) {
   dev.off()
 }
 
+
+#' Match trait data and tree
+#' 
+#' Order of species in traits will be rearranged to match the
+#' phylogeny.
+#'
+#' @param traits Dataframe of traits, with 'species' column and
+#' additional columns, one for each trait
+#' @param phy Phylogeny (list of class "phylo")
+#' @param return Type of object to return
+#'
+#' @return Either a dataframe or a list of class "phylo"; the tree or
+#' the traits, pruned so that only species occurring in both datasets
+#' are included.
+#' @export
+#'
+#' @examples
+match_traits_and_tree <- function (traits, phy, return = c("traits", "tree")) {
+  
+  assert_that("taxon" %in% colnames(traits))
+  
+  # Keep only species in phylogeny
+  traits <- traits %>%
+    filter(taxon %in% phy$tip.label) 
+  
+  # Trim to only species with trait data
+  phy <- drop.tip(phy, setdiff(phy$tip.label, traits$taxon))
+  
+  # Get traits in same order as tips
+  traits <- left_join(
+    tibble(taxon = phy$tip.label),
+    traits,
+    by = "taxon"
+  )
+  
+  # Make sure that worked
+  assert_that(isTRUE(all.equal(traits$taxon, phy$tip.label)))
+  
+  # Return traits or tree
+  assert_that(return %in% c("tree", "traits"))
+  
+  if(return == "tree") { 
+    return (phy) 
+  } else {
+    return (traits)
+  }
+  
+}
+
+#' Analyze phylogenetic signal in a continuous trait of interest
+#'
+#' @param selected_trait Name of trait to analyze phylogenetic signal
+#' @param traits Dataframe including all untransformed traits, with
+#' 'taxon' as a column and other traits as other columns.
+#' @param phy Phylogeny
+#'
+#' @return List of estimated Blomberg's K and Pagel's lambda and
+#' their significance
+#' 
+analyze_cont_phylosig <- function (selected_trait, traits, phy) {
+  
+  # Trim data to non-missing trait values and
+  # make sure species in same order in tree and traits
+  traits_select <- traits %>% select(taxon, all_of(selected_trait)) %>%
+    remove_missing(na.rm = TRUE)
+  
+  traits_trim <- match_traits_and_tree(traits = traits_select, phy = phy, "traits") 
+  phy_trim <- match_traits_and_tree(traits = traits_select, phy = phy, "tree") 
+  
+  # Extract named vector of trait values for phylosig()
+  trait_vec <- pull(traits_trim, selected_trait) %>%
+    set_names(traits_trim$taxon)
+  
+  # Run phylosig() on selected trait
+  # using Blomberg's K
+  k_model <- phytools::phylosig(phy_trim, trait_vec, method = "K", test = TRUE)
+  # and Pagel's lambda
+  lambda_model <- phytools::phylosig(phy_trim, trait_vec, method = "lambda", test = TRUE)
+  
+  # get model results
+  tibble(
+    trait = selected_trait,
+    kval = k_model$K,
+    k_pval = k_model$P,
+    lambda = lambda_model$lambda,
+    lambda_pval = lambda_model$P,
+    n = length(trait_vec)
+  )
+  
+}
+
+#' Analyze phylogenetic signal in binary traits
+#'
+#' @param traits Dataframe including all untransformed traits, with
+#' 'species' as a column and other traits as other columns.
+#' @param phy Phylogeny
+#'
+#' @return Dataframe of estimated Fritz and Purvis' D values and
+#' associated statistics for each binary trait in `traits`
+#' 
+analyze_binary_phylosig <- function (traits, phy) {
+  
+  # Duplicated node labels are not allowed, so drop these
+  if(any(duplicated(phy$node.label))) phy$node.label <- NULL
+  
+  # Nest by trait and loop phylo.d()
+  # Note: some of the traits include NAs.
+  # For phylo.d(), need to have matching tree and trait data with all NAs removed
+  # Don't do comparative.data() on all the traits together, or species missing 
+  # data for ANY trait will get dropped
+  traits %>%
+    gather(trait, value, -taxon) %>%
+    nest(data = -trait) %>%
+    # Remove NAs for individual trait observations
+    mutate(data = map(data, ~remove_missing(., na.rm = TRUE))) %>%
+    mutate(
+      # Construct a comparative data object for each
+      # binary trait
+      comp_data = map(
+        data, 
+        ~ caper::comparative.data(
+          phy = phy, 
+          data = as.data.frame(.), 
+          names.col= "taxon", 
+          na.omit = TRUE)
+      ),
+      # Run phylo.d on each binary trait
+      phylo_d_out = map(
+        comp_data,
+        ~caper::phylo.d(data = ., binvar = value) # phylo.d() uses NSE for `binvar`
+      ),
+      # Extract the useful bits of information from each model fit
+      phylo_d_summary = map(
+        phylo_d_out,
+        ~tibble(
+          num_present = pluck(., "StatesTable", 1), 
+          num_absent = pluck(., "StatesTable", 2), 
+          D = pluck(., "DEstimate"),
+          prob_random = pluck(., "Pval1"), 
+          prob_brownian = pluck(., "Pval0")
+        )
+      )
+    ) %>%
+    select(trait, phylo_d_summary) %>%
+    unnest(cols = phylo_d_summary)
+  
+}
+
 # Community diversity ----
 
 #' Calculate the standard effect size (SES) of Faith's PD across multiple communities.
