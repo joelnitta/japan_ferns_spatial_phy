@@ -112,13 +112,17 @@ A necessary step in any analysis of biodiversity is to set the grain size used t
 
 ### Trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens [@Ebihara2016b; @Ebihara2017]. All qualitative traits in binary format; e.g., a single trait with three states is formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately originally, then averaged. From the original trait list, we selected only traits with putatative ecological function, and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state (`r table("traits-used")`).
+We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens [@Ebihara2016b; @Ebihara2017]. All qualitative traits were converted to binary format; \eg, a single trait with three states was formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately originally, then averaged. From the original trait list, we selected only traits with putatative ecological function, and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state (`r table("traits-used")`).
 
 ### Phylogenetic analysis
 
-Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils availabsle for molecular dating. Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total). We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. We then trimmed the tree to Japanese taxa only and used this for all further analyses.  
+Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils availabsle for molecular dating. Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total). We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. We then trimmed the tree to Japanese taxa only and used this for all further analyses.
 
-### Analysis of biodiversity and endemism
+### Phylogenetic signal
+
+We tested for phylogenetic signal in continuous traits using two alternative metrics, Blomberg's *K* [@Blomberg2003] and Pagel's lambda [@Pagel1999], as implemented with the \function{phylosig} function in the R package \package{phytools} [@Revell2012]. *K* describes the correlation between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); *K* = 1 under BM, with values < 1  We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the \function{phylo.d} function in the R package \package{caper} [@Orme2018].
+
+### Analysis of biodiversity
 
 We measured taxonomic diversity using taxonomic richness.
 
@@ -138,27 +142,47 @@ It is possible that endemism may be affected by species that are actually wide-r
 
 We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20.
 
+We compared patterns in biodiversity between bioregions by calculating the standard effect size (SES) of biodiversity metrics. SES measures how extreme the observed value (*obs*) is relative to the null distribution (*null*): 
+
+$SES = \frac{obs - mean(null)}{sd(null)}$
+
+We compared SES of PD, RPD, FD, and RFD across bioregions using FIXME: add this when figure out spatial-corrected statistical method to use.
+
+### Overlap with protected zones
+
+We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We categorized protected areas as either "high" (plants protected; no human activities allowed at all) or "normal" (plants protected; some human activities allowed by permit). We cropped the grid cells to only include land area, then calculated the amount of protected area of each status type within grid cells with significantly high PD, FD, or PE (one-tailed test).
+
 ### Data accessibility
 
 Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_biogeo. Raw and processed data are openly available from the Dryad repository at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
 
 ## Results
 
-### Taxonomic, phylogenetic, and morphological diversity
+### Number of specimens and redundancy
 
-Species richness is highest in southern Kyushu and on Yakushima Island, and lowest on Hokkaido and low-lying coastal areas (`r figure("raw-diversity")`A). Sampling redundancy is generally high throughout the country, with a peak just north of Tokyo, but lower in Hokkaido and some coastal areas and small islands (`r figure("diversity")`B). Raw MPD is mostly uniform throughout (`r figure("rand-diversity")`C). SES of MPD shows clustering in some parts of central Honshu, with overdispersion both in the northern half of the country and from southern Kyushu to the south (`r figure("rand-diversity")`D). Morphological diversity shows a similar pattern to phylogenetic diversity, but with more extreme overdispersion and clustering (`r figure("rand-diversity")`F).
+The distribution of specimen collection locations is highly skewed, with >3,000 specimens per grid cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r figure("abundance")`A). Despite this, sampling redundancy is generally high throughout the country, with areas of low redundancy in Hokkaido and some coastal areas and small islands (`r figure("abundance")`B). The grid cells that had to be excluded from the analysis due to low redundancy were mostly from Hokkaido.
 
-### Phylogenetic endemism
+### Phylogenetic signal
 
-Phylogenetic endemism (PE) is extremeley low throughout except for in some of the southern islands (`r figure("endemism")`A). SES of PE is high starting in southern Kyushu and southwards, including the Ogasawara islands (`r figure("endemism")`B). Results of CANAPE (Categorical Analysis of Palaeo and Neo Endemism) indicate hotspots of mixed endemism in the southern islands, but no neo- and very little paleo-endemism (`r figure("endemism")`C). When we analyzed patterns of endemicity with a reduced dataset including only taxa endemic to Japan to account for the border effect, patterns were generally similar to the full dataset, indicating that the southern islands are genuine hotspots of endemicity (`r s_figure("endemism-restricted")`).
+Results of phylogenetic signal analysis are given in Table _. All quantitative traits showed significant phylogenetic signal, but estimates of signal strength differed between K and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of K were < 0.06, indicating less phylogenetic signal than expected under BM. A minority of quantitative traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (D =< 0); others had D > 0.
+
+### Observed diversity
+
+Taxonomic richness is lowest on the northernmost island of Hokkaido, then increases with decreasing latitude until reaching a maximum in southern Kyushu, then decreases again in smaller islands further south (`r figure("raw-diversity")`A). Observed values of PD and FD were highly correlated with richness as expected (`r figure("raw-diversity")`B, C), showing an initial steep slope that gradually starts to level off at higher richness (`r s_figure("raw-biplot")`A, C). Observed values of RPD and RFD were also closely related to richness, showing high variance at low species richness, and low variance at high species richness (`r s_figure("raw-biplot")`B, D).
+
+### Randomization tests for phylogenetic and functional diversity
+
+Grid cells with significantly low PD were almost all located on Honshu, the main island of Japan. A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). The area near Yakushima includes cells with both significantly high and low PD. Grid cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu. Grid cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD.
+
+### Categorical analysis of neo- and paleo-endemism
+
+Nearly all grid cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere. The vast majority of endemic grid cells are mixed, with very few paleo- or neoendemic cells. Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
 
 ### Bioregions
 
 Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Using phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B).
 
-### Relationships between metrics
-
-Raw values of MPD and MMD showed high variance and low species richness, then merged towards a single value at high species richness, as expected (`r s_figure("raw-biplot")`K, O). Raw PE was linearly correlated with species richness (`r s_figure("raw-biplot")`M). Both raw and SES values of MPD and MMD were highly correlated (`r s_figure("raw-biplot")`D, `r s_figure("ses-biplot")`D). SES values of MPD, MMD, and PE were all positively correlated (`r s_figure("ses-biplot")`). None of the SES values were correlated with richness (`r s_figure("ses-biplot")`).
+### Degree of protection
 
 ## Discussion
 
@@ -180,7 +204,9 @@ TBD
 # Change cluster to factor
 biodiv_ferns_spatial <- biodiv_ferns_spatial %>%
   mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor)
+  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  # Add redundancy
+  mutate(redundancy = 1 - (richness/abundance))
 
 # Download high-res map of Japan,
 # crop to spatial div results area
@@ -213,6 +239,39 @@ canape_cols <-
     "not significant" = "#ffffcc"
   )
 ```
+
+```{r abundance, width = 7, height = 5}
+k <- scales::unit_format(unit = "k", scale = 1e-3, accuracy = 1, sep = "")
+  
+a <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = abundance), color = "transparent", alpha = 0.8) +
+  scale_fill_scico(palette = "lajolla", label = k) +
+  labs(fill = "No. specimens") +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  map_theme()
+
+
+b <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = redundancy), color = "transparent", alpha = 0.8) +
+  scale_fill_scico(palette = "lajolla") +
+  labs(fill = "Redundancy") +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  map_theme() +
+  theme(
+    axis.text.y = element_blank()
+  )
+
+a + b + 
+  plot_layout(nrow = 1)
+
+ggsave(result_file(figure("abundance"), "pdf"), width = 7, height = 5, units = "in")
+```
+
+**`r figure("abundance")`**. `r figure_cap("abundance")`
+
+\clearpage
 
 ```{r raw-diversity, width = 7, height = 4}
 # Richness
@@ -261,6 +320,8 @@ ggsave(result_file(figure("raw-diversity"), "pdf"), width = 7, height = 4, units
 ```
 
 **`r figure("raw-diversity")`**. `r figure_cap("raw-diversity")` For **B** and **C**, raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths.
+
+\clearpage
 
 ```{r rand-diversity, fig.width = 7, fig.height = 9}
 # PD
@@ -348,6 +409,7 @@ a <- ggplot() +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
   scale_fill_carto_d(type = "qualitative", palette = "Bold") +
+  # scale_fill_brewer(type = "qual") +
   map_theme()
 
 # Phylogenetic bioregions
@@ -483,4 +545,4 @@ ggsave(result_file(figure("div-by-tax-region"), "pdf"), width = 7, height = 7, u
 
 ```
 
-**`r figure("div-by-tax-region")`**. `r figure_cap("div-by-tax-region")`. **A**, Standard effect size (SES) of phylogenetic diversity (PD). **B**, SES of relative PD (RPD). **C**, SES of functional diversity (FD). **D**, SES of relative FD (RFD). **E**, p-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
+**`r figure("div-by-tax-region")`**. `r figure_cap("div-by-tax-region")` **A**, Standard effect size (SES) of phylogenetic diversity (PD). **B**, SES of relative PD (RPD). **C**, SES of functional diversity (FD). **D**, SES of relative FD (RFD). **E**, p-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.

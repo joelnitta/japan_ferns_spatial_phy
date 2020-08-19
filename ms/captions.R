@@ -2,6 +2,7 @@
 
 # - Figures
 fig_nums <- captioner::captioner(prefix = "Fig.")
+fig_nums(name = "abundance", caption = "Observed number of specimens (**A**) and sampling redundancy (**B**) per 0.2° grid cell in the ferns of Japan.")
 fig_nums(name = "raw-diversity", caption = "Raw taxonomic (**A**), phylogenetic (**B**), and functional (**C**) diversity of the ferns of Japan.")
 fig_nums(name = "rand-diversity", caption = "Results of randomization test for phylogenetic and functional diversity of the ferns of Japan.")
 fig_nums(name = "endemism", caption = "Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism).")
@@ -17,9 +18,8 @@ s_fig_nums <- captioner::captioner(prefix = "Fig. S", auto_space = FALSE, suffix
 s_fig_nums(name = "sampling-curve", "Species collection curve for the ferns of Japan fit with the iNEXT package.")
 s_fig_nums(name = "grain-size", "Effect of grain size on sampling redundancy.")
 s_fig_nums(name = "k-plot", "Selection of *k* for bioregions.")
+s_fig_nums(name = "raw-biplot", "Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan.")
 s_fig_nums(name = "endemism-restricted", "Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan.")
-s_fig_nums(name = "raw-biplot", "Relationships between raw biodiversity metrics of the ferns of Japan.")
-s_fig_nums(name = "ses-biplot", "Relationships between standard effect size (SES) of biodiversity metrics of the ferns of Japan.")
 s_fig_nums(name = "traits-nmds", "Trait space of the ferns of Japan.")
 
 # - SI tables
