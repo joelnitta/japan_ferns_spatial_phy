@@ -230,331 +230,79 @@ ggsave(result_file(s_figure("k-plot"), "pdf"), width = 7, height = 3, units = "i
 
 \clearpage
 
-```{r endemism-restricted, fig.width = 7, fig.height = 8}
-# PE (endemic)
-# FIXME: cells with zero species should be NA, not zero PE
-a <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = pe_obs)) +
-  geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
-  labs(fill = "PE") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme() +
-  theme(
-    axis.text.x = element_blank()
-  )
+```{r raw-biplot, fig.width = 7, fig.height = 7}
+a <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = pd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "PD")
 
-# SES PE (endemic)
-# FIXME: cells with zero species should be NA, not zero PE
-b <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = pe_obs_p_upper)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "PE p-score") +
-  scale_fill_scico(palette = "lajolla") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.text.y = element_blank()
-  )
+b <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rpd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "RPD")
 
-# RPE
-c <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = rpe_obs)) +
-  geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
-  labs(fill = "RPE") +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme_light() +
-  theme(
-    axis.text.x = element_blank()
-  )
+c <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = fd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "FD")
 
-# SES RPE
-d <- ggplot(ses_div_ferns_endemic_spatial, aes(fill = rpe_obs_z)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "SES RPE") +
-  scale_fill_scico(
-    palette = "roma",
-    na.value="grey80",
-    direction = -1,
-    limits = c(
-      -get_limit(ses_div_ferns_endemic_spatial, rpe_obs_z, "abs"),
-      get_limit(ses_div_ferns_endemic_spatial, rpe_obs_z, "abs")
-    )) +
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme() +
-  theme(axis.text.y = element_blank())
+d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "RFD")
 
-# CANAPE, restricted dataset
-# set color scheme
-canape_cols <- c(
-  "neo" = "#E41A1C", # Color brewer set1 red
-  "paleo" = "#377EB8", # Color brewer blue
-  "mixed" = "#984EA3", # Color brewer purple
-  "none" = "#FFFFCC" # Scico lajolla faintest color
-)
-
-e <- ses_div_ferns_endemic_spatial %>%
-  mutate(endem_type = replace_na(endem_type, "none")) %>%
-  ggplot(aes(fill = endem_type)) +
-  geom_sf(color = "transparent") +
-  labs(fill = "Endemism\ntype") +
-  scale_fill_manual(values = canape_cols, breaks = c("neo", "paleo", "mixed", "none"), labels = c("Neo", "Paleo", "Mixed", "Not endemic")) + 
-  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
-  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
-  map_theme_light()
-
-
-a + b + c + d + e +
-  plot_layout(ncol = 2) +
+a + b + c + d +
+  plot_layout(ncol = 2, nrow = 2) +
   plot_annotation(tag_levels = 'A')
 
-ggsave(result_file(s_figure("endemism-restricted"), "pdf"), width = 7, height = 8, units = "in")
+ggsave(result_file(s_figure("raw-biplot"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
-**`r s_figure("endemism-restricted")`**. `r s_figure_cap("endemism-restricted")` **A**, phylogenetic endemism (PE). **B**, Standard effect size (SES) of PE. **C**, relative phylogenetic endemism (RPE). **D**, SES of RPE. **E**, Categorical analysis of neo- and paleo-endemism (CANAPE).
+**`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diversity (RPD). **C**, Functional diversity (FD). **D**, Relative functional diversity (RFD).
 
 \clearpage
 
-```{r biplot-prep}
-# Extract centroids
-centroids <- sf::st_centroid(ses_div_ferns_spatial$geometry) %>%
-  sf::st_coordinates()
+```{r map-plot-prep}
+# Download high-res map of Japan,
+# crop to spatial div results area
+japan <- rnaturalearth::ne_countries(country = "japan", scale = "large", returnclass = "sf") %>%
+  sf::st_crop(sf::st_bbox(biodiv_ferns_endemic_spatial))
 
-# Define helper function for making a scatterplot
-scatterplot <- function(data, x_var, y_var, x_lab, y_lab, label, annotate, loc) {
-  p <- ggplot(data, aes(x = .data[[x_var]], y = .data[[y_var]])) +
-    geom_point(alpha = 0.5) +
-    labs(
-      x = x_lab,
-      y = y_lab
-    )
-  
-  # Add annotation and trendline if annotate = TRUE
-  if(annotate & loc == "UL") p <- p +
-      annotate("label", x = -Inf, y = Inf, label = label, hjust = 0, vjust = 1, label.size = 0, size = 3, fill = "transparent") +
-      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
-  
-  if(annotate & loc == "UR") p <- p +
-      annotate("label", x = Inf, y = Inf, label = label, hjust = 1, vjust = 1, label.size = 0, size = 3, fill = "transparent") +
-      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
-  
-  if(annotate & loc == "LL") p <- p +
-      annotate("label", x = -Inf, y = -Inf, label = label, hjust = 0, vjust = 0, label.size = 0, size = 3, fill = "transparent") +
-      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
-  
-  if(annotate & loc == "LR") p <- p +
-      annotate("label", x = Inf, y = -Inf, label = label, hjust = 1, vjust = 0, label.size = 0, size = 3, fill = "transparent") +
-      geom_smooth(method = "lm", se = FALSE, color = "blue", size = 0.5)
-  
-  p
-}
+# Set CRS
+japan_crs <- sf::st_crs(japan)
+
+biodiv_ferns_endemic_spatial <- sf::st_set_crs(biodiv_ferns_endemic_spatial, japan_crs)
+
+# Set color palettes
+# Randomization test significance
+signif_cols <-
+  c(
+    "> 0.99" = "#e31a1c", 
+    "> 0.975" = "#fb9a99",
+    "< 0.01" = "#1f78b4", 
+    "< 0.025" = "#a6cee3",
+    "not significant" = "#ffffcc"
+  )
+
+# CANAPE
+canape_cols <-
+  c(
+    "neo" = "#e31a1c", 
+    "paleo" = "#1f78b4",
+    "mixed" = "#6a51a3",
+    "super" = "#4a1486",
+    "not significant" = "#ffffcc"
+  )
 ```
 
+```{r endemism-restricted, fig.width = 5, fig.height = 5}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent", alpha = 0.8) +
+  scale_fill_manual(values = canape_cols) +
+  map_theme() +
+  theme(legend.title = element_blank())
 
-```{r raw-biplot, fig.width = 8, fig.height = 10.5}
-## Biplots of raw metrics ##
-
-# Set up x and y variables as factors so they can be ordered appropriately in the plot
-x_vars <-
-  c("pd_obs", "rpd_obs", "fd_obs", "rfd_obs", "pe_obs", "rpe_obs", "richness") %>%
-  factor() %>%
-  fct_relevel(as.character(.))
-
-y_vars <- c("pd_obs", "rpd_obs", "fd_obs", "rfd_obs", "pe_obs", "rpe_obs") %>%
-  factor() %>%
-  fct_relevel(as.character(.))
-
-# Make dataframe of arguments to feed into plotting function
-# - includes all non-duplicated combinations of raw diversity metrics
-raw_comparisons <-
-  cross_df(
-    list(
-      x_var = x_vars,
-      y_var = y_vars
-    ),
-    .filter = `==` # filter out exact duplicates
-  ) %>%
-  # Remove reversed duplicates
-  # https://stackoverflow.com/questions/22756392/deleting-reversed-duplicates-with-r
-  group_by(grp = paste(pmax(as.character(x_var), as.character(y_var)), pmin(as.character(x_var), as.character(y_var)), sep = "_")) %>%
-  arrange(x_var, y_var) %>%
-  slice(1) %>%
-  ungroup() %>%
-  select(-grp) %>%
-  arrange(x_var, y_var) %>%
-  # Convert x_var and y_var back to character for plotting function
-  mutate(across(c(x_var, y_var), as.character)) %>%
-  # Add labels
-  mutate(
-    x_lab = case_when(
-      x_var == "pd_obs" ~ "PD",
-      x_var == "rpd_obs" ~ "RPD",
-      x_var == "fd_obs" ~ "FD",
-      x_var == "rfd_obs" ~ "RFD",
-      x_var == "pe_obs" ~ "PE",
-      x_var == "rpe_obs" ~ "RPE",
-      x_var == "richness" ~ "Richness"
-    ),
-    y_lab = case_when(
-      y_var == "pd_obs" ~ "PD",
-      y_var == "rpd_obs" ~ "RPD",
-      y_var == "fd_obs" ~ "FD",
-      y_var == "rfd_obs" ~ "RFD",
-      y_var == "pe_obs" ~ "PE",
-      y_var == "rpe_obs" ~ "RPE"
-    )
-  ) %>%
-  # Run modified t-test
-  mutate(
-    test_res = map2(
-      .x = x_var, 
-      .y = y_var, 
-      ~SpatialPack::modified.ttest(ses_div_ferns_spatial[[.x]], ses_div_ferns_spatial[[.y]], centroids)),
-    # Extract relevant stats from results
-    cor = map_dbl(test_res, pluck("corr")),
-    pval = map_dbl(test_res, pluck("p.value"))
-    ) %>%
-  # Generate label
-  mutate(
-    cor_lab = glue("r = {round(cor, 3)}"),
-    pval_lab = case_when(
-      pval < 0.001 ~ "***",
-      pval < 0.01 ~ "**",
-      pval < 0.05 ~ "*",
-      TRUE ~ ""
-    ),
-    label = glue::glue("{cor_lab}{pval_lab}")
-  ) %>%
-  # Specify which plots to annotate
-  mutate(
-    annotate = case_when(
-      pval < 0.05 ~ TRUE,
-      TRUE ~ FALSE
-    ),
-    # annotate in upper-right corner for mpd_morph_obs + rpe_obs,
-    # upper-left otherwise
-    loc = case_when(
-      y_var == "mpd_morph_obs" & x_var == "rpe_obs" ~ "UR",
-      TRUE ~ "UL"
-    )
-  ) %>%
-  select(x_var, y_var, x_lab, y_lab, label, annotate, loc)
-  
-# Make plot
-pmap(raw_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
-wrap_plots() +
-  plot_layout(ncol = 3)
-
-ggsave(result_file(s_figure("raw-biplot"), "pdf"), width = 8, height = 10.5, units = "in")
+ggsave(result_file(s_figure("endemism-restricted"), "pdf"), width = 5, height = 5, units = "in")
 ```
 
-**`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PD, phylogenetic diversity; PE, phylogenetic endemism; RPE, relative phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; *p* value and correlation (r) only shown for *p* < 0.05.
-
-\clearpage
-
-```{r ses-biplot, fig.width = 8, fig.height = 10.5}
-## Biplots of SES metrics ##
-
-# Set up x and y variables as factors so they can be ordered appropriately in the plot
-x_vars <-
-  c("pd_obs_z", "rpd_obs_z", "fd_obs_z", "rfd_obs_z", "pe_obs_z", "rpe_obs_z", "richness") %>%
-  factor() %>%
-  fct_relevel(as.character(.))
-
-y_vars <- c("pd_obs_z", "rpd_obs_z", "fd_obs_z", "rfd_obs_z", "pe_obs_z", "rpe_obs_z") %>%
-  factor() %>%
-  fct_relevel(as.character(.))
-
-# Make dataframe of arguments to feed into plotting function
-# - includes all non-duplicated combinations of raw diversity metrics
-ses_comparisons <-
-  cross_df(
-    list(
-      x_var = x_vars,
-      y_var = y_vars
-    ),
-    .filter = `==` # filter out exact duplicates
-  ) %>%
-  # Remove reversed duplicates
-  # https://stackoverflow.com/questions/22756392/deleting-reversed-duplicates-with-r
-  group_by(grp = paste(pmax(as.character(x_var), as.character(y_var)), pmin(as.character(x_var), as.character(y_var)), sep = "_")) %>%
-  arrange(x_var, y_var) %>%
-  slice(1) %>%
-  ungroup() %>%
-  select(-grp) %>%
-  arrange(x_var, y_var) %>%
-  # Convert x_var and y_var back to character for plotting function
-  mutate(across(c(x_var, y_var), as.character)) %>%
-  # Add labels
-  mutate(
-    x_lab = case_when(
-      x_var == "pd_obs_z" ~ "SES PD",
-      x_var == "rpd_obs_z" ~ "SES RPD",
-      x_var == "fd_obs_z" ~ "SES FD",
-      x_var == "rfd_obs_z" ~ "SES RFD",
-      x_var == "pe_obs_z" ~ "SES PE",
-      x_var == "rpe_obs_z" ~ "SES RPE",
-      x_var == "richness" ~ "Richness"
-    ),
-    y_lab = case_when(
-      y_var == "pd_obs_z" ~ "SES PD",
-      y_var == "rpd_obs_z" ~ "SES RPD",
-      y_var == "fd_obs_z" ~ "SES FD",
-      y_var == "rfd_obs_z" ~ "SES RFD",
-      y_var == "pe_obs_z" ~ "SES PE",
-      y_var == "rpe_obs_z" ~ "SES RPE"
-    )
-  ) %>%
-  # Run modified t-test
-  mutate(
-    test_res = map2(
-      .x = x_var, 
-      .y = y_var, 
-      ~SpatialPack::modified.ttest(ses_div_ferns_spatial[[.x]], ses_div_ferns_spatial[[.y]], centroids)),
-    # Extract relevant stats from results
-    cor = map_dbl(test_res, pluck("corr")),
-    pval = map_dbl(test_res, pluck("p.value"))
-    ) %>%
-  # Generate label
-  mutate(
-    cor_lab = glue("r = {round(cor, 3)}"),
-    pval_lab = case_when(
-      pval < 0.001 ~ "***",
-      pval < 0.01 ~ "**",
-      pval < 0.05 ~ "*",
-      TRUE ~ ""
-    ),
-    label = glue::glue("{cor_lab}{pval_lab}")
-  ) %>%
-  # Specify which plots to annotate
-  mutate(
-    annotate = case_when(
-      pval < 0.05 ~ TRUE,
-      TRUE ~ FALSE
-    ),
-    # annotate in upper-right corner for mpd_morph_obs + rpe_obs,
-    # upper-left otherwise
-    loc = case_when(
-      y_var == "rpe_obs_z" & x_var == "pe_obs_z" ~ "LR",
-      y_var == "fd_obs_z" & x_var == "richness" ~ "UR",
-      y_var == "pd_obs_z" & x_var == "richness" ~ "UR",
-      TRUE ~ "UL"
-    )
-  ) %>%
-  select(x_var, y_var, x_lab, y_lab, label, annotate, loc)
-
-# Make plot
-pmap(ses_comparisons, scatterplot, data = ses_div_ferns_spatial) %>%
-wrap_plots() +
-  plot_layout(ncol = 3)
-
-ggsave(result_file(s_figure("ses-biplot"), "pdf"), width = 8, height = 10.5, units = "in")
-```
-
-**`r s_figure("ses-biplot")`**. `r s_figure_cap("ses-biplot")` MPD, mean phylogenetic distance; MMD, mean morphological distance; PD, phylogenetic diversity; PE, phylogenetic endemism; RPE, relative phylogenetic endemism. Correlations between variables analyzed with Dutilleul's modified *t*-test that accounts for spatial structure in the data; *p* value and correlation (r) only shown for *p* < 0.05.
+**`r s_figure("endemism-restricted")`**. `r s_figure_cap("endemism-restricted")` 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Methods.
 
 \clearpage
 
