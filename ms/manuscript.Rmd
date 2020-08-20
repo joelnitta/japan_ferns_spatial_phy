@@ -252,6 +252,10 @@ canape_cols <-
     "super" = "#4a1486",
     "not significant" = "#ffffcc"
   )
+
+# Bioregions
+bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
+  set_names(1:8)
 ```
 
 ```{r abundance, width = 7, height = 5}
@@ -422,8 +426,7 @@ a <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = taxonomic_cluster), color = "transparent", alpha = 0.8) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
-  scale_fill_carto_d(type = "qualitative", palette = "Bold") +
-  # scale_fill_brewer(type = "qual") +
+  scale_fill_manual(values = bioregion_cols) +
   map_theme()
 
 # Phylogenetic bioregions
@@ -432,7 +435,7 @@ b <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = phylo_cluster), color = "transparent", alpha = 0.8) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
-  scale_fill_carto_d(type = "qualitative", palette = "Bold") +
+  scale_fill_manual(values = bioregion_cols) +
   map_theme() +
   theme(
     axis.text.y = element_blank()
