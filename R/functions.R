@@ -138,6 +138,119 @@ subset_comm_to_endemic <- function (comm, green_list) {
   
 }
 
+#' Make community matrix from species' occurrences
+#'
+#' @param species_coods Dataframe of species occurrences.
+#' No missing values allowed.
+#' @param resol Degree of spatial resolution used to construct the presence-absence grid.
+#' @param species Name of column to use for species
+#' @param lat Name of column to use for latitude
+#' @param long Name of column to use for longitude
+#' @param crs Character or object of class CRS. PROJ.4 type description of a
+#' Coordinate Reference System (map projection) used to construct the
+#' presence-absence grid.
+#'
+#' @return List of two items, "comm_dat" is the community dataframe in
+#' sparse format; poly_shp is the distribution map as a simple features dataframe
+#'
+#' @examples
+#' # Make test data set of 10 species with 100 occurrences total.
+#' test_data <- data.frame(taxon = letters[1:10],
+#'   longitude = runif(100, -2, 2),
+#'   decimallatitude = runif(100, -2, 2),
+#'   latitude = FALSE)
+#' # Presence/absence
+#' comm_from_points(test_data)
+#' # Abundance
+#' comm_from_points(test_data, abun = TRUE)
+comm_from_points <- function(species_coods,
+                             resol = 1,
+                             species = "taxon",
+                             lon = "longitude",
+                             lat = "latitude",
+                             crs = sp::CRS("+proj=longlat +datum=WGS84")) {
+  
+  species_coods <- as.data.frame(species_coods)
+  species_coods <- species_coods[, c(species, lon, lat)]
+  names(species_coods) <- c("species", "longitude", "latitude")
+  
+  checkr::check_data(
+    species_coods,
+    values = list(
+      species = "a",
+      longitude = 1,
+      latitude = 1
+    )
+  )
+  
+  assertr::verify(species_coods, longitude <= 180, success_logical)
+  
+  assertr::verify(species_coods, latitude <= 90, success_logical)
+  
+  assertthat::assert_that(!is.factor(species_coods$species))
+  
+  # Create empty raster
+  r <- raster::raster(
+    resolution = resol,
+    xmn = -180,
+    xmx = 180,
+    ymn = -90,
+    ymx = 90,
+    crs = crs)
+  
+  ### Extract cell IDs from points by species
+  # Coordinates must be long, lat for raster
+  # (which assumes x, y position in that order)
+  
+  # Extract cell IDs from points by species
+  species_coods_nested <- tidyr::nest(species_coods, data = c(longitude, latitude))
+  
+  # raster::cellFromXY needs data to be data.frame, not tibble
+  species_coods_nested <- dplyr::mutate(species_coods_nested, data = purrr::map(data, as.data.frame))
+  
+  cells_occur <- purrr::map(
+    species_coods_nested$data,
+    ~ raster::cellFromXY(xy = ., object = r)
+  )
+  
+  names(cells_occur) <- species_coods_nested$species
+  
+  # Get vector of non-empty cells
+  non_empty_cells <- sort(unique(unlist(cells_occur)))
+  
+  # Subset raster to non-empty cells
+  r_sub <- raster::rasterFromCells(r, non_empty_cells)
+  
+  # Get its extent
+  e <- raster::extent(r_sub)
+  
+  # Convert to spatial polygons dataframe
+  p <- as(e, "SpatialPolygons")
+  
+  # Make polygons grid at same extent as sample points
+  m <- sp::SpatialPolygonsDataFrame(p, data.frame(sp = "x"))
+  m <- fishnet(mask = m, res = resol)
+  
+  # Overlay points onto grid
+  dat <- as.data.frame(species_coods)
+  dat <- dat[complete.cases(dat), ]
+  sp::coordinates(dat) <- ~longitude + latitude
+  
+  sp::proj4string(dat) <- sp::proj4string(m)
+  x <- sp::over(dat, m)
+  y <- cbind(as.data.frame(dat), x)
+  y <- y[complete.cases(y), ]
+  Y <- phyloregion::long2sparse(y)
+  tmp <- data.frame(grids = row.names(Y), abundance = rowSums(as.matrix(Y)), 
+                    richness = rowSums(as.matrix(Y > 0)))
+  z <- sp::merge(m, tmp, by = "grids")
+  z <- z[!is.na(z@data$richness), ] %>% sf::st_as_sf()
+  
+  return(list(comm_dat = Y, poly_shp = z))
+  
+}
+
+
 #' Extract community dataframe from points2comm()
 #' 
 #' Also converts the community dataframe to presence/absence
@@ -736,6 +849,39 @@ make_trait_summary <- function (traits) {
       TRUE ~ "qualitative"
     )) %>%
     arrange(trait_type, trait)
+}
+
+#' Categorize binary traits into their categorical versions
+#'
+#' Detects traits by name and groups them into categories
+#' (combined traits)
+#'
+#' @param traits Tibble of traits in binary format
+#'
+#' @return Tibble
+#'
+categorize_traits <- function(traits) {
+  
+  traits %>%
+    mutate(comp_trait = case_when(
+      str_detect(trait, "leaf_sorus_shape") ~ "sorus_shape",
+      str_detect(trait, "leaf_sorus_indusium_shape") ~ "indusium_shape",
+      str_detect(trait, "leaf_sorus_indusium_margin") ~ "indusium_margin",
+      str_detect(trait, "leaf_sorus_false_indusium_present") ~ "false_indusium_present",
+      str_detect(trait, "leaf_sorus_indusium_present") ~ "indusium_present",
+      str_detect(trait, "leaf_lamina_shape_sterile_frond") ~ "shape_sterile_frond",
+      str_detect(trait, "leaf_lamina_texture") ~ "leaf_lamina_texture",
+      str_detect(trait, "leaf_lamina_color") ~ "leaf_lamina_color",
+      str_detect(trait, "leaf_lamina_vennation") ~ "leaf_lamina_vennation",
+      str_detect(trait, "leaf_lamina_pseudo_veinlet_present") ~ "pseudo_veinlet_present",
+      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
+      str_detect(trait, "leaf_lamina_lateral_pinna_shape") ~ "lateral_pinna_shape",
+      str_detect(trait, "leaf_lamina_lateral_pinna_stalk") ~ "lateral_pinna_stalk",
+      str_detect(trait, "leaf_lamina_margin") ~ "leaf_lamina_margin",
+      str_detect(trait, "leaf_lamina_rhachis_adaxial_side_grooved") ~ "rhachis_adaxial_side_grooved",
+      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
+      TRUE ~ trait
+    ))
 }
 
 #' Make a traits distance matrix
