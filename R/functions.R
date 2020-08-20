@@ -707,77 +707,34 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
   
 }
 
-#' Categorize binary traits into their categorical versions
-#'
-#' Detects traits by name and groups them into categories
-#' (combined traits)
-#'
-#' @param traits Tibble of traits in binary format
-#'
-#' @return Tibble
-#'
-categorize_traits <- function(traits) {
-  traits %>%
-    mutate(comp_trait = case_when(
-      str_detect(trait, "leaf_sorus_shape") ~ "sorus_shape",
-      str_detect(trait, "leaf_sorus_indusium_shape") ~ "indusium_shape",
-      str_detect(trait, "leaf_sorus_indusium_margin") ~ "indusium_margin",
-      str_detect(trait, "leaf_sorus_false_indusium_present") ~ "false_indusium_present",
-      str_detect(trait, "leaf_sorus_indusium_present") ~ "indusium_present",
-      str_detect(trait, "leaf_lamina_shape_sterile_frond") ~ "shape_sterile_frond",
-      str_detect(trait, "leaf_lamina_texture") ~ "leaf_lamina_texture",
-      str_detect(trait, "leaf_lamina_color") ~ "leaf_lamina_color",
-      str_detect(trait, "leaf_lamina_vennation") ~ "leaf_lamina_vennation",
-      str_detect(trait, "leaf_lamina_pseudo_veinlet_present") ~ "pseudo_veinlet_present",
-      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
-      str_detect(trait, "leaf_lamina_lateral_pinna_shape") ~ "lateral_pinna_shape",
-      str_detect(trait, "leaf_lamina_lateral_pinna_stalk") ~ "lateral_pinna_stalk",
-      str_detect(trait, "leaf_lamina_margin") ~ "leaf_lamina_margin",
-      str_detect(trait, "leaf_lamina_rhachis_adaxial_side_grooved") ~ "rhachis_adaxial_side_grooved",
-      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
-      TRUE ~ trait
-    ))
-}
-
 #' Summarize traits for supplemental info
 #'
-#' @param traits_for_dist Formatted trait data
+#' @param traits Formatted trait data
 #'
 #' @return Tibble
 #'
-make_trait_summary <- function (traits_for_dist) {
-  
-  # Count trait states to categorize traits.
-  # Those with > 3 states should be numeric.
-  # (binary can be 1, 0, or missing).
-  states <- map_df(traits_for_dist, n_distinct) %>%
-    gather(trait, n_states)
+make_trait_summary <- function (traits) {
   
   # Summarize traits
-  traits_for_dist %>%
-    dplyr::select(-taxon) %>%
-    colnames %>%
+  traits %>%
+    select(-taxon) %>%
+    colnames() %>%
     tibble(trait = .) %>%
-    left_join(states) %>%
+    mutate(trait = str_split(trait, "_") %>% map_chr(1)) %>%
+    mutate(
+      trait = case_when(
+        trait == "frond" ~ "frond_width",
+        trait == "number" ~ "number_pinna_pairs",
+        trait == "stipe" ~ "stipe_length",
+        TRUE ~ trait
+      )
+    ) %>%
+    count(trait) %>%
     mutate(trait_type = case_when(
-      n_states > 3 ~ "continuous",
-      TRUE ~ "binary"
+      trait %in% c("frond_width", "number_pinna_pairs", "stipe_length") ~ "continuous",
+      trait == "indusium" ~ "binary",
+      TRUE ~ "qualitative"
     )) %>%
-    # Collapse binarized traits into their
-    # categorical version by name.
-    categorize_traits %>%
-    add_count(comp_trait) %>%
-    dplyr::select(comp_trait, trait_type, n) %>%
-    unique() %>%
-    mutate(trait_type = case_when(
-      trait_type == "continuous" ~ trait_type,
-      n > 1 ~ "qualitative",
-      TRUE ~ trait_type
-    )) %>%
-    mutate(n_states = case_when(
-      trait_type == "qualitative" ~ n
-    )) %>%
-    dplyr::select(trait = comp_trait, trait_type, n_states) %>%
     arrange(trait_type, trait)
 }
 
