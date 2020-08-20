@@ -3,10 +3,6 @@ plan <- drake_plan (
   
   # Load and process data ----
   
-  # Load basic world map.
-  world_map = ggplot2::map_data("world") %>%
-    rename(longitude = long, latitude = lat),
-  
   # Unzip data files from Ebihara and Nitta 2019
   # This requires doi_10.5061_dryad.4362p32__v4.zip to be downloaded to data_raw/
   # from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32 first
@@ -127,12 +123,6 @@ plan <- drake_plan (
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
   
-  # Analyze reproductive mode ----
-  
-  percent_sex_dip = calc_sex_dip(
-    comm = comm_ferns, 
-    repro_data = repro_data),
-  
   # Conduct randomization tests of diversity metrics ----
   
   # Conduct randomization tests of phylogeny-based metrics for all ferns and
@@ -189,9 +179,6 @@ plan <- drake_plan (
   ),
   
   # Traits ----
-  
-  # Run NMDS on traits
-  traits_nmds = vegan::metaMDS(trait_distance_matrix, k = 3),
   
   # Analyze phylogenetic signal
   

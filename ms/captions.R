@@ -20,7 +20,6 @@ s_fig_nums(name = "grain-size", "Effect of grain size on sampling redundancy.")
 s_fig_nums(name = "k-plot", "Selection of *k* for bioregions.")
 s_fig_nums(name = "raw-biplot", "Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan.")
 s_fig_nums(name = "endemism-restricted", "Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan.")
-s_fig_nums(name = "traits-nmds", "Trait space of the ferns of Japan.")
 
 # - SI tables
 # s_table_nums <- captioner::captioner(prefix = "Table S", auto_space = FALSE, suffix = ": ")
