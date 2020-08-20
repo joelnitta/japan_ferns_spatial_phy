@@ -23,6 +23,25 @@ library(kokudosuuchi)
 library(assertr)
 library(tidyverse)
 
+#' Get a list of URLs to download data for a kokudosuuchi dataset
+#'
+#' @param dataset Name of the dataset
+#'
+#' @return Character vector; list of URLs for that dataset
+#'
+#' @examples
+#' get_ksj_urls("標高・傾斜度3次メッシュ")
+get_ksj_urls <- function (dataset) {
+  # Get all KSJ metadata
+  ksj_metadata <- kokudosuuchi::getKSJSummary()
+  # Get identifier for the dataset we're interested in
+  dataset_id <- dplyr::filter(ksj_metadata, stringr::str_detect(title, dataset)) %>%
+    dplyr::pull(identifier)
+  # Get a tibble of URLs to zip files with this data
+  urls <- kokudosuuchi::getKSJURL(dataset_id)
+  urls$zipFileUrl
+}
+
 # Area data ----
 
 # The raw data contain 16 columns. We are interested in L03a_014 and L03a_015,
