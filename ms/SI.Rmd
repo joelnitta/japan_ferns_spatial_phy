@@ -35,6 +35,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 # If using interactively, run `source("_drake.R")` first.
 
 loadd(list = c(
+  "japan_shp",
   "comm_scaled_list_0.1",
   "comm_scaled_list_0.2",
   "comm_scaled_list_0.3",
@@ -63,6 +64,47 @@ source(here::here("ms/captions.R"))
 \setlength{\parindent}{0ex}
 
 # Supplemental Information
+
+```{r map-plot-prep}
+# Change cluster to factor
+biodiv_ferns_spatial <- biodiv_ferns_spatial %>%
+  mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  # Add redundancy
+  mutate(redundancy = 1 - (richness/abundance))
+
+# Download high-res map of Japan,
+# crop to spatial div results area
+japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
+
+# Set CRS
+japan_crs <- sf::st_crs(japan)
+
+biodiv_ferns_endemic_spatial <- sf::st_set_crs(biodiv_ferns_endemic_spatial, japan_crs)
+
+biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
+
+# Set color palettes
+# Randomization test significance
+signif_cols <-
+  c(
+    "> 0.99" = "#e31a1c", 
+    "> 0.975" = "#fb9a99",
+    "< 0.01" = "#1f78b4", 
+    "< 0.025" = "#a6cee3",
+    "not significant" = "#ffffcc"
+  )
+
+# CANAPE
+canape_cols <-
+  c(
+    "neo" = "#e31a1c", 
+    "paleo" = "#1f78b4",
+    "mixed" = "#6a51a3",
+    "super" = "#4a1486",
+    "not significant" = "#ffffcc"
+  )
+```
 
 ```{r sampling-curve, fig.width = 4, fig.height = 3}
 # Format fern abundances (no hybrids) as numeric vector
@@ -180,6 +222,39 @@ ggsave(result_file(s_figure("grain-size"), "pdf"), width = 7, height = 3, units 
 
 \clearpage
 
+```{r abundance, width = 7, height = 5}
+k <- scales::unit_format(unit = "k", scale = 1e-3, accuracy = 1, sep = "")
+  
+a <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = abundance), color = "transparent", alpha = 0.8) +
+  scale_fill_scico(palette = "lajolla", label = k) +
+  labs(fill = "No. specimens") +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  map_theme()
+
+
+b <- ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = redundancy), color = "transparent", alpha = 0.8) +
+  scale_fill_scico(palette = "lajolla") +
+  labs(fill = "Redundancy") +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  map_theme() +
+  theme(
+    axis.text.y = element_blank()
+  )
+
+a + b + 
+  plot_layout(nrow = 1)
+
+ggsave(result_file(figure("abundance"), "pdf"), width = 7, height = 5, units = "in")
+```
+
+**`r s_figure("abundance")`**. `r s_figure_cap("abundance")`
+
+\clearpage
+
 ```{r k-plot, fig.width = 7, fig.height = 3}
 a <- k_taxonomy$df %>%
   as_tibble() %>%
@@ -257,39 +332,6 @@ ggsave(result_file(s_figure("raw-biplot"), "pdf"), width = 7, height = 3, units 
 **`r s_figure("raw-biplot")`**. `r s_figure_cap("raw-biplot")` **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diversity (RPD). **C**, Functional diversity (FD). **D**, Relative functional diversity (RFD).
 
 \clearpage
-
-```{r map-plot-prep}
-# Download high-res map of Japan,
-# crop to spatial div results area
-japan <- rnaturalearth::ne_countries(country = "japan", scale = "large", returnclass = "sf") %>%
-  sf::st_crop(sf::st_bbox(biodiv_ferns_endemic_spatial))
-
-# Set CRS
-japan_crs <- sf::st_crs(japan)
-
-biodiv_ferns_endemic_spatial <- sf::st_set_crs(biodiv_ferns_endemic_spatial, japan_crs)
-
-# Set color palettes
-# Randomization test significance
-signif_cols <-
-  c(
-    "> 0.99" = "#e31a1c", 
-    "> 0.975" = "#fb9a99",
-    "< 0.01" = "#1f78b4", 
-    "< 0.025" = "#a6cee3",
-    "not significant" = "#ffffcc"
-  )
-
-# CANAPE
-canape_cols <-
-  c(
-    "neo" = "#e31a1c", 
-    "paleo" = "#1f78b4",
-    "mixed" = "#6a51a3",
-    "super" = "#4a1486",
-    "not significant" = "#ffffcc"
-  )
-```
 
 ```{r endemism-restricted, fig.width = 5, fig.height = 5}
 ggplot() +

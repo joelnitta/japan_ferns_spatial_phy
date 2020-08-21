@@ -39,7 +39,10 @@ loadd(list = c(
   "occ_point_data_ferns_unfiltered",
   "biodiv_ferns_spatial",
   "k_taxonomy",
-  "k_phylogeny"
+  "k_phylogeny",
+  "signif_cells_protected_area",
+  "protected_areas",
+  "japan_shp"
 ),
 cache = ja_fern_cache)
 
@@ -80,7 +83,7 @@ Author for correspondence:
 
 ## Abstract
 
-The ferns of Japan are one of the best-characterized regional floras in the world due to decades of intensive collection and taxonomic revision. We combined phylogenetic, functional, and environmental datasets to explore the spatial distribution of biodiversity in the ferns of Japan.
+The ferns of Japan are one of the best-characterized regional floras in the world due to decades of intensive collection and taxonomic revision. We combined phylogenetic, functional, and environmental datasets to explore the spatial distribution of biodiversity in the ferns of Japan. We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity, which is highest in small southern islands, and that of relative phylogenetic and functional diversity, which is high at both high and low latitudes, and low at mid-latitudes.
 
 **Key words:** biodiversity, biogeography, phylogenetic diversity. 
 
@@ -112,7 +115,7 @@ A necessary step in any analysis of biodiversity is to set the grain size used t
 
 ### Trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens [@Ebihara2016b; @Ebihara2017]. All qualitative traits were converted to binary format; \eg, a single trait with three states was formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately originally, then averaged. From the original trait list, we selected only traits with putatative ecological function, and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state (`r table("traits-used")`).
+We used traits originally compiled for identification of ferns and lycophytes of Japan using LUCID software [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens [@Ebihara2016b; @Ebihara2017]. All qualitative traits were measured in binary format; \eg, a single trait with three states was formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately originally, then averaged. From the original trait list, we selected only traits with putatative ecological function, and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state (`r table("traits-used")`).
 
 ### Phylogenetic analysis
 
@@ -148,9 +151,9 @@ $SES = \frac{obs - mean(null)}{sd(null)}$
 
 We compared SES of PD, RPD, FD, and RFD across bioregions using FIXME: add this when figure out spatial-corrected statistical method to use.
 
-### Overlap with protected zones
+### Assessment of conservation status
 
-We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We categorized protected areas as either "high" (plants protected; no human activities allowed at all) or "normal" (plants protected; some human activities allowed by permit). We cropped the grid cells to only include land area, then calculated the amount of protected area of each status type within grid cells with significantly high PD, FD, or PE (one-tailed test).
+We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "normal" (some human activities allowed by permit). We cropped grid cells to only include land area, then calculated the percent of protected area of each status type within grid cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
 
 ### Data accessibility
 
@@ -158,9 +161,11 @@ Code to replicate all analyses, figures, and this manuscript are available at ht
 
 ## Results
 
-### Number of specimens and redundancy
+### Datasets
 
-The distribution of specimen collection locations is highly skewed, with >3,000 specimens per grid cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r figure("abundance")`A). Despite this, sampling redundancy is generally high throughout the country, with areas of low redundancy in Hokkaido and some coastal areas and small islands (`r figure("abundance")`B). The grid cells that had to be excluded from the analysis due to low redundancy were mostly from Hokkaido.
+The topology of the phylogenetic tree was in general agreement with other recent, large plastid fern phylogenies. Ferns were recovered as monophyletic, as were all families and genera; taxonomy follows PPGI for the family level and the Japan Green List for the genus level and below. The age of the fern clade is estimated to be _ my.
+
+The distribution of specimen collection locations is highly skewed, with >3,000 specimens per grid cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r s_figure("abundance")`A). Despite this, sampling redundancy is generally high throughout the country, with areas of low redundancy in Hokkaido and some coastal areas and small islands (`r s_figure("abundance")`B). The grid cells that had to be excluded from the analysis due to low redundancy were mostly from Hokkaido.
 
 ### Phylogenetic signal
 
@@ -182,25 +187,88 @@ Nearly all grid cells in islands south of Kyushu (Ryukyu and Ogasawara) have sig
 
 Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Using phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). The other much smaller clusters are likely artifacts of insufficiently low taxon richness for accurate clustering in a small number of grid cells, and are not discussed further.
 
-Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2. Clusters 3 and 4 also have consistently high PE *p*-scores, whereas clusters 1 and 2 have a much wider variation. Cluster 2 has lower RPD and RFD than cluster 1. Comparison of biodiversity metrics across phylogenetic clusters was similar, except that phylogenetic cluster 3 mostly corresponds to taxonomic clusters 3 and 4 combined.
+Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2 (`r figure("div-by-tax-region")`). Clusters 3 and 4 also have consistently high PE *p*-scores, whereas clusters 1 and 2 have a much wider variation. Cluster 2 has lower RPD and RFD than cluster 1. Comparison of biodiversity metrics across phylogenetic clusters was similar, except that phylogenetic cluster 3 mostly corresponds to taxonomic clusters 3 and 4 combined.
 
-### Degree of protection
+### Conservation status
+
+```{r conserv-stats}
+# Convert signif_cells_protected_area to wide format
+signif_cells_protected_area_wide <-
+signif_cells_protected_area %>% select(status, metric, percent_protected) %>%
+  pivot_wider(names_from = status, values_from = percent_protected) %>%
+  rowwise %>%
+  mutate(total = sum(medium, high)) %>%
+  ungroup
+
+# Calculate min and max percent area protected overall
+min_protected_med <- signif_cells_protected_area_wide %>% pull(medium) %>% min %>% scales::percent(accuracy = 0.1)
+max_protected_med <- signif_cells_protected_area_wide %>% pull(medium) %>% max %>% scales::percent(accuracy = 0.1)
+min_protected_high <- signif_cells_protected_area_wide %>% pull(high) %>% min %>% scales::percent(accuracy = 0.1)
+max_protected_high <- signif_cells_protected_area_wide %>% pull(high) %>% max %>% scales::percent(accuracy = 0.1)
+min_protected_total <- signif_cells_protected_area_wide %>% pull(total) %>% min %>% scales::percent(accuracy = 0.1)
+max_protected_total <- signif_cells_protected_area_wide %>% pull(total) %>% max %>% scales::percent(accuracy = 0.1)
+
+# Calculate min and max protected area for the best protected category
+signif_cells_protected_area_best <-
+  signif_cells_protected_area_wide %>%
+  slice_max(total)
+
+# Verify that the best-protected biodiv type is PE
+assertthat::assert_that(signif_cells_protected_area_best$metric == "pe")
+
+best_protected_med <- signif_cells_protected_area_best %>% pull(medium) %>% scales::percent(accuracy = 0.1)
+best_protected_high <- signif_cells_protected_area_best %>% pull(high) %>% scales::percent(accuracy = 0.1)
+best_protected_total <- signif_cells_protected_area_best %>% pull(total) %>% scales::percent(accuracy = 0.1)
+
+# Calculate the total area of Japan
+area_of_japan <-
+  japan_shp %>%
+  mutate(area = st_area(.) %>% units::set_units(km^2)) %>%
+  pull(area)
+
+# Calculate baseline protection percentage: percent protected areas across the whole country
+total_percent_protected <-
+  protected_areas %>%
+  as_tibble() %>%
+  select(-geometry) %>%
+  filter(status %in% c("medium", "high")) %>%
+  group_by(status) %>%
+  summarize(
+    total_area = sum(area),
+    .groups = "drop"
+  ) %>%
+  mutate(percent_protected = total_area/area_of_japan) %>%
+  mutate(percent_protected = as.numeric(percent_protected))
+
+# Extract values for medium and high protection level
+total_percent_protected_medium <- total_percent_protected %>% filter(status == "medium") %>% pull(percent_protected)
+total_percent_protected_high <- total_percent_protected %>% filter(status == "high") %>% pull(percent_protected)
+total_percent_protected_all <- sum(total_percent_protected_medium, total_percent_protected_high)
+```
+
+The percentage of protected area in cells with significantly high biodiversity range from `r min_protected_total` to `r max_protected_total` total, including `r min_protected_high` to `r max_protected_high` with high status and `r min_protected_med` to `r max_protected_med` with medium status (`r figure("conserv-status")`). Areas with high PE were the best protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total). All cells with significantly high biodiversity had a greater percentage of area protected than the overall rate for Japan (`r scales::percent(total_percent_protected_high, accuracy = 0.1)` high status, `r scales::percent(total_percent_protected_medium, accuracy = 0.1)` medium, `r scales::percent(total_percent_protected_all, accuracy = 0.1)` total).
 
 ## Discussion
 
-Here, we provide the first insights into the combined taxonomic, phylogenetic, and functional diversity of the ferns of Japan. Our integrative approach reveals key differences in patterns of biodiversity in different parts of the archipelago. 
+Here, we provide the first insights into the combined taxonomic, phylogenetic, and functional diversity of the ferns of Japan. Our integrative approach reveals distinct patterns of biodiversity in different parts of the archipelago and across biodiversity metrics. These clear differences are reflected in the bioregionalization results, which delimit three to four major bioregions. Finally, we consider the current conservation status of ferns in Japan and the implications of our findings for future conservation activity.
 
 ### Distribution of biodiversity
 
-The latitudinal hump-shaped pattern of species richness observed in ferns here has been well-documented.
+The latitudinal hump-shaped pattern of species richness observed in ferns here has been well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015]. This pattern is probably due at least in part to the distribution of land area in Japan: maximum land area is located at mid-latitudes, and area is related to species richness by the well-known species-area relationship [@Arrhenius1921]. There may also be a combined climatic and elevational effect: the southern part of Honshu is warmer and more humid than areas further north, while also harboring high elevational variation that may support a wide range of taxa, which is not present in the southern islands.
 
-Despite the peak of richness in southern Kyushu, the overwhealming pattern driving phylogenetic and functional diversity is the high diversity of southern islands (Ryukyu and Bonin Isl.).
+The overwhelming pattern characterizing phylogenetic and functional diversity is the high diversity of southern islands (Ryukyu and Bonin Isl.). This is almost certainly due to the presence of primarily tropical lineages that do not occur in other parts of the country; _ genera and _ families only occur south of 30.1° latitude (just south of Yakushima Isl.). The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis, and suggests that in ferns, phylogeny can be used as a reasonable stand-in for functional diversity. Given their high phylogenetic diversity, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism; indeed, the vast majority of cells with significant levels of PE are located in the southern islands. This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
 
-Another major pattern revealed here is the predominance of long branches in the northern half of Honshu, and the predominance of short branches in the southern half, particularly Kyushu.
+Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu. The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* and *Ophioglossum*. The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera such as *Polystichum* and *Cyrtomimum*.
 
-### Bioregions
+The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values. Interestingly, the bioregions identified here correspond roughly to major forest types categorized on an *ad-hoc* basis; Cluster 1 corresponds to the cool or subartic deciduous type, Cluster 2 to the warm evergreen type, and Clusters 3 and 4 to the subtropical rainy type [@Shimizu2014]. This suggests that ferns are useful as possible bioindicators in Japan. Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl. The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
 
-### Conservation status
+### Conservation status and future outlook
+
+Although the different facets of biodiversity have different distribution patterns, we find that grid cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric. While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. One such other threat is herbivory by native Japanese deer, *Cervus nippon*. Populations of these deer have been increasing exponentially since the 1970s due to a combination of climate change and a decrease in hunting and natural predators. The deer are capable of decimating the herb layer when populations become dense and have been causing extensive damage even within national parks, which have the highest protection status. Although various efforts to prevent deer herbivory have been deployed such as exclusion fences, much work remains to be done to save vulnerable plant populations.
+
+There are a number of caveats that must be kept in mind when interpreting these results. First, the data include species collected over a wide time period, so they do not necessarily represent the current distribution of ferns in Japan. Furthermore, the collections are not evenually collected throughout the country, but rather some areas have many more specimens than others. Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
+
+<!-- hybrid taxa, gametophytes, conclusion -->
 
 ## Acknowledgements
 
@@ -224,8 +292,7 @@ biodiv_ferns_spatial <- biodiv_ferns_spatial %>%
 
 # Download high-res map of Japan,
 # crop to spatial div results area
-japan <- rnaturalearth::ne_countries(country = "japan", scale = "large", returnclass = "sf") %>%
-  sf::st_crop(sf::st_bbox(biodiv_ferns_spatial))
+japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
 
 # Set CRS
 japan_crs <- sf::st_crs(japan)
@@ -257,39 +324,6 @@ canape_cols <-
 bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
   set_names(1:8)
 ```
-
-```{r abundance, width = 7, height = 5}
-k <- scales::unit_format(unit = "k", scale = 1e-3, accuracy = 1, sep = "")
-  
-a <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = abundance), color = "transparent", alpha = 0.8) +
-  scale_fill_scico(palette = "lajolla", label = k) +
-  labs(fill = "No. specimens") +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A**</span>", hjust = "inward", vjust = "inward", color = "white") + 
-  map_theme()
-
-
-b <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = redundancy), color = "transparent", alpha = 0.8) +
-  scale_fill_scico(palette = "lajolla") +
-  labs(fill = "Redundancy") +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B**</span>", hjust = "inward", vjust = "inward", color = "white") + 
-  map_theme() +
-  theme(
-    axis.text.y = element_blank()
-  )
-
-a + b + 
-  plot_layout(nrow = 1)
-
-ggsave(result_file(figure("abundance"), "pdf"), width = 7, height = 5, units = "in")
-```
-
-**`r figure("abundance")`**. `r figure_cap("abundance")`
-
-\clearpage
 
 ```{r raw-diversity, width = 7, height = 4}
 # Richness
@@ -451,7 +485,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), width = 7, height = 5, units = 
 
 \clearpage
 
-```{r diversity-by-cluster, fig.width = 7, fig.height = 7}
+```{r div-by-tax-region, fig.width = 7, fig.height = 7}
 data <-
 biodiv_ferns_spatial %>%
   filter(taxonomic_cluster %in% c(1,2,3,4)) %>%
@@ -563,3 +597,41 @@ ggsave(result_file(figure("div-by-tax-region"), "pdf"), width = 7, height = 7, u
 ```
 
 **`r figure("div-by-tax-region")`**. `r figure_cap("div-by-tax-region")` **A**, Standard effect size (SES) of phylogenetic diversity (PD). **B**, SES of relative PD (RPD). **C**, SES of functional diversity (FD). **D**, SES of relative FD (RFD). **E**, p-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
+
+\clearpage
+
+```{r conserv-status, fig.width = 4, fig.height = 4}
+# Plot protected areas
+signif_cells_protected_area %>%
+  mutate(
+    metric = case_when(
+      metric == "pd" ~ "PD",
+      metric == "fd" ~ "FD",
+      metric == "pe" ~ "PE",
+      metric == "richness" ~ "Richness",
+    ),
+    status = str_to_sentence(status)) %>%
+  mutate(metric = factor(metric, levels = c("PE", "FD", "PD", "Richness"))) %>%
+  ggplot(aes(x = percent_protected, y = metric, fill = status)) +
+  geom_col(position = position_dodge()) +
+  geom_vline(xintercept = total_percent_protected_medium, color = "grey40", linetype = 3) +
+  geom_vline(xintercept = total_percent_protected_high, color = "grey40", linetype = 2) +
+  scale_fill_viridis_d() +
+  scale_x_continuous(labels = scales::percent) +
+  labs(
+    x = "Percent protected",
+    y = "Biodiversity metric",
+    fill = "Protection status"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    legend.position = "bottom"
+  )
+
+ggsave(result_file(figure("conserv-status"), "pdf"), width = 4, height = 4, units = "in")
+
+```
+
+**`r figure("conserv-status")`**. `r figure_cap("conserv-status")` Biodiversity metrics include phylogenetic diversity (PD), functional diversity (FD), relative PD (RPD), relative FD (RFD), and phylogenetic endemism (PE). Significance of biodiversity metrics assessed by a one-tailed test comparing observed values to a null distribution of 999 random values (see Methods). Vertical lines indicate total percent area protected across Japan regardless of degree of biodiversity; dashed, high protection level (`r scales::percent(total_percent_protected_high, accuracy = 0.1)`); dotted, medium protection level (`r scales::percent(total_percent_protected_medium, accuracy = 0.1)`).

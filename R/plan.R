@@ -24,13 +24,8 @@ plan <- drake_plan (
   green_list = read_excel(file_in("data_raw/ebihara_2019/FernGreenListV1.01E.xls")) %>% 
     tidy_japan_names(),
   
-  # Load reproductive mode data (one row per species)
-  repro_data_raw = read_csv(
-    file_in("data_raw/ebihara_2019/ESM1.csv"),
-    col_types = "cccccnnnnn"),
-  
-  repro_data = process_repro_data(repro_data_raw) %>%
-    rename_taxa(green_list),
+  # Load a map of Japan
+  japan_shp = rnaturalearth::ne_countries(country = "japan", scale = "large", returnclass = "sf"),
   
   # Load raw occurrence data of pteridophytes in Japan, excluding hybrids (717 taxa)
   occ_point_data_raw = readxl::read_excel(
@@ -314,6 +309,9 @@ plan <- drake_plan (
     protected_6,
     protected_7
   ),
+  
+  # Calculate percent protection for grid cells with significantly high biodiversity
+  signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
   
   # Write out manuscript ----
   ms = rmarkdown::render(
