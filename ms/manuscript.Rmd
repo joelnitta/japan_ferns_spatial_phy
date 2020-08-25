@@ -42,7 +42,16 @@ loadd(list = c(
   "k_phylogeny",
   "signif_cells_protected_area",
   "protected_areas",
-  "japan_shp"
+  "japan_shp",
+  "phy_sig_results",
+  "binary_sig_results",
+  "traits_summary",
+  "fern_traits",
+  "japan_pterido_tree",
+  "japan_fern_tree",
+  "ppgi",
+  "occ_point_data_ferns",
+  "comm_ferns"
 ),
 cache = ja_fern_cache)
 
@@ -111,19 +120,19 @@ Our data include all ferns known to occur within the political boundaries of Jap
 
 We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (species, subspecies, and varieties). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html). The final cleaned occurrence dataset included `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` specimens (`r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` taxa). Hereafter, "taxa" refers to species, subspecies, and varieties unless otherwise indicated.
 
-A necessary step in any analysis of biodiversity is to set the grain size used to define communities. This decision must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1, 0.2, 0.3, and 0.4 degree grid-cells for defining communities (co-occurring species). At each size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2 degree grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 (mostly cells along the coast with very low land area) and used this for subsequent analyses.
+A necessary step in any analysis of biodiversity is to set the grain size used to define communities. Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of the cell) for defining communities (co-occurring species). At each grain size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 and used this for subsequent analyses.
 
 ### Trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan using LUCID software [@Ebihara2016b; @Ebihara2017; @Ebihara2019b]. Quantitative traits were measured on 10 randomly selected specimens per species, and qualitative traits determined by observing voucher specimens [@Ebihara2016b; @Ebihara2017]. All qualitative traits were measured in binary format; \eg, a single trait with three states was formatted as three binary traits. Quantitative traits were measured in fertile (i.e., spore-bearing) and sterile fronds separately originally, then averaged. From the original trait list, we selected only traits with putatative ecological function, and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state (`r table("traits-used")`).
+We used traits originally compiled for identification of ferns and lycophytes of Japan as follows [@Ebihara2016b; @Ebihara2017]. Continuous traits were measured on 10 randomly selected specimens per species. Fertile (i.e., spore-bearing) and sterile fronds were measured separately, then averaged. Qualitative traits were scored by observing voucher specimens. All qualitative traits were scored in binary format; \eg, a single trait with three states was formatted as three binary traits. From the original trait list, we selected only traits with putatative ecological function (`r table("traits-used")`), and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
 
 ### Phylogenetic analysis
 
-Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils availabsle for molecular dating. Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total). We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. We then trimmed the tree to Japanese taxa only and used this for all further analyses.
+Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total). We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. We then trimmed the tree to Japanese taxa only and used this for all further analyses.
 
 ### Phylogenetic signal
 
-We tested for phylogenetic signal in continuous traits using two alternative metrics, Blomberg's *K* [@Blomberg2003] and Pagel's lambda [@Pagel1999]. *K* describes the ratio between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); lambda is a scaling parameter used to transform the phylogeny such that trait values fit those most closely expected under BM. Both lambda and *K* = 1 under BM; lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). We measured *K* and lambda using the \function{phylosig} function in the R package \package{phytools} [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the \function{phylo.d} function in the R package \package{caper} [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM. 
+We tested for phylogenetic signal in continuous traits using two alternative metrics, Blomberg's *K* [@Blomberg2003] and Pagel's lambda [@Pagel1999]. *K* describes the ratio between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); lambda is a scaling parameter that transforms the phylogeny such that trait values fit those most closely expected under BM. Both lambda and *K* = 1 under BM; lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). We measured *K* and lambda using the \function{phylosig} function in the R package \package{phytools} [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the \function{phylo.d} function in the R package \package{caper} [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM. 
 
 ### Analysis of biodiversity
 
@@ -131,13 +140,13 @@ We measured taxonomic diversity using taxonomic richness.
 
 We measured phylogenetic diversity (PD) using the Faith's PD (the total branch length connecting all terminal taxa in a community, including the root of the phylogeny) [@Faith1992] with the \function{PD} function in the R package \package{phyloregion}. To detect areas with unusually long or short branch lengths, we measured relative phylogenetic diversity (RPD), which is a ratio of observed PD to PD measured on a tree where all branch lengths have been set to equal length [@Mishler2014].
 
-We measured functional diversity (FD) following the method of @Petchey2002, which is a functional analog of PD. We first calculated distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R package \package{FD} [@Laliberte2011]. We weighted quantitative and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled quantitative traits prior to calculating distances. We then used the distances to build a trait dendrogram using the \function{hclust} function in the \package{stats} R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above.
+We measured functional diversity (FD) following the method of @Petchey2002. We first calculated functional distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R package \package{FD} [@Laliberte2011]. We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances. We then used the distances to build a trait dendrogram using the \function{hclust} function in the \package{stats} R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. These functional analogs of PD and RPD are hereafter referred to as FD (functional diversity) and RFD (relative functional diversity).
 
 We measured phylogenetic endemism (PE) [@Rosauer2009], which is the sum of all branches at a site inversely weighted by their range, using the \function{phylo{\_}endemism} function in the R package \package{phyloregion}. 
 
-Observed values of PD, FD, and PE are known to be closely related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. Statistical significance was assessed using a two-tailed test with alpha = 0.5: observed values > 97.5% or < 0.25% were considered significant.
+Observed values of PD, FD, and PE are known to be closely related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. Statistical significance was assessed using a two-tailed test with alpha = 0.5; observed values > 97.5% or < 0.25% were considered significant.
 
-We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable to those calculated for the null distribution. We used the same set of null communities as for SES of PE, and carried out CANAPE using custom R scripts.
+We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. We used the same set of null communities as for SES of PE, and carried out categorization using custom R scripts.
 
 It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. To account for this, we also calculated all endemism-related metrics using a dataset including only species endemic to Japan.
 
@@ -153,7 +162,7 @@ We compared SES of PD, RPD, FD, and RFD across bioregions using FIXME: add this 
 
 ### Assessment of conservation status
 
-We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "normal" (some human activities allowed by permit). We cropped grid cells to only include land area, then calculated the percent of protected area of each status type within grid cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
+We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "medium" (some human activities allowed by permit). We cropped grid cells to only include land area, then calculated the percent of protected area of each status type within grid cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
 
 ### Data accessibility
 
@@ -163,13 +172,131 @@ Code to replicate all analyses, figures, and this manuscript are available at ht
 
 ### Datasets
 
-The topology of the phylogenetic tree was in general agreement with other recent, large plastid fern phylogenies. Ferns were recovered as monophyletic, as were all families and genera; taxonomy follows PPGI for the family level and the Japan Green List for the genus level and below. The age of the fern clade is estimated to be _ my.
+```{r dataset-stats}
+### Phylogeny ###
 
-The distribution of specimen collection locations is highly skewed, with >3,000 specimens per grid cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r s_figure("abundance")`A). Despite this, sampling redundancy is generally high throughout the country, with areas of low redundancy in Hokkaido and some coastal areas and small islands (`r s_figure("abundance")`B). The grid cells that had to be excluded from the analysis due to low redundancy were mostly from Hokkaido.
+# FIXME: confirm total number of taxa with Ebihara
+total_fern_taxa <- 675
+phylogeny_sampled_percent <- ape::Ntip(japan_fern_tree) %>% magrittr::divide_by(total_fern_taxa) %>% scales::percent(accuracy = 0.01)
+
+# Check height (age) of fern phylogeny
+phylogeny_age <- japan_fern_tree %>% phytools::nodeHeights() %>% max %>% round(1)
+
+# Check monophyly of genera
+mono_status_genera <-
+tibble(
+  tip = japan_fern_tree$tip.label,
+  tip_no = 1:length(tip),
+  genus = str_split(tip, "_") %>% map_chr(1)
+) %>%
+  group_by(genus) %>%
+  summarize(tip_vec = list(tip_no), .groups = "drop") %>%
+  mutate(is_mono = map_lgl(tip_vec, ~ape::is.monophyletic(phy = japan_fern_tree, tips = .)))
+
+# Assert only one genus is not monophyletic
+assert_that(mono_status_genera %>% filter(is_mono == FALSE) %>% nrow == 1)
+
+non_mono_genus <- mono_status_genera %>% filter(is_mono == FALSE) %>% pull(genus)
+
+n_fern_phylo_genera <- mono_status_genera %>% pull(genus) %>% n_distinct()
+
+# Check monophyly of families
+mono_status_families <-
+tibble(
+  tip = japan_fern_tree$tip.label,
+  tip_no = 1:length(tip),
+  genus = str_split(tip, "_") %>% map_chr(1)
+) %>%
+  left_join(ppgi, by = "genus") %>%
+  group_by(family) %>%
+  summarize(tip_vec = list(tip_no), .groups = "drop") %>%
+  mutate(is_mono = map_lgl(tip_vec, ~ape::is.monophyletic(phy = japan_fern_tree, tips = .)))
+
+# Assert all families are monophyletic
+assert_that(mono_status_families %>% filter(is_mono == FALSE) %>% nrow == 0)
+
+n_fern_phylo_families <- mono_status_families %>% pull(family) %>% n_distinct()
+
+# Check monophyly of ferns
+mono_status_class <- 
+tibble(
+  tip = japan_pterido_tree$tip.label,
+  tip_no = 1:length(tip),
+  genus = str_split(tip, "_") %>% map_chr(1)
+) %>%
+  left_join(ppgi, by = "genus") %>%
+  group_by(class) %>%
+  summarize(tip_vec = list(tip_no), .groups = "drop") %>%
+  mutate(is_mono = map_lgl(tip_vec, ~ape::is.monophyletic(phy = japan_pterido_tree, tips = .)))
+
+# Assert all classes (ferns, lycophytes) are monophyletic
+assert_that(mono_status_class %>% filter(is_mono == FALSE) %>% nrow == 0)
+
+### Specimens ###
+n_specimens <- nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")
+n_specimens_taxa <- occ_point_data_ferns %>% pull(taxon) %>% n_distinct()
+n_specimens_taxa_percent <- n_specimens_taxa %>% magrittr::divide_by(total_fern_taxa) %>% scales::percent(accuracy = 0.01)
+
+# Calculate mean redundancy
+mean_redundancy <-
+biodiv_ferns_spatial %>%
+  select(redundancy) %>%
+  st_set_geometry(NULL) %>%
+  summarize(
+    mean = mean(redundancy),
+    sd = sd(redundancy)
+  ) %>%
+  mutate(text = glue::glue("{round(mean, 2)} ± {round(sd, 2)}")) %>%
+  pull(text)
+  
+
+### Traits ###
+
+# Count number of traits of each type in final dataset
+n_binary_traits <- traits_summary %>% filter(trait_type == "binary") %>% nrow() %>% jntools::english2()
+n_cont_traits <- traits_summary %>% filter(trait_type == "continuous") %>% nrow() %>% jntools::english2()
+n_qual_traits <- traits_summary %>% filter(trait_type == "qualitative") %>% nrow() %>% jntools::english2()
+n_qual_traits_as_binary <- traits_summary %>% filter(trait_type == "qualitative") %>% pull(n) %>% sum %>% jntools::english2()
+
+# Calculate number/percent of missing data in trait matrix
+fern_traits_missing_summary <-
+fern_traits %>%
+  pivot_longer(-taxon) %>%
+  mutate(missing_data = is.na(value)) %>%
+  summarize(
+    total = n(),
+    missing = sum(missing_data)
+  )
+
+percent_traits_missing <-
+fern_traits_missing_summary$missing %>% 
+  divide_by(fern_traits_missing_summary$total) %>%
+  scales::percent(accuracy = 0.01)
+```
+
+The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent`) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families of native Japanese ferns. The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a]. Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* (families follow @PteridophytePhylogenyGroupI2016). The age of the fern clade is estimated to be `r phylogeny_age` ma.
+
+The cleaned list of specimens included `r n_specimens` specimens representing `r n_specimens_taxa` taxa (`r n_specimens_taxa_percent`). The distribution of collection locations was highly skewed, with > 3,000 specimens per grid cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r s_figure("abundance")`A). Despite this, sampling redundancy was generally good [> 0.3; @Gonzalez-Orozco2014b] throughout the country (mean `r mean_redundancy`; errors are SD unless mentioned otherwise) (`r s_figure("abundance")`B). The final community data matrix included `r ncol(comm_ferns)` taxa and `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` grid cells. __ grid cells were excluded from the analysis due to low redundancy (< 0.1); these were mostly from Hokkaido and coastal areas.
+
+After removing correlated and low-variance traits, the final trait set included `r n_binary_traits` binary trait, `r n_cont_traits` continuous traits, and `r n_qual_traits` qualitative traits (coded as `r n_qual_traits_as_binary` binary traits) (`r table("traits-used")`). The trait matrix included `r nrow(fern_traits)` taxa and `r fern_traits %>% select(-taxon) %>% ncol()` traits, with `r percent_traits_missing` missing data.
 
 ### Phylogenetic signal
 
-Results of phylogenetic signal analysis are given in Table _. All quantitative traits showed significant phylogenetic signal, but estimates of signal strength differed between K and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of K were < 0.06, indicating less phylogenetic signal than expected under BM. A minority of quantitative traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (D =< 0); others had D > 0.
+```{r phy-sig-stats}
+# Verify that min lambda >0.95
+assert_that(phy_sig_results %>% pull(lambda) %>% min > 0.95)
+# Verify that max K < 0.0.6
+assert_that(phy_sig_results %>% pull(kval) %>% max < 0.06)
+
+# Sum the number of traits with D < 0
+n_negative_d <-
+binary_sig_results %>%
+  mutate(negative_d = ifelse(D <= 0, TRUE, FALSE)) %>%
+  pull(negative_d) %>%
+  sum
+```
+
+All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). `r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`).
 
 ### Observed diversity
 
@@ -254,7 +381,7 @@ Here, we provide the first insights into the combined taxonomic, phylogenetic, a
 
 ### Distribution of biodiversity
 
-The latitudinal hump-shaped pattern of species richness observed in ferns here has been well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015]. This pattern is probably due at least in part to the distribution of land area in Japan: maximum land area is located at mid-latitudes, and area is related to species richness by the well-known species-area relationship [@Arrhenius1921]. There may also be a combined climatic and elevational effect: the southern part of Honshu is warmer and more humid than areas further north, while also harboring high elevational variation that may support a wide range of taxa, which is not present in the southern islands.
+The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`A) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015] and modeled distributions of woody plants [@Fukaya2020]. This pattern is probably due at least in part to the distribution of land area in Japan: maximum land area is located at mid-latitudes, and area is related to species richness by the well-known species-area relationship [@Arrhenius1921]. There may also be a combined climatic and elevational effect: the southern part of Honshu is warmer and more humid than areas further north, while also harboring high elevational variation that may support a wide range of taxa, which is not present in the smaller islands further south.
 
 The overwhelming pattern characterizing phylogenetic and functional diversity is the high diversity of southern islands (Ryukyu and Bonin Isl.). This is almost certainly due to the presence of primarily tropical lineages that do not occur in other parts of the country; _ genera and _ families only occur south of 30.1° latitude (just south of Yakushima Isl.). The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis, and suggests that in ferns, phylogeny can be used as a reasonable stand-in for functional diversity. Given their high phylogenetic diversity, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism; indeed, the vast majority of cells with significant levels of PE are located in the southern islands. This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
 
@@ -277,6 +404,40 @@ There are a number of caveats that must be kept in mind when interpreting these 
 ## References
 <!-- Insert <div id="refs"></div> to place the refs here instead of at the end -->
 <div id="refs"></div>
+
+\clearpage
+
+<!-- Tables -->
+
+```{r traits-used, results = "asis"}
+trait_signif <- read_csv(here::here("data_raw/trait_functions.csv"))
+
+traits_summary %>%
+  left_join(trait_signif, by = "trait") %>%
+  mutate(
+    trait = case_when(
+      trait == "frond_width" ~ "Frond width",
+      trait == "number_pinna_pairs" ~ "No. pinna pairs",
+      trait == "stipe_length" ~ "Stipe length",
+      trait == "margin" ~ "Frond margin",
+      trait == "shape" ~ "Frond shape",
+      trait == "texture" ~ "Frond texture",
+      TRUE ~ str_to_sentence(trait)
+    ),
+    trait_type = case_when(
+      trait_type == "qualitative" ~ glue::glue("Qualitative (coded as {n} binary traits)"),
+      trait_type == "continuous" & str_detect(trait, "pinna pairs") ~ glue::glue("Continuous (integer)"),
+      trait_type == "continuous" ~ glue::glue("Continuous (cm)"),
+      TRUE ~ str_to_sentence(trait_type)
+    )
+  ) %>%
+  select(trait, Significance = significance) %>%
+  column_to_rownames("trait") %>%
+knitr::kable(format = "latex", booktabs = TRUE, escape = TRUE) 
+
+```
+
+**`r table("traits-used")`**. `r table_cap("traits-used")` 
 
 \clearpage
 

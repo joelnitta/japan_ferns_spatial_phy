@@ -11,7 +11,7 @@ fig_nums(name = "conserv-status", caption = "Percent of land area with protected
 
 # - Tables
 table_nums <- captioner::captioner(prefix = "Table")
-table_nums(name = "traits-used", caption = "Fern traits used in this study")
+table_nums(name = "traits-used", caption = "Fern traits used in this study.")
 
 # - SI figures
 s_fig_nums <- captioner::captioner(prefix = "Fig. S", auto_space = FALSE, suffix = ": ")
@@ -23,8 +23,9 @@ s_fig_nums(name = "raw-biplot", "Relationships between observed functional and p
 s_fig_nums(name = "endemism-restricted", "Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan.")
 
 # - SI tables
-# s_table_nums <- captioner::captioner(prefix = "Table S", auto_space = FALSE, suffix = ": ")
-# s_table_nums(name = "si_table", "")
+s_table_nums <- captioner::captioner(prefix = "Table S", auto_space = FALSE, suffix = ": ")
+s_table_nums(name = "phy-sig", caption = "Phylogenetic signal in continuous functional traits of the ferns of Japan.")
+s_table_nums(name = "phy-sig-binary", caption = "Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan.")
 
 # Make short versions of citation functions
 
@@ -32,10 +33,10 @@ s_fig_nums(name = "endemism-restricted", "Phylogenetic endemism of the ferns of 
 figure <- pryr::partial(fig_nums, display = "cite")
 table <- pryr::partial(table_nums, display = "cite")
 s_figure <- pryr::partial(s_fig_nums, display = "cite")
-# s_table <- pryr::partial(s_table_nums, display = "cite")
+s_table <- pryr::partial(s_table_nums, display = "cite")
 
 # - Just the caption
 figure_cap <- function(x) {fig_nums(x) %>% stringr::str_match(": (.*)$") %>% magrittr::extract(,2)}
 table_cap <- function(x) {table_nums(x) %>% stringr::str_match(": (.*)$") %>% magrittr::extract(,2)}
 s_figure_cap <- function(x) {s_fig_nums(x) %>% stringr::str_match(": (.*)$") %>% magrittr::extract(,2)}
-# s_table_cap <- function(x) {s_table_nums(x) %>% stringr::str_match(": (.*)$") %>% magrittr::extract(,2)}
+s_table_cap <- function(x) {s_table_nums(x) %>% stringr::str_match(": (.*)$") %>% magrittr::extract(,2)}

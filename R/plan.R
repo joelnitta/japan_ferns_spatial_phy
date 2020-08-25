@@ -191,6 +191,9 @@ plan <- drake_plan (
   
   binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree),
   
+  # Summarize traits
+  traits_summary = make_trait_summary(fern_traits),
+  
   # Combine results ----
   
   # Combine spatial data, alpha diversity, and regions, add significance and endemism types
