@@ -2,6 +2,7 @@
 
 # - Figures
 fig_nums <- captioner::captioner(prefix = "Fig.")
+fig_nums(name = "japan-map", caption = "Map of Japan showing names of places mentioned in the text. Names of the four main islands in bold.")
 fig_nums(name = "raw-diversity", caption = "Raw taxonomic (**A**), phylogenetic (**B**), and functional (**C**) diversity of the ferns of Japan.")
 fig_nums(name = "rand-diversity", caption = "Results of randomization test for phylogenetic and functional diversity of the ferns of Japan.")
 fig_nums(name = "endemism", caption = "Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism).")

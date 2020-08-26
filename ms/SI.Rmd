@@ -46,7 +46,9 @@ loadd(list = c(
   "k_taxonomy",
   "k_phylogeny",
   "traits_nmds",
-  "ppgi"
+  "ppgi",
+  "phy_sig_results",
+  "binary_sig_results"
 ),
 cache = ja_fern_cache)
 
@@ -64,6 +66,25 @@ source(here::here("ms/captions.R"))
 \setlength{\parindent}{0ex}
 
 # Supplemental Information
+
+```{r phy-sig}
+phy_sig_results %>%
+  rename(K = kval) %>%
+  mutate(K = round(K, 3)) %>% 
+  mutate(lambda = round(lambda, 3)) %>%
+  mutate(lambda_pval = format(lambda_pval, digits = 3)) %>%
+  write_csv(path = result_file(s_table("phy-sig"), "csv"))
+```
+
+**`r s_table("phy-sig")`**. `r s_table_cap("phy-sig")` K, Blomberg's *K*; lambda, Pagel's lambda.
+
+```{r phy-sig-binary}
+binary_sig_results %>%
+  arrange(trait) %>%
+  write_csv(path = result_file(s_table("phy-sig-binary"), "csv"))
+```
+
+**`r s_table("phy-sig-binary")`**. `r s_table_cap("phy-sig-binary")` num_present, number of times a trait was observed present; num_absent, number of times a trait was observed absent; D, Fritz and Purvis' *D*; prob_random, probability of obtaining observed trait distribution given random distribution of traits; prob_brownian, probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
 
 ```{r map-plot-prep}
 # Change cluster to factor

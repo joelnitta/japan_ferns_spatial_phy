@@ -51,7 +51,9 @@ loadd(list = c(
   "japan_fern_tree",
   "ppgi",
   "occ_point_data_ferns",
-  "comm_ferns"
+  "comm_ferns_full",
+  "comm_ferns",
+  "japan_points_raw"
 ),
 cache = ja_fern_cache)
 
@@ -114,17 +116,17 @@ Here we leverage this exceptionally rich dataset to analyze the geographic distr
 
 ### Study Site
 
-Our data include all ferns known to occur within the political boundaries of Japan (20° to 45° N, 122° to 153° E). Japan consists of four main islands and thousands of smaller ones. The climate is subtropical in the south and highly seasonal in other parts of the country.
+Our data include all ferns known to occur within the political boundaries of Japan (20° to 45° N, 122° to 153° E). Japan consists of four main islands and thousands of smaller ones (`r figure("japan-map")`). The climate is subtropical in the south and highly seasonal in other parts of the country. Map data were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
 
 ### Occurrence data
 
-We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (species, subspecies, and varieties). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html). The final cleaned occurrence dataset included `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` specimens (`r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` taxa). Hereafter, "taxa" refers to species, subspecies, and varieties unless otherwise indicated.
+We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (hereafter defined as species, subspecies, and varieties unless otherwise indicated). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html).
 
-A necessary step in any analysis of biodiversity is to set the grain size used to define communities. Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of the cell) for defining communities (co-occurring species). At each grain size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 and used this for subsequent analyses.
+A necessary step in any analysis of biodiversity is to set the grain size used to define communities. Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of a grid-cell) for defining communities (co-occurring species). At each grain size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid-cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 and used this for subsequent analyses.
 
 ### Trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan as follows [@Ebihara2016b; @Ebihara2017]. Continuous traits were measured on 10 randomly selected specimens per species. Fertile (i.e., spore-bearing) and sterile fronds were measured separately, then averaged. Qualitative traits were scored by observing voucher specimens. All qualitative traits were scored in binary format; \eg, a single trait with three states was formatted as three binary traits. From the original trait list, we selected only traits with putatative ecological function (`r table("traits-used")`), and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
+We used traits originally compiled for identification of ferns and lycophytes of Japan as follows [@Ebihara2016b; @Ebihara2017]. Continuous traits were measured on 10 randomly selected specimens per species. Fertile (\ie, spore-bearing) and sterile fronds were measured separately, then averaged. Qualitative traits were scored by observing voucher specimens. All qualitative traits were scored in binary format; \eg, a single trait with three states was formatted as three binary traits. From the original trait list, we selected only traits with putatative ecological function (`r table("traits-used")`), and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
 
 ### Phylogenetic analysis
 
@@ -158,11 +160,11 @@ We compared patterns in biodiversity between bioregions by calculating the stand
 
 $SES = \frac{obs - mean(null)}{sd(null)}$
 
-We compared SES of PD, RPD, FD, and RFD across bioregions using FIXME: add this when figure out spatial-corrected statistical method to use.
+We compared SES of PD, RPD, FD, and RFD across bioregions using **FIXME: add this when figure out spatial-corrected statistical method to use**.
 
 ### Assessment of conservation status
 
-We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "medium" (some human activities allowed by permit). We cropped grid cells to only include land area, then calculated the percent of protected area of each status type within grid cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
+We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "medium" (some human activities allowed by permit). We cropped grid-cells to only include land area, then calculated the percent of protected area of each status type within grid-cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
 
 ### Data accessibility
 
@@ -249,6 +251,8 @@ biodiv_ferns_spatial %>%
   mutate(text = glue::glue("{round(mean, 2)} ± {round(sd, 2)}")) %>%
   pull(text)
   
+# Calculate number of excluded cells due to low redundancy
+n_excluded_cells <- nrow(comm_ferns_full) - nrow(comm_ferns)
 
 ### Traits ###
 
@@ -276,7 +280,7 @@ fern_traits_missing_summary$missing %>%
 
 The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent`) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families of native Japanese ferns. The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a]. Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* (families follow @PteridophytePhylogenyGroupI2016). The age of the fern clade is estimated to be `r phylogeny_age` ma.
 
-The cleaned list of specimens included `r n_specimens` specimens representing `r n_specimens_taxa` taxa (`r n_specimens_taxa_percent`). The distribution of collection locations was highly skewed, with > 3,000 specimens per grid cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r s_figure("abundance")`A). Despite this, sampling redundancy was generally good [> 0.3; @Gonzalez-Orozco2014b] throughout the country (mean `r mean_redundancy`; errors are SD unless mentioned otherwise) (`r s_figure("abundance")`B). The final community data matrix included `r ncol(comm_ferns)` taxa and `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` grid cells. __ grid cells were excluded from the analysis due to low redundancy (< 0.1); these were mostly from Hokkaido and coastal areas.
+The cleaned list of specimens included `r n_specimens` specimens representing `r n_specimens_taxa` taxa (`r n_specimens_taxa_percent`). The distribution of collection locations was highly skewed, with > 3,000 specimens per grid-cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r s_figure("abundance")`A). Despite this, sampling redundancy was generally good [> 0.3; @Gonzalez-Orozco2014b] throughout the country (mean `r mean_redundancy`, final community data matrix; errors are SD unless mentioned otherwise) (`r s_figure("abundance")`B). The final community data matrix included `r ncol(comm_ferns)` taxa and `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` grid-cells. `r n_excluded_cells` grid-cells were excluded due to low redundancy (< 0.1); these were mostly from Hokkaido and coastal areas.
 
 After removing correlated and low-variance traits, the final trait set included `r n_binary_traits` binary trait, `r n_cont_traits` continuous traits, and `r n_qual_traits` qualitative traits (coded as `r n_qual_traits_as_binary` binary traits) (`r table("traits-used")`). The trait matrix included `r nrow(fern_traits)` taxa and `r fern_traits %>% select(-taxon) %>% ncol()` traits, with `r percent_traits_missing` missing data.
 
@@ -304,15 +308,15 @@ Taxonomic richness is lowest on the northernmost island of Hokkaido, then increa
 
 ### Randomization tests for phylogenetic and functional diversity
 
-Grid cells with significantly low PD were almost all located on Honshu, the main island of Japan. A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). The area near Yakushima includes cells with both significantly high and low PD. Grid cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu. Grid cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD.
+Grid-cells with significantly low PD were almost all located on Honshu, the main island of Japan. A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). The area near Yakushima includes cells with both significantly high and low PD. Grid-cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu. Grid-cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD.
 
 ### Categorical analysis of neo- and paleo-endemism
 
-Nearly all grid cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere. The vast majority of endemic grid cells are mixed, with very few paleo- or neoendemic cells. Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
+Nearly all grid-cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere. The vast majority of endemic grid-cells are mixed, with very few paleo- or neoendemic cells. Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
 
 ### Bioregions
 
-Analysis of biogeographic regions using taxonomy (species names) resulted in the vast majority of grid cells classified into four regions: Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Using phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). The other much smaller clusters are likely artifacts of insufficiently low taxon richness for accurate clustering in a small number of grid cells, and are not discussed further.
+Analysis of bioregions grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` clusters (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). The other much smaller clusters are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
 Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2 (`r figure("div-by-tax-region")`). Clusters 3 and 4 also have consistently high PE *p*-scores, whereas clusters 1 and 2 have a much wider variation. Cluster 2 has lower RPD and RFD than cluster 1. Comparison of biodiversity metrics across phylogenetic clusters was similar, except that phylogenetic cluster 3 mostly corresponds to taxonomic clusters 3 and 4 combined.
 
@@ -373,7 +377,7 @@ total_percent_protected_high <- total_percent_protected %>% filter(status == "hi
 total_percent_protected_all <- sum(total_percent_protected_medium, total_percent_protected_high)
 ```
 
-The percentage of protected area in cells with significantly high biodiversity range from `r min_protected_total` to `r max_protected_total` total, including `r min_protected_high` to `r max_protected_high` with high status and `r min_protected_med` to `r max_protected_med` with medium status (`r figure("conserv-status")`). Areas with high PE were the best protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total). All cells with significantly high biodiversity had a greater percentage of area protected than the overall rate for Japan (`r scales::percent(total_percent_protected_high, accuracy = 0.1)` high status, `r scales::percent(total_percent_protected_medium, accuracy = 0.1)` medium, `r scales::percent(total_percent_protected_all, accuracy = 0.1)` total).
+The percentage of protected area in grid-cells with significantly high biodiversity range from `r min_protected_total` to `r max_protected_total` total, including `r min_protected_high` to `r max_protected_high` with high status and `r min_protected_med` to `r max_protected_med` with medium status (`r figure("conserv-status")`). Areas with high PE were the best protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total). All cells with significantly high biodiversity had a greater percentage of area protected than the overall rate for Japan (`r scales::percent(total_percent_protected_high, accuracy = 0.1)` high, `r scales::percent(total_percent_protected_medium, accuracy = 0.1)` medium, `r scales::percent(total_percent_protected_all, accuracy = 0.1)` total).
 
 ## Discussion
 
@@ -389,9 +393,13 @@ Another striking pattern revealed here is the predominance of long branches in t
 
 The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values. Interestingly, the bioregions identified here correspond roughly to major forest types categorized on an *ad-hoc* basis; Cluster 1 corresponds to the cool or subartic deciduous type, Cluster 2 to the warm evergreen type, and Clusters 3 and 4 to the subtropical rainy type [@Shimizu2014]. This suggests that ferns are useful as possible bioindicators in Japan. Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl. The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
 
-### Conservation status and future outlook
+### Conservation status
 
-Although the different facets of biodiversity have different distribution patterns, we find that grid cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric. While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. One such other threat is herbivory by native Japanese deer, *Cervus nippon*. Populations of these deer have been increasing exponentially since the 1970s due to a combination of climate change and a decrease in hunting and natural predators. The deer are capable of decimating the herb layer when populations become dense and have been causing extensive damage even within national parks, which have the highest protection status. Although various efforts to prevent deer herbivory have been deployed such as exclusion fences, much work remains to be done to save vulnerable plant populations.
+Although the different facets of biodiversity have different distribution patterns, we find that grid-cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric. While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
+
+Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. One such other threat is herbivory by native Japanese deer, *Cervus nippon*. Populations of these deer have been increasing exponentially since the 1970s due to a combination of climate change and a decrease in hunting and natural predators. The deer are capable of decimating the herb layer when populations become dense and have been causing extensive damage even within national parks, which have the highest protection status. Although various efforts to prevent deer herbivory have been deployed such as exclusion fences, much work remains to be done to save vulnerable plant populations.
+
+### Limits of the study and future outlook
 
 There are a number of caveats that must be kept in mind when interpreting these results. First, the data include species collected over a wide time period, so they do not necessarily represent the current distribution of ferns in Japan. Furthermore, the collections are not evenually collected throughout the country, but rather some areas have many more specimens than others. Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
 
@@ -486,6 +494,63 @@ bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
   set_names(1:8)
 ```
 
+```{r japan-map, fig.width = 5, fig.height = 5}
+# Print map of Japan with labels of relevant places
+
+# Set vectors of different areas to label
+main_islands <- c("Hokkaido", "Shikoku", "Kyushu", "Honshu")
+small_islands <- c("Okinawa", "Amamioshima", "Ogasawara", "Yakushima", "Izu Islands")
+other <- c("Tokyo")
+
+# Modify dataframe to include formatting for printing label on map
+japan_points <- 
+  japan_points_raw %>%
+  as_tibble %>%
+  mutate(
+    label = case_when(
+      # Print main islands in bold
+      query %in% main_islands ~ glue::glue("**{query}**"),
+      TRUE ~ query
+    ),
+    nudge = case_when(
+      query == "Honshu" ~ "-0.5,-.7",
+      query == "Tokyo" ~ "-1.2,0",
+      query == "Shikoku" ~ "1,-.5",
+      query == "Kyushu" ~ "1,-.6",
+      query %in% small_islands ~ "2.5,0",
+      TRUE ~ "0,0"
+    )
+  ) %>%
+  separate(nudge, c("nudge_lon", "nudge_lat"), sep = ",") %>%
+  mutate(across(c(nudge_lon, nudge_lat), as.numeric)) %>%
+  mutate(
+    lon_adj = lon + nudge_lon,
+    lat_adj = lat + nudge_lat
+  )
+
+# Make map
+ggplot(japan) + 
+  geom_sf() +
+  geom_richtext(
+    data = japan_points, 
+    aes(x = lon_adj, y = lat_adj, label = label),
+    size = 2.5,
+    fill = NA, label.color = NA, # remove background and outline
+    label.padding = grid::unit(rep(0, 4), "pt") # remove padding)
+  ) +
+  geom_point(
+    data = filter(japan_points, query == "Tokyo"),
+    aes(x = lon, y = lat)
+  ) +
+  map_theme()
+
+ggsave(result_file(figure("japan-map"), "pdf"), width = 5, height = 5, units = "in")
+```
+
+**`r figure("japan-map")`**. `r figure_cap("japan-map")`
+
+\clearpage
+
 ```{r raw-diversity, width = 7, height = 4}
 # Richness
 a <- ggplot() +
@@ -502,7 +567,7 @@ a <- ggplot() +
 b <- ggplot() +
   geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_obs), color = "transparent", alpha = 0.8) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B** PD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B** PD</span>", hjust = "inward", vjust = "inward", color = "white") +
   labs(fill = "Relative\nbranch\nlength") +
   scale_fill_scico(palette = "lajolla") + 
   scale_x_continuous(breaks = c(125, 135, 145)) +
