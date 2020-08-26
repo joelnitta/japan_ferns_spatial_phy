@@ -25,7 +25,17 @@ plan <- drake_plan (
     tidy_japan_names(),
   
   # Load a map of Japan
-  japan_shp = rnaturalearth::ne_countries(country = "japan", scale = "large", returnclass = "sf"),
+  # downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
+  # on 2020-08-26
+  jpn_pol = sf::st_read("data_raw/gm-jpn-all_u_2_2/polbnda_jpn.shp"),
+  
+  # - collapse all the political units down to just one shape for the country
+  japan_shp = jpn_pol %>%
+    select(geometry) %>%
+    summarize(),
+  
+  # Load points of interest for drawing a map of Japan
+  japan_points_raw = read_csv("data_raw/japan_points_raw.csv"),
   
   # Load raw occurrence data of pteridophytes in Japan, excluding hybrids (717 taxa)
   occ_point_data_raw = readxl::read_excel(

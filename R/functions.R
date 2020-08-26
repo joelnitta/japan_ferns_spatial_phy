@@ -1802,7 +1802,8 @@ calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japa
   
   protected_areas <- sf::st_set_crs(protected_areas, japan_crs)
   
-  japan_shp <- select(japan_shp, admin, geometry)
+  # Make dummy variable so sf::as_Spatial() works
+  japan_shp <- mutate(japan_shp, admin = "Japan")
   
   # Crop spatial data to only land regions within Japan map
   biodiv_ferns_spatial_cropped <- raster::intersect(sf::as_Spatial(biodiv_ferns_spatial), sf::as_Spatial(japan_shp)) %>% sf::st_as_sf()
