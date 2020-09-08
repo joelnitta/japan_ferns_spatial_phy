@@ -1,0 +1,743 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["default-fonts", "default", "custom.css"]
+    lib_dir: libs
+    mathjax: default
+    seal: false
+    nature:
+      slideNumberFormat: "" # To turn off slide numbers
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      titleSlideClass: ["left", "middle", "inverse"]
+editor_options:
+  chunk_output_type: console
+---
+class: inverse, middle, title-slide, big-margin
+background-color: #000000
+background-position: 50% 50%
+background-image: url(images/title_background.png)
+background-size: contain
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, include = TRUE, eval = TRUE, cache = TRUE, dev = "svg", dev.args=list(bg="transparent"))
+```
+
+```{r load-packages-funcs, cache = FALSE}
+library(conflicted)
+library(magick)
+library(ggtext)
+library(drake)
+library(knitr)
+library(patchwork)
+library(scales)
+library(scico)
+library(magrittr)
+library(broom)
+library(assertr)
+library(sf)
+library(rcartocolor)
+library(tidyverse)
+
+# Resolve conflicts
+conflicted::conflict_prefer("map", "purrr")
+conflicted::conflict_prefer("select", "dplyr")
+conflicted::conflict_prefer("filter", "dplyr")
+conflicted::conflict_prefer("gather", "tidyr")
+conflicted::conflict_prefer("extract", "magrittr")
+
+# Specify custom themes
+simple_map_theme <- function () {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey70"),
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  )
+}
+
+simple_map_theme_light <- function () {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey90"),
+    legend.position = "none",
+    axis.text = element_blank(),
+    axis.ticks = element_blank()
+  )
+}
+
+trend_line_theme <- function () {
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
+    panel.grid.minor = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+}
+
+
+map_theme_pp <- function() {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey70"),
+    axis.ticks = element_blank()
+  )
+}
+
+map_theme_pp_light <- function() {
+  theme(
+    panel.grid.major = element_line(color = "white", size = 0.1),
+    panel.background = element_rect(fill = "grey90"),
+    axis.ticks = element_blank()
+  )
+}
+
+
+# Set color palettes
+# Randomization test significance
+signif_cols <-
+  c(
+    "> 0.99" = "#e31a1c",
+    "> 0.975" = "#fb9a99",
+    "< 0.01" = "#1f78b4",
+    "< 0.025" = "#a6cee3",
+    "not significant" = "#ffffcc"
+  )
+
+# CANAPE
+canape_cols <-
+  c(
+    "neo" = "#e31a1c",
+    "paleo" = "#1f78b4",
+    "mixed" = "#6a51a3",
+    "super" = "#4a1486",
+    "not significant" = "#ffffcc"
+  )
+
+# Bioregions
+bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
+  set_names(1:8)
+
+source(here::here("R/functions.R"))
+```
+
+```{r, load-refs, includ = FALSE, cache = FALSE}
+# Set bibliography options
+library(RefManageR)
+BibOptions(
+  ignore.case = TRUE,
+  check.entries = FALSE,
+  max.names = 3,
+  bib.style = "authoryear", # set style of bibliography as e.g., "Nitta 2020..."
+  style = "text" # set style of citations as plain text (no links)
+)
+
+# Read in bibliography
+bib <- ReadBib(here::here("presentations/bsa_2020-07-27/refs.bib"), check = FALSE)
+```
+
+```{r load-data, cache = FALSE}
+# Set cache
+ja_fern_cache <- new_cache(here::here("ja_fern_cache"))
+
+# Load targets
+loadd(list = c(
+  "biodiv_ferns_spatial",
+  "occ_point_data_ferns",
+  "protected_areas",
+  "traits_for_dist",
+  "comm_ferns",
+  "green_list",
+  "ppgi",
+  "japan_shp"),
+  cache = ja_fern_cache)
+
+# Read in pteridophyte GBIF collections per country data from
+# Iwasaki lab presentation
+collections_by_country <- read_csv(here::here("data_raw/gbif_pterido_coll_by_country.csv")) %>%
+  mutate(country = factor(country)) %>%
+  mutate(country = fct_reorder(country, n))
+
+# Save currently used data as back-up in case data produced by plan changes
+data <- list(
+  biodiv_ferns_spatial = biodiv_ferns_spatial,
+  occ_point_data_ferns = occ_point_data_ferns,
+  protected_areas = protected_areas,
+  traits_for_dist = traits_for_dist,
+  comm_ferns = comm_ferns,
+  green_list = green_list,
+  ppgi = ppgi,
+  japan_shp = japan_shp,
+  collections_by_country = collections_by_country
+)
+
+saveRDS(data, here::here("presentations/bsj_2020-09-19/data/data.RDS"))
+
+# Change cluster to factor
+biodiv_ferns_spatial <- biodiv_ferns_spatial %>%
+  mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+  # Add redundancy
+  mutate(redundancy = 1 - (richness/abundance))
+
+# Download high-res map of Japan,
+# crop to spatial div results area
+japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
+
+# Set CRS
+japan_crs <- sf::st_crs(japan)
+
+biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
+```
+
+```{r title-slide-image, eval = FALSE}
+# Code to make title slide image, don't need to run when rendering slides
+title_theme <- theme_void() +
+  theme(
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    legend.position = "none",
+     panel.background = element_rect(fill = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+  )
+
+a <- ggplot(biodiv_ferns_spatial, aes(fill = richness)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  title_theme
+
+b <- ggplot(data = biodiv_ferns_spatial, aes(fill = rpd_signif)) +
+  geom_sf(color = "transparent", alpha = 1.0) +
+  labs(fill = "") +
+  scale_fill_manual(values = signif_cols) +
+  map_theme() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    legend.title = element_blank()
+  ) +
+  title_theme
+
+c <- ggplot(biodiv_ferns_spatial, aes(fill = phylo_cluster)) +
+  geom_sf(color = "transparent") +
+  labs(fill = "Cluster") +
+  scale_fill_carto_d(name = "Cluster", type = "qualitative", palette = "Bold") +
+  title_theme
+
+title_image <- a + b + c + plot_layout(ncol = 1)
+
+# Write out here, then crop manually
+ggsave(
+  plot = title_image,
+  filename = here::here("presentations/bsj_2020-09-19/images/title.png"),
+  dpi = 300)
+```
+
+.pull-left-wide[
+# 日本のシダ植物多様性の<br>多次元解析
+<br>
+## 新田ジョエル<sup>1</sup>、海老原淳<sup>2</sup>
+
+<sup>1</sup>東京大学理学系研究科・岩崎研究室<br>
+<span style = 'font-size: 80%;'>https://joelnitta.com</span>
+
+<sup>2</sup>国立科学博物館・植物研究部
+
+日本植物学会第84回大会<br><span style = 'font-size: 80%;'>2020.03.01</span>
+]
+
+.pull-right-narrow[
+<img src="images/title_cropped.png" alt="drawing" width="300"/>
+]
+
+---
+class: big-margin
+
+## 生物多様性は種数だけではない
+
+種数は生物多様性の複数ある次元の一つだけ
+
+他には
+
+- 系統的多様性
+
+- 機能的多様性
+
+- それぞれの関係性
+
+も考慮しなくてはなりません
+
+<img src="images/not_just_species.png" alt="drawing" width="800"/>
+
+
+---
+class: big-margin
+
+## 生物多様性は種数だけではない
+
+種数は生物多様性の複数ある次元の一つだけ
+
+他には
+
+- 系統的多様性
+
+- 機能的多様性
+
+- それぞれの関係性
+
+も考慮しなくてはなりません。
+
+しかし、これは大量のデータを必要とする作業です。
+
+
+---
+class: big-margin
+
+```{r count-taxa}
+# count number of higher taxa (genera and families)
+n_fern_taxa <-
+green_list %>%
+  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+  assert(not_na, genus) %>%
+  # Add higher-level taxonomy
+  left_join(ppgi, by = "genus") %>%
+  assert(not_na, class) %>%
+  # Filter to only ferns
+  filter(class == "Polypodiopsida") %>%
+  summarize(
+    n_genus = n_distinct(genus),
+    n_family = n_distinct(family)
+  )
+```
+
+.pull-left[
+
+## 日本のシダ植物：生物多様性のモデルシステムとして
+
+- 約675種 ・`r n_fern_taxa$n_genus`属・`r n_fern_taxa$n_family`科
+
+- 全世界でももっとも研究が進んでいるシダ植物フロラの一つ
+
+- DNA、種の分布、種の機能的特徴も網羅的にサンプリング済
+]
+
+.pull-right[
+.center[
+<img src="images/ja_example_ferns.png" alt="drawing" height="580"/>
+]
+]
+
+.footnote[.small[Photos: A. Ebihara]]
+
+---
+class: big-margin
+
+.pull-left[
+
+## 日本のシダ植物：生物多様性のモデルシステムとして
+
+- 約675種 ・`r n_fern_taxa$n_genus`属・`r n_fern_taxa$n_family`科
+
+- 全世界でももっとも研究が進んでいるシダ植物フロラの一つ
+
+- DNA、種の分布、種の機能的特徴も網羅的にサンプリング済
+]
+
+.pull-right[
+```{r gbif-colls-per-country}
+# Plot showing top 10 pteridophyte collections in GBIF by country
+ggplot(collections_by_country, aes(x = country, y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "GBIF pteridophyte \ncollections (top 10)",
+    y = "No. collections") +
+  scale_y_continuous(labels = scales::comma) +
+  ggplot2::theme_bw(base_size = 24) +
+  theme(
+    axis.title.y = element_blank(),
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(colour="black"),
+      axis.text.y = ggplot2::element_text(colour="black")
+  )
+```
+]
+
+---
+## 日本の生物地理学入門（短縮バージョン）
+
+.pull-left-narrow[
+- 北（亜寒帯）から南（亜熱帯）において気候変動が広い
+
+- 標高も変動が広い
+
+- 第三紀のレフュジア（氷河に覆われたことがない）
+
+- 本州は大陸島
+
+- 沖縄、小笠原は海洋島
+]
+
+.pull-right-wide[
+<img src="images/japan_intro.png" alt="drawing" height="580"/>
+]
+
+---
+class: big-margin
+
+## 本研究の目的
+
+**日本産シダ類** において、以下のことを把握する：
+
+1. 生物多様性がどのように分布しているのか？
+
+2. 生物多様性がどのような構造を持っているのか？
+
+3. 生物多様性がどれくらい守れているのか？
+
+---
+class: big-margin
+## データ
+
+```{r summarize-traits}
+trait_summary <- make_trait_summary(traits_for_dist)
+
+n_binary <- trait_summary %>% filter(trait_type == "binary") %>% nrow()
+n_cont <- trait_summary %>% filter(trait_type == "continuous") %>% nrow()
+n_qual <- trait_summary %>% filter(trait_type == "qualitative") %>% nrow()
+```
+
+**分布データ**
+
+- 日本の植物標本庫に収納されている標本
+
+- `r nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")` 点 (`r occ_point_data_ferns %>% pull(taxon) %>% n_distinct()` 種)
+
+- 上のリストを0.2°（約20 km x 20 km）有無マトリックスに変換する
+
+---
+class: big-margin
+## データ
+
+**系統樹**
+
+- 日本の標本から葉緑体遺伝子*rbcL* `r AutoCite(bib, "Ebihara2019b")`
+
+- GenBankにある広いサンプリングと合わせる
+
+- IQ-TREEによる系統解析 (Nguyen et al., 2015) `r NoCite(bib, "Nguyen2015")`
+
+- 27点の化石`r AutoCite(bib, "Testo2016a")` を取り入れたtreePL `r AutoCite(bib, "Smith2012")`による分岐年代推定
+
+- 日本の種だけに部分集合
+
+---
+class: big-margin
+
+## データ
+
+**機能的特徴**
+
+- 元々種同定に使われた機能的特徴が`r nrow(trait_summary)`個 `r AutoCite(bib, "Ebihara2019b")`
+
+- 例：包膜の有無、葉柄の長さ、葉の厚さ
+
+
+---
+class: middle, inverse, big-margin
+
+# 生物多様性がどのように分布しているのか？
+
+---
+## 種数は山型
+
+```{r centroids}
+# Convert diversity metrics dataframe to centroids for plotting trends
+ses_div_centroids <-
+  biodiv_ferns_spatial %>%
+  mutate(
+    longitude = sf::st_centroid(geometry) %>% st_coordinates %>% magrittr::extract(,1),
+    latitude = sf::st_centroid(geometry) %>% st_coordinates %>% magrittr::extract(,2)) %>%
+  as_tibble %>%
+  dplyr::select(-geometry)
+
+# Get min and max latitude for setting common limits between
+# maps and trendlines
+ja_lat_min <- ses_div_centroids %>% pull(latitude) %>% min()
+ja_lat_max <- ses_div_centroids %>% pull(latitude) %>% max()
+```
+
+```{r richness, out.width = "120%"}
+# Fern richness
+# - map
+a <-
+  ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = richness), color = "transparent", alpha = 0.8) +
+  geom_sf() +
+  scale_fill_scico(palette = "lajolla") +
+  labs(fill = "No. taxa") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1), limits = c(ja_lat_min, ja_lat_max)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme() +
+  theme(
+    legend.title = element_text(size = 20/.pt),
+    legend.text = element_text(size = 16/.pt),
+    legend.justification=c(0,1), legend.position=c(0,1)
+  )
+
+# - latitudinal trends
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = richness)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_smooth(se = FALSE) +
+  xlim(ja_lat_min, ja_lat_max) +
+  coord_flip() +
+  labs(y = "No. taxa") +
+  trend_line_theme()
+
+a + b + plot_layout(widths = c(3,1), heights = c(1,1))
+```
+
+.footnote[Trendline: General additive model (GAM) with cubic splines]
+
+---
+class: big-margin
+## 系統樹を使った生物多様性の測り方
+
+.center[
+<img src="images/pd.png" alt="drawing" height="250"/>
+]
+
+<u>**P**</u>hylogenetic <u>**D**</u>iversity: 系統樹の枝長の総計 `r AutoCite(bib, "Faith1992")`
+
+<u>**F**</u>unctional <u>**D**</u>iversity: 測り方はPDと同様が、系統樹の代わりに形態的特徴によるdendrogramを使う `r AutoCite(bib, "Petchey2002")`
+
+---
+## PDとFDは種数と相関している
+
+```{r raw-div-1, out.width = "120%", fig.asp = 0.7}
+# Richness
+a <- ggplot(biodiv_ferns_spatial, aes(fill = richness)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  labs(title = "Taxonomic richness") +
+  simple_map_theme()
+
+b <- ggplot(biodiv_ferns_spatial, aes(fill = pd_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  labs(
+    title = "Phylogenetic diversity") +
+  simple_map_theme()
+
+c <- ggplot(biodiv_ferns_spatial, aes(fill = fd_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  labs(
+    title = "Functional diversity") +
+  simple_map_theme()
+
+a + b + c +
+  plot_spacer() + plot_spacer() + plot_spacer() +
+  plot_layout(nrow = 2, heights = c(0.5, 0.5))
+```
+
+---
+## PDとFDは種数と相関している（予想通りに）
+
+```{r raw-div-2, out.width = "120%", fig.asp = 0.7}
+# Richness
+a <- ggplot(biodiv_ferns_spatial, aes(fill = richness)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  labs(title = "Taxonomic richness") +
+  simple_map_theme()
+
+b <- ggplot(biodiv_ferns_spatial, aes(fill = pd_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  labs(
+    title = "Phylogenetic diversity") +
+  simple_map_theme()
+
+c <- ggplot(biodiv_ferns_spatial, aes(fill = fd_obs)) +
+  geom_sf(color = "transparent") +
+  scale_fill_scico(palette = "lajolla") +
+  labs(
+    title = "Functional diversity") +
+  simple_map_theme()
+
+d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = pd_obs)) +
+  geom_point(shape = 1) +
+  # Fit a logarithmic general additive model
+  # https://stackoverflow.com/questions/40711980/r-ggplot2-fit-curve-to-scatter-plot
+  geom_smooth(se = FALSE, method = "gam", formula = y ~ s(log(x)), size = 0.5) +
+  labs(
+    x = "No. taxa",
+    y = "PD"
+  ) +
+  jntools::standard_theme()
+
+e <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = fd_obs)) +
+  geom_point(shape = 1) +
+  geom_smooth(se = FALSE, method = "gam", formula = y ~ s(log(x)), size = 0.5) +
+  labs(
+    x = "No. taxa",
+    y = "FD"
+  ) +
+  jntools::standard_theme()
+
+a + b + c +
+  plot_spacer() + d + e +
+  plot_layout(nrow = 2, heights = c(0.5, 0.5))
+```
+
+.footnote[Trendline: GAM with log-transform]
+
+---
+class: big-margin
+
+## 観測値とランダムな値との比較
+
+"Independent Swap" `r AutoCite(bib, "Gotelli2000")`によって999個のランダムな群衆を作成し、観察された値と比較する
+
+p-valueによって意義を評価する
+
+---
+
+## PDは本州に低く、琉球に高い
+
+```{r pd-rand, out.width = "120%", fig.asp = 0.7}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_signif), color = "transparent", alpha = 0.8) +
+  scale_fill_manual(values = signif_cols) +
+  labs(fill = "Phylogenetic diversity<br>*p*-value") +
+  map_theme() +
+  theme(
+    legend.title = element_markdown(),
+    legend.position = "right"
+  )
+```
+
+---
+background-position: 40% 50%
+background-image: url(images/RPD.png)
+background-size: contain
+
+## <u>**R**</u>elative <u>**P**</u>hylogenetic <u>**D**</u>iversityで枝長を比較する
+
+.pull-right[
+有意義に長い枝
+
+- レフュージア
+
+- 対象地域以外に主な分布をもつ分類群の存在
+
+有意義に短い枝
+
+- 最近の種分化
+
+.small[Mishler et al. (2014) `r NoCite(bib, "Mishler2014")`]
+]
+
+---
+## 系統樹の枝は九州に短く、南北に長い
+
+```{r rpd-rand, out.width = "120%", fig.asp = 0.7}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = rpd_signif), color = "transparent", alpha = 0.8) +
+  scale_fill_manual(values = signif_cols) +
+  labs(fill = "Relative<br>phylogenetic diversity<br>*p*-value") +
+  map_theme() +
+  theme(
+    legend.title = element_markdown(),
+    legend.position = "right"
+  )
+```
+
+---
+## 機能的形質は系統的多様性と似ている
+
+```{r rfd-rand, out.width = "120%", fig.asp = 0.7}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = rfd_signif), color = "transparent", alpha = 0.8) +
+  scale_fill_manual(values = signif_cols) +
+  labs(fill = "Relative<br>functional diversity<br>*p*-value") +
+  map_theme() +
+  theme(
+    legend.title = element_markdown(),
+    legend.position = "right"
+  )
+```
+
+---
+## 琉球と小笠原は固有種のホットスポット
+
+```{r pe, out.width = "120%", fig.asp = 0.7}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = endem_type), color = "transparent", alpha = 0.8) +
+  scale_fill_manual(values = canape_cols) +
+  labs(fill = "Endemism type") +
+  map_theme() +
+  theme(
+    legend.title = element_markdown(),
+    legend.position = "right"
+  )
+```
+
+---
+class: middle, inverse, big-margin
+
+# 生物多様性がどのような構造を持っているのか？
+
+---
+## バイオリージョンをクラスター法で分類する
+
+.center[
+<img src="images/daru_2017.png" alt="drawing" height="400"/>
+]
+
+.footnote[`r Citet(bib, c("Daru2017", "Daru2020"))`]
+
+---
+## ほとんどの地点は四つのバイオリージョンのどれかに所属する
+
+```{r tax-bioregion, out.width = "120%", fig.asp = 0.7}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = taxonomic_cluster), color = "transparent", alpha = 0.8) +
+  labs(fill = "Taxonomic<br>bioregion") +
+  scale_fill_manual(values = bioregion_cols) +
+  map_theme() +
+  theme(
+    legend.title = element_markdown(),
+    legend.position = "right"
+  )
+```
+
+---
+## 系統的距離を使うと琉球と小笠原が一つのバイオリージョンになる
+
+```{r phy-bioregion, out.width = "120%", fig.asp = 0.7}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = phylo_cluster), color = "transparent", alpha = 0.8) +
+  labs(fill = "Phylogenetic<br>bioregion") +
+  scale_fill_manual(values = bioregion_cols) +
+  map_theme() +
+  theme(
+    legend.title = element_markdown(),
+    legend.position = "right"
+  )
+```
