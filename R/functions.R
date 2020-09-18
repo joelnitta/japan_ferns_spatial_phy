@@ -40,11 +40,14 @@ unzip_ebihara_2019 <- function (dryad_zip_file, exdir, ...) {
 tidy_japan_names <- function (data) {
   data %>%
     select(taxon_id = ID20160331, scientific_name = `GreenList Name`,
-           endemic = Endemism, conservation_status = RL2012) %>%
+           endemic = Endemism, conservation_status = RL2012,
+           hybrid = Hybrid) %>%
     # Simplify taxon names, replace space with underscore
     taxastand::add_parsed_names(scientific_name, taxon) %>%
     mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
     mutate(taxon_id = as.character(taxon_id)) %>%
+    # Change hybrid to TRUE/FALSE
+    mutate(hybrid = ifelse(is.na(hybrid), FALSE, TRUE)) %>%
     assert(not_na, taxon, taxon_id, scientific_name) %>%
     assert(is_uniq, taxon, taxon_id, scientific_name)
 }
@@ -2341,3 +2344,45 @@ result_file <- function (result_num, extension) {
     fs::path_ext_set(extension)
 }
 
+
+# Dummy function to track arbitary output from rmarkdown::render()
+render_tracked <- function (tracked_output, ...) {
+  rmarkdown::render(...)
+}
+
+#' Convert latex file to docx
+#' 
+#' Requires pandoc to be installed and on command line
+#'
+#' @param latex Path to input latex file.
+#' @param docx Path to output docx file.
+#' @param template Path to template docx file.
+#' @param wd Working directory to run conversion. Should be same as
+#' directory containing any files needed to render latex to pdf.
+#'
+#' @return List including STDOUT of pandoc; externally, the
+#' docx file will be rendered in `wd`.
+#' 
+latex2docx <- function (latex, docx, template = NULL, wd = getwd()) {
+  
+  assertthat::assert_that(assertthat::is.readable(latex))
+  
+  assertthat::assert_that(assertthat::is.dir(fs::path_dir(docx)))
+  
+  latex <- fs::path_abs(latex)
+  
+  docx <- fs::path_abs(docx)
+  
+  template <- if (!is.null(template)) {
+    glue::glue("--reference-doc={fs::path_abs(template)}")
+  } else {
+    NULL
+  }
+  
+  processx::run(
+    command = "pandoc",
+    args = c("-s", latex, template, "-o", docx),
+    wd = wd
+  )
+  
+}

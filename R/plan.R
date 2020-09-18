@@ -327,14 +327,37 @@ plan <- drake_plan (
   signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
   
   # Write out manuscript ----
-  ms = rmarkdown::render(
-    knitr_in("ms/manuscript.Rmd"),
-    output_dir = here::here("results"),
-    quiet = TRUE),
   
-  si = rmarkdown::render(
-    knitr_in("ms/SI.Rmd"),
+  docx_template_path = target("ms/template.docx", format = "file"),
+  
+  ms_pdf = render_tracked(
+    knitr_in("ms/manuscript.Rmd"),
+    quiet = TRUE,
     output_dir = here::here("results"),
-    quiet = TRUE)
+    tracked_output = here::here("results/manuscript.tex") %>% file_out()
+  ),
+  
+  # Next use the latex to convert to docx with pandoc
+  ms_docx = latex2docx(
+    latex = here::here("results/manuscript.tex") %>% file_in(),
+    docx = here::here("results/manuscript.docx") %>% file_out(),
+    template = docx_template_path,
+    wd = here::here("results")
+  ),
+  
+  # Do same with SI
+  si_pdf = render_tracked(
+    knitr_in("ms/SI.Rmd"),
+    quiet = TRUE,
+    output_dir = here::here("results"),
+    tracked_output = here::here("results/SI.tex") %>% file_out()
+  ),
+  
+  si_docx = latex2docx(
+    latex = here::here("results/SI.tex") %>% file_in(),
+    docx = here::here("results/SI.docx") %>% file_out(),
+    template = docx_template_path,
+    wd = here::here("results")
+  )
   
 )
