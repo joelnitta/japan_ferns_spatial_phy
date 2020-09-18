@@ -204,7 +204,7 @@ a + b + c + plot_layout(ncol = 1)
 
 # Write out here, then crop manually
 ggsave(
-  plot = title_image, 
+  plot = title_image,
   filename = here::here("presentations/bsa_2020-07-27/images/title.png"),
   dpi = 300)
 ```
@@ -374,10 +374,10 @@ class: big-margin
 
 Using the **ferns of Japan** as a study system, seek to understand:
 
-1. How is biodiversity distributed? 
- 
-2. How is biodiversity structured? 
- 
+1. How is biodiversity distributed?
+
+2. How is biodiversity structured?
+
 3. How well is biodiversity protected?
 
 ---
@@ -430,11 +430,11 @@ class: big-margin
   - `r n_cont` continuous (e.g., stipe length)
 
   - `r n_qual` qualitative (e.g., indusium shape, lamina texture)
-  
+
 ---
 class: middle, inverse, big-margin
 
-# How is biodiversity distributed? 
+# How is biodiversity distributed?
 
 ---
 ## Species richness is humped-shaped
@@ -460,7 +460,7 @@ ja_lat_max <- ses_div_centroids %>% pull(latitude) %>% max()
 # - map
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
+  scale_fill_scico(palette = "lajolla") +
   labs(fill = "No. taxa") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1), limits = c(ja_lat_min, ja_lat_max)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
@@ -470,7 +470,7 @@ a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
     legend.text = element_text(size = 16/.pt),
     legend.justification=c(0,1), legend.position=c(0,1)
   )
-  
+
 
 # - latitudinal trends
 b <- ggplot(ses_div_centroids, aes(x = latitude, y = richness)) +
@@ -505,20 +505,20 @@ class: big-margin
 # Richness
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
+  scale_fill_scico(palette = "lajolla") +
   labs(title = "Taxonomic richness") +
   simple_map_theme()
 
 b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
+  scale_fill_scico(palette = "lajolla") +
   labs(
     title = "Phylogenetic diversity") +
   simple_map_theme()
 
 c <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
+  scale_fill_scico(palette = "lajolla") +
   labs(
     title = "Functional diversity") +
   simple_map_theme()
@@ -535,20 +535,20 @@ a + b + c +
 # Richness
 a <- ggplot(ses_div_ferns_spatial, aes(fill = richness)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
+  scale_fill_scico(palette = "lajolla") +
   labs(title = "Taxonomic richness") +
   simple_map_theme()
 
 b <- ggplot(ses_div_ferns_spatial, aes(fill = pd_obs)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
+  scale_fill_scico(palette = "lajolla") +
   labs(
     title = "Phylogenetic diversity") +
   simple_map_theme()
 
 c <- ggplot(ses_div_ferns_spatial, aes(fill = fd_obs)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla") + 
+  scale_fill_scico(palette = "lajolla") +
   labs(
     title = "Functional diversity") +
   simple_map_theme()
@@ -750,7 +750,7 @@ Phylogenetic endemism = PD weighted by range size (Rosauer et al., 2009) `r NoCi
 # - map
 a <- ggplot(ses_div_ferns_spatial, aes(fill = pe_obs_p)) +
   geom_sf(color = "transparent") +
-  scale_fill_scico(palette = "lajolla", labels = scales::percent) + 
+  scale_fill_scico(palette = "lajolla", labels = scales::percent) +
   labs(fill = "PE percentile") +
   scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1), limits = c(ja_lat_min, ja_lat_max)) +
   scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
@@ -766,7 +766,7 @@ b <- ggplot(ses_div_centroids, aes(x = latitude, y = pe_obs_p)) +
   geom_point(color = "grey50", shape = 1 ) +
   geom_hline(yintercept = 0.95, linetype="dashed") +
   geom_smooth(se = FALSE) +
-  annotate("label", y = 0.95, x = ja_lat_max, label = "95%", size = 2) + 
+  annotate("label", y = 0.95, x = ja_lat_max, label = "95%", size = 2) +
   xlim(ja_lat_min, ja_lat_max) +
   scale_y_continuous(labels = scales::percent) +
   labs(y = "PE percentile") +
@@ -780,7 +780,7 @@ a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 ---
 class: middle, inverse, big-margin
 
-# How is biodiversity structured? 
+# How is biodiversity structured?
 
 ---
 ## Classify bioregions using clustering
@@ -854,7 +854,7 @@ top_species <-
     max_dif = max(perc_abun) - min(perc_abun),
     cluster = unique(top_cluster)
   ) %>%
-  # keep only those with greater than 65% difference between top 1st and 2nd 
+  # keep only those with greater than 65% difference between top 1st and 2nd
   # most abundant bioregions
   filter(max_dif > 0.5) %>%
   group_by(cluster) %>%
@@ -991,10 +991,10 @@ ggplot(aes(fill = taxonomic_cluster, alpha = focus)) +
   simple_map_theme_light() +
   labs(subtitle = "Region 4") +
   annotate(
-    "rect", 
-           xmin = bonin_box[["xmin"]] - expand_value, 
-           xmax = bonin_box[["xmax"]] + expand_value, 
-           ymin = bonin_box[["ymin"]] - expand_value, 
+    "rect",
+           xmin = bonin_box[["xmin"]] - expand_value,
+           xmax = bonin_box[["xmax"]] + expand_value,
+           ymin = bonin_box[["ymin"]] - expand_value,
            ymax = bonin_box[["ymax"]] + expand_value,
     fill = "transparent",
     color = "grey10")
@@ -1042,7 +1042,7 @@ b <- ggplot(ses_div_ferns_spatial, aes(fill = phylo_cluster)) +
     axis.text.y = element_blank(),
     legend.position = "none")
 
-a + b 
+a + b
 ```
 
 ---
@@ -1071,7 +1071,7 @@ Forest types<br>
 ---
 class: middle, inverse, big-margin
 
-# How well is biodiversity protected? 
+# How well is biodiversity protected?
 
 ---
 ## Japan is well-protected overall (ca. 30% coverage)
@@ -1106,7 +1106,7 @@ ggplot() +
   scale_fill_viridis_d(breaks = names(status_labels), labels = status_labels) +
   theme(
     axis.ticks = element_blank()
-  ) + 
+  ) +
   labs(
     caption = "Data: Japan Ministry of the Environment\nhttps://www.biodic.go.jp/biodiversity/activity/policy/map/map17/"
   )
@@ -1121,7 +1121,7 @@ top_richness <-
   ses_div_ferns_spatial %>%
   mutate(rich_quant = ntile(richness, 20)) %>%
   filter(rich_quant == 20)
-  
+
 # Join with protected areas data
 st_crs(top_richness) <- st_crs(protected_areas)
 
@@ -1131,7 +1131,7 @@ protected_richness <- st_join(top_richness, protected_areas) %>%
 # Make an inset showing area plotted in Japan
 richness_box <- st_bbox(top_richness)
 
-inset <- 
+inset <-
   ggplot() +
   geom_sf(data = japan) +
   annotate(
@@ -1154,7 +1154,7 @@ japan_cropped_to_richness <- sf::st_crop(japan_cropped_to_richness, sf::st_bbox(
 # plot showing protected status of high richness areas
 richness_initial_plot <- ggplot() +
   geom_sf(data = japan_cropped_to_richness) +
-  geom_sf(data = protected_richness, aes(fill = status)) + 
+  geom_sf(data = protected_richness, aes(fill = status)) +
   scale_fill_viridis_d(breaks = c("low", "medium", "high"), labels = c("Low", "Medium", "High")) +
   labs(
     title = "Top 5% richness",
@@ -1166,7 +1166,7 @@ richness_initial_plot <- ggplot() +
 
 # final plot: add inset
 cowplot::ggdraw(richness_initial_plot) +
-  cowplot::draw_plot(inset, 0.8, 0.45, .30, .30, hjust = 1, vjust = 1) 
+  cowplot::draw_plot(inset, 0.8, 0.45, .30, .30, hjust = 1, vjust = 1)
 ```
 
 ---
@@ -1194,7 +1194,7 @@ protected_pe <-
 # Make an inset showing area plotted in Japan
 pe_box <- st_bbox(sig_pe)
 
-inset <- 
+inset <-
   ggplot() +
   geom_sf(data = japan) +
   annotate(
@@ -1217,7 +1217,7 @@ japan_cropped_to_pe <- sf::st_crop(japan_cropped_to_pe, sf::st_bbox(protected_pe
 # plot showing protected status of high PE areas
 pe_initial_plot <- ggplot() +
   geom_sf(data = japan_cropped_to_pe) +
-  geom_sf(data = protected_pe, aes(fill = status)) + 
+  geom_sf(data = protected_pe, aes(fill = status)) +
   scale_fill_viridis_d(breaks = c("low", "medium", "high"), labels = c("Low", "Medium", "High"), na.value = "white") +
   labs(
     title = "Significantly high PE",
@@ -1229,7 +1229,7 @@ pe_initial_plot <- ggplot() +
 
 # final plot: add inset
 cowplot::ggdraw(pe_initial_plot) +
-  cowplot::draw_plot(inset, 0.06, 0.47, .2, .2, hjust = 0, vjust = 0) 
+  cowplot::draw_plot(inset, 0.06, 0.47, .2, .2, hjust = 0, vjust = 0)
 ```
 
 ---
@@ -1255,7 +1255,7 @@ class: big-margin
 
 # Conclusions
 
-- How is biodiversity distributed? 
+- How is biodiversity distributed?
 
 - How is biodiversity structured?
 
@@ -1294,7 +1294,7 @@ c <- ggplot(ses_div_ferns_spatial, aes(fill = taxonomic_cluster)) +
 ```
 
 .pull-left[
-How is biodiversity distributed? 
+How is biodiversity distributed?
 
 - Taxonomic diversity highest in Kyushu
 
@@ -1372,7 +1372,7 @@ How well is biodiversity protected?
 ```{r conclusions-protection}
  ggplot() +
   geom_sf(data = japan_cropped_to_richness) +
-  geom_sf(data = protected_richness, aes(fill = status)) + 
+  geom_sf(data = protected_richness, aes(fill = status)) +
   scale_fill_viridis_d(breaks = c("low", "medium", "high"), labels = c("Low", "Medium", "High")) +
   labs(title = "Top 5% richness hotspots", fill = "Conservation\nstatus"
   ) +
@@ -1383,7 +1383,7 @@ How well is biodiversity protected?
   )
 ```
 ]
- 
+
 ---
 # Future directions
 
