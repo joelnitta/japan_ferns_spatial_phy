@@ -13,7 +13,7 @@ output:
     toc: no
     number_sections: no
     fig_caption: yes
-    keep_tex: no
+    keep_tex: yes
     latex_engine: xelatex
     pandoc_args: [ "--csl", "journal-of-biogeography.csl"]
     includes:
@@ -53,7 +53,8 @@ loadd(list = c(
   "occ_point_data_ferns",
   "comm_ferns_full",
   "comm_ferns",
-  "japan_points_raw"
+  "japan_points_raw",
+  "green_list"
 ),
 cache = ja_fern_cache)
 
@@ -94,7 +95,17 @@ Author for correspondence:
 
 ## Abstract
 
-The ferns of Japan are one of the best-characterized regional floras in the world due to decades of intensive collection and taxonomic revision. We combined phylogenetic, functional, and environmental datasets to explore the spatial distribution of biodiversity in the ferns of Japan. We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity, which is highest in small southern islands, and that of relative phylogenetic and functional diversity, which is high at both high and low latitudes, and low at mid-latitudes.
+**Aim** To characterize multiple facets of biodiversity and understand how these relate to bioregions and conservation status.
+
+**Location** Japan
+
+**Taxon** Ferns
+
+**Methods** We used a list of >300,000 fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and assessed significance using a null distribution of 999 random communities. We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. We compared the overlap of significantly diverse grid-cells with existing conservation zones to assess conservation status.
+
+**Results** We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. Grid-cells were grouped in to three (phylogenetic) or four (taxonomic) major bioregions. Conservation status (% protected area) is higher than the overall rate for grid-cells with significantly high biodiversity.
+
+**Main conclusions** The integrative approach used here reveals previously undetected patterns of biodiversity in the ferns of Japan. The different distributions of each diversity type reflect the major bioregions. Although peak areas of different diversity types are largely non-overlapping, each one has a relatively high protection status. Despite this, future conservation efforts must be cognizant of dangers not addressed here such as climate change and herbivory by deer.
 
 **Key words:** biodiversity, biogeography, phylogenetic diversity. 
 
@@ -116,11 +127,11 @@ Here we leverage this exceptionally rich dataset to analyze the geographic distr
 
 ### Study Site
 
-Our data include all ferns known to occur within the political boundaries of Japan (20° to 45° N, 122° to 153° E). Japan consists of four main islands and thousands of smaller ones (`r figure("japan-map")`). The climate is subtropical in the south and highly seasonal in other parts of the country. Map data were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
+Our data include all ferns known to occur within the political boundaries of Japan (20°N to 45°N, 122°E to 153°E). Japan consists of four main islands and thousands of smaller ones (`r figure("japan-map")`). The main islands have been in contact with the continent at various points in the past during periods of lower sea level, but the Ryukyu and Ogasawara archipelagos are oceanic islands that have never been connected to the mainland. The climate is subtropical in the south and highly seasonal in other parts of the country. Map data were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
 
 ### Occurrence data
 
-We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (hereafter defined as species, subspecies, and varieties unless otherwise indicated). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html).
+We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html).
 
 A necessary step in any analysis of biodiversity is to set the grain size used to define communities. Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of a grid-cell) for defining communities (co-occurring species). At each grain size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid-cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 and used this for subsequent analyses.
 
@@ -175,10 +186,20 @@ Code to replicate all analyses, figures, and this manuscript are available at ht
 ### Datasets
 
 ```{r dataset-stats}
-### Phylogeny ###
+### Taxon list ###
+# Make list of all native ferns in Japan (based off Green List), includes hybrids
+fern_list <-
+green_list %>%
+  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+  left_join(ppgi) %>%
+  filter(class == "Polypodiopsida")
 
-# FIXME: confirm total number of taxa with Ebihara
-total_fern_taxa <- 675
+### Phylogeny ###
+total_fern_taxa <- fern_list %>%
+  filter(hybrid == FALSE) %>%
+  pull(taxon) %>%
+  n_distinct()
+
 phylogeny_sampled_percent <- ape::Ntip(japan_fern_tree) %>% magrittr::divide_by(total_fern_taxa) %>% scales::percent(accuracy = 0.01)
 
 # Check height (age) of fern phylogeny
@@ -385,23 +406,93 @@ Here, we provide the first insights into the combined taxonomic, phylogenetic, a
 
 ### Distribution of biodiversity
 
+```{r distribution-stats}
+# Calculate number of genera and families restricted to lat < 30.1
+southern_genera <-
+  occ_point_data_ferns %>%
+  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+  group_by(genus) %>%
+  summarize(
+    max_lat = max(latitude),
+    .groups = "drop"
+  ) %>%
+  filter(max_lat < 30.1)
+
+n_southern_genera <- southern_genera %>% pull(genus) %>% n_distinct %>% english2
+
+southern_families <-
+  occ_point_data_ferns %>%
+  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+  left_join(ppgi, by = "genus") %>%
+  group_by(family) %>%
+  summarize(
+    max_lat = max(latitude),
+    .groups = "drop"
+  ) %>%
+  filter(max_lat < 30.1)
+
+n_southern_families <- southern_families %>% pull(family) %>% n_distinct %>% english2
+```
+
 The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`A) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015] and modeled distributions of woody plants [@Fukaya2020]. This pattern is probably due at least in part to the distribution of land area in Japan: maximum land area is located at mid-latitudes, and area is related to species richness by the well-known species-area relationship [@Arrhenius1921]. There may also be a combined climatic and elevational effect: the southern part of Honshu is warmer and more humid than areas further north, while also harboring high elevational variation that may support a wide range of taxa, which is not present in the smaller islands further south.
 
-The overwhelming pattern characterizing phylogenetic and functional diversity is the high diversity of southern islands (Ryukyu and Bonin Isl.). This is almost certainly due to the presence of primarily tropical lineages that do not occur in other parts of the country; _ genera and _ families only occur south of 30.1° latitude (just south of Yakushima Isl.). The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis, and suggests that in ferns, phylogeny can be used as a reasonable stand-in for functional diversity. Given their high phylogenetic diversity, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism; indeed, the vast majority of cells with significant levels of PE are located in the southern islands. This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
+The overwhelming pattern characterizing phylogenetic and functional diversity is the high diversity of southern islands (Ryukyu and Ogasawara Isl.) (`r figure("rand-diversity")`A, C). This is almost certainly due to the presence of primarily tropical lineages that do not occur in other parts of the country; `r n_southern_genera` genera and `r n_southern_families` families only occur south of 30.1° latitude (just south of Yakushima Isl.). The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis, and suggests that in ferns, phylogeny can be used as a reasonable stand-in for functional diversity. Given their high phylogenetic diversity, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism; indeed, the vast majority of cells with significant levels of PE are located in the southern islands. This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
 
-Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu. The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* and *Ophioglossum*. The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera such as *Polystichum* and *Cyrtomimum*.
+Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu (`r figure("rand-diversity")`B). The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* and *Botrychium*. The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera such as *Dryopteris* and *Deparia*.
 
-The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values. Interestingly, the bioregions identified here correspond roughly to major forest types categorized on an *ad-hoc* basis; Cluster 1 corresponds to the cool or subartic deciduous type, Cluster 2 to the warm evergreen type, and Clusters 3 and 4 to the subtropical rainy type [@Shimizu2014]. This suggests that ferns are useful as possible bioindicators in Japan. Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl. The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
+The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values (`r figure("div-by-tax-region")`). Interestingly, the bioregions identified here correspond roughly to major forest types categorized on an *ad-hoc* basis; Cluster 1 corresponds to the cool or subartic deciduous type, Cluster 2 to the warm evergreen type, and Clusters 3 and 4 to the subtropical rainy type [@Shimizu2014]. This suggests that ferns are useful as possible bioindicators in Japan. Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl (`r figure("bioregions")`). The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
 
 ### Conservation status
 
-Although the different facets of biodiversity have different distribution patterns, we find that grid-cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric. While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
+Although the different facets of biodiversity have different distribution patterns, we find that grid-cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric (`r figure("conserv-status")`). While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
 
 Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. One such other threat is herbivory by native Japanese deer, *Cervus nippon*. Populations of these deer have been increasing exponentially since the 1970s due to a combination of climate change and a decrease in hunting and natural predators. The deer are capable of decimating the herb layer when populations become dense and have been causing extensive damage even within national parks, which have the highest protection status. Although various efforts to prevent deer herbivory have been deployed such as exclusion fences, much work remains to be done to save vulnerable plant populations.
 
 ### Limits of the study and future outlook
 
-There are a number of caveats that must be kept in mind when interpreting these results. First, the data include species collected over a wide time period, so they do not necessarily represent the current distribution of ferns in Japan. Furthermore, the collections are not evenually collected throughout the country, but rather some areas have many more specimens than others. Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
+```{r limits-stats}
+# Summarize occurrences by latitude
+occ_data_by_lat <-
+occ_point_data_ferns %>%
+  group_by(taxon) %>%
+  summarize(
+    min_lat = min(latitude),
+    max_lat = max(latitude)
+  ) %>%
+  mutate(
+    lat_span = max_lat - min_lat
+  )
+
+# Find the species with the widest latitudinal distribution
+taxon_with_widest_lat <- occ_data_by_lat %>%
+  slice_max(lat_span) %>%
+  left_join(green_list, by = "taxon") %>%
+  taxastand::add_parsed_names(sci_name = scientific_name, species, author) %>%
+  mutate(text = glue("*{species}* {author}"))
+
+# Find number of species occurring across areas defined by straits
+n_widespread_taxa <-
+occ_data_by_lat %>%
+  # Filter by approx location of Tokara strait (29) and Tsugaru Strait (41.5)
+  filter(min_lat < 29, max_lat > 41.5) %>%
+  pull(taxon) %>%
+  n_distinct %>%
+  english2
+
+# Check number of hybrid fern taxa
+n_hybrid_fern_taxa <- fern_list %>%
+  filter(hybrid == TRUE) %>%
+  pull(taxon) %>%
+  n_distinct()
+```
+
+There are a number of caveats that must be kept in mind when interpreting these results, but these also suggest avenues for future research. First, the data include species collected over a wide time period, so they do not represent the current distribution of ferns in Japan. Furthermore, the collections are not evenly collected throughout the country, but rather some areas have many more specimens than others (`r s_figure("abundance")`). Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
+
+The extreme evolutionary distinctiveness of southern islands is both a major feature of the Japanese fern flora and a challenge for analysis. The tropical lineages occurring in these islands are likely responsible for the comparatively low (\ie, clustered) values of PD observed on Honshu (`r figure("rand-diversity")`A). If a more restricted null model was used that did not consider all taxa capable of dispersing anywhere within the study area, different results would likely be obtained for the randomization test [@Mishler2020]. However, ferns are known to have high dispersal abilities [@Tryon1970; @Barrington1993; @Moran2001]. In our dataset, the taxon with the greatest latitudinal distribution, `r taxon_with_widest_lat$text`, spans nearly the entire region (`r taxon_with_widest_lat$min_lat`°N to `r taxon_with_widest_lat$max_lat`°N), and `r n_widespread_taxa` taxa have latitudinal distributions spanning the Tokara strait in the south (29°N) to the Tsugaru strait in the north (41.5°N). Therefore, it seems reasonable to assume that ferns are capable of dispersing across the entire study area.
+
+One piece of biodiversity that we did not consider here is hybrids. The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa. Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification. Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
+
+Finally, a long under-appreciated aspect of fern ecology is the role of the gametophyte. Unlike seed plants, ferns have gametophytes that are capable of growing independently from the sporophyte. Futhermore, the two halves of the life cycle have vastly different morphology and ecophysiology, and may even occur over partially to completely disjunct ranges [reviewed in @Pinson2016a]. Here, as in the vast majority of fern ecology studies, we consider only the sporophyte phase. However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes. The comprehensive molecular sampling of sporophytes makes this area ideal for conducting high-throughput DNA barcoding analyses to compare patterns of biodiversity between life cycles in ferns across large spatial scales.
 
 <!-- hybrid taxa, gametophytes, conclusion -->
 
