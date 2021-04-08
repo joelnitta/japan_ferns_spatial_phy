@@ -88,6 +88,60 @@ tar_plan(
       lat = "latitude",
       species = "taxon"),
     pattern = map(scales_to_test)
-  )
+  ),
+
+  # - extract geographic shapes, richness, and number of specimens
+  shape_ferns_full = shape_from_comm_scaled_list(comm_scaled_list, 0.2) %>%
+    # calculate redundancy
+    mutate(redundancy = 1 - (richness/abundance)),
+  
+  # - extract community matrix
+  comm_ferns_full = comm_from_comm_scaled_list(comm_scaled_list, 0.2),
+  
+  # - subset geographic shapes to redundancy > 0.1
+  shape_ferns = filter(shape_ferns_full, redundancy > 0.1),
+  
+  # - subset community matrix to communities with redundancy > 0.1
+  comm_ferns = filter_comm_by_redun(
+    comm = comm_ferns_full,
+    shape = shape_ferns,
+    cutoff = 0.1
+  ),
+  
+  # - make community matrix subset to taxa endemic to Japan
+  comm_ferns_endemic = subset_comm_to_endemic(
+    comm = comm_ferns,
+    green_list = green_list
+  ),
+  
+  # Read in ultrametric phylogenetic tree of all pteridophytes,
+  # not including hybrids (706 taxa total)
+  tar_file(japan_pterido_tree_file, "data_raw/japan_pterido_tree_dated.tre"),
+  japan_pterido_tree = ape::read.tree(japan_pterido_tree_file),
+  
+  # - subset to only ferns
+  japan_fern_tree = subset_tree(
+    phy = japan_pterido_tree, 
+    ppgi = ppgi),
+  
+  # Format trait data, subset to ferns in tree
+  tar_file(raw_trait_data_file, "data_raw/JpFernLUCID_forJoel.xlsx"),
+  
+  fern_traits = format_traits(
+    path_to_lucid_traits = raw_trait_data_file,
+    taxon_id_map = green_list,
+    taxon_keep_list = japan_fern_tree$tip.label),
+  
+  # Transform continuous traits before making distance matrix
+  traits_for_dist = transform_traits(
+    fern_traits,
+    trans_select = c("frond_width", "stipe_length", "number_pinna_pairs"),
+    scale_select = c("frond_width", "stipe_length", "number_pinna_pairs")
+  ) %>%
+    # Make sure all traits are scaled within -1 to 1
+    assert(within_bounds(-1,1), where(is.numeric)),
+  
+  # Make trait distance matrix using taxon IDs as labels
+  trait_distance_matrix = make_trait_dist_matrix(traits_for_dist)
   
 )
