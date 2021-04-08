@@ -7,6 +7,7 @@ library(rnaturalearthdata)
 library(rnaturalearthhires)
 library(miniUI)
 library(lwgeom)
+library(future)
 
 # considering these...
 library(ggtext)

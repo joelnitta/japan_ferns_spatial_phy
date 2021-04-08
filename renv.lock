@@ -630,6 +630,13 @@
       "Repository": "CRAN",
       "Hash": "44594a07a42e5f91fac9f93fda6d0109"
     },
+    "future": {
+      "Package": "future",
+      "Version": "1.21.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f25fad6bee82b7ab01f055e2d813b96f"
+    },
     "fuzzyjoin": {
       "Package": "fuzzyjoin",
       "Version": "0.1.6",
@@ -706,6 +713,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c59f6b5f5847da34158788d99d857ed7"
+    },
+    "globals": {
+      "Package": "globals",
+      "Version": "0.14.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "eca8023ed5ca6372479ebb9b3207f5ae"
     },
     "glue": {
       "Package": "glue",
@@ -964,6 +978,13 @@
       "Repository": "CRAN",
       "Hash": "858205c6cfca65bfd3e0bf89ac6b869c"
     },
+    "listenv": {
+      "Package": "listenv",
+      "Version": "0.8.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0bde42ee282efb18c7c4e63822f5b4f7"
+    },
     "lpSolve": {
       "Package": "lpSolve",
       "Version": "5.6.15",
@@ -1124,6 +1145,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "285ca01e793958ac6f2c264c84dbb16b"
+    },
+    "parallelly": {
+      "Package": "parallelly",
+      "Version": "1.24.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "3d77980bde8c8fe48dc0c24dcb014b39"
     },
     "patchwork": {
       "Package": "patchwork",

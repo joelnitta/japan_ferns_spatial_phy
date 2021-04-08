@@ -5,6 +5,9 @@ library(tarchetypes)
 source("R/packages.R")
 source("R/functions.R")
 
+# Specify how to resolve futures for parallel tasks
+plan(multicore)
+
 tar_plan(
   
   # Load and process data ----
