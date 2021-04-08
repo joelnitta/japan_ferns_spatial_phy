@@ -263,19 +263,29 @@ comm_from_points <- function(species_coods,
   
 }
 
-
-#' Extract community dataframe from points2comm()
-#' 
-#' Also converts the community dataframe to presence/absence
+#' Extract shape dataframe from comm_scaled_list
 #'
-#' @param data Output of phyloregion::points2comm()
+#' @param data Output of comm_from_points()
+#' @param resol_select Target resolution size to use
 #'
-#' @return Dataframe
+#' @return Dataframe (sf object)
 #' 
-comm_from_points2comm <- function (data) {
+shape_from_comm_scaled_list <- function (comm_scaled_list, resol_select) {
   
-  # Convert input to "dense" dataframe
-  data[["comm_dat"]] %>%
+  comm_scaled_list %>% filter(resol == resol_select) %>% pull(poly_shp) %>% magrittr::extract2(1) %>% sf::st_as_sf()
+  
+}
+
+#' Extract community dataframe from comm_scaled_list
+#'
+#' @param data Output of comm_from_points()
+#' @param resol_select Target resolution size to use
+#'
+#' @return Dataframe (sf object)
+#' 
+comm_from_comm_scaled_list <- function (comm_scaled_list, resol_select) {
+  
+  comm_scaled_list %>% filter(resol == resol_select) %>% pull(comm_dat) %>% magrittr::extract2(1) %>%
     phyloregion::sparse2dense() %>% 
     as.data.frame() %>%
     # Temporarily store rownames in "site" column so tidyverse doesn't obliterate them
@@ -286,18 +296,6 @@ comm_from_points2comm <- function (data) {
     # Make sure everything is 0-1
     assert(in_set(c(0,1)), everything()) %>%
     assert(not_na, everything())
-  
-}
-
-#' Extract shape dataframe from points2comm()
-#'
-#' @param data Output of phyloregion::points2comm()
-#'
-#' @return Dataframe (sf object)
-#' 
-shape_from_points2comm <- function (data) {
-  
-  data[["poly_shp"]] %>% sf::st_as_sf()
   
 }
 
