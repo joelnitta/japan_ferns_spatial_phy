@@ -23,6 +23,7 @@ library(patchwork)
 library(rcartocolor)
 library(ggtext)
 library(ggridges)
+library(future)
 library(tidyverse)
 
 # Resolve conflicts
