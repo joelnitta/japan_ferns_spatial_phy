@@ -10,12 +10,10 @@
 #' @param dryad_zip_file Path to the data zip file downloaded from Dryad.
 #' @param unzip_path Path to directory to put the unzipped
 #' contents (will be created if needed).
-#' @param ... Extra arguments; not used by this function, but
-#' meant for tracking with drake.
 #' @return Unzipped data files:
 #' - rbcL_clean_sporos.fasta: rbcL sequences of sporophytes from Moorea
 #'
-unzip_ebihara_2019 <- function (dryad_zip_file, exdir, ...) {
+unzip_ebihara_2019 <- function (dryad_zip_file, exdir) {
   
   # Unzip only the needed files
   unzip(dryad_zip_file, "FernGreenListV1.01E.xls", exdir = exdir)
@@ -24,6 +22,15 @@ unzip_ebihara_2019 <- function (dryad_zip_file, exdir, ...) {
   unzip(dryad_zip_file, "japan_pterido_rbcl_cipres.zip", exdir = exdir)
   unzip(dryad_zip_file, "2_grid_cells_all.csv", exdir = exdir)
   unzip(dryad_zip_file, "ppgi_taxonomy.csv", exdir = exdir)
+  
+  c(
+    fs::path(exdir, "FernGreenListV1.01E.xls"),
+    fs::path(exdir, "ESM1.csv"),
+    fs::path(exdir, "ESM2.csv"),
+    fs::path(exdir, "japan_pterido_rbcl_cipres.zip"),
+    fs::path(exdir, "2_grid_cells_all.csv"),
+    fs::path(exdir, "ppgi_taxonomy.csv")
+  )
   
 }
 
@@ -249,7 +256,10 @@ comm_from_points <- function(species_coods,
   z <- sp::merge(m, tmp, by = "grids")
   z <- z[!is.na(z@data$richness), ] %>% sf::st_as_sf()
   
-  return(list(comm_dat = Y, poly_shp = z))
+  # Return results as a tibble including the resolution so this
+  # can be looped by tar_make() and the results can be selected
+  # by resolution
+  return(tibble(resol = resol, comm_dat = Y, poly_shp = z))
   
 }
 
