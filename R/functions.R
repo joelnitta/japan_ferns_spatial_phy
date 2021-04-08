@@ -259,7 +259,7 @@ comm_from_points <- function(species_coods,
   # Return results as a tibble including the resolution so this
   # can be looped by tar_make() and the results can be selected
   # by resolution
-  return(tibble(resol = resol, comm_dat = Y, poly_shp = z))
+  return(tibble(resol = resol, comm_dat = list(Y), poly_shp = list(z)))
   
 }
 
