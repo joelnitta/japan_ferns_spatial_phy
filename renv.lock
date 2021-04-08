@@ -625,10 +625,10 @@
     },
     "fs": {
       "Package": "fs",
-      "Version": "1.4.1",
+      "Version": "1.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "780713bd2f53156fae001443dcdbdcd5"
+      "Hash": "44594a07a42e5f91fac9f93fda6d0109"
     },
     "fuzzyjoin": {
       "Package": "fuzzyjoin",
@@ -1669,6 +1669,20 @@
       "Repository": "CRAN",
       "Hash": "507f3116a38d37ad330a038b3be07b66"
     },
+    "tarchetypes": {
+      "Package": "tarchetypes",
+      "Version": "0.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "65a7e43f16ebb046fadfa6aeb2a69253"
+    },
+    "targets": {
+      "Package": "targets",
+      "Version": "0.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "79ff2b6bb9c75ec0b4c3716a77dc24eb"
+    },
     "taxastand": {
       "Package": "taxastand",
       "Version": "0.1.0",
@@ -1795,10 +1809,10 @@
     },
     "vctrs": {
       "Package": "vctrs",
-      "Version": "0.3.1",
+      "Version": "0.3.7",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "1739235995f08583db4095a28c357207"
+      "Hash": "5540dc30a203a43a1ce5dc6a89532b3b"
     },
     "vegan": {
       "Package": "vegan",
