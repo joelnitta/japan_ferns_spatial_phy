@@ -431,6 +431,58 @@ modify_ppgi <- function (ppgi) {
   
 }
 
+
+#' Clean up reproductive mode data for pteridophytes of Japan
+#'
+#' @param apo_data_raw Tibble. Raw data read-in from Electronic Supp. Mat. 1
+#' @param green_list Tibble. List matching taxon ID to species name.
+#'
+#' @return Tibble. Column `reproductive_mode` is factor with levels "unknown", "sexual", 
+#' "apomictic", "sex_apo". Other columns are T/F for a particular growth form
+#' (evergreen/seasonal green) or reproductive mode.
+process_repro_data <- function (apo_data_raw, green_list) {
+  
+  # Format repro mode data
+  apo_data_raw %>%
+    clean_names %>%
+    mutate(
+      reproductive_mode = case_when(
+        reproductive_mode == 0 ~ "unknown",
+        reproductive_mode == 1 ~ "sexual", 
+        reproductive_mode == 2 ~ "apomictic",
+        reproductive_mode == 3 ~ "sex_apo",
+        TRUE ~ "unknown"
+      ) %>% as.factor,
+      sexual_diploid = case_when(
+        sexual_diploid == 1 ~ TRUE,
+        TRUE ~ FALSE
+      ),
+      sexual_polyploid = case_when(
+        sexual_polyploid == 1 ~ TRUE,
+        TRUE ~ FALSE
+      ),
+      evergreen = case_when(
+        evergreen == 1 ~ TRUE,
+        TRUE ~ FALSE
+      ),
+      seasonal_green = case_when(
+        seasonal_green == 1 ~ TRUE,
+        TRUE ~ FALSE
+      )
+    ) %>%
+    select(taxon_id, reproductive_mode, sexual_diploid, sexual_polyploid, evergreen, seasonal_green) %>%
+    # Add species names by joining green list
+    mutate(taxon_id = as.character(taxon_id)) %>%
+    mutate(apomict = str_detect(reproductive_mode, "apo")) %>%
+    left_join(
+      select(green_list, taxon, taxon_id), by = "taxon_id"
+    ) %>%
+    # Make sure that worked correctly
+    assert(not_na, taxon) %>%
+    assert(is_uniq, taxon)
+  
+}
+
 # Traits ----
 
 #' Get the mean value of a numeric trait from data formatted for lucid
@@ -1627,6 +1679,35 @@ categorize_signif <- function (df) {
       rfd_signif = factor(rfd_signif, levels = c("< 0.01", "< 0.025", "not significant", "> 0.975", "> 0.99"))
     )
   
+}
+
+#' Calculate the percentage of apomictic fern species in each community
+#'
+#' @param comm_ferns Dataframe; fern communities with species as columns and sites as rows
+#' @param repro_data Tibble; Reproductive mode data of ferns of Japan, including whether
+#' each species in apomictic or not
+#'
+#' @return tibble; percent of apomictic species per community
+calc_perc_apo <- function(comm_ferns, repro_data) {
+  comm_ferns %>%
+    rownames_to_column("site") %>%
+    as_tibble %>%
+    pivot_longer(values_to = "abun", names_to = "taxon", -site) %>%
+    filter(abun > 0) %>%
+    left_join(
+      select(repro_data, taxon, apomict), by = "taxon"
+    ) %>%
+    group_by(site) %>%
+    summarize(
+      richness = n_distinct(taxon),
+      n_apo = sum(apomict, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    mutate(percent_apo = n_apo / richness) %>%
+    # Run tests
+    assert(not_na, everything()) %>%
+    assert(within_bounds(0, 1), percent_apo) %>%
+    select(-richness) # drop richness (won't need after joining other data)
 }
 
 # Bioregions ----

@@ -25,7 +25,7 @@ tar_plan(
   # Split out paths for each data file
   tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
   tar_file(green_list_file, ebihara_2019_data[str_detect(ebihara_2019_data, "FernGreenListV1")]),
-  # tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
+  tar_file(esm1_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ESM1")]),
   # tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
   # tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
   # tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
@@ -36,6 +36,12 @@ tar_plan(
   
   # Load Fern Green List (official taxonomy + conservation status for each species)
   green_list = read_excel(green_list_file) %>% tidy_japan_names(),
+  
+  # Load reproductive mode data (Ebihara et al 2019 ESM1)
+  repro_data_raw = read_csv(esm1_file),
+  
+  # Clean up reproductive mode data
+  repro_data = process_repro_data(repro_data_raw, green_list),
   
   # Load a map of Japan
   # downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
@@ -165,8 +171,8 @@ tar_plan(
       comm = fern_comm_list,
       phy = japan_fern_tree,
       null_model = "independentswap",
-      n_reps = 999,
-      n_iterations = 100000,
+      n_reps = 20,
+      n_iterations = 100,
       metrics = fern_comm_metrics,
       dataset_name = fern_comm_names) %>%
       categorize_endemism,
@@ -174,6 +180,196 @@ tar_plan(
       comm = fern_comm_list,
       metrics = fern_comm_metrics,
       dataset_name = fern_comm_names)
-  )
+  ),
+  
+  # Separate out randomization results by dataset
+  rand_test_phy_ferns = filter(rand_test_phy, dataset == "ja_ferns") %>% 
+    select(-dataset),
+  
+  rand_test_phy_ferns_endemic = filter(rand_test_phy, dataset == "ja_ferns_endemic") %>% 
+    select(-dataset),
+  
+  # Conduct randomization tests of trait-based metrics for all ferns
+  rand_test_traits_ferns = run_rand_analysis(
+    comm = comm_ferns,
+    null_model = "independentswap",
+    n_reps = 20,
+    n_iterations = 100,
+    metrics = c("fd", "rfd"),
+    trait_distances = trait_distance_matrix,
+    dataset_name = "ja_ferns") %>%
+    select(-dataset), # don't need to include dataset name in the result
+  
+  # Analyze bioregions ----
+  
+  # - Assess optimal K-value for clustering by taxonomy
+  k_taxonomy = find_k_taxonomy(comm_ferns),
+  
+  # - Assess optimal K-value for clustering by phylogeny
+  k_phylogeny = find_k_phylogeny(
+    comm_df = comm_ferns,
+    phy = japan_fern_tree,
+  ),
+  
+  # - Cluster by taxonomy
+  regions_taxonomy = cluster_taxonomic_regions(
+    comm_df = comm_ferns,
+    k = k_taxonomy[["optimal"]][["k"]]
+  ),
+  
+  # - Cluster by phylogeny
+  regions_phylogeny = cluster_phylo_regions(
+    comm_df = comm_ferns,
+    phy = japan_fern_tree,
+    k = k_phylogeny[["optimal"]][["k"]]
+  ),
+  
+  # Traits ----
+  
+  # Analyze phylogenetic signal
+  
+  # - specify continuous traits
+  cont_traits = c("frond_width", "stipe_length", "number_pinna_pairs"),
+  
+  # - analyze phy signal in continuous traits with K and lambda
+  phy_sig_results = map_df(
+    cont_traits,
+    ~analyze_cont_phylosig(selected_trait = ., traits = fern_traits, phy = japan_fern_tree)
+  ),
+  
+  # - analyze phy signal in binary traits with D
+  fern_traits_binary = select(fern_traits, -any_of(cont_traits)),
+  
+  binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree),
+  
+  # Summarize traits
+  traits_summary = make_trait_summary(fern_traits),
+  
+  # Reproductive mode ----
+  # Calculate % apomictic species in each fern community
+  percent_apo = calc_perc_apo(comm_ferns, repro_data),
+  
+  # Combine results ----
+  
+  # Combine spatial data, alpha diversity, and regions, add significance and endemism types
 
+  # - All ferns
+  biodiv_ferns_spatial =
+    shape_ferns %>%
+    left_join(rand_test_phy_ferns, by = c(grids = "site")) %>%
+    left_join(rand_test_traits_ferns, by = c(grids = "site")) %>%
+    left_join(percent_apo, by = c(grids = "site")) %>%
+    left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
+    left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
+    categorize_endemism() %>%
+    categorize_signif(),
+  
+  # - Japan endemics only
+  biodiv_ferns_endemic_spatial =
+    shape_ferns %>%
+    left_join(rand_test_phy_ferns_endemic, by = c(grids = "site")) %>%
+    categorize_endemism(),
+  
+  # Conservation analysis ----
+  
+  ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)
+  # Assign protection levels following Kusamoto et al. 2017
+  # - high: no human activities allowed
+  # - medium: permission required for economic activities
+  # - low: protected area, but none of the above restrictions
+  
+  # 1: wilderness
+  protected_1 = sf::st_read("data_raw/map17/原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝原生自然環境保全地域
+        ZONE == 2 ~ "high", # 2＝特別地区
+        ZONE == 3 ~ "high", # 3＝海中特別地区
+        ZONE == 4 ~ "low" # 4＝普通地区
+      )
+    ),
+  
+  # 2: quasi-national parks
+  protected_2 = sf::st_read("data_raw/map17/国定公園.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝特別保護地区
+        ZONE == 20 ~ "high", # 20＝特別地域
+        ZONE == 21 ~ "medium", # 21＝第1種特別地域
+        ZONE == 22 ~ "medium", # 22＝第2種特別地域
+        ZONE == 23 ~ "medium", # 23＝第3種特別地域
+        ZONE == 3 ~ "low", # 3＝普通地区
+        ZONE == 5 ~ "marine" #5＝海域公園地区
+      )
+    ),
+  
+  # 3: national wildlife protection areas
+  protected_3 = sf::st_read("data_raw/map17/国指定鳥獣保護区.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
+        ZONE == 2 ~ "medium", # 2＝特別保護地区
+      )
+    ),
+  
+  # 4: national parks
+  protected_4 = sf::st_read("data_raw/map17/国立公園.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝特別保護地区
+        ZONE == 20 ~ "high", # 20＝特別地域
+        ZONE == 21 ~ "medium", # 21＝第1種特別地域
+        ZONE == 22 ~ "medium", # 22＝第2種特別地域
+        ZONE == 23 ~ "medium", # 23＝第3種特別地域
+        ZONE == 3 ~ "low", # 3＝普通地区
+        ZONE == 5 ~ "marine" #5＝海域公園地区
+      )
+    ) %>%
+    # Remove protected area in inland sea (marine)
+    filter(NAME != "瀬戸内海"),
+  
+  # 5: prefectural wildlife protection areas
+  protected_5 = sf::st_read("data_raw/map17/都道府県指定鳥獣保護区.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
+        ZONE == 2 ~ "medium", # 2＝特別保護地区
+        ZONE == 3 ~ "low" # not specified, but assume no other special protection
+      )
+    ),
+  
+  # 6: prefectural natural parks
+  protected_6 = sf::st_read("data_raw/map17/都道府県立自然公園.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 1 ~ "high", # 1＝特別保護地区
+        ZONE == 20 ~ "high", # 20＝特別地域
+        ZONE == 3 ~ "low" # 3＝普通地区
+      )
+    ),
+  
+  # 7: prefectural protection areas
+  protected_7 = sf::st_read("data_raw/map17/都道府県自然環境保全地域.shp") %>%
+    mutate(
+      status = case_when(
+        ZONE == 0 ~ "high", # 0＝原生自然環境保全地域
+        ZONE == 2 ~ "high", # 2＝特別地区
+        ZONE == 4 ~ "low" # 4＝普通地区
+      )
+    ),
+  
+  # Combine protected areas into single dataframe
+  protected_areas = combine_protected_areas(
+    protected_1,
+    protected_2,
+    protected_3,
+    protected_4,
+    protected_5,
+    protected_6,
+    protected_7
+  ),
+  
+  # Calculate percent protection for grid cells with significantly high biodiversity
+  signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp)
+  
 )
