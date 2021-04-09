@@ -1365,13 +1365,14 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' generate each random community
 #' @param metrics Names of metrics to calculate. Must one or more of
 #' 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'
+#' @param dataset_name Name of the dataset
 #'
 #' @return Tibble. For each of the biodiversity metrics, the observed value (_obs), 
 #' mean of the random values (_rand_mean), SD of the random values (_rand_sd), 
 #' rank of the observed value vs. the random values (_obs_rank), standard effect size
 #' (_obs_z), and p-value (_obs_p) are given.
 #' 
-run_rand_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_model, n_reps, metrics, n_iterations = 10000) {
+run_rand_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_model, n_reps, metrics, n_iterations = 10000, dataset_name) {
   
   # Make dummy phy_alt and trait_tree_alt in case one of these isn't being analyzed
   phy_alt <- NULL
@@ -1525,8 +1526,8 @@ run_rand_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_
     ses_pe_alt,
     ses_rpe
   ) %>%
-    mutate(site = rownames(comm_df)) %>%
-    select(site, everything())
+    mutate(site = rownames(comm_df), dataset = dataset_name) %>%
+    select(dataset_name, site, everything())
   
 }
 

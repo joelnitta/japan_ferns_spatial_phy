@@ -142,6 +142,28 @@ tar_plan(
     assert(within_bounds(-1,1), where(is.numeric)),
   
   # Make trait distance matrix using taxon IDs as labels
-  trait_distance_matrix = make_trait_dist_matrix(traits_for_dist)
+  trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
+  
+  # Conduct randomization tests of diversity metrics ----
+  
+  # Conduct randomization tests of phylogeny-based metrics for all ferns and
+  # ferns endemic to Japan only
+  tar_target(rand_test_phy,
+    run_rand_analysis(
+      comm = comm, 
+      phy = japan_fern_tree,
+      null_model = "independentswap",
+      n_reps = 999,
+      n_iterations = 100000,
+      metrics = metrics) %>% 
+      categorize_endemism,
+    transform = map(
+      comm = c(comm_ferns, comm_ferns_endemic),
+      metrics = c(
+        c("pd", "rpd", "pe", "rpe"),
+        c("pe", "rpe")
+      ),
+      .names = c("rand_test_phy_ferns", "rand_test_phy_ferns_endemic"))
+  )
   
 )
