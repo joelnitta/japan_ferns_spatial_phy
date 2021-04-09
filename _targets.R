@@ -146,24 +146,34 @@ tar_plan(
   
   # Conduct randomization tests of diversity metrics ----
   
+  # - make list of communities for looping
+  fern_comm_list = list(comm_ferns, comm_ferns_endemic),
+  
+  # - make list of biodiv metrics to calculate for each community
+  fern_comm_metrics = list(
+    c("pd", "rpd", "pe", "rpe"),
+    c("pe", "rpe")
+  ),
+  
+  # - specify data set names so we can filter results after looping
+  fern_comm_names = c("ja_ferns", "ja_ferns_endemic"),
+  
   # Conduct randomization tests of phylogeny-based metrics for all ferns and
   # ferns endemic to Japan only
   tar_target(rand_test_phy,
     run_rand_analysis(
-      comm = comm, 
+      comm = fern_comm_list,
       phy = japan_fern_tree,
       null_model = "independentswap",
       n_reps = 999,
       n_iterations = 100000,
-      metrics = metrics) %>% 
+      metrics = fern_comm_metrics,
+      dataset_name = fern_comm_names) %>%
       categorize_endemism,
-    transform = map(
-      comm = c(comm_ferns, comm_ferns_endemic),
-      metrics = c(
-        c("pd", "rpd", "pe", "rpe"),
-        c("pe", "rpe")
-      ),
-      .names = c("rand_test_phy_ferns", "rand_test_phy_ferns_endemic"))
+    pattern = map(
+      comm = fern_comm_list,
+      metrics = fern_comm_metrics,
+      dataset_name = fern_comm_names)
   )
-  
+
 )

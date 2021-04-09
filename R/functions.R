@@ -1356,15 +1356,15 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' sample species richness.
 #'   
 #' @param comm_df Input community matrix in data.frame format (communities as rows,
-#' species as columns, with row names and column names)
+#' species as columns, with row names and column names) (or a list containing this)
 #' @param phy Input phylogeny with total branch length scaled to 1
 #' @param null_model Name of null model to use. Must choose from 'frequency', 'richness', 
 #' 'independentswap', or 'trialswap' (see picante::randomizeMatrix).
 #' @param n_reps Number of random communities to replicate
 #' @param n_iterations Number of iterations to use when swapping occurrences to
 #' generate each random community
-#' @param metrics Names of metrics to calculate. Must one or more of
-#' 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'
+#' @param metrics Character vector names of metrics to calculate (or a list containing this). 
+#' Must one or more of 'pd', 'rpd', 'fd', 'rfd', 'pe', or 'rpe'
 #' @param dataset_name Name of the dataset
 #'
 #' @return Tibble. For each of the biodiversity metrics, the observed value (_obs), 
@@ -1373,6 +1373,13 @@ get_ses <- function (random_vals, obs_vals, metric) {
 #' (_obs_z), and p-value (_obs_p) are given.
 #' 
 run_rand_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_model, n_reps, metrics, n_iterations = 10000, dataset_name) {
+  
+  # When running run_rand_analysis as a loop in {targets}, some inputs will be 
+  # length-of-one lists. Unlist these.
+  # If comm_df is a list, pull out the dataframe
+  if(inherits(comm_df[1], "list")) comm_df <- comm_df[[1]]
+  # If metrics is a list, pull out the character vector
+  if(inherits(metrics[1], "list")) metrics <- metrics[[1]]
   
   # Make dummy phy_alt and trait_tree_alt in case one of these isn't being analyzed
   phy_alt <- NULL
@@ -1527,7 +1534,7 @@ run_rand_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_
     ses_rpe
   ) %>%
     mutate(site = rownames(comm_df), dataset = dataset_name) %>%
-    select(dataset_name, site, everything())
+    select(dataset, site, everything())
   
 }
 
