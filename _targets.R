@@ -171,8 +171,8 @@ tar_plan(
       comm = fern_comm_list,
       phy = japan_fern_tree,
       null_model = "independentswap",
-      n_reps = 20,
-      n_iterations = 100,
+      n_reps = 999,
+      n_iterations = 100000,
       metrics = fern_comm_metrics,
       dataset_name = fern_comm_names) %>%
       categorize_endemism,
@@ -193,8 +193,8 @@ tar_plan(
   rand_test_traits_ferns = run_rand_analysis(
     comm = comm_ferns,
     null_model = "independentswap",
-    n_reps = 20,
-    n_iterations = 100,
+    n_reps = 999,
+    n_iterations = 100000,
     metrics = c("fd", "rfd"),
     trait_distances = trait_distance_matrix,
     dataset_name = "ja_ferns") %>%
