@@ -270,6 +270,34 @@ tar_plan(
     left_join(rand_test_phy_ferns_endemic, by = c(grids = "site")) %>%
     categorize_endemism(),
   
+  # Spatial modeling ----
+  
+  # Make biodiversity metrics dataframe with centroid of each site
+  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial),
+  
+  # Construct non-spatial linear model
+  non_spatial_mod = lm(rpd_obs_z ~ percent_apo, data = biodiv_ferns_spatial),
+  
+  # Make a spatial weights list for calculating Moran's I
+  dist_mat_listw = make_dist_list(biodiv_ferns_cent),
+  
+  # Check for spatial autocorrelation in the residuals of the non-spatial model
+  non_spatial_moran_results = moran_mc(
+    model = non_spatial_mod, 
+    listw = dist_mat_listw, 
+    nsim = 10000),
+  
+  # Construct spatial mixed model
+  spatial_mod = spaMM::fitme(
+    rpd_obs_z ~ percent_apo + Matern(1 | long + lat), 
+    data = biodiv_ferns_cent, family = "gaussian"),
+  
+  # Check for spatial autocorrelation in the residuals of the spatial model
+  spatial_moran_results = moran_mc(
+    model = spatial_mod, 
+    listw = dist_mat_listw, 
+    nsim = 10000),
+  
   # Conservation analysis ----
   
   ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)

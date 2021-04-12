@@ -2418,6 +2418,84 @@ run_treepl <- function (
   
 }
 
+# Spatial models ----
+
+#' Calculate centroids from SF (simple features) data
+#'
+#' @param sf_data Dataframe of class "sf"
+#'
+#' @return Tibble with columns "lat" and "long" with latitude and
+#' longitude of the centroid of each geometrical feature
+#' 
+sf_to_centroids <- function(sf_data) {
+  # Start with Simple feature collection ("sf") dataframe
+  sf_data %>%
+    # Calculate centroid of each geometry feature
+    st_centroid() %>% 
+    # Convert centroids to character (e.g., "c(140.9, 45.5)")
+    mutate(geom_char = as.character(geometry)) %>% 
+    # Drop geometry column
+    sf::st_set_geometry(NULL) %>%
+    as_tibble() %>%
+    # Parse centroids to numeric
+    separate(geom_char, c("long", "lat"), sep = ", ") %>%
+    mutate(across(c(long, lat), parse_number)) %>%
+    # Make sure it worked
+    assert(not_na, long, lat) %>%
+    assert(within_bounds(-180, 180), long) %>%
+    assert(within_bounds(-90, 90), lat)
+}
+
+#' Make a spatial weights list for testing spatial autocorrelation
+#'
+#' @param data Dataframe with lat and long of centroids of each site ("grids")
+#'
+#' @return List
+#' 
+make_dist_list <- function(data) {
+  
+  # Convert centroids to matrix
+  centroids <- data %>%
+    # Make sure needed columns are present
+    verify(all(c("grids", "lat", "long") %in% colnames(data))) %>%
+    # "grids" are the site names
+    select(grids, long, lat) %>%
+    # set rownames as sites so these carry through to list names in final result
+    column_to_rownames("grids") %>% 
+    as.matrix()
+
+  # Make inverted distance matrix (so points far away have high values)
+  dist_mat <- 1/as.matrix(dist(centroids))
+  
+  # Set the diagonal (same site to same site) to zero
+  diag(dist_mat) <- 0
+  
+  # If sites have the exact same lat/long,
+  # replace Inf values for these with 0
+  dist_mat[is.infinite(dist_mat)] <- 0
+  
+  # Convert distance matrix to spatial weights list
+  spdep::mat2listw(dist_mat, row.names = rownames(dist_mat), style = "M")
+  
+}
+
+#' Run permutation test for Moran's I statistic
+#' 
+#' Wrapper for spdep::moran.mc()
+#'
+#' @param model Model object
+#' @param listw Spatial weights list with number of regions equal to number
+#' of independent data points in model
+#' @param nsim Number of simulations to use for calculating Moran's I
+#'
+#' @return Tibble with Moran's I and p-value
+moran_mc <- function (model, listw, nsim) {
+  spdep::moran.mc(
+    x = residuals(model), listw = listw, nsim = nsim) %>% 
+    broom::tidy() %>%
+    rename(morans_I = statistic, I_pval = p.value)
+}
+
 # Manuscript rendering ----
 
 #' Generate a path to save a results file
