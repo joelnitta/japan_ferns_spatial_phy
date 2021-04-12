@@ -86,12 +86,26 @@
       "Repository": "CRAN",
       "Hash": "cf29e1b71f8736960e0e851123a83e6f"
     },
+    "ROI": {
+      "Package": "ROI",
+      "Version": "1.0-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6423e9ff238dea0559c38408b61ed106"
+    },
     "Rcpp": {
       "Package": "Rcpp",
       "Version": "1.0.4.6",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "e652f23d8b1807cc975c51410d05b72f"
+    },
+    "RcppEigen": {
+      "Package": "RcppEigen",
+      "Version": "0.3.3.9.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "ddfa72a87fdf4c80466a20818be91d00"
     },
     "RcppProgress": {
       "Package": "RcppProgress",
@@ -782,6 +796,13 @@
       "Repository": "CRAN",
       "Hash": "beb8ca96406a2828f25e49ab17001c39"
     },
+    "gmp": {
+      "Package": "gmp",
+      "Version": "0.6-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1811d8b0cd5baa7b55aafce65a037b69"
+    },
     "gower": {
       "Package": "gower",
       "Version": "0.2.2",
@@ -1123,6 +1144,13 @@
       "Repository": "CRAN",
       "Hash": "fec5f52652d60615fdb3957b3d74324a"
     },
+    "minqa": {
+      "Package": "minqa",
+      "Version": "1.2.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "eaee7d2a6f3ed4491df868611cb064cc"
+    },
     "mnormt": {
       "Package": "mnormt",
       "Version": "2.0.1",
@@ -1172,6 +1200,13 @@
       "Repository": "CRAN",
       "Hash": "662f52871983ff3e3ef042c62de126df"
     },
+    "nloptr": {
+      "Package": "nloptr",
+      "Version": "1.2.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2737faeee353704efec5afa1e943dd64"
+    },
     "nnet": {
       "Package": "nnet",
       "Version": "7.3-13",
@@ -1213,6 +1248,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "d6b817898a400e82e6777d4f7e027100"
+    },
+    "pbapply": {
+      "Package": "pbapply",
+      "Version": "1.4-3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "52f8028b028076bc3b7ee5d6251abf0d"
     },
     "permute": {
       "Package": "permute",
@@ -1346,6 +1388,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "efbbe62da4709f7040a380c702bc7103"
+    },
+    "proxy": {
+      "Package": "proxy",
+      "Version": "0.4-25",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "29a4dd5b440af584aed8c448d8eefb6e"
     },
     "pryr": {
       "Package": "pryr",
@@ -1667,6 +1716,13 @@
       "Repository": "CRAN",
       "Hash": "a56d058adfc9df30bdd45dbb01cec39f"
     },
+    "slam": {
+      "Package": "slam",
+      "Version": "0.1-48",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1ab2028f9597732e853f85b9b7ee0090"
+    },
     "snakecase": {
       "Package": "snakecase",
       "Version": "0.11.0",
@@ -1701,6 +1757,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "db4dcccda98dedc3133b556a5036b92d"
+    },
+    "spaMM": {
+      "Package": "spaMM",
+      "Version": "3.7.34",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b05e55757645f177a5b1f7200edc085a"
     },
     "spdep": {
       "Package": "spdep",
