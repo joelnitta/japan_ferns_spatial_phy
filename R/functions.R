@@ -2516,7 +2516,7 @@ make_dist_list <- function(data) {
 # Nest biodiversity data by selected response variables vs. percent apomictic
 nest_biodiv_dat <- function (biodiv_data) {
   biodiv_data %>%
-    select(grids, long, lat, percent_apo, pd_obs_z, rpd_obs_z, pe_obs_z, rpe_obs_z, fd_obs_z, rfd_obs_z) %>%
+    select(grids, long, lat, percent_apo, pd_obs_z, rpd_obs_z, pe_obs_z, rpe_obs_z) %>%
     pivot_longer(names_to = "var", values_to = "value", -c(grids, long, lat, percent_apo)) %>%
     group_by(var) %>%
     nest() %>%
@@ -2527,7 +2527,7 @@ nest_biodiv_dat <- function (biodiv_data) {
 #'
 #' @param biodiv_data Nested fern biodiversity data including columns: `grids`, `percent_apo`,
 #'  and `var`, where `var` is one of `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, 
-#'  `rpe_obs_z`,`fd_obs_z`, or `rfd_obs_z`.
+#'  `rpe_obs_z`
 #'
 #' @return Tibble with one row for each metric ("var") and a list-column with the linear model
 #' 
@@ -2543,7 +2543,7 @@ make_non_spatial_model <- function (nested_biodiv_dat) {
 #'
 #' @param biodiv_data Nested fern biodiversity data including columns: `grids`, `percent_apo`,
 #'  and `var`, where `var` is one of `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, 
-#'  `rpe_obs_z`,`fd_obs_z`, or `rfd_obs_z`.
+#'  `rpe_obs_z`
 #'
 #' @return Tibble with one row for each metric ("var") and a list-column with the spatial linear model
 #' 
@@ -2586,7 +2586,7 @@ moran_mc <- function (model_dat, listw, nsim) {
 #' of percent apomictic taxa
 #'
 #' @param biodiv_data Fern biodiversity data including columns: `grids`, `percent_apo`,
-#'  `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, `rpe_obs_z`, `fd_obs_z`, `rfd_obs_z`
+#'  `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, `rpe_obs_z`
 #'
 #' @return Tibble with one row for each metric ("var") and a list-column with the spatial linear model
 #' 
