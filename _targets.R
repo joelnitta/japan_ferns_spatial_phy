@@ -308,7 +308,7 @@ tar_plan(
   
   # Check for spatial autocorrelation in the residuals of the spatial models
   tar_target(
-    non_spatial_moran_results,
+    spatial_moran_results,
     moran_mc(
       model_dat = spatial_models, 
       listw = dist_mat_listw, 

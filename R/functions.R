@@ -2481,9 +2481,9 @@ make_dist_list <- function(data) {
 
 # Nest biodiversity data by selected response variables vs. percent apomictic
 nest_biodiv_dat <- function (biodiv_data) {
-  biodiv_ferns_cent %>%
-    select(grids, percent_apo, pd_obs_z, rpd_obs_z, pe_obs_z, rpe_obs_z, fd_obs_z, rfd_obs_z) %>%
-    pivot_longer(names_to = "var", values_to = "value", -c(grids, percent_apo)) %>%
+  biodiv_data %>%
+    select(grids, long, lat, percent_apo, pd_obs_z, rpd_obs_z, pe_obs_z, rpe_obs_z, fd_obs_z, rfd_obs_z) %>%
+    pivot_longer(names_to = "var", values_to = "value", -c(grids, long, lat, percent_apo)) %>%
     group_by(var) %>%
     nest() %>%
     ungroup()
@@ -2517,7 +2517,7 @@ make_spatial_model <- function (nested_biodiv_dat) {
   nested_biodiv_dat %>%
     mutate(model = map(
       data, 
-      ~spaMM::fitme(var ~ percent_apo + Matern(1 | long + lat), data = ., family = "gaussian"))) %>%
+      ~spaMM::fitme(value ~ percent_apo + Matern(1 | long + lat), data = ., family = "gaussian"))) %>%
     select(-data)
 }
 
@@ -2536,7 +2536,7 @@ make_spatial_model <- function (nested_biodiv_dat) {
 moran_mc <- function (model_dat, listw, nsim) {
   
   # Extract model from input
-  model <- model_dat$model
+  model <- model_dat$model[[1]]
   
   spdep::moran.mc(
     x = residuals(model), listw = listw, nsim = nsim) %>% 
@@ -2561,8 +2561,8 @@ run_spatial_lrt <- function (nested_biodiv_dat) {
     mutate(
       lrt = map(data, 
       ~spaMM::fixedLRT(
-        var ~ 1 + Matern(1 | long + lat), 
-        var ~ percent_apo + Matern(1 | long + lat), 
+        value ~ 1 + Matern(1 | long + lat), 
+        value ~ percent_apo + Matern(1 | long + lat), 
         family = "gaussian",
         method = "ML", data = .))) %>%
       select(-data)
