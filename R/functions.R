@@ -2479,21 +2479,93 @@ make_dist_list <- function(data) {
   
 }
 
+# Nest biodiversity data by selected response variables vs. percent apomictic
+nest_biodiv_dat <- function (biodiv_data) {
+  biodiv_ferns_cent %>%
+    select(grids, percent_apo, pd_obs_z, rpd_obs_z, pe_obs_z, rpe_obs_z, fd_obs_z, rfd_obs_z) %>%
+    pivot_longer(names_to = "var", values_to = "value", -c(grids, percent_apo)) %>%
+    group_by(var) %>%
+    nest() %>%
+    ungroup()
+}
+
+#' Make non-spatial linear models testing response variable vs. percent apomictic taxxa
+#'
+#' @param biodiv_data Nested fern biodiversity data including columns: `grids`, `percent_apo`,
+#'  and `var`, where `var` is one of `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, 
+#'  `rpe_obs_z`,`fd_obs_z`, or `rfd_obs_z`.
+#'
+#' @return Tibble with one row for each metric ("var") and a list-column with the linear model
+#' 
+make_non_spatial_model <- function (nested_biodiv_dat) {
+  nested_biodiv_dat %>%
+    mutate(model = map(
+      data, 
+      ~lm(value ~ percent_apo, data = .))) %>%
+    select(-data)
+}
+
+#' Make spatial linear models testing response variable vs. percent apomictic taxxa
+#'
+#' @param biodiv_data Nested fern biodiversity data including columns: `grids`, `percent_apo`,
+#'  and `var`, where `var` is one of `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, 
+#'  `rpe_obs_z`,`fd_obs_z`, or `rfd_obs_z`.
+#'
+#' @return Tibble with one row for each metric ("var") and a list-column with the spatial linear model
+#' 
+make_spatial_model <- function (nested_biodiv_dat) {
+  nested_biodiv_dat %>%
+    mutate(model = map(
+      data, 
+      ~spaMM::fitme(var ~ percent_apo + Matern(1 | long + lat), data = ., family = "gaussian"))) %>%
+    select(-data)
+}
+
 #' Run permutation test for Moran's I statistic
 #' 
-#' Wrapper for spdep::moran.mc()
+#' Wrapper for spdep::moran.mc(), designed to take input as tibble so it works
+#' for mapping in {targets} plan
 #'
-#' @param model Model object
+#' @param model_dat Dataframe with one row and two columns: `var` (response variable name)
+#' and `model` (model)
 #' @param listw Spatial weights list with number of regions equal to number
 #' of independent data points in model
 #' @param nsim Number of simulations to use for calculating Moran's I
 #'
 #' @return Tibble with Moran's I and p-value
-moran_mc <- function (model, listw, nsim) {
+moran_mc <- function (model_dat, listw, nsim) {
+  
+  # Extract model from input
+  model <- model_dat$model
+  
   spdep::moran.mc(
     x = residuals(model), listw = listw, nsim = nsim) %>% 
     broom::tidy() %>%
-    rename(morans_I = statistic, I_pval = p.value)
+    rename(morans_I = statistic, I_pval = p.value) %>%
+    # Add response variable name
+    mutate(var = model_dat$var)
+}
+
+#' Run likelihood ratio tests on null vs. fixed-effect spatial models
+#' 
+#' Null model only includes random effects; alternative includes the effect
+#' of percent apomictic taxa
+#'
+#' @param biodiv_data Fern biodiversity data including columns: `grids`, `percent_apo`,
+#'  `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, `rpe_obs_z`, `fd_obs_z`, `rfd_obs_z`
+#'
+#' @return Tibble with one row for each metric ("var") and a list-column with the spatial linear model
+#' 
+run_spatial_lrt <- function (nested_biodiv_dat) {
+  nested_biodiv_dat %>%
+    mutate(
+      lrt = map(data, 
+      ~spaMM::fixedLRT(
+        var ~ 1 + Matern(1 | long + lat), 
+        var ~ percent_apo + Matern(1 | long + lat), 
+        family = "gaussian",
+        method = "ML", data = .))) %>%
+      select(-data)
 }
 
 # Manuscript rendering ----

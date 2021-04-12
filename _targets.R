@@ -95,7 +95,7 @@ tar_plan(
       species = "taxon"),
     pattern = map(scales_to_test)
   ),
-
+  
   # - extract geographic shapes, richness, and number of specimens
   shape_ferns_full = shape_from_comm_scaled_list(comm_scaled_list, 0.2) %>%
     # calculate redundancy
@@ -167,19 +167,19 @@ tar_plan(
   # Conduct randomization tests of phylogeny-based metrics for all ferns and
   # ferns endemic to Japan only
   tar_target(rand_test_phy,
-    run_rand_analysis(
-      comm = fern_comm_list,
-      phy = japan_fern_tree,
-      null_model = "independentswap",
-      n_reps = 999,
-      n_iterations = 100000,
-      metrics = fern_comm_metrics,
-      dataset_name = fern_comm_names) %>%
-      categorize_endemism,
-    pattern = map(
-      comm = fern_comm_list,
-      metrics = fern_comm_metrics,
-      dataset_name = fern_comm_names)
+             run_rand_analysis(
+               comm = fern_comm_list,
+               phy = japan_fern_tree,
+               null_model = "independentswap",
+               n_reps = 999,
+               n_iterations = 100000,
+               metrics = fern_comm_metrics,
+               dataset_name = fern_comm_names) %>%
+               categorize_endemism,
+             pattern = map(
+               comm = fern_comm_list,
+               metrics = fern_comm_metrics,
+               dataset_name = fern_comm_names)
   ),
   
   # Separate out randomization results by dataset
@@ -252,7 +252,7 @@ tar_plan(
   # Combine results ----
   
   # Combine spatial data, alpha diversity, and regions, add significance and endemism types
-
+  
   # - All ferns
   biodiv_ferns_spatial =
     shape_ferns %>%
@@ -271,39 +271,56 @@ tar_plan(
     categorize_endemism(),
   
   # Spatial modeling ----
+  # Model the effects of percent apomictic taxa on each biodiversity metric, while
+  # accounting for spatial autocorrelation
   
   # Make biodiversity metrics dataframe with centroid of each site
   biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial),
   
-  # Construct non-spatial linear model
-  non_spatial_mod = lm(rpd_obs_z ~ percent_apo, data = biodiv_ferns_spatial),
+  # Nest selected biodiv metrics vs. percent apomictic for looping
+  biodiv_ferns_cent_nested = nest_biodiv_dat(biodiv_ferns_cent),
+  
+  # Construct non-spatial linear models
+  tar_target(
+    non_spatial_models,
+    make_non_spatial_model(biodiv_ferns_cent_nested),
+    pattern = map(biodiv_ferns_cent_nested)
+  ),
+  
+  # Construct spatial linear models
+  tar_target(
+    spatial_models,
+    make_spatial_model(biodiv_ferns_cent_nested),
+    pattern = map(biodiv_ferns_cent_nested)
+  ),
   
   # Make a spatial weights list for calculating Moran's I
   dist_mat_listw = make_dist_list(biodiv_ferns_cent),
   
-  # Check for spatial autocorrelation in the residuals of the non-spatial model
-  non_spatial_moran_results = moran_mc(
-    model = non_spatial_mod, 
-    listw = dist_mat_listw, 
-    nsim = 10000),
+  # Check for spatial autocorrelation in the residuals of the non-spatial models
+  tar_target(
+    non_spatial_moran_results,
+    moran_mc(
+      model_dat = non_spatial_models, 
+      listw = dist_mat_listw, 
+      nsim = 10000),
+    pattern = map(non_spatial_models)),
   
-  # Construct spatial mixed model
-  spatial_mod = spaMM::fitme(
-    rpd_obs_z ~ percent_apo + Matern(1 | long + lat), 
-    data = biodiv_ferns_cent, family = "gaussian"),
+  # Check for spatial autocorrelation in the residuals of the spatial models
+  tar_target(
+    non_spatial_moran_results,
+    moran_mc(
+      model_dat = spatial_models, 
+      listw = dist_mat_listw, 
+      nsim = 10000),
+    pattern = map(spatial_models)),
   
-  # Conduct likelihood ratio test vs. null model
-  spatial_lrt = spaMM::fixedLRT(
-    rpd_obs_z ~ 1 + Matern(1 | long + lat), 
-    rpd_obs_z ~ percent_apo + Matern(1 | long + lat), 
-    family = "gaussian",
-    method = "ML", data = biodiv_ferns_cent),
-  
-  # Check for spatial autocorrelation in the residuals of the spatial model
-  spatial_moran_results = moran_mc(
-    model = spatial_mod, 
-    listw = dist_mat_listw, 
-    nsim = 10000),
+  # Conduct likelihood ratio test vs. null model for spatial models
+  tar_target(
+    spatial_lrt,
+    run_spatial_lrt(biodiv_ferns_cent_nested),
+    pattern = map(biodiv_ferns_cent_nested)
+  ),
   
   # Conservation analysis ----
   
