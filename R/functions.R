@@ -148,6 +148,26 @@ subset_comm_to_endemic <- function (comm, green_list) {
   
 }
 
+#' Subset a community to only taxa with reproductive mode data
+#'
+#' @param comm Community matrix with colnames as species
+#' @param green_list Dataframe with columns `taxon` and `apomict`
+#'
+#' @return Subsetted community matrix
+#' 
+subset_comm_by_repro <- function (comm, repro_data) {
+  
+  taxa_with_repro <-
+    repro_data %>%
+    filter(!is.na(apomict)) %>%
+    assert(not_na, apomict) %>%
+    pull(taxon)
+  
+  comm[,colnames(comm) %in% taxa_with_repro]
+  
+}
+
+
 #' Make community matrix from species' occurrences
 #'
 #' @param species_coods Dataframe of species occurrences.
@@ -434,25 +454,29 @@ modify_ppgi <- function (ppgi) {
 
 #' Clean up reproductive mode data for pteridophytes of Japan
 #'
-#' @param apo_data_raw Tibble. Raw data read-in from Electronic Supp. Mat. 1
+#' @param repro_data_raw Tibble. Raw data read-in from Electronic Supp. Mat. 1
 #' @param green_list Tibble. List matching taxon ID to species name.
 #'
-#' @return Tibble. Column `reproductive_mode` is factor with levels "unknown", "sexual", 
+#' @return Tibble. Column `reproductive_mode` is character "unknown", "sexual", 
 #' "apomictic", "sex_apo". Other columns are T/F for a particular growth form
 #' (evergreen/seasonal green) or reproductive mode.
-process_repro_data <- function (apo_data_raw, green_list) {
+process_repro_data <- function (repro_data_raw, green_list) {
   
   # Format repro mode data
-  apo_data_raw %>%
-    clean_names %>%
+  repro_data_raw %>%
+    clean_names %>% 
+    # Reformat reproductive mode according to data codes
+    assert(in_set(0,1,2,3), reproductive_mode) %>%
+    assert(not_na, reproductive_mode) %>%
     mutate(
       reproductive_mode = case_when(
         reproductive_mode == 0 ~ "unknown",
         reproductive_mode == 1 ~ "sexual", 
         reproductive_mode == 2 ~ "apomictic",
-        reproductive_mode == 3 ~ "sex_apo",
-        TRUE ~ "unknown"
-      ) %>% as.factor,
+        reproductive_mode == 3 ~ "sex_apo"
+      ),
+      # Assumes that there are no missing data 
+      # (all empty cells mean the trait is not present)
       sexual_diploid = case_when(
         sexual_diploid == 1 ~ TRUE,
         TRUE ~ FALSE
@@ -471,9 +495,17 @@ process_repro_data <- function (apo_data_raw, green_list) {
       )
     ) %>%
     select(taxon_id, reproductive_mode, sexual_diploid, sexual_polyploid, evergreen, seasonal_green) %>%
+    # Define as apomictic taxon if reproductive mode is apomictic or both
+    mutate(
+      taxon_id = as.character(taxon_id),
+      apomict = case_when(
+        reproductive_mode == "apomictic" ~ TRUE,
+        reproductive_mode == "sex_apo" ~ TRUE,
+        reproductive_mode == "sexual" ~ FALSE,
+        # Set as NA if repro mode is unknown
+        reproductive_mode == "unknown" ~ NA
+      )) %>%
     # Add species names by joining green list
-    mutate(taxon_id = as.character(taxon_id)) %>%
-    mutate(apomict = str_detect(reproductive_mode, "apo")) %>%
     left_join(
       select(green_list, taxon, taxon_id), by = "taxon_id"
     ) %>%
@@ -653,7 +685,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
   
   # Repair `leaf_lamina_texture_thick_herbaceous`, which is for some reason split across two columns
   traits_binary <-
-  traits_binary %>%
+    traits_binary %>%
     rowwise() %>%
     # Combine into a single column
     mutate(leaf_lamina_texture_thick_herbaceous = sum(leaf_lamina_texture_thick_herbaceous_53, leaf_lamina_texture_thick_herbaceous_55, na.rm = TRUE)) %>%
@@ -661,7 +693,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
     # Make sure that worked properly
     assert(in_set(c(0,1)), leaf_lamina_texture_thick_herbaceous) %>%
     select(-leaf_lamina_texture_thick_herbaceous_53, -leaf_lamina_texture_thick_herbaceous_55)
-
+  
   # Select only putatively functional traits: frond shape, frond texture, margin shape, presence or absence of indusium
   
   # # qualitative traits include:
@@ -684,7 +716,7 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
   # leaf_sorus_indusium_present
   
   traits_binary <-
-  traits_binary %>% 
+    traits_binary %>% 
     select(
       taxon,
       indusium_present,
@@ -1697,10 +1729,12 @@ calc_perc_apo <- function(comm_ferns, repro_data) {
     left_join(
       select(repro_data, taxon, apomict), by = "taxon"
     ) %>%
+    # Drop species that lack reproductive mode data
+    filter(!is.na(apomict)) %>%
     group_by(site) %>%
     summarize(
       richness = n_distinct(taxon),
-      n_apo = sum(apomict, na.rm = TRUE),
+      n_apo = sum(apomict),
       .groups = "drop"
     ) %>%
     mutate(percent_apo = n_apo / richness) %>%
@@ -2463,7 +2497,7 @@ make_dist_list <- function(data) {
     # set rownames as sites so these carry through to list names in final result
     column_to_rownames("grids") %>% 
     as.matrix()
-
+  
   # Make inverted distance matrix (so points far away have high values)
   dist_mat <- 1/as.matrix(dist(centroids))
   
@@ -2560,12 +2594,12 @@ run_spatial_lrt <- function (nested_biodiv_dat) {
   nested_biodiv_dat %>%
     mutate(
       lrt = map(data, 
-      ~spaMM::fixedLRT(
-        value ~ 1 + Matern(1 | long + lat), 
-        value ~ percent_apo + Matern(1 | long + lat), 
-        family = "gaussian",
-        method = "ML", data = .))) %>%
-      select(-data)
+                ~spaMM::fixedLRT(
+                  value ~ 1 + Matern(1 | long + lat), 
+                  value ~ percent_apo + Matern(1 | long + lat), 
+                  family = "gaussian",
+                  method = "ML", data = .))) %>%
+    select(-data)
 }
 
 # Manuscript rendering ----

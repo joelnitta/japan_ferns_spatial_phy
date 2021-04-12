@@ -120,6 +120,12 @@ tar_plan(
     green_list = green_list
   ),
   
+  # - make community matrix subset to taxa with reproductive mode data
+  comm_ferns_with_repro = subset_comm_by_repro(
+    comm = comm_ferns,
+    repro_data = repro_data
+  ),
+  
   # Read in ultrametric phylogenetic tree of all pteridophytes,
   # not including hybrids (706 taxa total)
   tar_file(japan_pterido_tree_file, "data_raw/japan_pterido_tree_dated.tre"),
@@ -153,16 +159,17 @@ tar_plan(
   # Conduct randomization tests of diversity metrics ----
   
   # - make list of communities for looping
-  fern_comm_list = list(comm_ferns, comm_ferns_endemic),
+  fern_comm_list = list(comm_ferns, comm_ferns_with_repro, comm_ferns_endemic),
   
   # - make list of biodiv metrics to calculate for each community
   fern_comm_metrics = list(
+    c("pd", "rpd", "pe", "rpe"),
     c("pd", "rpd", "pe", "rpe"),
     c("pe", "rpe")
   ),
   
   # - specify data set names so we can filter results after looping
-  fern_comm_names = c("ja_ferns", "ja_ferns_endemic"),
+  fern_comm_names = c("ja_ferns", "ja_ferns_with_repro", "ja_ferns_endemic"),
   
   # Conduct randomization tests of phylogeny-based metrics for all ferns and
   # ferns endemic to Japan only
@@ -184,6 +191,9 @@ tar_plan(
   
   # Separate out randomization results by dataset
   rand_test_phy_ferns = filter(rand_test_phy, dataset == "ja_ferns") %>% 
+    select(-dataset),
+  
+  rand_test_phy_ferns_with_repro = filter(rand_test_phy, dataset == "ja_ferns_with_repro") %>% 
     select(-dataset),
   
   rand_test_phy_ferns_endemic = filter(rand_test_phy, dataset == "ja_ferns_endemic") %>% 
@@ -258,11 +268,17 @@ tar_plan(
     shape_ferns %>%
     left_join(rand_test_phy_ferns, by = c(grids = "site")) %>%
     left_join(rand_test_traits_ferns, by = c(grids = "site")) %>%
-    left_join(percent_apo, by = c(grids = "site")) %>%
     left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
     left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
     categorize_endemism() %>%
     categorize_signif(),
+  
+  # - Only those with reproductive mode data available
+  biodiv_ferns_repro_spatial =
+    shape_ferns %>%
+    left_join(rand_test_phy_ferns_with_repro, by = c(grids = "site")) %>%
+    left_join(percent_apo, by = c(grids = "site")) %>%
+    categorize_endemism(),
   
   # - Japan endemics only
   biodiv_ferns_endemic_spatial =
@@ -274,8 +290,9 @@ tar_plan(
   # Model the effects of percent apomictic taxa on each biodiversity metric, while
   # accounting for spatial autocorrelation
   
-  # Make biodiversity metrics dataframe with centroid of each site
-  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial),
+  # Make biodiversity metrics dataframe with centroid of each site, using
+  # results based on species with repro mode data available
+  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_repro_spatial),
   
   # Nest selected biodiv metrics vs. percent apomictic for looping
   biodiv_ferns_cent_nested = nest_biodiv_dat(biodiv_ferns_cent),
