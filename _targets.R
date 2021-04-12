@@ -292,6 +292,13 @@ tar_plan(
     rpd_obs_z ~ percent_apo + Matern(1 | long + lat), 
     data = biodiv_ferns_cent, family = "gaussian"),
   
+  # Conduct likelihood ratio test vs. null model
+  spatial_lrt = spaMM::fixedLRT(
+    rpd_obs_z ~ 1 + Matern(1 | long + lat), 
+    rpd_obs_z ~ percent_apo + Matern(1 | long + lat), 
+    family = "gaussian",
+    method = "ML", data = biodiv_ferns_cent),
+  
   # Check for spatial autocorrelation in the residuals of the spatial model
   spatial_moran_results = moran_mc(
     model = spatial_mod, 
