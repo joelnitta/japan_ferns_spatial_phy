@@ -34,6 +34,29 @@ unzip_ebihara_2019 <- function (dryad_zip_file, exdir) {
   
 }
 
+#' Unzip Fern Tree of Life (FTOL data)
+#'
+#' @param zip_file Path to the data zip file downloaded from FigShare
+#' @param unzip_path Path to directory to put the unzipped
+#' contents (will be created if needed).
+#' @return Unzipped data files:
+#' - ftol_plastid_concat.fasta
+#' - ftol_plastid_parts.csv
+#'
+unzip_ftol <- function (zip_file, exdir) {
+  
+  # Unzip only the needed files
+  unzip(zip_file, "ftol_plastid_concat.fasta", exdir = exdir)
+  unzip(zip_file, "ftol_plastid_parts.csv", exdir = exdir)
+  
+  c(
+    fs::path(exdir, "ftol_plastid_concat.fasta"),
+    fs::path(exdir, "ftol_plastid_parts.csv")
+  )
+  
+}
+
+
 #' Tidy taxonomic data of pteridophytes of Japan
 #'
 #' Data is from Japan Green list
@@ -2010,7 +2033,8 @@ read_ja_rbcL_from_zip <- function (zip_folder) {
   unzip(fs::path(temp_dir, "japan_pterido_rbcl_cipres.zip"), exdir = temp_dir)
   
   ape::read.nexus.data(fs::path(temp_dir, "japan_pterido_rbcl_cipres/infile.nex")) %>%
-    as.DNAbin
+    as.DNAbin %>%
+    as.matrix()
   
 }
 
@@ -2048,6 +2072,28 @@ combine_ja_rbcL_with_global <- function (broad_alignment_list, japan_rbcL) {
   
   # Concatenate genes
   concatenate_genes(reduced)
+}
+
+#' Load list of aligned genes from the Fern Tree of Life (FTOL) project
+#'
+#' @param ftol_plastid_concat Path to concatenated alignment of all genes
+#' @param ftol_plastid_parts Path to CSV file with start and end position
+#' of each gene within concatenated alignment
+#'
+#' @return List of alignments (one per gene)
+#' 
+load_ftol_alignment <- function (ftol_plastid_concat, ftol_plastid_parts) {
+  
+  # Load concatenated sequences and start/end positions of each gene
+  ftol_plastid_concat_seqs <- ape::read.FASTA(ftol_plastid_concat) %>% as.matrix()
+  ftol_plastid_parts_dat <- readr::read_csv(ftol_plastid_parts)
+  
+  # Split the concatenated sequences into a list of sequences, one per gene
+  ftol_plastid_parts_dat %>%
+    mutate(subseq = map2(start, end, ~ftol_plastid_concat_seqs %>% magrittr::extract(, .x:.y))) %>%
+    pull(subseq) %>%
+    set_names(ftol_plastid_parts_dat$gene)
+  
 }
 
 #' Concatenate a list of aligned genes

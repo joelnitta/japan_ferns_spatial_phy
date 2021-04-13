@@ -10,7 +10,7 @@ plan(multicore)
 
 tar_plan(
   
-  # Load and process data ----
+  # Load and process various data ----
   
   # Unzip data files from Ebihara and Nitta 2019
   # This requires doi_10.5061_dryad.4362p32__v4.zip to be downloaded to data_raw/
@@ -22,13 +22,10 @@ tar_plan(
     exdir = "data_raw/ebihara_2019"
   ),
   
-  # Split out paths for each data file
+  # Split out paths for each unzipped data file
   tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
   tar_file(green_list_file, ebihara_2019_data[str_detect(ebihara_2019_data, "FernGreenListV1")]),
   tar_file(esm1_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ESM1")]),
-  # tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
-  # tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
-  # tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
   
   # Load Pteridophyte Phylogeny Group I (PPGI) taxonomy,
   # modified slightly for ferns of Japan
@@ -49,14 +46,19 @@ tar_plan(
   tar_file(japan_pol_file, "data_raw/gm-jpn-all_u_2_2/polbnda_jpn.shp"),
   jpn_pol = sf::st_read(japan_pol_file),
   
-  # - collapse all the political units down to just one shape for the country
+  # Collapse all the political units down to just one shape for the country
   japan_shp = jpn_pol %>%
     select(geometry) %>%
     summarize(),
   
-  # Load points of interest for drawing a map of Japan
+  # Load manually entered points of interest for drawing a map of Japan
   tar_file(japan_points_raw_file, "data_raw/japan_points_raw.csv"),
   japan_points_raw = read_csv(japan_points_raw_file),
+  
+  # Prepare occurrence data ----
+  # Summary: from raw occurrence data, test binning into grid cells at four scales,
+  # select the optimal scale, filter out poorly sampled grid cells, generate
+  # community data matrix (sites x species)
   
   # Load raw occurrence data of pteridophytes in Japan, excluding hybrids (717 taxa)
   tar_file(occ_point_data_raw_file, "data_raw/JP_pterid_excl_hyb200620.xlsx"),
@@ -66,15 +68,15 @@ tar_plan(
     col_names = c("species", "longitude", "latitude", "date", "tns_barcode", "herbarium_code", "taxon_id"),
     skip = 1),
   
-  # - standardize names to Green List
+  # Standardize names to Green List
   occ_point_data = rename_taxa(occ_point_data_raw, green_list) %>%
     # check for missing data
     assert(not_na, longitude, latitude, taxon),
   
-  # - subset to just ferns (674 taxa)
+  # Subset to just ferns (674 taxa)
   occ_point_data_ferns_unfiltered = subset_to_ferns(occ_point_data, ppgi),
   
-  # - filter out duplicates, restrict to only points in second-degree mesh
+  # Filter out duplicates, restrict to only points in second-degree mesh
   # Shape file downloaded from http://gis.biodic.go.jp/
   # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
   tar_file(mesh2_file, "data_raw/mesh2/mesh2.shp"),
@@ -83,7 +85,7 @@ tar_plan(
     shape_file = mesh2_file),
   
   # Calculate richness, abundance, and redundancy at four scales: 
-  # 0.1, 0.2, 0.3, and 0.4 degrees
+  # 0.1, 0.2, 0.3, and 0.4 degree grid squares
   scales_to_test = c(0.1, 0.2, 0.3, 0.4),
   tar_target(
     comm_scaled_list,
@@ -96,45 +98,143 @@ tar_plan(
     pattern = map(scales_to_test)
   ),
   
-  # - extract geographic shapes, richness, and number of specimens
+  # After inspecting results, 0.2 is optimal scale.
+  
+  # Extract geographic shapes, richness, and number of specimens at 0.2 degree grid scale
   shape_ferns_full = shape_from_comm_scaled_list(comm_scaled_list, 0.2) %>%
     # calculate redundancy
     mutate(redundancy = 1 - (richness/abundance)),
   
-  # - extract community matrix
+  # Extract community matrix
   comm_ferns_full = comm_from_comm_scaled_list(comm_scaled_list, 0.2),
   
-  # - subset geographic shapes to redundancy > 0.1
+  # Subset geographic shapes to redundancy > 0.1
   shape_ferns = filter(shape_ferns_full, redundancy > 0.1),
   
-  # - subset community matrix to communities with redundancy > 0.1
+  # Subset community matrix to communities with redundancy > 0.1
   comm_ferns = filter_comm_by_redun(
     comm = comm_ferns_full,
     shape = shape_ferns,
     cutoff = 0.1
   ),
   
-  # - make community matrix subset to taxa endemic to Japan
+  # Make community matrix subset to taxa endemic to Japan
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
     green_list = green_list
   ),
   
-  # - make community matrix subset to taxa with reproductive mode data
+  # Make community matrix subset to taxa with reproductive mode data
   comm_ferns_with_repro = subset_comm_by_repro(
     comm = comm_ferns,
     repro_data = repro_data
   ),
   
-  # Read in ultrametric phylogenetic tree of all pteridophytes,
-  # not including hybrids (706 taxa total)
-  tar_file(japan_pterido_tree_file, "data_raw/japan_pterido_tree_dated.tre"),
-  japan_pterido_tree = ape::read.tree(japan_pterido_tree_file),
+  # Phylogenetic analysis ----
+  # Summary: combine Japan rbcL sequences with global sampling, infer global tree,
+  # estimate divergence times, trim tree to just Japan ferns
   
-  # - subset to only ferns
+  # Read in Japan rbcL alignment
+  japan_rbcL_raw = read_ja_rbcL_from_zip(ebihara_2019_zip_file),
+  
+  # Rename Japan rbcL to use species names instead of taxon ID
+  japan_rbcL = rename_alignment(
+    alignment = japan_rbcL_raw, 
+    taxon_id_map = green_list),
+  
+  # Read in list of globally sampled genes including rbcL 
+  tar_file(ftol_zip_file, "data_raw/ftol_data_release_v0.0.1.zip"),
+  
+  ftol_data = unzip_ftol(
+    zip_file = ftol_zip_file, 
+    exdir = "data_raw"
+  ),
+  
+  # Split out paths for each data file
+  tar_file(ftol_plastid_concat, ftol_data[str_detect(ftol_data, "ftol_plastid_concat")]),
+  tar_file(ftol_plastid_parts, ftol_data[str_detect(ftol_data, "ftol_plastid_parts")]),
+  
+  # Load list of aligned genes
+  broad_alignment_list = load_ftol_alignment(ftol_plastid_concat, ftol_plastid_parts),
+  
+  # Read in calibration dates
+  tar_file(calibration_dates_file, "data_raw/testo_sundue_2016_calibrations.csv"),
+  plastome_calibration_dates = load_calibration_dates(calibration_dates_file),
+  
+  # Combine the Japan rbcL data with global sampling
+  # - replaces any species with the same name with those from Japan
+  # - re-aligns rbcL
+  # - concatenates all genes into single alignment
+  plastome_alignment = combine_ja_rbcL_with_global(
+    broad_alignment_list = broad_alignment_list, 
+    japan_rbcL = japan_rbcL),
+  
+  # Infer tree
+  plastome_tree = jntools::iqtree(
+    plastome_alignment,
+    m = "GTR+I+G", bb = 1000, nt = "AUTO",
+    redo = FALSE, echo = TRUE, wd = here::here("iqtree")),
+  
+  # Root tree on bryophytes
+  plastome_tree_rooted = ape::root(
+    plastome_tree,
+    c("Anthoceros_angustus", "Marchantia_polymorpha", "Physcomitrella_patens")),
+  
+  # Date tree
+  
+  # Run initial treepl search to identify smoothing parameter
+  treepl_cv_results = run_treepl_cv(
+    phy = plastome_tree_rooted,
+    alignment = plastome_alignment,
+    calibration_dates = plastome_calibration_dates,
+    cvstart = "1000",
+    cvstop = "0.000001",
+    plsimaniter = "200000", # preliminary output suggested > 100000
+    seed = 7167,
+    thorough = TRUE,
+    wd = here::here("treepl"),
+    nthreads = 1,
+    echo = TRUE
+  ),
+  
+  # Run priming analysis to determine optimal states for other parameters
+  treepl_priming_results = run_treepl_prime(
+    phy = plastome_tree_rooted,
+    alignment = plastome_alignment,
+    calibration_dates = plastome_calibration_dates,
+    cv_results = treepl_cv_results,
+    plsimaniter = "200000", # preliminary output suggested > 100000
+    seed = 7167,
+    thorough = TRUE,
+    wd = here::here("treepl"),
+    nthreads = 1,
+    echo = TRUE
+  ),
+  
+  # Run treePL dating analysis
+  treepl_dating_results = run_treepl(
+    phy = plastome_tree_rooted,
+    alignment = plastome_alignment,
+    calibration_dates = plastome_calibration_dates,
+    cv_results = treepl_cv_results,
+    priming_results = treepl_priming_results,
+    plsimaniter = "200000", # preliminary output suggested > 100000
+    seed = 7167,
+    thorough = TRUE,
+    wd = here::here("treepl"),
+    nthreads = 7,
+    echo = TRUE
+  ),
+  
+  # Subset to just pteridophytes in Japan
+  japan_pterido_tree = ape::keep.tip(treepl_dating_results, rownames(japan_rbcL)),
+  
+  # Subset to only ferns
   japan_fern_tree = subset_tree(
     phy = japan_pterido_tree, 
     ppgi = ppgi),
+  
+  # Format trait data ----
   
   # Format trait data, subset to ferns in tree
   tar_file(raw_trait_data_file, "data_raw/JpFernLUCID_forJoel.xlsx"),
@@ -156,19 +256,19 @@ tar_plan(
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
   
-  # Conduct randomization tests of diversity metrics ----
+  # Randomization tests of diversity metrics ----
   
-  # - make list of communities for looping
+  # Make list of communities for looping
   fern_comm_list = list(comm_ferns, comm_ferns_with_repro, comm_ferns_endemic),
   
-  # - make list of biodiv metrics to calculate for each community
+  # Make list of biodiv metrics to calculate for each community
   fern_comm_metrics = list(
     c("pd", "rpd", "pe", "rpe"),
     c("pd", "rpd", "pe", "rpe"),
     c("pe", "rpe")
   ),
   
-  # - specify data set names so we can filter results after looping
+  # Specify data set names so we can filter results after looping
   fern_comm_names = c("ja_ferns", "ja_ferns_with_repro", "ja_ferns_endemic"),
   
   # Conduct randomization tests of phylogeny-based metrics for all ferns and
@@ -210,44 +310,44 @@ tar_plan(
     dataset_name = "ja_ferns") %>%
     select(-dataset), # don't need to include dataset name in the result
   
-  # Analyze bioregions ----
+  # Bioregions analysis ----
   
-  # - Assess optimal K-value for clustering by taxonomy
+  # Assess optimal K-value for clustering by taxonomy
   k_taxonomy = find_k_taxonomy(comm_ferns),
   
-  # - Assess optimal K-value for clustering by phylogeny
+  # Assess optimal K-value for clustering by phylogeny
   k_phylogeny = find_k_phylogeny(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
   ),
   
-  # - Cluster by taxonomy
+  # Cluster by taxonomy
   regions_taxonomy = cluster_taxonomic_regions(
     comm_df = comm_ferns,
     k = k_taxonomy[["optimal"]][["k"]]
   ),
   
-  # - Cluster by phylogeny
+  # Cluster by phylogeny
   regions_phylogeny = cluster_phylo_regions(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
     k = k_phylogeny[["optimal"]][["k"]]
   ),
   
-  # Traits ----
+  # Traits analysis ----
   
   # Analyze phylogenetic signal
   
-  # - specify continuous traits
+  # Specify continuous traits
   cont_traits = c("frond_width", "stipe_length", "number_pinna_pairs"),
   
-  # - analyze phy signal in continuous traits with K and lambda
+  # Analyze phy signal in continuous traits with K and lambda
   phy_sig_results = map_df(
     cont_traits,
     ~analyze_cont_phylosig(selected_trait = ., traits = fern_traits, phy = japan_fern_tree)
   ),
   
-  # - analyze phy signal in binary traits with D
+  # Analyze phy signal in binary traits with D
   fern_traits_binary = select(fern_traits, -any_of(cont_traits)),
   
   binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree),
@@ -255,7 +355,7 @@ tar_plan(
   # Summarize traits
   traits_summary = make_trait_summary(fern_traits),
   
-  # Reproductive mode ----
+  # Reproductive mode analysis ----
   # Calculate % apomictic species in each fern community
   percent_apo = calc_perc_apo(comm_ferns, repro_data),
   
