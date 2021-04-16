@@ -118,7 +118,7 @@ Presumably, the main reason phylogeny has not been taken into account more promi
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data or can be lead astray.
 
-Ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are very densely sampled. Japan is situated along a latitudinal gradient spanning highly season temperate areas in the north to subtropical, mostly aseasonal islands in the south.
+The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for 221/721 taxa [70%]), which is likely to effect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019]. Japan is situated along a latitudinal gradient spanning highly season temperate areas in the north to subtropical, mostly aseasonal islands in the south.
 
 Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail. We ask the following questions in our study system, the ferns of Japan: 1. How is biodiversity distributed? 2. How is biodiversity structured? 3. How well is biodiversity protected?
 
@@ -134,9 +134,13 @@ We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We 
 
 A necessary step in any analysis of biodiversity is to set the grain size used to define communities. Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of a grid-cell) for defining communities (co-occurring species). At each grain size, species occurrences were converted into a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid-cell). We calculated sampling redundance (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 and used this for subsequent analyses.
 
-### Trait data
+### Morphological trait data
 
 We used traits originally compiled for identification of ferns and lycophytes of Japan as follows [@Ebihara2016b; @Ebihara2017]. Continuous traits were measured on 10 randomly selected specimens per species. Fertile (\ie, spore-bearing) and sterile fronds were measured separately, then averaged. Qualitative traits were scored by observing voucher specimens. All qualitative traits were scored in binary format; \eg, a single trait with three states was formatted as three binary traits. From the original trait list, we selected only traits with putatative ecological function (`r table("traits-used")`), and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
+
+### Reproductive mode data
+
+We used data compiled by @Ebihara2019b, which classifies each fern taxon as sexual, apomictic, mixed (both sexual and apomictic modes known from the same taxon), or unknown. We calculated the percentage of apomictic species in each grid cell as the sum of apomictic and mixed taxa divided by total number of taxa.
 
 ### Phylogenetic analysis
 
@@ -156,7 +160,11 @@ We measured functional diversity (FD) following the method of @Petchey2002. We f
 
 We measured phylogenetic endemism (PE) [@Rosauer2009], which is the sum of all branches at a site inversely weighted by their range, using the \function{phylo{\_}endemism} function in the R package \package{phyloregion}. 
 
-Observed values of PD, FD, and PE are known to be closely related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. Statistical significance was assessed using a two-tailed test with alpha = 0.5; observed values > 97.5% or < 0.25% were considered significant.
+Observed values of PD, FD, and PE are known to be closely related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. Statistical significance was assessed using a two-tailed test with alpha = 0.5; observed values > 97.5% or < 0.25% were considered significant. We also calculated the standard effect size (SES) of each biodiversity metric. SES measures how extreme the observed value (*obs*) is relative to the null distribution (*null*): 
+
+$SES = \frac{obs - mean(null)}{sd(null)}$
+
+We tested for a relationship between SES of each biodiversity metric and reproductive mode (% apomictic taxa) initially with linear models constructed using the R function 'lm'. Next, we checked for evidence of spatial autocorrelation in the linear model residuals with Moran's I using 'moran.mc' function in the spdep package. Spatial autocorrelatoin was frequently detected, so to acccount for this we constructed spatial linear mixed models including a Matérn correlation matrix based on the geographic centroids of each grid cell with the R package spaMM [@Rousset2014]. We then again checked for any remaining spatial autocorrelation in the mixed models with Moran's I.
 
 We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. We used the same set of null communities as for SES of PE, and carried out categorization using custom R scripts.
 
@@ -165,12 +173,6 @@ It is possible that endemism may be affected by species that are actually wide-r
 ### Analysis of bioregions
 
 We analyzed bioregions using the framework of @Daru2020 and their R package \package{phyloregion}. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20.
-
-We compared patterns in biodiversity between bioregions by calculating the standard effect size (SES) of biodiversity metrics. SES measures how extreme the observed value (*obs*) is relative to the null distribution (*null*): 
-
-$SES = \frac{obs - mean(null)}{sd(null)}$
-
-We compared SES of PD, RPD, FD, and RFD across bioregions using **FIXME: add this when figure out spatial-corrected statistical method to use**.
 
 ### Assessment of conservation status
 
@@ -330,6 +332,10 @@ Taxonomic richness is lowest on the northernmost island of Hokkaido, then increa
 
 Grid-cells with significantly low PD were almost all located on Honshu, the main island of Japan. A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). The area near Yakushima includes cells with both significantly high and low PD. Grid-cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu. Grid-cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD.
 
+### Correlations between biodiversity and reproductive mode
+
+Spatial autocorrelation as measured with Moran's I was detected in linear models, but was not in any of the spatial mixed linear models. SES of RPD in particular shows a strong negative correlation with % apomictic taxa (_ estimated effect _, SD).
+
 ### Categorical analysis of neo- and paleo-endemism
 
 Nearly all grid-cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere. The vast majority of endemic grid-cells are mixed, with very few paleo- or neoendemic cells. Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
@@ -401,7 +407,7 @@ The percentage of protected area in grid-cells with significantly high biodivers
 
 ## Discussion
 
-Here, we provide the first insights into the combined taxonomic, phylogenetic, and functional diversity of the ferns of Japan. Our integrative approach reveals distinct patterns of biodiversity in different parts of the archipelago and across biodiversity metrics. These clear differences are reflected in the bioregionalization results, which delimit three to four major bioregions. Finally, we consider the current conservation status of ferns in Japan and the implications of our findings for future conservation activity.
+Here, we provide the first insights into the combined taxonomic, phylogenetic, and functional diversity of the ferns of Japan. Our integrative approach reveals distinct patterns of biodiversity in different parts of the archipelago and across biodiversity metrics, and suggest reproductive mode as an important driver in some cases. These clear differences are reflected in the bioregionalization results, which delimit three to four major bioregions. Finally, we consider the current conservation status of ferns in Japan and the implications of our findings for future conservation activity.
 
 ### Distribution of biodiversity
 
