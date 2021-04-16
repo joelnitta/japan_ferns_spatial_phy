@@ -32,9 +32,9 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 
 ```{r load-data, cache = FALSE}
 # NOTE: This Rmd is meant to be knit as part of the drake plan (R/plan.R).
-# If using interactively, run `source("_drake.R")` first.
+# If using interactively, run `source("_targets.R")` first.
 
-loadd(list = c(
+tar_load(c(
   "occ_point_data_ferns",
   "occ_point_data_ferns_unfiltered",
   "biodiv_ferns_spatial",
@@ -55,12 +55,11 @@ loadd(list = c(
   "comm_ferns",
   "japan_points_raw",
   "green_list"
-),
-cache = ja_fern_cache)
+))
 
-phylo_cache <- new_cache(here::here("phylo_cache"))
+phylo_cache <- drake::new_cache(here::here("phylo_cache"))
 
-loadd(list = c(
+drake::loadd(list = c(
   "plastome_calibration_dates",
   "plastome_tree"
 ),
