@@ -178,7 +178,7 @@ tar_plan(
   # Root tree on bryophytes
   plastome_tree_rooted = ape::root(
     plastome_tree,
-    c("Anthoceros_angustus", "Marchantia_polymorpha", "Physcomitrella_patens")),
+    c("Anthoceros_angustus", "Marchantia_polymorpha", "Physcomitrium_patens")),
   
   # Date tree
   
