@@ -228,8 +228,6 @@ tar_plan(
 
   # Subset to just pteridophytes in Japan
   japan_pterido_tree = ape::keep.tip(treepl_dating_results, rownames(japan_rbcL)),
-
-  japan_pterido_tree = ape::read.tree("data_raw/japan_pterido_tree_dated.tre"),
   
   # Subset to only ferns
   japan_fern_tree = subset_tree(
