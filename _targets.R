@@ -131,104 +131,104 @@ tar_plan(
   ),
   
   # Phylogenetic analysis ----
-  # # Summary: combine Japan rbcL sequences with global sampling, infer global tree,
-  # # estimate divergence times, trim tree to just Japan ferns
-  # 
-  # # Read in Japan rbcL alignment
-  # japan_rbcL_raw = read_ja_rbcL_from_zip(ebihara_2019_zip_file),
-  # 
-  # # Rename Japan rbcL to use species names instead of taxon ID
-  # japan_rbcL = rename_alignment(
-  #   alignment = japan_rbcL_raw, 
-  #   taxon_id_map = green_list),
-  # 
-  # # Read in list of globally sampled genes including rbcL 
-  # tar_file(ftol_zip_file, "data_raw/ftol_data_release_v0.0.1.zip"),
-  # 
-  # ftol_data = unzip_ftol(
-  #   zip_file = ftol_zip_file, 
-  #   exdir = "data_raw"
-  # ),
-  # 
-  # # Split out paths for each data file
-  # tar_file(ftol_plastid_concat, ftol_data[str_detect(ftol_data, "ftol_plastid_concat")]),
-  # tar_file(ftol_plastid_parts, ftol_data[str_detect(ftol_data, "ftol_plastid_parts")]),
-  # 
-  # # Load list of aligned genes
-  # broad_alignment_list = load_ftol_alignment(ftol_plastid_concat, ftol_plastid_parts),
-  # 
-  # # Read in calibration dates
-  # tar_file(calibration_dates_file, "data_raw/testo_sundue_2016_calibrations.csv"),
-  # plastome_calibration_dates = load_calibration_dates(calibration_dates_file),
-  # 
-  # # Combine the Japan rbcL data with global sampling
-  # # - replaces any species with the same name with those from Japan
-  # # - re-aligns rbcL
-  # # - concatenates all genes into single alignment
-  # plastome_alignment = combine_ja_rbcL_with_global(
-  #   broad_alignment_list = broad_alignment_list, 
-  #   japan_rbcL = japan_rbcL),
-  # 
-  # # Infer tree
-  # plastome_tree = jntools::iqtree(
-  #   plastome_alignment,
-  #   m = "GTR+I+G", bb = 1000, nt = "AUTO",
-  #   redo = FALSE, echo = TRUE, wd = here::here("iqtree")),
-  # 
-  # # Root tree on bryophytes
-  # plastome_tree_rooted = ape::root(
-  #   plastome_tree,
-  #   c("Anthoceros_angustus", "Marchantia_polymorpha", "Physcomitrium_patens")),
-  # 
-  # # Date tree
-  # 
-  # # Run initial treepl search to identify smoothing parameter
-  # treepl_cv_results = run_treepl_cv(
-  #   phy = plastome_tree_rooted,
-  #   alignment = plastome_alignment,
-  #   calibration_dates = plastome_calibration_dates,
-  #   cvstart = "1000",
-  #   cvstop = "0.000001",
-  #   plsimaniter = "200000", # preliminary output suggested > 100000
-  #   seed = 7167,
-  #   thorough = TRUE,
-  #   wd = here::here("treepl"),
-  #   nthreads = 1,
-  #   echo = TRUE
-  # ),
-  # 
-  # # Run priming analysis to determine optimal states for other parameters
-  # treepl_priming_results = run_treepl_prime(
-  #   phy = plastome_tree_rooted,
-  #   alignment = plastome_alignment,
-  #   calibration_dates = plastome_calibration_dates,
-  #   cv_results = treepl_cv_results,
-  #   plsimaniter = "200000", # preliminary output suggested > 100000
-  #   seed = 7167,
-  #   thorough = TRUE,
-  #   wd = here::here("treepl"),
-  #   nthreads = 1,
-  #   echo = TRUE
-  # ),
-  # 
-  # # Run treePL dating analysis
-  # treepl_dating_results = run_treepl(
-  #   phy = plastome_tree_rooted,
-  #   alignment = plastome_alignment,
-  #   calibration_dates = plastome_calibration_dates,
-  #   cv_results = treepl_cv_results,
-  #   priming_results = treepl_priming_results,
-  #   plsimaniter = "200000", # preliminary output suggested > 100000
-  #   seed = 7167,
-  #   thorough = TRUE,
-  #   wd = here::here("treepl"),
-  #   nthreads = 7,
-  #   echo = TRUE
-  # ),
-  # 
-  # # Subset to just pteridophytes in Japan
-  # japan_pterido_tree = ape::keep.tip(treepl_dating_results, rownames(japan_rbcL)),
-  # 
+  # Summary: combine Japan rbcL sequences with global sampling, infer global tree,
+  # estimate divergence times, trim tree to just Japan ferns
+
+  # Read in Japan rbcL alignment
+  japan_rbcL_raw = read_ja_rbcL_from_zip(ebihara_2019_zip_file),
+
+  # Rename Japan rbcL to use species names instead of taxon ID
+  japan_rbcL = rename_alignment(
+    alignment = japan_rbcL_raw,
+    taxon_id_map = green_list),
+
+  # Read in list of globally sampled genes including rbcL
+  tar_file(ftol_zip_file, "data_raw/ftol_data_release_v0.0.1.zip"),
+
+  ftol_data = unzip_ftol(
+    zip_file = ftol_zip_file,
+    exdir = "data_raw"
+  ),
+
+  # Split out paths for each data file
+  tar_file(ftol_plastid_concat, ftol_data[str_detect(ftol_data, "ftol_plastid_concat")]),
+  tar_file(ftol_plastid_parts, ftol_data[str_detect(ftol_data, "ftol_plastid_parts")]),
+
+  # Load list of aligned genes
+  broad_alignment_list = load_ftol_alignment(ftol_plastid_concat, ftol_plastid_parts),
+
+  # Read in calibration dates
+  tar_file(calibration_dates_file, "data_raw/testo_sundue_2016_calibrations.csv"),
+  plastome_calibration_dates = load_calibration_dates(calibration_dates_file),
+
+  # Combine the Japan rbcL data with global sampling
+  # - replaces any species with the same name with those from Japan
+  # - re-aligns rbcL
+  # - concatenates all genes into single alignment
+  plastome_alignment = combine_ja_rbcL_with_global(
+    broad_alignment_list = broad_alignment_list,
+    japan_rbcL = japan_rbcL),
+
+  # Infer tree
+  plastome_tree = jntools::iqtree(
+    plastome_alignment,
+    m = "GTR+I+G", bb = 1000, nt = "AUTO",
+    redo = FALSE, echo = TRUE, wd = here::here("iqtree")),
+
+  # Root tree on bryophytes
+  plastome_tree_rooted = ape::root(
+    plastome_tree,
+    c("Anthoceros_angustus", "Marchantia_polymorpha", "Physcomitrium_patens")),
+
+  # Date tree
+
+  # Run initial treepl search to identify smoothing parameter
+  treepl_cv_results = run_treepl_cv(
+    phy = plastome_tree_rooted,
+    alignment = plastome_alignment,
+    calibration_dates = plastome_calibration_dates,
+    cvstart = "1000",
+    cvstop = "0.000001",
+    plsimaniter = "200000", # preliminary output suggested > 100000
+    seed = 7167,
+    thorough = TRUE,
+    wd = here::here("treepl"),
+    nthreads = 1,
+    echo = TRUE
+  ),
+
+  # Run priming analysis to determine optimal states for other parameters
+  treepl_priming_results = run_treepl_prime(
+    phy = plastome_tree_rooted,
+    alignment = plastome_alignment,
+    calibration_dates = plastome_calibration_dates,
+    cv_results = treepl_cv_results,
+    plsimaniter = "200000", # preliminary output suggested > 100000
+    seed = 7167,
+    thorough = TRUE,
+    wd = here::here("treepl"),
+    nthreads = 1,
+    echo = TRUE
+  ),
+
+  # Run treePL dating analysis
+  treepl_dating_results = run_treepl(
+    phy = plastome_tree_rooted,
+    alignment = plastome_alignment,
+    calibration_dates = plastome_calibration_dates,
+    cv_results = treepl_cv_results,
+    priming_results = treepl_priming_results,
+    plsimaniter = "200000", # preliminary output suggested > 100000
+    seed = 7167,
+    thorough = TRUE,
+    wd = here::here("treepl"),
+    nthreads = 7,
+    echo = TRUE
+  ),
+
+  # Subset to just pteridophytes in Japan
+  japan_pterido_tree = ape::keep.tip(treepl_dating_results, rownames(japan_rbcL)),
+
   japan_pterido_tree = ape::read.tree("data_raw/japan_pterido_tree_dated.tre"),
   
   # Subset to only ferns

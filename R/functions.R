@@ -2066,12 +2066,40 @@ combine_ja_rbcL_with_global <- function (broad_alignment_list, japan_rbcL) {
   
   # Add Japan rbcL sequences back, align with mafft
   reduced[["rbcL"]] <- c(as.list(reduced[["rbcL"]]), as.list(japan_rbcL)) %>%
-    ips::mafft(exec = "/usr/bin/mafft") %>%
+    ips::mafft(x = ., exec = "/usr/bin/mafft", options = "--adjustdirection") %>%
+    remove_mafft_r %>%
     # Trim any column that is >90% gaps
     ips::deleteGaps(gap.max = nrow(.)*0.9)
   
   # Concatenate genes
   concatenate_genes(reduced)
+}
+
+# Remove sequences that are all missing from an alignment
+# - helper function for load_ftol_alignment()
+remove_blank_seqs <- function(dna_align) {
+  
+  # First convert to alignment to character
+  aln_char <- as.character(dna_align)
+  
+  # Get a vector of unique bases for each sequence
+  uni_chars <- apply(aln_char, 1, unique)
+  
+  # Only keep those that are not all missing
+  not_missing <- uni_chars != "-"
+  
+  dna_align[not_missing, ]
+}
+
+#' Remove the "_R_" from mafft-generated alignments
+#'
+#' @param matrix Alignment matrix
+#'
+#' @return matrix
+#' 
+remove_mafft_r <- function (matrix) {
+  rownames(matrix) <- rownames(matrix) %>% str_remove_all("_R_")
+  matrix
 }
 
 #' Load list of aligned genes from the Fern Tree of Life (FTOL) project
@@ -2092,8 +2120,9 @@ load_ftol_alignment <- function (ftol_plastid_concat, ftol_plastid_parts) {
   ftol_plastid_parts_dat %>%
     mutate(subseq = map2(start, end, ~ftol_plastid_concat_seqs %>% magrittr::extract(, .x:.y))) %>%
     pull(subseq) %>%
-    set_names(ftol_plastid_parts_dat$gene)
-  
+    set_names(ftol_plastid_parts_dat$gene) %>%
+    # Remove empty sequences from each gene
+    map(remove_blank_seqs)
 }
 
 #' Concatenate a list of aligned genes
@@ -2234,7 +2263,6 @@ load_calibration_dates <- function(date_file_path) {
 #' @param thorough Logical; should the "thorough" setting in
 #' treePL be used?
 #' @param wd Working directory to run all treepl analyses
-#' @param echo Logical; should the output be printed to the screen?
 #'
 run_treepl_cv <- function (
   phy, alignment, calibration_dates, 
@@ -2285,8 +2313,16 @@ run_treepl_cv <- function (
   
   readr::write_lines(treepl_config, fs::path(wd, "treepl_cv_config"))
   
+  stderr_path <- Sys.time() %>% 
+    str_replace_all(" |:", "_") %>% paste0("treepl_cv_config", ., ".stderr") %>%
+    fs::path(wd, .)
+  
+  stdout_path <- Sys.time() %>% 
+    str_replace_all(" |:", "_") %>% paste0("treepl_cv_config", ., ".stdout") %>%
+    fs::path(wd, .)
+  
   # Run treePL
-  processx::run("treePL", "treepl_cv_config", wd = wd, echo = echo)
+  processx::run("treePL", "treepl_cv_config", wd = wd, stderr = stderr_path, stdout = stdout_path)
   
   # Return cross-validation results
   read_lines(fs::path(wd, outfile_path))
@@ -2318,7 +2354,6 @@ run_treepl_cv <- function (
 #' @param thorough Logical; should the "thorough" setting in
 #' treePL be used?
 #' @param wd Working directory to run all treepl analyses
-#' @param echo Logical; should the output be printed to the screen?
 #'
 run_treepl_prime <- function (
   phy, alignment, calibration_dates, 
@@ -2383,8 +2418,12 @@ run_treepl_prime <- function (
   
   readr::write_lines(treepl_config, fs::path(wd, "treepl_prime_config"))
   
+  stderr_path <- Sys.time() %>% 
+    str_replace_all(" |:", "_") %>% paste0("treepl_prime_config", ., ".stderr") %>%
+    fs::path(wd, .)
+  
   # Run treePL
-  results <- processx::run("treePL", "treepl_prime_config", wd = wd, echo = echo)
+  results <- processx::run("treePL", "treepl_prime_config", wd = wd, stderr = stderr_path)
   
   # Return stdout
   read_lines(results$stdout)
@@ -2417,7 +2456,6 @@ run_treepl_prime <- function (
 #' @param thorough Logical; should the "thorough" setting in
 #' treePL be used?
 #' @param wd Working directory to run all treepl analyses
-#' @param echo Logical; should the output be printed to the screen?
 #'
 run_treepl <- function (
   phy, alignment, calibration_dates, 
@@ -2428,7 +2466,7 @@ run_treepl <- function (
   plsimaniter = "5000",
   nthreads = "1",
   seed,
-  thorough = TRUE, wd, echo) {
+  thorough = TRUE, wd) {
   
   # Check that all taxa are in tree
   taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
@@ -2490,8 +2528,20 @@ run_treepl <- function (
   
   readr::write_lines(treepl_config, fs::path(wd, "treepl_config"))
   
-  # Run treePL
-  processx::run("treePL", "treepl_config", wd = wd, echo = echo)
+  stderr_path <- Sys.time() %>% 
+    str_replace_all(" |:", "_") %>% paste0("treepl_", ., ".stderr") %>%
+    fs::path(wd, .)
+  
+  stdout_path <- Sys.time() %>% 
+    str_replace_all(" |:", "_") %>% paste0("treepl_", ., ".stdout") %>%
+    fs::path(wd, .)
+  
+  # Run treePL, save stderr and stdout to working dir
+  processx::run(
+    "treePL", "treepl_config", 
+    wd = wd, 
+    stderr = stderr_path,
+    stdout = stdout_path)
   
   # Read in tree
   ape::read.tree(fs::path(wd, outfile_path))
