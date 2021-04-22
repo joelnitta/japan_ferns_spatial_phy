@@ -79,6 +79,14 @@ WORKDIR tmp/project
 # Don't use cache (the symlinks won't work from Rstudio server)
 RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
 
+###########################################
+### Install latex packages with tinytex ###
+###########################################
+
+COPY install_latex.R .
+
+RUN Rscript install_latex.R
+
 #############################
 ### Other custom software ###
 #############################
@@ -123,5 +131,5 @@ RUN git clone https://github.com/Cibiv/$APP_NAME.git && \
 	cmake -DIQTREE_FLAGS=omp .. && \
 	make && \
 	cp iqtree /usr/local/bin
-
+	
 WORKDIR /home/rstudio/
