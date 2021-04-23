@@ -62,7 +62,7 @@ RUN apt-get update \
 ### Install latex packages with tinytex ###
 ###########################################
 
-COPY ./install_latex.R .
+COPY /install_latex.R .
 
 RUN Rscript install_latex.R
 
