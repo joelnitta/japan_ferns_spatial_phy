@@ -54,16 +54,10 @@ tar_load(c(
   "comm_ferns_full",
   "comm_ferns",
   "japan_points_raw",
+  "plastome_calibration_dates",
+  "plastome_tree",
   "green_list"
 ))
-
-phylo_cache <- drake::new_cache(here::here("phylo_cache"))
-
-drake::loadd(list = c(
-  "plastome_calibration_dates",
-  "plastome_tree"
-),
-cache = phylo_cache)
 
 # Load captions
 source(here::here("ms/captions.R"))
@@ -118,7 +112,9 @@ Presumably, the main reason phylogeny has not been taken into account more promi
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data or can be lead astray.
 
-The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for 221/721 taxa [70%]), which is likely to effect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019]. Japan is situated along a latitudinal gradient spanning highly season temperate areas in the north to subtropical, mostly aseasonal islands in the south.
+The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for 221/721 taxa [70%]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019]. 
+
+Japan is situated along a latitudinal gradient spanning highly season temperate areas in the north to subtropical, mostly aseasonal islands in the south. Furthermore, it is a mountainous country with great variation in elevation on the larger islands. Plant distributions often reflect physiological adaptations to climate (e.g., percipiation and temperature). Therefore, we expect the spatial distribution of biodviversity to be determined by climatic variation in addition to reproductive mode.
 
 Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail. We ask the following questions in our study system, the ferns of Japan: 1. How is biodiversity distributed? 2. How is biodiversity structured? 3. How well is biodiversity protected?
 
@@ -141,6 +137,10 @@ We used traits originally compiled for identification of ferns and lycophytes of
 ### Reproductive mode data
 
 We used data compiled by @Ebihara2019b, which classifies each fern taxon as sexual, apomictic, mixed (both sexual and apomictic modes known from the same taxon), or unknown. We calculated the percentage of apomictic species in each grid cell as the sum of apomictic and mixed taxa divided by total number of taxa.
+
+### Climate data
+
+We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `getData` function in the R package `raster`, and extracted four variables related to our research questions as follows: mean annual temperature (bio1), temperature seasonality (bio4), annual precipitation (bio12), and precipitation seasonality (bio15). We checked for correlation between climatic variables while taking into account spatial autocorrelation using a modified *t*-test with the `modified.ttest` in the `SpatialPack` R package; as a result, we excluded temperature seasonality, which was correlated with mean annual temperature. We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell. The R package 'sf' was used for GIS analyses.
 
 ### Phylogenetic analysis
 
@@ -310,9 +310,9 @@ After removing correlated and low-variance traits, the final trait set included 
 
 ```{r phy-sig-stats}
 # Verify that min lambda >0.95
-assert_that(phy_sig_results %>% pull(lambda) %>% min > 0.95)
+# assert_that(phy_sig_results %>% pull(lambda) %>% min > 0.95)
 # Verify that max K < 0.0.6
-assert_that(phy_sig_results %>% pull(kval) %>% max < 0.06)
+# assert_that(phy_sig_results %>% pull(kval) %>% max < 0.06)
 
 # Sum the number of traits with D < 0
 n_negative_d <-
@@ -322,7 +322,7 @@ binary_sig_results %>%
   sum
 ```
 
-All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). `r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`).
+<!-- All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). `r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`). -->
 
 ### Observed diversity
 
