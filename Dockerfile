@@ -83,7 +83,7 @@ RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::
 ### Install latex packages with tinytex ###
 ###########################################
 
-COPY install_latex.R .
+COPY ./install_latex.R .
 
 RUN Rscript install_latex.R
 
