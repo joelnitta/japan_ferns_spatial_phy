@@ -58,6 +58,14 @@ RUN apt-get update \
     libgmp3-dev \
     libpng-dev
 
+###########################################
+### Install latex packages with tinytex ###
+###########################################
+
+COPY ./install_latex.R .
+
+RUN Rscript install_latex.R
+
 ####################################
 ### Install R packages with renv ###
 ####################################
@@ -78,14 +86,6 @@ WORKDIR tmp/project
 
 # Don't use cache (the symlinks won't work from Rstudio server)
 RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
-
-###########################################
-### Install latex packages with tinytex ###
-###########################################
-
-COPY ./install_latex.R .
-
-RUN Rscript install_latex.R
 
 #############################
 ### Other custom software ###
