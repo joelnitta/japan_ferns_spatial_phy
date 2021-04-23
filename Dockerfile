@@ -62,9 +62,9 @@ RUN apt-get update \
 ### Install latex packages with tinytex ###
 ###########################################
 
-COPY /install_latex.R .
+COPY ./install_latex.R tmp/
 
-RUN Rscript install_latex.R
+RUN Rscript tmp/install_latex.R
 
 ####################################
 ### Install R packages with renv ###
