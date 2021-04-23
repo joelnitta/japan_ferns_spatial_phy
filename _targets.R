@@ -256,6 +256,15 @@ tar_plan(
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
   
+  # Climate data ----
+  
+  # Load climate data downloaded from WorldClim database
+  tar_file(worldclim_dir, "data_raw/world_clim"),
+  ja_climate_data = load_ja_worldclim_data(worldclim_dir),
+  
+  # Calculate mean climate values in each grid cell
+  mean_climate = calc_mean_climate(shape_ferns, ja_climate_data),
+  
   # Randomization tests of diversity metrics ----
   
   # Make list of communities for looping
@@ -371,7 +380,12 @@ tar_plan(
     left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
     left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
     categorize_endemism() %>%
-    categorize_signif(),
+    categorize_signif() %>%
+    # Format factors
+    mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+    mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
+    # Add redundancy
+    mutate(redundancy = 1 - (richness/abundance)),
   
   # - Only those with reproductive mode data available
   biodiv_ferns_repro_spatial =
@@ -539,6 +553,14 @@ tar_plan(
   ),
   
   # Calculate percent protection for grid cells with significantly high biodiversity
-  signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp)
+  signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
+  
+  # Render manuscript
+  tar_render(
+    ms,
+    path = "ms/manuscript.Rmd",
+    output_dir = "results",
+    
+  )
   
 )

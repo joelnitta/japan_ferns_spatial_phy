@@ -548,24 +548,15 @@ knitr::kable(format = "latex", booktabs = TRUE, escape = TRUE)
 <!-- Figures -->
 
 ```{r plot-prep}
-# Change cluster to factor
-biodiv_ferns_spatial <- biodiv_ferns_spatial %>%
-  mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  # Add redundancy
-  mutate(redundancy = 1 - (richness/abundance))
-
-# Download high-res map of Japan,
-# crop to spatial div results area
+# crop high-res map of Japan to spatial div results area
 japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
 
 # Set CRS
 japan_crs <- sf::st_crs(japan)
-
 biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
 
-# Set color palettes
-# Randomization test significance
+# Set color palettes:
+# - Randomization test significance
 signif_cols <-
   c(
     "> 0.99" = "#e31a1c", 
@@ -574,8 +565,7 @@ signif_cols <-
     "< 0.025" = "#a6cee3",
     "not significant" = "#ffffcc"
   )
-
-# CANAPE
+# - CANAPE
 canape_cols <-
   c(
     "neo" = "#e31a1c", 
@@ -584,8 +574,7 @@ canape_cols <-
     "super" = "#4a1486",
     "not significant" = "#ffffcc"
   )
-
-# Bioregions
+# - Bioregions
 bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
   set_names(1:8)
 ```
