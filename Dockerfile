@@ -2,12 +2,6 @@ FROM rocker/verse:4.0.0
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN pwd
-
-RUN ls -lh
-
-RUN find -D tree /var/lib/docker/tmp/
-
 COPY ./renv.lock tmp/project
 
 ###########################################
