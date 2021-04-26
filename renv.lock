@@ -705,6 +705,13 @@
       "Repository": "CRAN",
       "Hash": "f25fad6bee82b7ab01f055e2d813b96f"
     },
+    "future.callr": {
+      "Package": "future.callr",
+      "Version": "0.6.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "444abad002c6dd780c3bbe7347de3222"
+    },
     "fuzzyjoin": {
       "Package": "fuzzyjoin",
       "Version": "0.1.6",
