@@ -5,8 +5,12 @@ library(tarchetypes)
 source("R/packages.R")
 source("R/functions.R")
 
+library(future)
+library(future.callr)
+plan(callr)
+
 # Specify how to resolve futures for parallel tasks
-plan(multicore)
+# plan(multicore)
 
 tar_plan(
   
@@ -56,7 +60,7 @@ tar_plan(
   japan_points_raw = read_csv(japan_points_raw_file),
   
   # Prepare occurrence data ----
-  # Summary: from raw occurrence data, test binning into grid cells at four scales,
+  # Summary: from raw occurrence data, test binning into grid cells at four scales
   # select the optimal scale, filter out poorly sampled grid cells, generate
   # community data matrix (sites x species)
   
@@ -173,7 +177,7 @@ tar_plan(
   plastome_tree = jntools::iqtree(
     plastome_alignment,
     m = "GTR+I+G", bb = 1000, nt = "AUTO",
-    redo = FALSE, echo = TRUE, wd = here::here("iqtree")),
+    redo = TRUE, echo = TRUE, wd = here::here("iqtree")),
 
   # Root tree on bryophytes
   plastome_tree_rooted = ape::root(
@@ -370,7 +374,7 @@ tar_plan(
   
   # Combine results ----
   
-  # Combine spatial data, alpha diversity, and regions, add significance and endemism types
+  # Combine spatial data, alpha diversity, environmental data, and regions, add significance and endemism types
   
   # - All ferns
   biodiv_ferns_spatial =
@@ -379,6 +383,9 @@ tar_plan(
     left_join(rand_test_traits_ferns, by = c(grids = "site")) %>%
     left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
     left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
+    # Add environmental data
+    left_join(mean_climate, by = "grids") %>%
+    # Categorize endemism and significance of randomization tests
     categorize_endemism() %>%
     categorize_signif() %>%
     # Format factors
@@ -392,67 +399,71 @@ tar_plan(
     shape_ferns %>%
     left_join(rand_test_phy_ferns_with_repro, by = c(grids = "site")) %>%
     left_join(percent_apo, by = c(grids = "site")) %>%
+    # Add environmental data
+    left_join(mean_climate, by = "grids") %>%
+    # FIXME: add categorizing significance of randomization tests
+    # Categorize endemism 
     categorize_endemism(),
   
   # - Japan endemics only
   biodiv_ferns_endemic_spatial =
     shape_ferns %>%
     left_join(rand_test_phy_ferns_endemic, by = c(grids = "site")) %>%
+    # FIXME: add categorizing significance of randomization tests
+    # Categorize endemism
     categorize_endemism(),
   
   # Spatial modeling ----
-  # Model the effects of percent apomictic taxa on each biodiversity metric, while
-  # accounting for spatial autocorrelation
   
-  # Make biodiversity metrics dataframe with centroid of each site, using
-  # results based on species with repro mode data available
-  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_repro_spatial),
+  # Model the effects of environment and percent apomictic taxa on each biodiversity metric, 
+  # while accounting for spatial autocorrelation
   
-  # Nest selected biodiv metrics vs. percent apomictic for looping
-  biodiv_ferns_cent_nested = nest_biodiv_dat(biodiv_ferns_cent),
+  # Make biodiversity metrics dataframe with centroid of each site
+  # - all ferns dataset
+  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial),
   
-  # Construct non-spatial linear models
-  tar_target(
-    non_spatial_models,
-    make_non_spatial_model(biodiv_ferns_cent_nested),
-    pattern = map(biodiv_ferns_cent_nested)
+  # - only those with repro. data available
+  biodiv_ferns_repro_cent = sf_to_centroids(biodiv_ferns_repro_spatial),
+  
+  # Check for correlation between independent variables
+  t_test_results = run_mod_ttest_ja(
+    biodiv_ferns_repro_cent, 
+    vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo")
   ),
   
-  # Construct spatial linear models
+  # Generate tibble of formulas for looping:
+  # - Models including only uncorrelated environmental variables
+  # build formulas
+  env_formulas = bind_rows(
+    # richness includes a quadratic for temperature only
+    generate_spatial_formulas("richness", c("temp", "I(temp^2)", "precip", "precip_season")),
+    generate_spatial_formulas("pd_obs_z", c("temp", "precip", "precip_season")), # SES of PD
+    generate_spatial_formulas("fd_obs_z", c("temp", "precip", "precip_season")), # SES of FD
+    generate_spatial_formulas("rpd_obs_z", c("temp", "precip", "precip_season")), # SES of RPD
+    generate_spatial_formulas("rfd_obs_z", c("temp", "precip", "precip_season")), # SES of RFD
+    generate_spatial_formulas("pe_obs_p_upper", c("temp", "precip", "precip_season")) # PE p-score
+  ),
+  # loop across each formula and build a spatial model
   tar_target(
-    spatial_models,
-    make_spatial_model(biodiv_ferns_cent_nested),
-    pattern = map(biodiv_ferns_cent_nested)
+    env_models,
+    run_spamm(env_formulas, biodiv_ferns_cent),
+    pattern = map(env_formulas)
   ),
   
-  # Make a spatial weights list for calculating Moran's I
-  dist_mat_listw = make_dist_list(biodiv_ferns_cent),
-  
-  # Check for spatial autocorrelation in the residuals of the non-spatial models
-  tar_target(
-    non_spatial_moran_results,
-    moran_mc(
-      model_dat = non_spatial_models, 
-      listw = dist_mat_listw, 
-      nsim = 10000),
-    pattern = map(non_spatial_models)),
-  
-  # Check for spatial autocorrelation in the residuals of the spatial models
-  tar_target(
-    spatial_moran_results,
-    moran_mc(
-      model_dat = spatial_models, 
-      listw = dist_mat_listw, 
-      nsim = 10000),
-    pattern = map(spatial_models)),
-  
-  # Conduct likelihood ratio test vs. null model for spatial models
-  tar_target(
-    spatial_lrt,
-    run_spatial_lrt(biodiv_ferns_cent_nested),
-    pattern = map(biodiv_ferns_cent_nested)
+  # - Models also including reproductive mode (doesn't include richness)
+  # build formulas
+  repro_formulas = bind_rows(
+    generate_spatial_formulas("pd_obs_z", c("temp", "percent_apo", "precip", "precip_season")), # SES of PD
+    generate_spatial_formulas("rpd_obs_z", c("temp", "percent_apo", "precip", "precip_season")), # SES of RPD
+    generate_spatial_formulas("pe_obs_p_upper", c("temp", "percent_apo", "precip", "precip_season")) # PE p-score
   ),
-  
+  # loop across each formula and build a spatial model
+  tar_target(
+    repro_models,
+    run_spamm(repro_formulas, biodiv_ferns_repro_cent),
+    pattern = map(repro_formulas)
+  ),
+
   # Conservation analysis ----
   
   ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)
