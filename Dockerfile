@@ -2,6 +2,18 @@ FROM rocker/verse:4.0.0
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+RUN pwd
+
+RUN ls -lh
+
+###########################################
+### Install latex packages with tinytex ###
+###########################################
+
+COPY ./install_latex.R tmp/
+
+RUN Rscript tmp/install_latex.R
+
 ############################
 ### Install APT packages ###
 ############################
@@ -57,14 +69,6 @@ RUN apt-get update \
     libzmq3-dev \
     libgmp3-dev \
     libpng-dev
-
-###########################################
-### Install latex packages with tinytex ###
-###########################################
-
-COPY ./install_latex.R tmp/
-
-RUN Rscript tmp/install_latex.R
 
 ####################################
 ### Install R packages with renv ###
