@@ -6,7 +6,9 @@ RUN pwd
 
 RUN ls -lh
 
-RUN ls -lh /var/lib/docker/tmp/docker-builder*
+RUN find -D tree /var/lib/docker/tmp/
+
+COPY ./renv.lock tmp/project
 
 ###########################################
 ### Install latex packages with tinytex ###
