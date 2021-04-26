@@ -5,8 +5,7 @@ library(tarchetypes)
 source("R/packages.R")
 source("R/functions.R")
 
-library(future)
-library(future.callr)
+# Set parallel back-end
 plan(callr)
 
 # Specify how to resolve futures for parallel tasks

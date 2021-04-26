@@ -1,5 +1,5 @@
 # Load packages
-library(conflicted)
+library(conflicted) # conflicts are resolved in .Rprofile
 library(checkr)
 library(FD)
 library(here)
@@ -24,11 +24,5 @@ library(rcartocolor)
 library(ggtext)
 library(ggridges)
 library(future)
+library(future.callr)
 library(tidyverse)
-
-# Resolve conflicts
-conflicted::conflict_prefer("map", "purrr")
-conflicted::conflict_prefer("select", "dplyr")
-conflicted::conflict_prefer("filter", "dplyr")
-conflicted::conflict_prefer("gather", "tidyr")
-conflicted::conflict_prefer("extract", "magrittr")
