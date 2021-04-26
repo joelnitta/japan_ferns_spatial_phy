@@ -6,6 +6,8 @@ RUN pwd
 
 RUN ls -lh
 
+RUN ls -lh /var/lib/docker/tmp/docker-builder*
+
 ###########################################
 ### Install latex packages with tinytex ###
 ###########################################
