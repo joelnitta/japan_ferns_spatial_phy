@@ -95,12 +95,12 @@ RUN wget https://gitlab.com/gogna/gnparser/uploads/7d6ed7e3b1eee0fd6c9ae51f5bf71
 ### IQ Tree ###
 WORKDIR $APPS_HOME
 ENV APP_NAME=IQ-TREE
-RUN git clone https://github.com/Cibiv/$APP_NAME.git \
-	&& cd $APP_NAME \
-	&& mkdir build \
-	&& cd build \
-	&& cmake -DIQTREE_FLAGS=omp .. \
-	&& make \
+RUN git clone https://github.com/Cibiv/$APP_NAME.git && \
+	cd $APP_NAME && \
+	mkdir build && \
+	cd build && \
+	cmake -DIQTREE_FLAGS=omp .. && \
+	make && \
 	cp iqtree /usr/local/bin
 	
 ####################################
