@@ -164,7 +164,7 @@ RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rpro
 
 # Initialize a 'dummy' project and restore the renv library.
 # Since the library path is specified as above, the library will be restored to /renv
-RUN mkdir tmp/project
+RUN mkdir /tmp/project
 
 COPY ./renv.lock /tmp/project
 
