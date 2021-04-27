@@ -1,6 +1,8 @@
 ---
 title: "Exploring dimensions of biodiversity in Japanese ferns"
-bibliography: "main_library.bib"
+bibliography: 
+  - references.bib
+  - references_other.yaml
 mainfont: Roboto-Regular.ttf
 fontsize: 11pt
 mainfontoptions: 
@@ -156,7 +158,7 @@ We measured taxonomic diversity using taxonomic richness.
 
 We measured phylogenetic diversity (PD) using the Faith's PD (the total branch length connecting all terminal taxa in a community, including the root of the phylogeny) [@Faith1992] with the \function{PD} function in the R package \package{phyloregion}. To detect areas with unusually long or short branch lengths, we measured relative phylogenetic diversity (RPD), which is a ratio of observed PD to PD measured on a tree where all branch lengths have been set to equal length [@Mishler2014].
 
-We measured functional diversity (FD) following the method of @Petchey2002. We first calculated functional distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R package \package{FD} [@Laliberte2011]. We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances. We then used the distances to build a trait dendrogram using the \function{hclust} function in the \package{stats} R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. These functional analogs of PD and RPD are hereafter referred to as FD (functional diversity) and RFD (relative functional diversity).
+We measured functional diversity (FD) following the method of @Petchey2002. We first calculated functional distances using Gower's method [@Gower1971] on the trait data with the \function{gowdis} function in the R package \package{FD} [@Laliberte2010]. We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances. We then used the distances to build a trait dendrogram using the \function{hclust} function in the \package{stats} R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. These functional analogs of PD and RPD are hereafter referred to as FD (functional diversity) and RFD (relative functional diversity).
 
 We measured phylogenetic endemism (PE) [@Rosauer2009], which is the sum of all branches at a site inversely weighted by their range, using the \function{phylo{\_}endemism} function in the R package \package{phyloregion}. 
 
