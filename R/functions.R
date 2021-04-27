@@ -2834,19 +2834,27 @@ generate_spatial_formulas <- function (resp_var, indep_var) {
 #' Fit a linear mixed model including spatial autocorrelation
 #' 
 #' Wrapper around spaMM::fitme() so it can be run as a loop in {targets}
+#' 
+#' This is meant to be run over a large list of possible formulas, so it only
+#' keeps the log-likelihood and fixed effects. The full model can be generated
+#' again from the formula.
 #'
 #' @param formula_tibble Tibble with a single row and columns "resp_var" indicating the
 #' response variable (character) and "formula" indicating the formula (character)
 #' @param data Data for the model
 #'
-#' @return Tibble with three columns: "resp_var" (character), "formula" (character),
-#' and model (list)
+#' @return Tibble with columns: "resp_var" (character), "formula" (character),
+#' "log-likelihood" (double), "fixed_effects" (list)
 #' 
 run_spamm <- function(formula_tibble, data) {
+  
+  model <- list(spaMM::fitme(as.formula(formula_tibble$formula[[1]]), data = data, family = "gaussian"))
+  
   tibble(
     resp_var = formula_tibble$resp_var[[1]],
     formula = formula_tibble$formula[[1]],
-    model = list(spaMM::fitme(as.formula(formula_tibble$formula[[1]]), data = data, family = "gaussian"))
+    log_lik = logLik(model),
+    fixed_effects = list(fixef(model))
   )
 }
 
