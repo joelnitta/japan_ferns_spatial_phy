@@ -103,27 +103,6 @@ RUN git clone https://github.com/Cibiv/$APP_NAME.git && \
 	make && \
 	cp iqtree /usr/local/bin
 	
-####################################
-### Install R packages with renv ###
-####################################
-
-# Create directory for renv project library
-RUN mkdir renv
-
-# Modify Rprofile.site so renv uses /renv for project library, and doesn't use the cache
-RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site
-
-# Initialize a 'dummy' project and restore the renv library.
-# Since the library path is specified as above, the library will be restored to /renv
-RUN mkdir tmp/project
-
-COPY ./renv.lock tmp/project
-
-WORKDIR tmp/project
-
-# Don't use cache (the symlinks won't work from Rstudio server)
-RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'	
-
 ###########################################
 ### Install latex package with tiny tex ###
 ###########################################
@@ -171,6 +150,29 @@ xcolor\n\
 xunicode\n\
 zapfding' >> latex_packages.txt \
   && Rscript -e 'tinytex::tlmgr_update(); tinytex::tlmgr_install(readLines("latex_packages.txt"))'	\
-  && rm latex_packages.txt
+  && rm latex_packages.txt	
+	
+####################################
+### Install R packages with renv ###
+####################################
+
+# Create directory for renv project library
+RUN mkdir /renv
+
+# Modify Rprofile.site so renv uses /renv for project library, and doesn't use the cache
+RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site
+
+# Initialize a 'dummy' project and restore the renv library.
+# Since the library path is specified as above, the library will be restored to /renv
+RUN mkdir tmp/project
+
+COPY ./renv.lock /tmp/project
+
+WORKDIR /tmp/project
+
+# Don't use cache (the symlinks won't work from Rstudio server)
+RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
 
 WORKDIR /home/rstudio/
+
+RUN rm -rf /tmp/project
