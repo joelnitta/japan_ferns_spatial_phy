@@ -2,16 +2,6 @@ FROM rocker/verse:4.0.0
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-COPY ./renv.lock tmp/project
-
-###########################################
-### Install latex packages with tinytex ###
-###########################################
-
-COPY ./install_latex.R tmp/
-
-RUN Rscript tmp/install_latex.R
-
 ############################
 ### Install APT packages ###
 ############################
@@ -68,27 +58,6 @@ RUN apt-get update \
     libgmp3-dev \
     libpng-dev
 
-####################################
-### Install R packages with renv ###
-####################################
-
-# Create directory for renv project library
-RUN mkdir renv
-
-# Modify Rprofile.site so renv uses /renv for project library, and doesn't use the cache
-RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site
-
-# Initialize a 'dummy' project and restore the renv library.
-# Since the library path is specified as above, the library will be restored to /renv
-RUN mkdir tmp/project
-
-COPY ./renv.lock tmp/project
-
-WORKDIR tmp/project
-
-# Don't use cache (the symlinks won't work from Rstudio server)
-RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
-
 #############################
 ### Other custom software ###
 #############################
@@ -126,12 +95,82 @@ RUN wget https://gitlab.com/gogna/gnparser/uploads/7d6ed7e3b1eee0fd6c9ae51f5bf71
 ### IQ Tree ###
 WORKDIR $APPS_HOME
 ENV APP_NAME=IQ-TREE
-RUN git clone https://github.com/Cibiv/$APP_NAME.git && \
-	cd $APP_NAME && \
-	mkdir build && \
-	cd build && \
-	cmake -DIQTREE_FLAGS=omp .. && \
-	make && \
+RUN git clone https://github.com/Cibiv/$APP_NAME.git \
+	&& cd $APP_NAME \
+	&& mkdir build \
+	&& cd build \
+	&& cmake -DIQTREE_FLAGS=omp .. \
+	&& make \
 	cp iqtree /usr/local/bin
 	
+####################################
+### Install R packages with renv ###
+####################################
+
+# Create directory for renv project library
+RUN mkdir renv
+
+# Modify Rprofile.site so renv uses /renv for project library, and doesn't use the cache
+RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rprofile.site
+
+# Initialize a 'dummy' project and restore the renv library.
+# Since the library path is specified as above, the library will be restored to /renv
+RUN mkdir tmp/project
+
+COPY ./renv.lock tmp/project
+
+WORKDIR tmp/project
+
+# Don't use cache (the symlinks won't work from Rstudio server)
+RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'	
+
+###########################################
+### Install latex package with tiny tex ###
+###########################################
+
+# \n\ puts each package name on its own line
+
+RUN printf 'amsmath\n\
+atbegshi\n\
+atveryend\n\
+auxhook\n\
+bigintcalc\n\
+bitset\n\
+booktabs\n\
+etexcmds\n\
+etoolbox\n\
+euenc\n\
+float\n\
+fontspec\n\
+geometry\n\
+gettitlestring\n\
+grffile\n\
+hycolor\n\
+hyperref\n\
+iftex\n\
+infwarerr\n\
+intcalc\n\
+kvdefinekeys\n\
+kvoptions\n\
+kvsetkeys\n\
+latex-amsmath-dev\n\
+letltxmacro\n\
+ltxcmds\n\
+mdwtools\n\
+pdfescape\n\
+pdftexcmds\n\
+refcount\n\
+rerunfilecheck\n\
+setspace\n\
+siunitx\n\
+stringenc\n\
+tipa\n\
+unicode-math\n\
+uniquecounter\n\
+xcolor\n\
+xunicode\n\
+zapfding' >> latex_packages.txt \
+  && Rscript -e 'tinytex::tlmgr_update(); tinytex::tlmgr_install(readLines("latex_packages.txt"))'	\
+  && rm latex_packages.txt
+
 WORKDIR /home/rstudio/
