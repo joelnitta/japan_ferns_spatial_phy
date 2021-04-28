@@ -2848,7 +2848,7 @@ generate_spatial_formulas <- function (resp_var, indep_var) {
 #' 
 run_spamm <- function(formula_tibble, data) {
   
-  model <- list(spaMM::fitme(as.formula(formula_tibble$formula[[1]]), data = data, family = "gaussian"))
+  model <- spaMM::fitme(as.formula(formula_tibble$formula[[1]]), data = data, family = "gaussian")
   
   tibble(
     resp_var = formula_tibble$resp_var[[1]],
