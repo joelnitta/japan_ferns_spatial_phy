@@ -114,7 +114,7 @@ Presumably, the main reason phylogeny has not been taken into account more promi
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data or can be lead astray.
 
-The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for 221/721 taxa [70%]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019]. 
+The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for 221/721 taxa [70%]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
 
 Japan is situated along a latitudinal gradient spanning highly season temperate areas in the north to subtropical, mostly aseasonal islands in the south. Furthermore, it is a mountainous country with great variation in elevation on the larger islands. Plant distributions often reflect physiological adaptations to climate (e.g., percipiation and temperature). Therefore, we expect the spatial distribution of biodviversity to be determined by climatic variation in addition to reproductive mode.
 
