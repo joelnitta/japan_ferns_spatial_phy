@@ -2897,23 +2897,74 @@ is_even <- function(x) {
 #'
 #' @examples
 make_lrt_comp_table <- function(env_models_df) {
-  env_models_df %>%
+  
+  # # Pair scheme needs to look like this (non-null models)
+  # mod1 1
+  # mod2 1 2
+  # mod3   2 3 
+  # mod4     3 4
+  # mod5       4
+  
+  #  
+  # formula1 formula2 group
+  # mod1     mod2     1
+  # mod2     mod3     2
+  # mod3     mod4     3
+  # mod4     mod5     4
+  
+  # Helper function to assign comparison groups according to above scheme
+  # n = total number of rows (mod1 - mod5)
+  assign_comp_groups <- function(n, which) {
+    jntools::paste3(
+      c(1:(n-1), NA),
+      c(NA, 1:(n-1))
+    )[which]
+  }
+  
+  
+  consec_best_comp <-
+    env_models_df %>%
+    select(-fixed_effects) %>%
     # Add count of observations (models) of each response variable
     group_by(resp_var) %>%
     add_count() %>%
-    ungroup() %>%
-    # Make sure there is an even number of models
-    assert(is_even, n) %>%
-    arrange(desc(log_lik)) %>%
     # Assign a group to each pair of models within a response variable:
     # always comparing best (highest) likelihood to next-highest likelihood
-    group_by(resp_var) %>%
-    mutate(comp_group = rep(1:(unique(n)/2), 2) %>% sort) %>%
-    mutate(formula_num = rep(1:2, unique(n)/2) %>% paste0("formula_", .)) %>%
+    arrange(desc(log_lik)) %>%
+    group_split() %>%
+    map(~mutate(., order = 1:nrow(.))) %>%
+    bind_rows() %>%
+    mutate(comp_group = map2_chr(n, order, assign_comp_groups)) %>%
+    separate_rows(comp_group, sep = " ") %>%
+    arrange(resp_var, comp_group, order) %>% 
+    group_by(resp_var, comp_group) %>%
+    mutate(formula_num = paste0("formula_", 1:2)) %>%
     ungroup() %>%
-    select(resp_var, formula, comp_group, formula_num ) %>%
+    select(resp_var, formula, comp_group, formula_num) %>%
     # Convert to wide format
     pivot_wider(values_from = formula, names_from = formula_num)
+  
+  null_models <-
+    env_models_df %>%
+    filter(str_detect(formula, "~ 1")) %>%
+    select(formula)
+  
+  pred_models <-
+    env_models_df %>%
+    filter(str_detect(formula, "~ 1", negate = TRUE)) %>%
+    select(formula)
+  
+  null_comp <-
+    cross_df(list(formula_1 = pred_models$formula, formula_2 = null_models$formula)) %>%
+    mutate(resp_var = str_split(formula_1, " ~ ") %>% map_chr(1)) %>%
+    mutate(resp_var_2 = str_split(formula_2, " ~ ") %>% map_chr(1)) %>%
+    filter(resp_var == resp_var_2) %>%
+    select(-resp_var_2) %>%
+    mutate(comp_group = "null")
+  
+  bind_rows(consec_best_comp, null_comp) %>%
+    arrange(resp_var, comp_group)
+  
 }
 
 #' Run a likelihood ratio test on formulas provided as a tibble
