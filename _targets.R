@@ -419,6 +419,14 @@ tar_plan(
   # Model the effects of environment and percent apomictic taxa on each biodiversity metric, 
   # while accounting for spatial autocorrelation
   
+  # Define variables for models
+  # - response variables
+  resp_vars = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_p_upper"),
+  # - indep variables for environmental model
+  indep_vars_env = c("temp", "precip", "precip_season", "lat", "long"),
+  # - indep variables for reproductive model
+  indep_vars_repro = c("percent_apo", "precip", "precip_season", "lat", "long"),
+  
   # Make biodiversity metrics dataframe with centroid of each site
   # - all ferns dataset
   biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial),
@@ -426,15 +434,17 @@ tar_plan(
   # - only those with repro. data available
   biodiv_ferns_repro_cent = sf_to_centroids(biodiv_ferns_repro_spatial),
   
-  # Check for correlation between independent variables
+  # Keep only variables needed for model and only rows with zero missing data
+  biodiv_ferns_cent_for_model = filter_data_for_model(biodiv_ferns_cent, c(resp_vars, indep_vars_env)),
+  
+  # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
     biodiv_ferns_repro_cent, 
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo")
   ),
   
-  # Generate tibble of formulas for looping:
-  # - Models including only uncorrelated environmental variables
-  # build formulas
+  # Generate tibble of formulas for looping.
+  # Models include only uncorrelated environmental variables
   env_formulas = bind_rows(
     # richness includes a quadratic for temperature only
     generate_spatial_formulas("richness", c("temp", "I(temp^2)", "precip", "precip_season")),
@@ -444,27 +454,25 @@ tar_plan(
     generate_spatial_formulas("rfd_obs_z", c("temp", "precip", "precip_season")), # SES of RFD
     generate_spatial_formulas("pe_obs_p_upper", c("temp", "precip", "precip_season")) # PE p-score
   ),
-  # loop across each formula and build a spatial model
+  
+  # Loop across each formula, build a spatial model, and calculate likelihood
   tar_target(
     env_models,
-    run_spamm(env_formulas, biodiv_ferns_cent),
+    run_spamm(env_formulas, biodiv_ferns_cent_for_model),
     pattern = map(env_formulas)
   ),
   
-  # - Models also including reproductive mode (doesn't include richness)
-  # build formulas
-  repro_formulas = bind_rows(
-    generate_spatial_formulas("pd_obs_z", c("temp", "percent_apo", "precip", "precip_season")), # SES of PD
-    generate_spatial_formulas("rpd_obs_z", c("temp", "percent_apo", "precip", "precip_season")), # SES of RPD
-    generate_spatial_formulas("pe_obs_p_upper", c("temp", "percent_apo", "precip", "precip_season")) # PE p-score
-  ),
-  # loop across each formula and build a spatial model
+  # Make a dataframe for comparing models. Includes columns 'formula_1' and 'formula_2',
+  # each with a pair of models to test using LRT.
+  lrt_comp_table_empty = make_lrt_comp_table(env_models),
+  
+  # Conduct likelihood ratio tests between subsequent best-scoring models
   tar_target(
-    repro_models,
-    run_spamm(repro_formulas, biodiv_ferns_repro_cent),
-    pattern = map(repro_formulas)
+    lrt_comp_table,
+    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_cent_for_model),
+    pattern = map(lrt_comp_table_empty)
   ),
-
+  
   # Conservation analysis ----
   
   ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)

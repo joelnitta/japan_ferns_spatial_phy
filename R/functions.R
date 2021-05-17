@@ -2605,6 +2605,19 @@ run_treepl <- function (
 
 # Spatial models ----
 
+#' Filter data for modeling
+#'
+#' Only rows with no missing values in the selected columns will be retained
+#' 
+#' @param data Input data
+#' @param vars_keep Character vector of column names to keep
+#'
+#' @return Tibble
+filter_data_for_model <- function(data, vars_keep) {
+  select(data, all_of(vars_keep)) %>%
+    ggplot2::remove_missing()
+}
+
 #' Calculate centroids from SF (simple features) data
 #'
 #' @param sf_data Dataframe of class "sf"
@@ -2825,7 +2838,7 @@ generate_spatial_formulas <- function (resp_var, indep_var) {
   # Build the formula. Include spatial correlation matrix in every formula
   formulas <- paste(resp_var, "~", unlist(res), "+ Matern(1 | long + lat)") %>%
     # Also include null model (spatial matrix only)
-    c(paste(resp_var, "~", "Matern(1 | long + lat)"))
+    c(paste(resp_var, "~", "1 + Matern(1 | long + lat)"))
   
   tibble(resp_var = resp_var, formula = formulas)
   
@@ -2855,6 +2868,77 @@ run_spamm <- function(formula_tibble, data) {
     formula = formula_tibble$formula[[1]],
     log_lik = logLik(model),
     fixed_effects = list(fixef(model))
+  )
+}
+
+
+#' Check that an integer is even
+#'
+#' @param x Integer vector
+#'
+#' @return Logical
+is_even <- function(x) {
+  assertthat::assert_that(is.integer(x))
+  x %% 2 == 0}
+
+#' Make a tibble for comparing AIC values between environmental models
+#' 
+#' Arranges the models by best scoring AIC value, then identifies pairs of
+#' models to be tested with the likelihood ratio test (LRT). Each test is
+#' between the best-performing and second-best, then third-best vs. fourth-best,
+#' etc.
+#'
+#' @param env_models_df Tibble of environmental model results with columns
+#' 'resp_var', 'formula', and 'log_lik'
+#'
+#' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'formula_1',
+#' and 'formula_2'
+#' @export
+#'
+#' @examples
+make_lrt_comp_table <- function(env_models_df) {
+  env_models_df %>%
+    # Add count of observations (models) of each response variable
+    group_by(resp_var) %>%
+    add_count() %>%
+    ungroup() %>%
+    # Make sure there is an even number of models
+    assert(is_even, n) %>%
+    arrange(desc(log_lik)) %>%
+    # Assign a group to each pair of models within a response variable:
+    # always comparing best (highest) likelihood to next-highest likelihood
+    group_by(resp_var) %>%
+    mutate(comp_group = rep(1:(unique(n)/2), 2) %>% sort) %>%
+    mutate(formula_num = rep(1:2, unique(n)/2) %>% paste0("formula_", .)) %>%
+    ungroup() %>%
+    select(resp_var, formula, comp_group, formula_num ) %>%
+    # Convert to wide format
+    pivot_wider(values_from = formula, names_from = formula_num)
+}
+
+#' Run a likelihood ratio test on formulas provided as a tibble
+#'
+#' @param lrt_table Tibble in wide format with columns 'resp_var', 'formula_1',
+#' and 'formula_2'
+#' @param data Data for model
+#'
+#' @return Tibble in wide format with columns 'chi2_LR', 'df', and 'p_value' added
+#' @export
+#'
+#' @examples
+run_spamm_lrt <- function(lrt_table, data) {
+  mutate(
+    lrt_table,
+    map2_df(
+      formula_1,
+      formula_2,
+      ~spaMM::fixedLRT(
+        as.formula(.x), 
+        as.formula(.y), 
+        data = data, method = "ML") %>%
+        magrittr::extract2("basicLRT") %>%
+        as_tibble()
+    )
   )
 }
 
