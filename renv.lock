@@ -247,13 +247,6 @@
       "Repository": "CRAN",
       "Hash": "543776ae6848fde2f48ff3816d0628bc"
     },
-    "base64url": {
-      "Package": "base64url",
-      "Version": "1.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0c54cf3a08cc0e550fbd64ad33166143"
-    },
     "betapart": {
       "Package": "betapart",
       "Version": "1.5.1",
@@ -310,6 +303,13 @@
       "Repository": "CRAN",
       "Hash": "72557d88b5f42f01221dfa436de99301"
     },
+    "brio": {
+      "Package": "brio",
+      "Version": "1.1.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2f01e16ff9571fe70381c7b9ae560dc4"
+    },
     "broom": {
       "Package": "broom",
       "Version": "0.5.6",
@@ -326,10 +326,10 @@
     },
     "callr": {
       "Package": "callr",
-      "Version": "3.4.3",
+      "Version": "3.7.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "643163a00cb536454c624883a10ae0bc"
+      "Hash": "461aa75a11ce2400245190ef5d3995df"
     },
     "caper": {
       "Package": "caper",
@@ -387,10 +387,10 @@
     },
     "cli": {
       "Package": "cli",
-      "Version": "2.0.2",
+      "Version": "2.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "ff0becff7bfdfe3f75d29aff8f3172dd"
+      "Hash": "a94ba44cee3ea571e813721e64184172"
     },
     "clipr": {
       "Package": "clipr",
@@ -468,13 +468,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "30b72e5faca1f055682ef32a0e252edb"
-    },
-    "cowplot": {
-      "Package": "cowplot",
-      "Version": "1.0.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "82bae0172ae9d4c4f88a440ad01f73bb"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -560,6 +553,13 @@
       "Repository": "CRAN",
       "Hash": "fe1a3788cf243db3eca07ae661860793"
     },
+    "diffobj": {
+      "Package": "diffobj",
+      "Version": "0.3.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "feb5b7455eba422a2c110bb89852e6a3"
+    },
     "digest": {
       "Package": "digest",
       "Version": "0.6.25",
@@ -573,13 +573,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "4011f62581a34080e44105d4aa05a97f"
-    },
-    "drake": {
-      "Package": "drake",
-      "Version": "7.12.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f1b1d4fa17d7006044b6c690888ed4e3"
     },
     "e1071": {
       "Package": "e1071",
@@ -657,13 +650,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "6fea5964656c78ff767eead1267cb1a1"
-    },
-    "filelock": {
-      "Package": "filelock",
-      "Version": "1.0.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "38ec653c2613bed60052ba3787bd8a2c"
     },
     "fnmate": {
       "Package": "fnmate",
@@ -1461,10 +1447,10 @@
     },
     "ps": {
       "Package": "ps",
-      "Version": "1.3.3",
+      "Version": "1.6.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "425d938eb9c02906a8ac98c0c2a306b5"
+      "Hash": "32620e2001c1dce1af49c49dccbb9420"
     },
     "purrr": {
       "Package": "purrr",
@@ -1557,6 +1543,13 @@
       "Repository": "CRAN",
       "Hash": "c66b930d20bb6d858cd18e1cebcfae5c"
     },
+    "rematch2": {
+      "Package": "rematch2",
+      "Version": "2.1.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "76c9e04c712a05848ae7a23d2f170a40"
+    },
     "remotes": {
       "Package": "remotes",
       "Version": "2.1.1",
@@ -1633,13 +1626,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "202260e1b2c410edc086d5b8f1ed946e"
-    },
-    "rnaturalearth": {
-      "Package": "rnaturalearth",
-      "Version": "0.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "946d1b43d7aba91dfa804f02302a5125"
     },
     "rnaturalearthdata": {
       "Package": "rnaturalearthdata",
@@ -1765,13 +1751,6 @@
       "Repository": "CRAN",
       "Hash": "8ecd38ae23eea07aad8d4136f9a2fd63"
     },
-    "servr": {
-      "Package": "servr",
-      "Version": "0.17",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a59f16bb4cb2280bebe6b7726103af66"
-    },
     "sf": {
       "Package": "sf",
       "Version": "0.9-3",
@@ -1856,13 +1835,6 @@
       "Repository": "CRAN",
       "Hash": "f95567051881abcceb27cf8aec08200c"
     },
-    "storr": {
-      "Package": "storr",
-      "Version": "1.2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0a3635220b58f2c2faccd78e97b0cafd"
-    },
     "stringdist": {
       "Package": "stringdist",
       "Version": "0.9.5.5",
@@ -1933,10 +1905,10 @@
     },
     "testthat": {
       "Package": "testthat",
-      "Version": "2.3.2",
+      "Version": "3.0.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "0829b987b8961fb07f3b1b64a2fbc495"
+      "Hash": "495e0434d9305716b6a87031570ce109"
     },
     "tflow": {
       "Package": "tflow",
@@ -2013,13 +1985,6 @@
       "Repository": "CRAN",
       "Hash": "847a9d113b78baca4a9a8639609ea228"
     },
-    "txtq": {
-      "Package": "txtq",
-      "Version": "0.2.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "92e5a36ad5b445e895a0f9b98db4d810"
-    },
     "units": {
       "Package": "units",
       "Version": "0.6-6",
@@ -2090,6 +2055,13 @@
       "Repository": "CRAN",
       "Hash": "12545f2acf49d1d346d075580122d89c"
     },
+    "waldo": {
+      "Package": "waldo",
+      "Version": "0.2.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "20c45f1d511a3f730b7b469f4d11e104"
+    },
     "whisker": {
       "Package": "whisker",
       "Version": "0.4",
@@ -2117,13 +2089,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c3cb513a418e92d15a55f3e8ac9ddc63"
-    },
-    "xaringan": {
-      "Package": "xaringan",
-      "Version": "0.16",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "7168ed8f41f3597c6c570477c0d0bf15"
     },
     "xfun": {
       "Package": "xfun",

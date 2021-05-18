@@ -13,6 +13,10 @@ plan(callr)
 
 tar_plan(
   
+  # Run tests on custom functions ----
+  # (should be NULL, or will stop everything and issue an error)
+  test_results = run_tests(),
+  
   # Load and process various data ----
   
   # Unzip data files from Ebihara and Nitta 2019
