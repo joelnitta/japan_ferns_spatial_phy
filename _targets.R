@@ -425,8 +425,10 @@ tar_plan(
   # while accounting for spatial autocorrelation
   
   # Define variables for models
-  # - response variables
-  resp_vars = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_p_upper"),
+  # - response variables for environmental model
+  resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_p_upper"),
+  # - response variables for reproductive model
+  resp_vars_repro = c("richness", "pd_obs_z", "rpd_obs_z", "pe_obs_p_upper"),
   # - indep variables for environmental model
   indep_vars_env = c("temp", "precip", "precip_season"),
   # - indep variables for reproductive model
@@ -441,24 +443,24 @@ tar_plan(
   
   # Keep only variables needed for model and only rows with zero missing data
   # need 'grids' for Moran's I (used like rownames)
-  biodiv_ferns_cent_for_model = filter_data_for_model(
+  biodiv_ferns_env_cent_for_model = filter_data_for_model(
     biodiv_ferns_cent, 
-    c("grids", "lat", "long", resp_vars, indep_vars_env)),
+    c("grids", "lat", "long", resp_vars_env, indep_vars_env)),
   
   biodiv_ferns_repro_cent_for_model = filter_data_for_model(
     biodiv_ferns_repro_cent, 
-    c("grids", "lat", "long", resp_vars, indep_vars_repro)),
+    c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
   
   # Analyze Moran's I
-  morans_vars_env = c(resp_vars, indep_vars_env),
+  morans_vars_env = c(resp_vars_env, indep_vars_env),
   
-  dist_list_env = make_dist_list(biodiv_ferns_cent_for_model),
+  dist_list_env = make_dist_list(biodiv_ferns_env_cent_for_model),
   
   tar_target(
     morans_i_env,
     run_moran_mc(
       var_name = morans_vars_env, 
-      biodiv_data = biodiv_ferns_cent_for_model, 
+      biodiv_data = biodiv_ferns_env_cent_for_model, 
       listw = dist_list_env, 
       nsim = 1000
     ),
@@ -502,7 +504,7 @@ tar_plan(
   # (waste of memory to write each out to cache, as they are about 4GB in total)
   tar_target(
     env_models,
-    run_spamm(env_formulas, biodiv_ferns_cent_for_model),
+    run_spamm(env_formulas, biodiv_ferns_env_cent_for_model),
     pattern = map(env_formulas)
   ),
   
@@ -515,7 +517,7 @@ tar_plan(
   # models each with one variable removed (also compares with null model)
   tar_target(
     lrt_comp_table,
-    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_cent_for_model),
+    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_env_cent_for_model),
     pattern = map(lrt_comp_table_empty)
   ),
   
