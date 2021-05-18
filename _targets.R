@@ -469,8 +469,8 @@ tar_plan(
   ),
   
   # Make a dataframe for running likelihood ratio tests (LRTs). 
-  # Includes columns 'formula_1' and 'formula_2',
-  # each with a pair of models to test using LRT.
+  # Includes columns 'full_formula' and 'null_formula',
+  # each with a pair of model formulas to test using LRT.
   lrt_comp_table_empty = make_lrt_comp_table(env_models),
   
   # Conduct LRTs between best-scoring models and 

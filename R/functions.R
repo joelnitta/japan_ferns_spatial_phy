@@ -2852,6 +2852,25 @@ generate_spatial_comparisons <- function(resp_var, indep_vars) {
     rename(comparsion = indep_var)
 }
 
+#' Extract independent variables from a formula string
+#' 
+#' Also drops Matern random effects
+#' 
+#' Helper function for make_lrt_comp_table()
+#'
+#' @param formula_string Formula as a string
+#'
+#' @return Character vector of independent variables
+#' 
+extract_indep_vars <- function(formula_string) {
+  formula_string %>%
+    str_remove_all("\\+ *Matern\\(.*\\)") %>%
+    str_remove_all("^[^~]+~") %>%
+    str_remove_all(" ") %>%
+    str_split("\\+") %>%
+    unlist()
+}
+
 #' Make a tibble for comparing log-likelihood values between environmental models
 #' 
 #' Selects best-scoring (highest log-likelihood) model, then
