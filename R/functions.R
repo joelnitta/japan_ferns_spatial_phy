@@ -2824,6 +2824,8 @@ run_spamm <- function(formula_tibble, data) {
 #' can be assessed.
 #' 
 #' Comparison will also be made with the null (spatial) model
+#' 
+#' Helper function for make_lrt_comp_table()
 #'
 #' @param resp_var Name of response variable
 #' @param indep_vars Vector of independent variables
@@ -2831,21 +2833,21 @@ run_spamm <- function(formula_tibble, data) {
 #' @return Tibble
 generate_spatial_comparisons <- function(resp_var, indep_vars) {
   
-  full_model <- glue("{resp_var} ~ {paste(indep_vars, collapse = ' + ')} + Matern(1|long+lat)") 
+  full_formula_string <- glue("{resp_var} ~ {paste(indep_vars, collapse = ' + ')} + Matern(1|long+lat)") %>% 
+    as.character
   
-  # formula_1 is null model
-  # formula_2 is full model
   tibble(
     resp_var = resp_var,
     indep_var = indep_vars,
-    formula_2 = full_model) %>%
-    mutate(formula_1 = str_remove_all(full_model, fixed(paste(indep_var, "+"))) %>% str_replace_all("  ", " ")) %>%
+    full_formula = full_formula_string) %>%
+    mutate(null_formula = str_remove_all(full_formula_string, fixed(paste(indep_var, "+"))) %>% str_replace_all("  ", " ")) %>%
     bind_rows(
       tibble(
         resp_var = resp_var,
         indep_var = "null_model",
-        formula_2 = full_model,
-        formula_1 = glue("{resp_var} ~ 1 + Matern(1|long+lat)"))
+        full_formula = full_formula_string,
+        null_formula = glue("{resp_var} ~ 1 + Matern(1|long+lat)") %>% as.character
+      )
     ) %>%
     rename(comparsion = indep_var)
 }
@@ -2864,8 +2866,8 @@ generate_spatial_comparisons <- function(resp_var, indep_vars) {
 #' @param env_models_df Tibble of environmental model results with columns
 #' 'resp_var', 'formula', and 'log_lik'
 #'
-#' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'formula_1',
-#' and 'formula_2'
+#' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'null_formula',
+#' and 'full_formula'
 #' 
 make_lrt_comp_table <- function(env_models_df) {
   
@@ -2887,23 +2889,21 @@ make_lrt_comp_table <- function(env_models_df) {
 
 #' Run a likelihood ratio test on formulas provided as a tibble
 #'
-#' @param lrt_table Tibble in wide format with columns 'resp_var', 'formula_1',
-#' and 'formula_2'
+#' @param lrt_table Tibble in wide format with columns 'resp_var', 'null_formula',
+#' and 'full_formula'
 #' @param data Data for model
 #'
 #' @return Tibble in wide format with columns 'chi2_LR', 'df', and 'p_value' added
-#' @export
 #'
-#' @examples
 run_spamm_lrt <- function(lrt_table, data) {
   mutate(
     lrt_table,
     map2_df(
-      formula_1,
-      formula_2,
+      null_formula,
+      full_formula,
       ~spaMM::fixedLRT(
-        as.formula(.x), 
-        as.formula(.y), 
+        null.formula = as.formula(.x), 
+        formula = as.formula(.y), 
         data = data, method = "ML") %>%
         magrittr::extract2("basicLRT") %>%
         as_tibble()
