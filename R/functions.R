@@ -2993,6 +2993,39 @@ run_spamm_lrt <- function(lrt_table, data) {
   )
 }
 
+#' Generate a table of formulas to compare with LRT
+#' 
+#' Each comparison drops an independent variable from the
+#' full model, so the effect of that variable on the model
+#' can be assessed.
+#' 
+#' Comparison will also be made with the null (spatial) model
+#'
+#' @param resp_var Name of response variable
+#' @param indep_vars Vector of independent variables
+#'
+#' @return Tibble
+generate_spatial_comparisons <- function(resp_var, indep_vars) {
+  
+  full_model <- glue("{resp_var} ~ {paste(indep_vars, collapse = ' + ')} + Matern(1|long+lat)") 
+  
+  # formula_1 is null model
+  # formula_2 is full model
+  tibble(
+    resp_var = resp_var,
+    indep_var = indep_vars,
+    formula_2 = full_model) %>%
+    mutate(formula_1 = str_remove_all(full_model, fixed(paste(indep_var, "+"))) %>% str_replace_all("  ", " ")) %>%
+    bind_rows(
+      tibble(
+        resp_var = resp_var,
+        indep_var = "null_model",
+        formula_2 = full_model,
+        formula_1 = glue("{resp_var} ~ 1 + Matern(1|long+lat)"))
+    ) %>%
+    rename(comparsion = indep_var)
+}
+
 # Manuscript rendering ----
 
 #' Generate a path to save a results file

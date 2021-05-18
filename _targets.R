@@ -473,6 +473,24 @@ tar_plan(
     pattern = map(lrt_comp_table_empty)
   ),
   
+  # Make a dataframe for comparing effect of each indep variable in full model
+  env_comparisons = bind_rows(
+    # richness includes a quadratic for temperature only
+    generate_spatial_comparisons("richness", c("temp", "I(temp^2)", "precip", "precip_season")),
+    generate_spatial_comparisons("pd_obs_z", c("temp", "precip", "precip_season")), # SES of PD
+    generate_spatial_comparisons("fd_obs_z", c("temp", "precip", "precip_season")), # SES of FD
+    generate_spatial_comparisons("rpd_obs_z", c("temp", "precip", "precip_season")), # SES of RPD
+    generate_spatial_comparisons("rfd_obs_z", c("temp", "precip", "precip_season")), # SES of RFD
+    generate_spatial_comparisons("pe_obs_p_upper", c("temp", "precip", "precip_season")) # PE p-score
+  ),
+  
+  # Conduct likelihood ratio tests between models with one variable removed
+  tar_target(
+    lrt_comp_env,
+    run_spamm_lrt(env_comparisons, data = biodiv_ferns_cent_for_model),
+    pattern = map(env_comparisons)
+  ),
+  
   # Conservation analysis ----
   
   ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)
