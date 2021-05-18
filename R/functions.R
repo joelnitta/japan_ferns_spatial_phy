@@ -2697,7 +2697,7 @@ nest_biodiv_dat <- function (biodiv_data) {
 #' @return Tibble with Moran's I and p-value
 run_moran_mc <- function(var_name, biodiv_data, listw, nsim = 1000) {
   spdep::moran.mc(
-    x = biodiv_ferns_cent[[var_name]], listw = listw, nsim = nsim) %>% 
+    x = biodiv_data[[var_name]], listw = listw, nsim = nsim) %>% 
     broom::tidy() %>%
     rename(morans_i = statistic, pval_i = p.value) %>%
     mutate(var = var_name)
