@@ -14,7 +14,7 @@ plan(callr)
 tar_plan(
   
   # Run tests on custom functions ----
-  # (should be NULL, or will stop everything and issue an error)
+  # (result should be NULL, or will stop everything and issue an error)
   test_results = run_tests(),
   
   # Load and process various data ----
@@ -291,20 +291,21 @@ tar_plan(
   
   # Conduct randomization tests of phylogeny-based metrics for all ferns and
   # ferns endemic to Japan only
-  tar_target(rand_test_phy,
-             run_rand_analysis(
-               comm = fern_comm_list,
-               phy = japan_fern_tree,
-               null_model = "independentswap",
-               n_reps = 999,
-               n_iterations = 100000,
-               metrics = fern_comm_metrics,
-               dataset_name = fern_comm_names) %>%
-               categorize_endemism,
-             pattern = map(
-               comm = fern_comm_list,
-               metrics = fern_comm_metrics,
-               dataset_name = fern_comm_names)
+  tar_target(
+    rand_test_phy,
+    run_rand_analysis(
+      comm = fern_comm_list,
+      phy = japan_fern_tree,
+      null_model = "independentswap",
+      n_reps = 999,
+      n_iterations = 100000,
+      metrics = fern_comm_metrics,
+      dataset_name = fern_comm_names) %>%
+      categorize_endemism,
+    pattern = map(
+      comm = fern_comm_list,
+      metrics = fern_comm_metrics,
+      dataset_name = fern_comm_names)
   ),
   
   # Separate out randomization results by dataset
@@ -427,9 +428,9 @@ tar_plan(
   # - response variables
   resp_vars = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_p_upper"),
   # - indep variables for environmental model
-  indep_vars_env = c("temp", "precip", "precip_season", "lat", "long"),
+  indep_vars_env = c("temp", "precip", "precip_season"),
   # - indep variables for reproductive model
-  indep_vars_repro = c("percent_apo", "precip", "precip_season", "lat", "long"),
+  indep_vars_repro = c("percent_apo", "temp", "precip", "precip_season"),
   
   # Make biodiversity metrics dataframe with centroid of each site
   # - all ferns dataset
@@ -439,7 +440,44 @@ tar_plan(
   biodiv_ferns_repro_cent = sf_to_centroids(biodiv_ferns_repro_spatial),
   
   # Keep only variables needed for model and only rows with zero missing data
-  biodiv_ferns_cent_for_model = filter_data_for_model(biodiv_ferns_cent, c(resp_vars, indep_vars_env)),
+  # need 'grids' for Moran's I (used like rownames)
+  biodiv_ferns_cent_for_model = filter_data_for_model(
+    biodiv_ferns_cent, 
+    c("grids", "lat", "long", resp_vars, indep_vars_env)),
+  
+  biodiv_ferns_repro_cent_for_model = filter_data_for_model(
+    biodiv_ferns_repro_cent, 
+    c("grids", "lat", "long", resp_vars, indep_vars_repro)),
+  
+  # Analyze Moran's I
+  morans_vars_env = c(resp_vars, indep_vars_env),
+  
+  dist_list_env = make_dist_list(biodiv_ferns_cent_for_model),
+  
+  tar_target(
+    morans_i_env,
+    run_moran_mc(
+      var_name = morans_vars_env, 
+      biodiv_data = biodiv_ferns_cent_for_model, 
+      listw = dist_list_env, 
+      nsim = 1000
+    ),
+    pattern = map(morans_vars_env)
+  ),
+
+  dist_list_repro = make_dist_list(biodiv_ferns_repro_cent_for_model),
+  
+  tar_target(
+    morans_i_repro,
+    run_moran_mc(
+      var_name = "percent_apo", 
+      biodiv_data = biodiv_ferns_repro_cent_for_model, 
+      listw = dist_list_repro, 
+      nsim = 1000
+    )
+  ),
+  
+  morans_i = bind_rows(morans_i_env, morans_i_repro),
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(

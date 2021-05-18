@@ -2688,33 +2688,23 @@ nest_biodiv_dat <- function (biodiv_data) {
 }
 
 #' Run permutation test for Moran's I statistic
-#' 
-#' Wrapper for spdep::moran.mc(), designed to take input as tibble so it works
-#' for mapping in {targets} plan
 #'
-#' @param model_dat Dataframe with one row and two columns: `var` (response variable name)
-#' and `model` (model)
-#' @param listw Spatial weights list with number of regions equal to number
-#' of independent data points in model
+#' @param var_name String; name of variable to test
+#' @param biodiv_data Dataframe including the variable to test
+#' @param listw Spatial weights list for testing spatial autocorrelation
 #' @param nsim Number of simulations to use for calculating Moran's I
 #'
 #' @return Tibble with Moran's I and p-value
-moran_mc <- function (model_dat, listw, nsim) {
-  
-  # Extract model from input
-  model <- model_dat$model[[1]]
-  
+run_moran_mc <- function(var_name, biodiv_data, listw, nsim = 1000) {
   spdep::moran.mc(
-    x = residuals(model), listw = listw, nsim = nsim) %>% 
+    x = biodiv_ferns_cent[[var_name]], listw = listw, nsim = nsim) %>% 
     broom::tidy() %>%
-    rename(morans_I = statistic, I_pval = p.value) %>%
-    # Add response variable name
-    mutate(var = model_dat$var)
+    rename(morans_i = statistic, pval_i = p.value) %>%
+    mutate(var = var_name)
 }
 
 #' Run modified t-test accounting for spatial autocorrelation in indepedent variables
 #' 
-#'
 #' @param biodiv_ferns_repro_spatial Spatial dataframe including climate percent apomixis
 #' @param mean_climate Dataframe including grid cell IDs and climate variables
 #' @param vars_select Selecte variables to include in analysis
