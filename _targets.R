@@ -436,7 +436,7 @@ tar_plan(
   
   # Make biodiversity metrics dataframe with centroid of each site
   # - all ferns dataset
-  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial),
+  biodiv_ferns_env_cent = sf_to_centroids(biodiv_ferns_spatial),
   
   # - only those with repro. data available
   biodiv_ferns_repro_cent = sf_to_centroids(biodiv_ferns_repro_spatial),
@@ -444,7 +444,7 @@ tar_plan(
   # Keep only variables needed for model and only rows with zero missing data
   # need 'grids' for Moran's I (used like rownames)
   biodiv_ferns_env_cent_for_model = filter_data_for_model(
-    biodiv_ferns_cent, 
+    biodiv_ferns_env_cent, 
     c("grids", "lat", "long", resp_vars_env, indep_vars_env)),
   
   biodiv_ferns_repro_cent_for_model = filter_data_for_model(
