@@ -2687,38 +2687,6 @@ nest_biodiv_dat <- function (biodiv_data) {
     ungroup()
 }
 
-#' Make non-spatial linear models testing response variable vs. percent apomictic taxxa
-#'
-#' @param biodiv_data Nested fern biodiversity data including columns: `grids`, `percent_apo`,
-#'  and `var`, where `var` is one of `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, 
-#'  `rpe_obs_z`
-#'
-#' @return Tibble with one row for each metric ("var") and a list-column with the linear model
-#' 
-make_non_spatial_model <- function (nested_biodiv_dat) {
-  nested_biodiv_dat %>%
-    mutate(model = map(
-      data, 
-      ~lm(value ~ percent_apo, data = .))) %>%
-    select(-data)
-}
-
-#' Make spatial linear models testing response variable vs. percent apomictic taxxa
-#'
-#' @param biodiv_data Nested fern biodiversity data including columns: `grids`, `percent_apo`,
-#'  and `var`, where `var` is one of `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, 
-#'  `rpe_obs_z`
-#'
-#' @return Tibble with one row for each metric ("var") and a list-column with the spatial linear model
-#' 
-make_spatial_model <- function (nested_biodiv_dat) {
-  nested_biodiv_dat %>%
-    mutate(model = map(
-      data, 
-      ~spaMM::fitme(value ~ percent_apo + Matern(1 | long + lat), data = ., family = "gaussian"))) %>%
-    select(-data)
-}
-
 #' Run permutation test for Moran's I statistic
 #' 
 #' Wrapper for spdep::moran.mc(), designed to take input as tibble so it works
