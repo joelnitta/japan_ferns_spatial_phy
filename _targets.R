@@ -455,40 +455,26 @@ tar_plan(
     generate_spatial_formulas("pe_obs_p_upper", c("temp", "precip", "precip_season")) # PE p-score
   ),
   
-  # Loop across each formula, build a spatial model, and calculate likelihood
+  # Loop across each formula, build a spatial model, and calculate likelihood.
+  # Result is a tibble with log-likelihood for each model, but not the models themselves.
+  # (waste of memory to write each out to cache, as they are about 4GB in total)
   tar_target(
     env_models,
     run_spamm(env_formulas, biodiv_ferns_cent_for_model),
     pattern = map(env_formulas)
   ),
   
-  # Make a dataframe for comparing models. Includes columns 'formula_1' and 'formula_2',
+  # Make a dataframe for running likelihood ratio tests (LRTs). 
+  # Includes columns 'formula_1' and 'formula_2',
   # each with a pair of models to test using LRT.
   lrt_comp_table_empty = make_lrt_comp_table(env_models),
   
-  # Conduct likelihood ratio tests between subsequent best-scoring models
+  # Conduct LRTs between best-scoring models and 
+  # models each with one variable removed (also compares with null model)
   tar_target(
     lrt_comp_table,
     run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_cent_for_model),
     pattern = map(lrt_comp_table_empty)
-  ),
-  
-  # Make a dataframe for comparing effect of each indep variable in full model
-  env_comparisons = bind_rows(
-    # richness includes a quadratic for temperature only
-    generate_spatial_comparisons("richness", c("temp", "I(temp^2)", "precip", "precip_season")),
-    generate_spatial_comparisons("pd_obs_z", c("temp", "precip", "precip_season")), # SES of PD
-    generate_spatial_comparisons("fd_obs_z", c("temp", "precip", "precip_season")), # SES of FD
-    generate_spatial_comparisons("rpd_obs_z", c("temp", "precip", "precip_season")), # SES of RPD
-    generate_spatial_comparisons("rfd_obs_z", c("temp", "precip", "precip_season")), # SES of RFD
-    generate_spatial_comparisons("pe_obs_p_upper", c("temp", "precip", "precip_season")) # PE p-score
-  ),
-  
-  # Conduct likelihood ratio tests between models with one variable removed
-  tar_target(
-    lrt_comp_env,
-    run_spamm_lrt(env_comparisons, data = biodiv_ferns_cent_for_model),
-    pattern = map(env_comparisons)
   ),
   
   # Conservation analysis ----

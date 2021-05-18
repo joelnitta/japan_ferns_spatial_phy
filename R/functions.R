@@ -2744,28 +2744,6 @@ moran_mc <- function (model_dat, listw, nsim) {
     mutate(var = model_dat$var)
 }
 
-#' Run likelihood ratio tests on null vs. fixed-effect spatial models
-#' 
-#' Null model only includes random effects; alternative includes the effect
-#' of percent apomictic taxa
-#'
-#' @param biodiv_data Fern biodiversity data including columns: `grids`, `percent_apo`,
-#'  `pd_obs_z`, `rpd_obs_z`, `pe_obs_z`, `rpe_obs_z`
-#'
-#' @return Tibble with one row for each metric ("var") and a list-column with the spatial linear model
-#' 
-run_spatial_lrt <- function (nested_biodiv_dat) {
-  nested_biodiv_dat %>%
-    mutate(
-      lrt = map(data, 
-                ~spaMM::fixedLRT(
-                  value ~ 1 + Matern(1 | long + lat), 
-                  value ~ percent_apo + Matern(1 | long + lat), 
-                  family = "gaussian",
-                  method = "ML", data = .))) %>%
-    select(-data)
-}
-
 #' Run modified t-test accounting for spatial autocorrelation in indepedent variables
 #' 
 #'
@@ -2871,128 +2849,6 @@ run_spamm <- function(formula_tibble, data) {
   )
 }
 
-
-#' Check that an integer is even
-#'
-#' @param x Integer vector
-#'
-#' @return Logical
-is_even <- function(x) {
-  assertthat::assert_that(is.integer(x))
-  x %% 2 == 0}
-
-#' Make a tibble for comparing AIC values between environmental models
-#' 
-#' Arranges the models by best scoring AIC value, then identifies pairs of
-#' models to be tested with the likelihood ratio test (LRT). Each test is
-#' between the best-performing and second-best, then third-best vs. fourth-best,
-#' etc.
-#'
-#' @param env_models_df Tibble of environmental model results with columns
-#' 'resp_var', 'formula', and 'log_lik'
-#'
-#' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'formula_1',
-#' and 'formula_2'
-#' @export
-#'
-#' @examples
-make_lrt_comp_table <- function(env_models_df) {
-  
-  # # Pair scheme needs to look like this (non-null models)
-  # mod1 1
-  # mod2 1 2
-  # mod3   2 3 
-  # mod4     3 4
-  # mod5       4
-  
-  #  
-  # formula1 formula2 group
-  # mod1     mod2     1
-  # mod2     mod3     2
-  # mod3     mod4     3
-  # mod4     mod5     4
-  
-  # Helper function to assign comparison groups according to above scheme
-  # n = total number of rows (mod1 - mod5)
-  assign_comp_groups <- function(n, which) {
-    jntools::paste3(
-      c(1:(n-1), NA),
-      c(NA, 1:(n-1))
-    )[which]
-  }
-  
-  
-  consec_best_comp <-
-    env_models_df %>%
-    select(-fixed_effects) %>%
-    # Add count of observations (models) of each response variable
-    group_by(resp_var) %>%
-    add_count() %>%
-    # Assign a group to each pair of models within a response variable:
-    # always comparing best (highest) likelihood to next-highest likelihood
-    arrange(desc(log_lik)) %>%
-    group_split() %>%
-    map(~mutate(., order = 1:nrow(.))) %>%
-    bind_rows() %>%
-    mutate(comp_group = map2_chr(n, order, assign_comp_groups)) %>%
-    separate_rows(comp_group, sep = " ") %>%
-    arrange(resp_var, comp_group, order) %>% 
-    group_by(resp_var, comp_group) %>%
-    mutate(formula_num = paste0("formula_", 1:2)) %>%
-    ungroup() %>%
-    select(resp_var, formula, comp_group, formula_num) %>%
-    # Convert to wide format
-    pivot_wider(values_from = formula, names_from = formula_num)
-  
-  null_models <-
-    env_models_df %>%
-    filter(str_detect(formula, "~ 1")) %>%
-    select(formula)
-  
-  pred_models <-
-    env_models_df %>%
-    filter(str_detect(formula, "~ 1", negate = TRUE)) %>%
-    select(formula)
-  
-  null_comp <-
-    cross_df(list(formula_1 = pred_models$formula, formula_2 = null_models$formula)) %>%
-    mutate(resp_var = str_split(formula_1, " ~ ") %>% map_chr(1)) %>%
-    mutate(resp_var_2 = str_split(formula_2, " ~ ") %>% map_chr(1)) %>%
-    filter(resp_var == resp_var_2) %>%
-    select(-resp_var_2) %>%
-    mutate(comp_group = "null")
-  
-  bind_rows(consec_best_comp, null_comp) %>%
-    arrange(resp_var, comp_group)
-  
-}
-
-#' Run a likelihood ratio test on formulas provided as a tibble
-#'
-#' @param lrt_table Tibble in wide format with columns 'resp_var', 'formula_1',
-#' and 'formula_2'
-#' @param data Data for model
-#'
-#' @return Tibble in wide format with columns 'chi2_LR', 'df', and 'p_value' added
-#' @export
-#'
-#' @examples
-run_spamm_lrt <- function(lrt_table, data) {
-  mutate(
-    lrt_table,
-    map2_df(
-      formula_1,
-      formula_2,
-      ~spaMM::fixedLRT(
-        as.formula(.x), 
-        as.formula(.y), 
-        data = data, method = "ML") %>%
-        magrittr::extract2("basicLRT") %>%
-        as_tibble()
-    )
-  )
-}
-
 #' Generate a table of formulas to compare with LRT
 #' 
 #' Each comparison drops an independent variable from the
@@ -3024,6 +2880,67 @@ generate_spatial_comparisons <- function(resp_var, indep_vars) {
         formula_1 = glue("{resp_var} ~ 1 + Matern(1|long+lat)"))
     ) %>%
     rename(comparsion = indep_var)
+}
+
+#' Make a tibble for comparing log-likelihood values between environmental models
+#' 
+#' Selects best-scoring (highest log-likelihood) model, then
+#' constructs sets of comparisons with smaller models.
+#' 
+#' Each comparison drops an independent variable from the
+#' full model, so the effect of that variable on the full model
+#' can be assessed.
+#' 
+#' Comparison will also be made with the null (spatial) model.
+#'
+#' @param env_models_df Tibble of environmental model results with columns
+#' 'resp_var', 'formula', and 'log_lik'
+#'
+#' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'formula_1',
+#' and 'formula_2'
+#' 
+make_lrt_comp_table <- function(env_models_df) {
+  
+  env_models_df %>% 
+    # Get best-scoring model for each response variable
+    group_by(resp_var) %>%
+    arrange(desc(log_lik), .by_group = TRUE) %>%
+    slice(1) %>%
+    ungroup() %>%
+    # Extract indepent variables
+    mutate(indep_vars = map(formula, extract_indep_vars)) %>%
+    select(resp_var, indep_vars) %>%
+    # Construct fomulas for comparing full vs. null model
+    mutate(comp = map2(resp_var, indep_vars, generate_spatial_comparisons)) %>%
+    select(-indep_vars, -resp_var) %>%
+    unnest(comp)
+  
+}
+
+#' Run a likelihood ratio test on formulas provided as a tibble
+#'
+#' @param lrt_table Tibble in wide format with columns 'resp_var', 'formula_1',
+#' and 'formula_2'
+#' @param data Data for model
+#'
+#' @return Tibble in wide format with columns 'chi2_LR', 'df', and 'p_value' added
+#' @export
+#'
+#' @examples
+run_spamm_lrt <- function(lrt_table, data) {
+  mutate(
+    lrt_table,
+    map2_df(
+      formula_1,
+      formula_2,
+      ~spaMM::fixedLRT(
+        as.formula(.x), 
+        as.formula(.y), 
+        data = data, method = "ML") %>%
+        magrittr::extract2("basicLRT") %>%
+        as_tibble()
+    )
+  )
 }
 
 # Manuscript rendering ----
