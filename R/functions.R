@@ -2712,16 +2712,6 @@ prepare_data_for_moran <- function(
   )
 }
 
-# Nest biodiversity data by selected response variables vs. percent apomictic
-nest_biodiv_dat <- function (biodiv_data) {
-  biodiv_data %>%
-    select(grids, long, lat, percent_apo, pd_obs_z, rpd_obs_z, pe_obs_z, rpe_obs_z) %>%
-    pivot_longer(names_to = "var", values_to = "value", -c(grids, long, lat, percent_apo)) %>%
-    group_by(var) %>%
-    nest() %>%
-    ungroup()
-}
-
 #' Run permutation test for Moran's I statistic
 #'
 #' @param var_name String; name of variable to test
@@ -2782,36 +2772,6 @@ run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
   }
   
   map2_df(t_test_vars$var1, t_test_vars$var2, ~run_mod_ttest(var1 = .x, var2 = .y, data = biodiv_ferns_cent_repro, coords = coords))
-  
-}
-
-
-#' Generate table of spatial formulas
-#'
-#' @param resp_var Character vector of length 1; response variable
-#' @param indep_var Character vector; independent variables
-#'
-#' @return Tibble with two columns, "resp_var" for the response variable,
-#' and "formula" with formulas as a character vector
-#' @export
-#'
-#' @examples
-generate_spatial_formulas <- function (resp_var, indep_var) {
-  
-  # Loop over indep vars and build vector of unique combinations
-  res <- NULL
-  for (i in 1:length(indep_var)) {
-    res[[i]] <-
-      combn(indep_var, i) %>%
-      apply(2, function(x) {paste(x, collapse = " + ")})
-  }
-  
-  # Build the formula. Include spatial correlation matrix in every formula
-  formulas <- paste(resp_var, "~", unlist(res), "+ Matern(1 | long + lat)") %>%
-    # Also include null model (spatial matrix only)
-    c(paste(resp_var, "~", "1 + Matern(1 | long + lat)"))
-  
-  tibble(resp_var = resp_var, formula = formulas)
   
 }
 
@@ -2883,7 +2843,7 @@ run_spamm <- function(formula, data, resp_var, data_type) {
 #' 
 #' Comparison will also be made with the null (spatial) model
 #' 
-#' Helper function for make_lrt_comp_table()
+#' Helper function for prepare_data_for_lrt()
 #'
 #' @param resp_var Name of response variable
 #' @param indep_vars Vector of independent variables
@@ -2914,7 +2874,7 @@ generate_spatial_comparisons <- function(resp_var, indep_vars) {
 #' 
 #' Also drops Matern random effects
 #' 
-#' Helper function for make_lrt_comp_table()
+#' Helper function for prepare_data_for_lrt()
 #'
 #' @param formula_string Formula as a string
 #'
