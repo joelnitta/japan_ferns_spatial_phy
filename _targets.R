@@ -451,7 +451,7 @@ tar_plan(
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
-    biodiv_ferns_cent_repro, 
+    sf_to_centroids(biodiv_ferns_repro_spatial), 
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo")
   ),
   
@@ -510,14 +510,24 @@ tar_plan(
   # Make a dataframe for running likelihood ratio tests (LRTs). 
   # Includes columns 'full_formula' and 'null_formula',
   # each with a pair of model formulas to test using LRT.
-  lrt_comp_table_empty = make_lrt_comp_table(env_models),
+  data_for_lrt = prepare_data_for_lrt(
+    env_models = env_models, 
+    biodiv_ferns_cent_env = biodiv_ferns_cent_env, 
+    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro),
   
-  # Conduct LRTs between best-scoring models and 
-  # models each with one variable removed (also compares with null model)
+  # Conduct LRTs between full models and models each with one variable removed 
+  # (also compares with null model)
   tar_target(
     lrt_comp_table,
-    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_cent_env),
-    pattern = map(lrt_comp_table_empty)
+    run_spamm_lrt(
+      null_formula = data_for_lrt$null_formula[[1]], 
+      full_formula = data_for_lrt$full_formula[[1]], 
+      data = data_for_lrt$data[[1]], 
+      data_type = data_for_lrt$data_type[[1]], 
+      resp_var = data_for_lrt$resp_var[[1]], 
+      comparsion = data_for_lrt$comparison[[1]]
+    ),
+    pattern = map(data_for_lrt)
   ),
   
   # Conservation analysis ----

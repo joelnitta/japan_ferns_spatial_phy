@@ -2748,10 +2748,10 @@ run_moran_mc <- function(var_name, biodiv_data, listw, nsim = 1000) {
 #' 
 run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
 
-  # Extract long/lat
+  # Extract long/lat as matrix
   coords <- select(biodiv_ferns_cent_repro, long, lat) %>% as.matrix()
   
-  # Make cross table of all unique combinations of indep vars
+  # Make cross table of all unique combinations of independent vars
   t_test_vars <-
     biodiv_ferns_cent_repro %>%
     select(all_of(vars_select)) %>%
@@ -2945,19 +2945,33 @@ extract_indep_vars <- function(formula_string) {
 #' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'null_formula',
 #' and 'full_formula'
 #' 
-make_lrt_comp_table <- function(env_models_df) {
+prepare_data_for_lrt <- function(env_models, biodiv_ferns_cent_env, biodiv_ferns_cent_repro) {
   
-  env_models_df %>% 
-    # Make sure there is only one model per response variable
-    assert(is_uniq, resp_var) %>%
-    assert(not_na, everything()) %>%
+  env_models %>%
     # Extract independent variables
     mutate(indep_vars = map(formula, extract_indep_vars)) %>%
-    select(resp_var, indep_vars) %>%
+    select(resp_var, indep_vars, data_type) %>%
     # Construct formulas for comparing full vs. null model
     mutate(comp = map2(resp_var, indep_vars, generate_spatial_comparisons)) %>%
     select(-indep_vars, -resp_var) %>%
-    unnest(comp)
+    unnest(comp) %>%
+    left_join(
+      tibble(
+        data_type = "env",
+        data_env = list(biodiv_ferns_cent_env)
+      ),
+      by = "data_type"
+    ) %>%
+    left_join(
+      tibble(
+        data_type = "env",
+        data_repro = list(biodiv_ferns_cent_repro)
+      ),
+      by = "data_type"
+    ) %>%
+    mutate(data = coalesce(data_env, data_repro)) %>%
+    select(-data_env, -data_repro) %>%
+    assert(not_na, everything())
   
 }
 
@@ -2967,22 +2981,17 @@ make_lrt_comp_table <- function(env_models_df) {
 #' and 'full_formula'
 #' @param data Data for model
 #'
-#' @return Tibble in wide format with columns 'chi2_LR', 'df', and 'p_value' added
+#' @return Tibble with columns 'chi2_LR', 'df', 'p_value', 
 #'
-run_spamm_lrt <- function(lrt_table, data) {
-  mutate(
-    lrt_table,
-    map2_df(
-      null_formula,
-      full_formula,
-      ~spaMM::fixedLRT(
-        null.formula = as.formula(.x), 
-        formula = as.formula(.y), 
-        data = data, method = "ML") %>%
-        magrittr::extract2("basicLRT") %>%
-        as_tibble()
-    )
-  )
+run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var, comparsion) {
+  spaMM::fixedLRT(
+    null.formula = as.formula(null_formula), 
+    formula = as.formula(full_formula), 
+    data = data, 
+    method = "ML") %>%
+    magrittr::extract2("basicLRT") %>%
+    as_tibble() %>%
+    mutate(resp_var = resp_var, comparsion = comparsion, data_type = data_type)
 }
 
 # Manuscript rendering ----
