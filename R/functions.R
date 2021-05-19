@@ -2677,6 +2677,40 @@ make_dist_list <- function(data) {
   
 }
 
+#' Prepare data for calculating Moran's I in a loop
+#'
+#' @param morans_vars_env 
+#' @param biodiv_ferns_cent 
+#' @param dist_list_env 
+#' @param morans_vars_repro 
+#' @param biodiv_ferns_repro_cent 
+#' @param dist_list_repro 
+#'
+#' @return Tibble
+#' 
+prepare_data_for_moran <- function(
+  morans_vars_env,
+  biodiv_ferns_cent,
+  dist_list_env,
+  morans_vars_repro = "percent_apo",
+  biodiv_ferns_repro_cent,
+  dist_list_repro
+) {
+  bind_rows(
+    tibble(
+      vars = morans_vars_env,
+      data_type = "env",
+      data = list(biodiv_ferns_cent),
+      dist_list = list(dist_list_env)
+    ),
+    tibble(
+      vars = morans_vars_repro,
+      data_type = "repro",
+      data = list(biodiv_ferns_repro_cent),
+      dist_list = list(dist_list_repro))
+  )
+}
+
 # Nest biodiversity data by selected response variables vs. percent apomictic
 nest_biodiv_dat <- function (biodiv_data) {
   biodiv_data %>%
@@ -2863,8 +2897,7 @@ extract_indep_vars <- function(formula_string) {
 
 #' Make a tibble for comparing log-likelihood values between environmental models
 #' 
-#' Selects best-scoring (highest log-likelihood) model, then
-#' constructs sets of comparisons with smaller models.
+#' Constructs sets of comparisons between full model and smaller models.
 #' 
 #' Each comparison drops an independent variable from the
 #' full model, so the effect of that variable on the full model
@@ -2881,15 +2914,13 @@ extract_indep_vars <- function(formula_string) {
 make_lrt_comp_table <- function(env_models_df) {
   
   env_models_df %>% 
-    # Get best-scoring model for each response variable
-    group_by(resp_var) %>%
-    arrange(desc(log_lik), .by_group = TRUE) %>%
-    slice(1) %>%
-    ungroup() %>%
-    # Extract indepent variables
+    # Make sure there is only one model per response variable
+    assert(is_uniq, resp_var) %>%
+    assert(not_na, everything()) %>%
+    # Extract independent variables
     mutate(indep_vars = map(formula, extract_indep_vars)) %>%
     select(resp_var, indep_vars) %>%
-    # Construct fomulas for comparing full vs. null model
+    # Construct formulas for comparing full vs. null model
     mutate(comp = map2(resp_var, indep_vars, generate_spatial_comparisons)) %>%
     select(-indep_vars, -resp_var) %>%
     unnest(comp)

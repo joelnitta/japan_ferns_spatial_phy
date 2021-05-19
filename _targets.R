@@ -424,62 +424,30 @@ tar_plan(
   # Model the effects of environment and percent apomictic taxa on each biodiversity metric, 
   # while accounting for spatial autocorrelation
   
+  ## Setup ----
+  
   # Define variables for models
   # - response variables for environmental model
   resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_p_upper"),
   # - response variables for reproductive model
-  resp_vars_repro = c("richness", "pd_obs_z", "rpd_obs_z", "pe_obs_p_upper"),
-  # - indep variables for environmental model
+  resp_vars_repro = c("pd_obs_z", "rpd_obs_z", "pe_obs_p_upper"),
+  # - independent variables for environmental model
   indep_vars_env = c("temp", "precip", "precip_season"),
-  # - indep variables for reproductive model
+  # - independent variables for reproductive model
   indep_vars_repro = c("percent_apo", "temp", "precip", "precip_season"),
   
-  # Make biodiversity metrics dataframe with centroid of each site
-  # - all ferns dataset
-  biodiv_ferns_env_cent = sf_to_centroids(biodiv_ferns_spatial),
+  # Make biodiversity metrics dataframe with centroid of each site.
+  # Keep only variables needed for model and only rows with zero missing data.
+  # - all ferns dataset (for environmental model)
+  biodiv_ferns_env_cent = sf_to_centroids(biodiv_ferns_spatial) %>%
+    # need 'grids' for Moran's I (used like rownames)
+    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_env)),
   
-  # - only those with repro. data available
-  biodiv_ferns_repro_cent = sf_to_centroids(biodiv_ferns_repro_spatial),
+  # - only those with repro. data available (for reproductive model)
+  biodiv_ferns_repro_cent = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
+    filter_data_for_model(c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
   
-  # Keep only variables needed for model and only rows with zero missing data
-  # need 'grids' for Moran's I (used like rownames)
-  biodiv_ferns_env_cent_for_model = filter_data_for_model(
-    biodiv_ferns_env_cent, 
-    c("grids", "lat", "long", resp_vars_env, indep_vars_env)),
-  
-  biodiv_ferns_repro_cent_for_model = filter_data_for_model(
-    biodiv_ferns_repro_cent, 
-    c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
-  
-  # Analyze Moran's I
-  morans_vars_env = c(resp_vars_env, indep_vars_env),
-  
-  dist_list_env = make_dist_list(biodiv_ferns_env_cent_for_model),
-  
-  tar_target(
-    morans_i_env,
-    run_moran_mc(
-      var_name = morans_vars_env, 
-      biodiv_data = biodiv_ferns_env_cent_for_model, 
-      listw = dist_list_env, 
-      nsim = 1000
-    ),
-    pattern = map(morans_vars_env)
-  ),
-
-  dist_list_repro = make_dist_list(biodiv_ferns_repro_cent_for_model),
-  
-  tar_target(
-    morans_i_repro,
-    run_moran_mc(
-      var_name = "percent_apo", 
-      biodiv_data = biodiv_ferns_repro_cent_for_model, 
-      listw = dist_list_repro, 
-      nsim = 1000
-    )
-  ),
-  
-  morans_i = bind_rows(morans_i_env, morans_i_repro),
+  ## Correlation analysis ----
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
@@ -487,24 +455,55 @@ tar_plan(
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo")
   ),
   
-  # Generate tibble of formulas for looping.
-  # Models include only uncorrelated environmental variables
-  env_formulas = bind_rows(
-    # richness includes a quadratic for temperature only
-    generate_spatial_formulas("richness", c("temp", "I(temp^2)", "precip", "precip_season")),
-    generate_spatial_formulas("pd_obs_z", c("temp", "precip", "precip_season")), # SES of PD
-    generate_spatial_formulas("fd_obs_z", c("temp", "precip", "precip_season")), # SES of FD
-    generate_spatial_formulas("rpd_obs_z", c("temp", "precip", "precip_season")), # SES of RPD
-    generate_spatial_formulas("rfd_obs_z", c("temp", "precip", "precip_season")), # SES of RFD
-    generate_spatial_formulas("pe_obs_p_upper", c("temp", "precip", "precip_season")) # PE p-score
+  ## Analyze Moran's I ----
+
+  # Make list of distances for run_moran_mc()
+  # - environmental dataset
+  dist_list_env = make_dist_list(biodiv_ferns_env_cent),
+  # - reproductive dataset (% apogamous taxa only)
+  dist_list_repro = make_dist_list(biodiv_ferns_repro_cent),
+  
+  # Prepare datasets for looping
+  data_for_moran = prepare_data_for_moran(
+    morans_vars_env = c(resp_vars_env, indep_vars_env),
+    biodiv_ferns_cent = biodiv_ferns_cent,
+    dist_list_env = dist_list_env,
+    morans_vars_repro = "percent_apo",
+    biodiv_ferns_repro_cent = biodiv_ferns_repro_cent,
+    dist_list_repro = dist_list_repro
   ),
   
-  # Loop across each formula, build a spatial model, and calculate likelihood.
-  # Result is a tibble with log-likelihood for each model, but not the models themselves.
-  # (waste of memory to write each out to cache, as they are about 4GB in total)
+  # Loop over datasets and calculate Moran's I
+  tar_target(
+    morans_i,
+    run_moran_mc(
+      var_name = data_for_moran$vars[[1]], 
+      biodiv_data = data_for_moran$data[[1]], 
+      listw = data_for_moran$dist_list[[1]], 
+      nsim = 1000
+    ),
+    pattern = map(data_for_moran)
+  ),
+
+  ## Spatial models ----
+  
+  # Generate tibble of formulas for looping.
+  # Models include only uncorrelated environmental variables.
+  # richness includes extra quadratic term `I(temp^2)` for temperature.
+  env_formulas = tribble(
+    ~resp_var,        ~formula,
+    "fd_obs_z",       "fd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)",
+    "pd_obs_z",       "pd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)",
+    "pe_obs_p_upper", "pe_obs_p_upper ~ temp + precip + precip_season + Matern(1 | long + lat)",
+    "rfd_obs_z",      "rfd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)",
+    "richness",       "richness ~ temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat)",
+    "rpd_obs_z",      "rpd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)"
+  ),
+  
+  # Loop across each formula, build a spatial model, and calculate likelihood
   tar_target(
     env_models,
-    run_spamm(env_formulas, biodiv_ferns_env_cent_for_model),
+    run_spamm(env_formulas, biodiv_ferns_env_cent),
     pattern = map(env_formulas)
   ),
   
@@ -517,7 +516,7 @@ tar_plan(
   # models each with one variable removed (also compares with null model)
   tar_target(
     lrt_comp_table,
-    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_env_cent_for_model),
+    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_env_cent),
     pattern = map(lrt_comp_table_empty)
   ),
   
