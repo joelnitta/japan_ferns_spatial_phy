@@ -2954,6 +2954,36 @@ run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var,
     mutate(resp_var = resp_var, comparsion = comparsion, data_type = data_type)
 }
 
+#' Extract beta table (fixed effects) from a model
+#'
+#' @param model Model (list)
+#'
+#' @return Tibble
+#' @examples
+#' betas <-
+#' env_models %>%
+#'   mutate(beta_table = map(model, extract_beta_table)) %>%
+#'   select(resp_var, beta_table) %>%
+#'   unnest(beta_table)
+#' 
+extract_beta_table <- function(model) {
+  
+  # Make version of summary() that won't print to screen
+  quiet_summary <- quietly(summary)
+  
+  model %>%
+    # get model summary
+    quiet_summary %>%
+    # extract the beta table (a matrix)
+    pluck("result", "beta_table") %>%
+    # convert to tibble
+    as.data.frame() %>%
+    rownames_to_column("term") %>%
+    clean_names() %>%
+    as_tibble()
+}
+
+
 # Manuscript rendering ----
 
 #' Generate a path to save a results file
