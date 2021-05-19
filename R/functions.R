@@ -2680,10 +2680,10 @@ make_dist_list <- function(data) {
 #' Prepare data for calculating Moran's I in a loop
 #'
 #' @param morans_vars_env Variables to test for spatial autocorrelation in environmental dataset
-#' @param biodiv_ferns_env_cent Tibble with metrics of biodiversity for environmental dataset
+#' @param biodiv_ferns_cent_env Tibble with metrics of biodiversity for environmental dataset
 #' @param dist_list_env List of spatial distances from environmental dataset (spatial weights list)
 #' @param morans_vars_repro Variables to test for spatial autocorrelation in repro. dataset
-#' @param biodiv_ferns_repro_cent Tibble with metrics of biodiversity for repro. dataset
+#' @param biodiv_ferns_cent_repro Tibble with metrics of biodiversity for repro. dataset
 #' @param dist_list_repro List of spatial distances from repro. dataset (spatial weights list)
 #'
 #' @return Tibble with columns "vars" (character), "data_type" (character), "data" (list-column),
@@ -2691,23 +2691,23 @@ make_dist_list <- function(data) {
 #' 
 prepare_data_for_moran <- function(
   morans_vars_env,
-  biodiv_ferns_env_cent,
+  biodiv_ferns_cent_env,
   dist_list_env,
   morans_vars_repro = "percent_apo",
-  biodiv_ferns_repro_cent,
+  biodiv_ferns_cent_repro,
   dist_list_repro
 ) {
   bind_rows(
     tibble(
       vars = morans_vars_env,
       data_type = "env",
-      data = list(biodiv_ferns_env_cent),
+      data = list(biodiv_ferns_cent_env),
       dist_list = list(dist_list_env)
     ),
     tibble(
       vars = morans_vars_repro,
       data_type = "repro",
-      data = list(biodiv_ferns_repro_cent),
+      data = list(biodiv_ferns_cent_repro),
       dist_list = list(dist_list_repro))
   )
 }
@@ -2746,14 +2746,14 @@ run_moran_mc <- function(var_name, biodiv_data, listw, nsim = 1000) {
 #'
 #' @return Tibble with modified t-test statistics
 #' 
-run_mod_ttest_ja <- function(biodiv_ferns_repro_cent, vars_select) {
+run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
 
   # Extract long/lat
-  coords <- select(biodiv_ferns_repro_cent, long, lat) %>% as.matrix()
+  coords <- select(biodiv_ferns_cent_repro, long, lat) %>% as.matrix()
   
   # Make cross table of all unique combinations of indep vars
   t_test_vars <-
-    biodiv_ferns_repro_cent %>%
+    biodiv_ferns_cent_repro %>%
     select(all_of(vars_select)) %>%
     colnames() %>%
     list(var1 = ., var2 = .) %>%
@@ -2781,7 +2781,7 @@ run_mod_ttest_ja <- function(biodiv_ferns_repro_cent, vars_select) {
     )
   }
   
-  map2_df(t_test_vars$var1, t_test_vars$var2, ~run_mod_ttest(var1 = .x, var2 = .y, data = biodiv_ferns_repro_cent, coords = coords))
+  map2_df(t_test_vars$var1, t_test_vars$var2, ~run_mod_ttest(var1 = .x, var2 = .y, data = biodiv_ferns_cent_repro, coords = coords))
   
 }
 
@@ -2818,18 +2818,18 @@ generate_spatial_formulas <- function (resp_var, indep_var) {
 #' Prepare data for running spaMM in a loop
 #'
 #' @param resp_var_env Response variables to include in spatial model for environmental dataset
-#' @param biodiv_ferns_env_cent Tibble with metrics of biodiversity for environmental dataset
+#' @param biodiv_ferns_cent_env Tibble with metrics of biodiversity for environmental dataset
 #' @param resp_var_repro Response variables to include in spatial model for repro. dataset
-#' @param biodiv_ferns_repro_cent Tibble with metrics of biodiversity for repro. dataset
+#' @param biodiv_ferns_cent_repro Tibble with metrics of biodiversity for repro. dataset
 #'
 #' @return Tibble with columns "resp_var" (character), "formula" (character), "data" (list-column),
 #' "data_type" (character)
 #' 
 prepare_data_for_spamm <- function(
   resp_var_env = c("fd_obs_z", "pd_obs_z", "pe_obs_p_upper", "rfd_obs_z", "richness", "rpd_obs_z"),
-  biodiv_ferns_env_cent,
+  biodiv_ferns_cent_env,
   resp_var_repro = c("pd_obs_z", "pe_obs_p_upper", "rpd_obs_z"),
-  biodiv_ferns_repro_cent
+  biodiv_ferns_cent_repro
 ) {
   bind_rows(
     crossing(
@@ -2840,7 +2840,7 @@ prepare_data_for_spamm <- function(
         # Add quadratic term only for richness
         formula = if_else(resp_var == "richness", "temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat)", formula),
         formula = glue("{resp_var} ~ {formula}") %>% as.character(),
-        data = list(biodiv_ferns_env_cent),
+        data = list(biodiv_ferns_cent_env),
         data_type = "env"),
     crossing(
       resp_var = resp_var_repro,
@@ -2848,7 +2848,7 @@ prepare_data_for_spamm <- function(
     ) %>%
       mutate(
         formula = glue("{resp_var} ~ {formula}") %>% as.character(),
-        data = list(biodiv_ferns_repro_cent),
+        data = list(biodiv_ferns_cent_repro),
         data_type = "repro"
       )
   )

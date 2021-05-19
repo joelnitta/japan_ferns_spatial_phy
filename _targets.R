@@ -439,19 +439,19 @@ tar_plan(
   # Make biodiversity metrics dataframe with centroid of each site.
   # Keep only variables needed for model and only rows with zero missing data.
   # - all ferns dataset (for environmental model)
-  biodiv_ferns_env_cent = sf_to_centroids(biodiv_ferns_spatial) %>%
+  biodiv_ferns_cent_env = sf_to_centroids(biodiv_ferns_spatial) %>%
     # need 'grids' for Moran's I (used like rownames)
     filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_env)),
   
   # - only those with repro. data available (for reproductive model)
-  biodiv_ferns_repro_cent = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
+  biodiv_ferns_cent_repro = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
     filter_data_for_model(c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
   
   ## Correlation analysis ----
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
-    biodiv_ferns_repro_cent, 
+    biodiv_ferns_cent_repro, 
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo")
   ),
   
@@ -459,17 +459,17 @@ tar_plan(
 
   # Make list of distances for run_moran_mc()
   # - environmental dataset
-  dist_list_env = make_dist_list(biodiv_ferns_env_cent),
+  dist_list_env = make_dist_list(biodiv_ferns_cent_env),
   # - reproductive dataset (% apogamous taxa only)
-  dist_list_repro = make_dist_list(biodiv_ferns_repro_cent),
+  dist_list_repro = make_dist_list(biodiv_ferns_cent_repro),
   
   # Prepare datasets for looping
   data_for_moran = prepare_data_for_moran(
     morans_vars_env = c(resp_vars_env, indep_vars_env),
-    biodiv_ferns_env_cent = biodiv_ferns_env_cent,
+    biodiv_ferns_cent_env = biodiv_ferns_cent_env,
     dist_list_env = dist_list_env,
     morans_vars_repro = "percent_apo",
-    biodiv_ferns_repro_cent = biodiv_ferns_repro_cent,
+    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro,
     dist_list_repro = dist_list_repro
   ),
   
@@ -490,9 +490,9 @@ tar_plan(
   # Prepare datasets for looping
   data_for_spamm = prepare_data_for_spamm(
     resp_var_env = resp_vars_env,
-    biodiv_ferns_env_cent = biodiv_ferns_env_cent,
+    biodiv_ferns_cent_env = biodiv_ferns_cent_env,
     resp_var_repro = resp_vars_repro,
-    biodiv_ferns_repro_cent = biodiv_ferns_repro_cent
+    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro
   ),
   
   # Loop across each formula and build a spatial model
@@ -516,7 +516,7 @@ tar_plan(
   # models each with one variable removed (also compares with null model)
   tar_target(
     lrt_comp_table,
-    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_env_cent),
+    run_spamm_lrt(lrt_comp_table_empty, data = biodiv_ferns_cent_env),
     pattern = map(lrt_comp_table_empty)
   ),
   
