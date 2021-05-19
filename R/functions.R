@@ -2679,18 +2679,19 @@ make_dist_list <- function(data) {
 
 #' Prepare data for calculating Moran's I in a loop
 #'
-#' @param morans_vars_env 
-#' @param biodiv_ferns_cent 
-#' @param dist_list_env 
-#' @param morans_vars_repro 
-#' @param biodiv_ferns_repro_cent 
-#' @param dist_list_repro 
+#' @param morans_vars_env Variables to test for spatial autocorrelation in environmental dataset
+#' @param biodiv_ferns_env_cent Tibble with metrics of biodiversity for environmental dataset
+#' @param dist_list_env List of spatial distances from environmental dataset (spatial weights list)
+#' @param morans_vars_repro Variables to test for spatial autocorrelation in repro. dataset
+#' @param biodiv_ferns_repro_cent Tibble with metrics of biodiversity for repro. dataset
+#' @param dist_list_repro List of spatial distances from repro. dataset (spatial weights list)
 #'
-#' @return Tibble
+#' @return Tibble with columns "vars" (character), "data_type" (character), "data" (list-column),
+#' and "dist_list" (list-column)
 #' 
 prepare_data_for_moran <- function(
   morans_vars_env,
-  biodiv_ferns_cent,
+  biodiv_ferns_env_cent,
   dist_list_env,
   morans_vars_repro = "percent_apo",
   biodiv_ferns_repro_cent,
@@ -2700,7 +2701,7 @@ prepare_data_for_moran <- function(
     tibble(
       vars = morans_vars_env,
       data_type = "env",
-      data = list(biodiv_ferns_cent),
+      data = list(biodiv_ferns_env_cent),
       dist_list = list(dist_list_env)
     ),
     tibble(
@@ -2814,30 +2815,63 @@ generate_spatial_formulas <- function (resp_var, indep_var) {
   
 }
 
+#' Prepare data for running spaMM in a loop
+#'
+#' @param resp_var_env Response variables to include in spatial model for environmental dataset
+#' @param biodiv_ferns_env_cent Tibble with metrics of biodiversity for environmental dataset
+#' @param resp_var_repro Response variables to include in spatial model for repro. dataset
+#' @param biodiv_ferns_repro_cent Tibble with metrics of biodiversity for repro. dataset
+#'
+#' @return Tibble with columns "resp_var" (character), "formula" (character), "data" (list-column),
+#' "data_type" (character)
+#' 
+prepare_data_for_spamm <- function(
+  resp_var_env = c("fd_obs_z", "pd_obs_z", "pe_obs_p_upper", "rfd_obs_z", "richness", "rpd_obs_z"),
+  biodiv_ferns_env_cent,
+  resp_var_repro = c("pd_obs_z", "pe_obs_p_upper", "rpd_obs_z"),
+  biodiv_ferns_repro_cent
+) {
+  bind_rows(
+    crossing(
+      resp_var = resp_var_env,
+      formula = c("temp + precip + precip_season + Matern(1 | long + lat)")
+    ) %>%
+      mutate(
+        # Add quadratic term only for richness
+        formula = if_else(resp_var == "richness", "temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat)", formula),
+        formula = glue("{resp_var} ~ {formula}") %>% as.character(),
+        data = list(biodiv_ferns_env_cent),
+        data_type = "env"),
+    crossing(
+      resp_var = resp_var_repro,
+      formula = c("percent_apo + precip + precip_season + Matern(1 | long + lat)")
+    ) %>%
+      mutate(
+        formula = glue("{resp_var} ~ {formula}") %>% as.character(),
+        data = list(biodiv_ferns_repro_cent),
+        data_type = "repro"
+      )
+  )
+}
+
 #' Fit a linear mixed model including spatial autocorrelation
 #' 
 #' Wrapper around spaMM::fitme() so it can be run as a loop in {targets}
-#' 
-#' This is meant to be run over a large list of possible formulas, so it only
-#' keeps the log-likelihood and fixed effects. The full model can be generated
-#' again from the formula.
 #'
-#' @param formula_tibble Tibble with a single row and columns "resp_var" indicating the
-#' response variable (character) and "formula" indicating the formula (character)
+#' @param formula Formula as a character string
 #' @param data Data for the model
+#' @param resp_var Response variable
+#' @param data_type Data type ("env" or "repro")
 #'
 #' @return Tibble with columns: "resp_var" (character), "formula" (character),
-#' "log-likelihood" (double), "fixed_effects" (list)
+#' "data_type" (character), "model" (list)
 #' 
-run_spamm <- function(formula_tibble, data) {
-  
-  model <- spaMM::fitme(as.formula(formula_tibble$formula[[1]]), data = data, family = "gaussian")
-  
+run_spamm <- function(formula, data, resp_var, data_type) {
   tibble(
-    resp_var = formula_tibble$resp_var[[1]],
-    formula = formula_tibble$formula[[1]],
-    log_lik = logLik(model),
-    fixed_effects = list(fixef(model))
+    resp_var = resp_var,
+    formula = formula,
+    data_type = data_type,
+    model = list(spaMM::fitme(as.formula(formula), data = data, family = "gaussian"))
   )
 }
 

@@ -466,7 +466,7 @@ tar_plan(
   # Prepare datasets for looping
   data_for_moran = prepare_data_for_moran(
     morans_vars_env = c(resp_vars_env, indep_vars_env),
-    biodiv_ferns_cent = biodiv_ferns_cent,
+    biodiv_ferns_env_cent = biodiv_ferns_env_cent,
     dist_list_env = dist_list_env,
     morans_vars_repro = "percent_apo",
     biodiv_ferns_repro_cent = biodiv_ferns_repro_cent,
@@ -487,24 +487,24 @@ tar_plan(
 
   ## Spatial models ----
   
-  # Generate tibble of formulas for looping.
-  # Models include only uncorrelated environmental variables.
-  # richness includes extra quadratic term `I(temp^2)` for temperature.
-  env_formulas = tribble(
-    ~resp_var,        ~formula,
-    "fd_obs_z",       "fd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)",
-    "pd_obs_z",       "pd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)",
-    "pe_obs_p_upper", "pe_obs_p_upper ~ temp + precip + precip_season + Matern(1 | long + lat)",
-    "rfd_obs_z",      "rfd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)",
-    "richness",       "richness ~ temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat)",
-    "rpd_obs_z",      "rpd_obs_z ~ temp + precip + precip_season + Matern(1 | long + lat)"
+  # Prepare datasets for looping
+  data_for_spamm = prepare_data_for_spamm(
+    resp_var_env = resp_vars_env,
+    biodiv_ferns_env_cent = biodiv_ferns_env_cent,
+    resp_var_repro = resp_vars_repro,
+    biodiv_ferns_repro_cent = biodiv_ferns_repro_cent
   ),
   
-  # Loop across each formula, build a spatial model, and calculate likelihood
+  # Loop across each formula and build a spatial model
   tar_target(
     env_models,
-    run_spamm(env_formulas, biodiv_ferns_env_cent),
-    pattern = map(env_formulas)
+    run_spamm(
+      formula = data_for_spamm$formula[[1]], 
+      data = data_for_spamm$data[[1]], 
+      resp_var = data_for_spamm$resp_var[[1]], 
+      data_type = data_for_spamm$data_type[[1]]
+    ),
+    pattern = map(data_for_spamm)
   ),
   
   # Make a dataframe for running likelihood ratio tests (LRTs). 
