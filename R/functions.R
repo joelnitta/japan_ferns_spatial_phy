@@ -2737,7 +2737,7 @@ run_moran_mc <- function(var_name, biodiv_data, listw, nsim = 1000) {
 #' @return Tibble with modified t-test statistics
 #' 
 run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
-
+  
   # Extract long/lat as matrix
   coords <- select(biodiv_ferns_cent_repro, long, lat) %>% as.matrix()
   
@@ -2907,30 +2907,32 @@ extract_indep_vars <- function(formula_string) {
 #' 
 prepare_data_for_lrt <- function(env_models, biodiv_ferns_cent_env, biodiv_ferns_cent_repro) {
   
-  env_models %>%
+  # First define full and null formulas
+  formulas <-
+    env_models %>%
     # Extract independent variables
     mutate(indep_vars = map(formula, extract_indep_vars)) %>%
     select(resp_var, indep_vars, data_type) %>%
     # Construct formulas for comparing full vs. null model
     mutate(comp = map2(resp_var, indep_vars, generate_spatial_comparisons)) %>%
     select(-indep_vars, -resp_var) %>%
-    unnest(comp) %>%
-    left_join(
-      tibble(
-        data_type = "env",
-        data_env = list(biodiv_ferns_cent_env)
+    unnest(comp)
+  
+  # Next join data by data type
+  bind_rows(
+    formulas %>% 
+      filter(data_type == "env") %>%
+      left_join(
+        tibble(data_type = "env", data = list(biodiv_ferns_cent_env)),
+        by = "data_type"
       ),
-      by = "data_type"
-    ) %>%
-    left_join(
-      tibble(
-        data_type = "env",
-        data_repro = list(biodiv_ferns_cent_repro)
-      ),
-      by = "data_type"
-    ) %>%
-    mutate(data = coalesce(data_env, data_repro)) %>%
-    select(-data_env, -data_repro) %>%
+    formulas %>%
+      filter(data_type == "repro") %>%
+      left_join(
+        tibble(data_type = "repro", data = list(biodiv_ferns_cent_repro)),
+        by = "data_type"
+      )
+  ) %>%
     assert(not_na, everything())
   
 }
