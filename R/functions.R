@@ -2943,17 +2943,30 @@ prepare_data_for_lrt <- function(env_models, biodiv_ferns_cent_env, biodiv_ferns
 #' and 'full_formula'
 #' @param data Data for model
 #'
-#' @return Tibble with columns 'chi2_LR', 'df', 'p_value', 
+#' @return Tibble with columns 'chi2_LR', 'df', 'p_value', 'loglik_null', 
+#' 'loglik_full', 'resp_var', 'comparsion', and 'data_type'
+#' 
 #'
 run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var, comparsion) {
-  spaMM::fixedLRT(
+  
+  # Conduct LRT
+  lrt_res <- spaMM::fixedLRT(
     null.formula = as.formula(null_formula), 
     formula = as.formula(full_formula), 
     data = data, 
-    method = "ML") %>%
+    method = "ML")
+  
+  # Extract important statistics from result
+  # (chi2, df, p-value, log-likelihoods of null and full model)
+  lrt_res %>%
     magrittr::extract2("basicLRT") %>%
     as_tibble() %>%
-    mutate(resp_var = resp_var, comparsion = comparsion, data_type = data_type)
+    mutate(
+      loglik_null = logLik(fixlrt$nullfit),
+      loglik_full = logLik(fixlrt$fullfit),
+      resp_var = resp_var, 
+      comparsion = comparsion, 
+      data_type = data_type)
 }
 
 #' Extract beta table (fixed effects) from a model
