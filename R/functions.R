@@ -2962,8 +2962,8 @@ run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var,
     magrittr::extract2("basicLRT") %>%
     as_tibble() %>%
     mutate(
-      loglik_null = logLik(fixlrt$nullfit),
-      loglik_full = logLik(fixlrt$fullfit),
+      loglik_null = logLik(lrt_res$nullfit),
+      loglik_full = logLik(lrt_res$fullfit),
       resp_var = resp_var, 
       comparison = comparison, 
       data_type = data_type)
