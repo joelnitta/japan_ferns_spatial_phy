@@ -2867,7 +2867,7 @@ generate_spatial_comparisons <- function(resp_var, indep_vars) {
         null_formula = glue("{resp_var} ~ 1 + Matern(1|long+lat)") %>% as.character
       )
     ) %>%
-    rename(comparsion = indep_var)
+    rename(comparison = indep_var)
 }
 
 #' Extract independent variables from a formula string
@@ -2944,10 +2944,10 @@ prepare_data_for_lrt <- function(env_models, biodiv_ferns_cent_env, biodiv_ferns
 #' @param data Data for model
 #'
 #' @return Tibble with columns 'chi2_LR', 'df', 'p_value', 'loglik_null', 
-#' 'loglik_full', 'resp_var', 'comparsion', and 'data_type'
+#' 'loglik_full', 'resp_var', 'comparison', and 'data_type'
 #' 
 #'
-run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var, comparsion) {
+run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var, comparison) {
   
   # Conduct LRT
   lrt_res <- spaMM::fixedLRT(
@@ -2965,7 +2965,7 @@ run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var,
       loglik_null = logLik(fixlrt$nullfit),
       loglik_full = logLik(fixlrt$fullfit),
       resp_var = resp_var, 
-      comparsion = comparsion, 
+      comparison = comparison, 
       data_type = data_type)
 }
 

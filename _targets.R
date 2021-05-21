@@ -525,7 +525,7 @@ tar_plan(
       data = data_for_lrt$data[[1]], 
       data_type = data_for_lrt$data_type[[1]], 
       resp_var = data_for_lrt$resp_var[[1]], 
-      comparsion = data_for_lrt$comparison[[1]]
+      comparison = data_for_lrt$comparison[[1]]
     ),
     pattern = map(data_for_lrt)
   ),
