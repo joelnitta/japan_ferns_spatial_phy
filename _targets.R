@@ -497,7 +497,7 @@ tar_plan(
   
   # Loop across each formula and build a spatial model
   tar_target(
-    env_models,
+    spatial_models,
     run_spamm(
       formula = data_for_spamm$formula[[1]], 
       data = data_for_spamm$data[[1]], 
@@ -511,7 +511,7 @@ tar_plan(
   # Includes columns 'full_formula' and 'null_formula',
   # each with a pair of model formulas to test using LRT.
   data_for_lrt = prepare_data_for_lrt(
-    env_models = env_models, 
+    spatial_models = spatial_models, 
     biodiv_ferns_cent_env = biodiv_ferns_cent_env, 
     biodiv_ferns_cent_repro = biodiv_ferns_cent_repro),
   

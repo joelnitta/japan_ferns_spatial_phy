@@ -2889,7 +2889,7 @@ extract_indep_vars <- function(formula_string) {
     unlist()
 }
 
-#' Make a tibble for comparing log-likelihood values between environmental models
+#' Make a tibble for comparing log-likelihood values between spatial models
 #' 
 #' Constructs sets of comparisons between full model and smaller models.
 #' 
@@ -2899,17 +2899,17 @@ extract_indep_vars <- function(formula_string) {
 #' 
 #' Comparison will also be made with the null (spatial) model.
 #'
-#' @param env_models_df Tibble of environmental model results with columns
+#' @param spatial_models Tibble of spatial model results with columns
 #' 'resp_var', 'formula', and 'log_lik'
 #'
 #' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'null_formula',
 #' and 'full_formula'
 #' 
-prepare_data_for_lrt <- function(env_models, biodiv_ferns_cent_env, biodiv_ferns_cent_repro) {
+prepare_data_for_lrt <- function(spatial_models, biodiv_ferns_cent_env, biodiv_ferns_cent_repro) {
   
   # First define full and null formulas
   formulas <-
-    env_models %>%
+    spatial_models %>%
     # Extract independent variables
     mutate(indep_vars = map(formula, extract_indep_vars)) %>%
     select(resp_var, indep_vars, data_type) %>%
@@ -2976,7 +2976,7 @@ run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var,
 #' @return Tibble
 #' @examples
 #' betas <-
-#' env_models %>%
+#' spatial_models %>%
 #'   mutate(beta_table = map(model, extract_beta_table)) %>%
 #'   select(resp_var, beta_table) %>%
 #'   unnest(beta_table)
