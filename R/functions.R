@@ -2966,6 +2966,8 @@ run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var,
     mutate(
       loglik_null = logLik(lrt_res$nullfit),
       loglik_full = logLik(lrt_res$fullfit),
+      null_formula = null_formula,
+      full_formula = full_formula,
       resp_var = resp_var, 
       comparison = comparison, 
       data_type = data_type)
