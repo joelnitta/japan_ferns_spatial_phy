@@ -2804,7 +2804,9 @@ prepare_data_for_spamm <- function(
         data_type = "env"),
     crossing(
       resp_var = resp_var_repro,
-      formula = c("percent_apo + precip + precip_season + Matern(1 | long + lat)")
+      formula = c(
+        "percent_apo + precip + precip_season + Matern(1 | long + lat)",
+        "temp + precip + precip_season + Matern(1 | long + lat)")
     ) %>%
       mutate(
         formula = glue("{resp_var} ~ {formula}") %>% as.character(),
