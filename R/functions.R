@@ -2975,17 +2975,17 @@ run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var,
 
 #' Extract beta table (fixed effects) from a model
 #'
-#' @param model Model (list)
+#' @param model An object of class HLfit, as returned by the fitting functions in spaMM.
 #'
-#' @return Tibble
+#' @return Tibble with fixed effects
 #' @examples
 #' betas <-
 #' spatial_models %>%
-#'   mutate(beta_table = map(model, extract_beta_table)) %>%
+#'   mutate(beta_table = map(model, get_beta_table)) %>%
 #'   select(resp_var, beta_table) %>%
 #'   unnest(beta_table)
 #' 
-extract_beta_table <- function(model) {
+get_beta_table <- function(model) {
   
   # Make version of summary() that won't print to screen
   quiet_summary <- quietly(summary)
@@ -3002,6 +3002,36 @@ extract_beta_table <- function(model) {
     as_tibble()
 }
 
+#' Extract correlation parameters from a model
+#'
+#' @param model An object of class HLfit, as returned by the fitting functions in spaMM.
+#'
+#' @return Tibble with correlation parameters (rhu and nu)
+#' 
+get_corr_pars <- function(model) {
+  get_ranPars(model, which="corrPars") %>%
+    pluck(1) %>%
+    unlist() %>%
+    as.matrix() %>%
+    t() %>%
+    as_tibble()
+}
+
+#' Extract AIC from a model
+#'
+#' @param model An object of class HLfit, as returned by the fitting functions in spaMM.
+#'
+#' @return Tibble with AIC values
+#' 
+get_aic <- function(model) {
+  AIC.HLfit.quiet <- quietly(spaMM::AIC.HLfit)
+  AIC.HLfit.quiet(model) %>%
+    pluck("result") %>%
+    as.matrix() %>%
+    t() %>%
+    as_tibble() %>%
+    janitor::clean_names()
+}
 
 # Manuscript rendering ----
 
