@@ -1,0 +1,1051 @@
+references:
+- id: Arrhenius1921
+  author:
+  - family: Arrhenius
+    given: Olof
+  container-title: The Journal of Ecology
+  DOI: 10.2307/2255763
+  ISSN: '00220477'
+  issue: '1'
+  issued:
+  - year: 1921
+  page: 95-99
+  PMID: '1534'
+  title: Species and area
+  type: article-journal
+  URL: http://www.jstor.org/stable/2255763?origin=crossref
+  volume: '9'
+- id: Barrington1993
+  author:
+  - family: Barrington
+    given: David S
+  container-title: Journal of Biogeography
+  ISSN: 1365-2699
+  issue: '3'
+  issued:
+  - year: 1993
+  page: 275-279
+  title: Ecological and historical factors in fern biogeography
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1285
+  volume: '20'
+- id: Baselga2012
+  accessed:
+  - year: 2020
+    month: 6
+    day: 27
+  author:
+  - family: Baselga
+    given: Andrés
+  container-title: Global Ecology and Biogeography
+  DOI: 10/gddc72
+  ISSN: 1466822X
+  issue: '12'
+  issued:
+  - year: 2012
+    month: 12
+  language: en
+  page: 1223-1232
+  source: DOI.org (Crossref)
+  title: 'The relationship between species replacement, dissimilarity derived from
+    nestedness, and nestedness: Species replacement and nestedness'
+  title-short: The relationship between species replacement, dissimilarity derived
+    from nestedness, and nestedness
+  type: article-journal
+  URL: http://doi.wiley.com/10.1111/j.1466-8238.2011.00756.x
+  volume: '21'
+- id: Bengtsson2003
+  accessed:
+  - year: 2021
+    month: 4
+    day: 12
+  author:
+  - family: Bengtsson
+    given: B. O.
+  container-title: Journal of Evolutionary Biology
+  DOI: 10/bf52w9
+  ISSN: 1420-9101
+  issue: '2'
+  issued:
+  - year: 2003
+  language: en
+  note: '_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1046/j.1420-9101.2003.00523.x'
+  page: 189-199
+  source: Wiley Online Library
+  title: Genetic variation in organisms with sexual and asexual reproduction
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/abs/10.1046/j.1420-9101.2003.00523.x
+  volume: '16'
+- id: Blomberg2003
+  author:
+  - family: Blomberg
+    given: Simon P
+  - family: Garland Jr.
+    given: Theodore
+  - family: Ives
+    given: Anthony R.
+  container-title: Evolution
+  DOI: 10.1111/j.0014-3820.2003.tb00285.x
+  ISSN: 00143820
+  issue: '4'
+  issued:
+  - year: 2003
+  page: 717-745
+  title: 'Testing for phylogenetic signal in comparative data: Behavioral traits are
+    more labile'
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1988
+  volume: '57'
+- id: Brooks2006
+  accessed:
+  - year: 2021
+    month: 5
+    day: 18
+  author:
+  - family: Brooks
+    given: T. M.
+  - family: Mittermeier
+    given: R. A.
+  - family: Fonseca
+    given: G. A. B.
+    dropping-particle: da
+  - family: Gerlach
+    given: J.
+  - family: Hoffmann
+    given: M.
+  - family: Lamoreux
+    given: J. F.
+  - family: Mittermeier
+    given: C. G.
+  - family: Pilgrim
+    given: J. D.
+  - family: Rodrigues
+    given: A. S. L.
+  container-title: Science
+  DOI: 10/b84nbv
+  ISSN: 0036-8075, 1095-9203
+  issue: '5783'
+  issued:
+  - year: 2006
+    month: 7
+    day: 7
+  language: en
+  page: 58-61
+  PMID: '16825561'
+  publisher: American Association for the Advancement of Science
+  section: Review
+  source: science.sciencemag.org
+  title: Global Biodiversity Conservation Priorities
+  type: article-journal
+  URL: https://science.sciencemag.org/content/313/5783/58
+  volume: '313'
+- id: Bryant2008
+  author:
+  - family: Bryant
+    given: J
+  - family: Lamanna
+    given: C
+  - family: Morlon
+    given: H
+  - family: Kerkhoff
+    given: A
+  - family: Enquist
+    given: B
+  - family: Green
+    given: J
+  container-title: Proceedings of the National Academy of Sciences
+  ISSN: 1091-6490
+  issue: Supplement 1
+  issued:
+  - year: 2008
+  page: 11505-11511
+  title: 'Microbes on mountainsides: contrasting elevational patterns of bacterial
+    and plant diversity'
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1946
+  volume: '105'
+- id: Daru2020
+  accessed:
+  - year: 2020
+    month: 5
+    day: 11
+  author:
+  - family: Daru
+    given: Barnabas H.
+  - family: Farooq
+    given: Harith
+  - family: Antonelli
+    given: Alexandre
+  - family: Faurby
+    given: Søren
+  container-title: Nature Communications
+  container-title-short: Nat Commun
+  DOI: 10/ggvnhf
+  ISSN: 2041-1723
+  issue: '1'
+  issued:
+  - year: 2020
+    month: 12
+  language: en
+  page: '2115'
+  source: DOI.org (Crossref)
+  title: Endemism patterns are scale dependent
+  type: article-journal
+  URL: http://www.nature.com/articles/s41467-020-15921-6
+  volume: '11'
+- id: Ebihara2013
+  author:
+  - family: Ebihara
+    given: Atsushi
+  - family: Yamaoka
+    given: A
+  - family: Mizukami
+    given: 'N'
+  - family: Sakoda
+    given: A
+  - family: Nitta
+    given: Joel H.
+  - family: Imaichi
+    given: Ryoko
+  container-title: American Journal of Botany
+  DOI: 10.3732/ajb.1200555
+  ISSN: 1537-2197
+  issue: '4'
+  issued:
+  - year: 2013
+    month: 4
+    day: 1
+  page: 735-743
+  title: 'A survey of the fern gametophyte flora of Japan: Frequent independent occurrences
+    of noncordiform gametophytes'
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/abs/10.3732/ajb.1200555
+  volume: '100'
+- id: Ebihara2016b
+  author:
+  - family: Ebihara
+    given: Atsushi
+  event-place: Tokyo
+  issued:
+  - year: 2016
+  number-of-pages: '475'
+  publisher: Gakken Plus
+  publisher-place: Tokyo
+  title: The Standard of Ferns and Lycophytes in Japan, Vol. 1
+  type: book
+- id: Ebihara2017
+  author:
+  - family: Ebihara
+    given: Atsushi
+  event-place: Tokyo
+  issued:
+  - year: 2017
+  publisher: Gakken Plus
+  publisher-place: Tokyo
+  title: The Standard of Ferns and Lycophytes in Japan, Vol. 2
+  type: book
+- id: Ebihara2019a
+  author:
+  - family: Ebihara
+    given: Atsushi
+  - family: Nitta
+    given: Joel H.
+  - family: Matsumoto
+    given: Yurika
+  - family: Fukazawa
+    given: Yuri
+  - family: Kurihara
+    given: Marie
+  - family: Yokote
+    given: Hitomi
+  - family: Sakuma
+    given: Kaoru
+  - family: Azakami
+    given: Otowa
+  container-title: Bulletin of the National Museum of Nature and Science, Series B
+    (Botany), Tokyo
+  issue: '2'
+  issued:
+  - year: 2019
+    month: 5
+    day: 22
+  page: 77-86
+  title: Growth dynamics of independent gametophytes of *Pleurosoriopsis makinoi*
+    (Polypodiaceae)
+  type: article-journal
+  volume: '45'
+- id: Ebihara2019b
+  author:
+  - family: Ebihara
+    given: Atsushi
+  - family: Nitta
+    given: Joel H.
+  container-title: Journal of Plant Research
+  DOI: 10.1007/s10265-019-01137-3
+  ISSN: '16180860'
+  issue: '6'
+  issued:
+  - year: 2019
+    month: 9
+    day: 16
+  page: 723-738
+  PMID: '31529289'
+  title: An update and reassessment of fern and lycophyte diversity data in the Japanese
+    Archipelago
+  type: article-journal
+  volume: '132'
+- id: Faith1992
+  author:
+  - family: Faith
+    given: Daniel P
+  container-title: Biological Conservation
+  DOI: 10.1016/0006-3207(92)91201-3
+  ISSN: 0006-3207
+  issue: '1'
+  issued:
+  - year: 1992
+  page: 1-10
+  title: Conservation evaluation and phylogenetic diversity
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1899
+  volume: '61'
+- id: Fritz2010
+  author:
+  - family: Fritz
+    given: Susanne A.
+  - family: Purvis
+    given: Andy
+  container-title: Conservation Biology
+  DOI: 10.1111/j.1523-1739.2010.01455.x
+  ISSN: 08888892
+  issue: '4'
+  issued:
+  - year: 2010
+  page: 1042-1051
+  PMID: '20184650'
+  title: 'Selectivity in mammalian extinction risk and threat types: A new measure
+    of phylogenetic signal strength in binary traits'
+  type: article-journal
+  volume: '24'
+- id: Fukaya2020
+  accessed:
+  - year: 2020
+    month: 6
+    day: 30
+  author:
+  - family: Fukaya
+    given: Keiichi
+  - family: Kusumoto
+    given: Buntarou
+  - family: Shiono
+    given: Takayuki
+  - family: Fujinuma
+    given: Junichi
+  - family: Kubota
+    given: Yasuhiro
+  container-title: Nature Communications
+  container-title-short: Nat Commun
+  DOI: 10/ggztv3
+  ISSN: 2041-1723
+  issue: '1'
+  issued:
+  - year: 2020
+    month: 12
+  language: en
+  page: '1695'
+  source: DOI.org (Crossref)
+  title: Integrating multiple sources of ecological data to unveil macroscale species
+    abundance
+  type: article-journal
+  URL: http://www.nature.com/articles/s41467-020-15407-5
+  volume: '11'
+- id: Garcillan2003
+  accessed:
+  - year: 2020
+    month: 6
+    day: 27
+  author:
+  - family: Garcillán
+    given: Pedro P.
+  - family: Ezcurra
+    given: Exequiel
+  - family: Riemann
+    given: Hugo
+  container-title: Journal of Vegetation Science
+  container-title-short: Journal of Vegetation Science
+  DOI: 10/bgh9z9
+  ISSN: 1100-9233, 1654-1103
+  issue: '4'
+  issued:
+  - year: 2003
+    month: 8
+  language: en
+  page: 475-486
+  source: DOI.org (Crossref)
+  title: Distribution and species richness of woody dryland legumes in Baja California,
+    Mexico
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1654-1103.2003.tb02174.x
+  volume: '14'
+- id: Gonzalez-Orozco2014b
+  accessed:
+  - year: 2020
+    month: 8
+    day: 24
+  author:
+  - family: González‐Orozco
+    given: Carlos E.
+  - family: Thornhill
+    given: Andrew H.
+  - family: Knerr
+    given: Nunzio
+  - family: Laffan
+    given: Shawn
+  - family: Miller
+    given: Joseph T.
+  container-title: Diversity and Distributions
+  DOI: 10/f5mddz
+  ISSN: 1472-4642
+  issue: '1'
+  issued:
+  - year: 2014
+  language: en
+  note: '_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1111/ddi.12129'
+  page: 46-58
+  source: Wiley Online Library
+  title: Biogeographical regions and phytogeography of the eucalypts
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/ddi.12129
+  volume: '20'
+- id: Gotelli2000
+  author:
+  - family: Gotelli
+    given: Nicholas J
+  container-title: Ecology
+  DOI: 10.2307/177478
+  ISSN: 00129658
+  issue: '9'
+  issued:
+  - year: 2000
+    month: 9
+  page: 2606-2621
+  title: Null model analysis of species co-occurrence patterns
+  type: article-journal
+  URL: http://www.jstor.org/stable/177478?origin=crossref
+  volume: '81'
+- id: Gower1971
+  author:
+  - family: Gower
+    given: J. C.
+  container-title: Biometrics
+  DOI: 10.2307/2528823
+  ISSN: 0006341X
+  issue: '4'
+  issued:
+  - year: 1971
+  page: 857-871
+  PMID: '25246403'
+  title: A general coefficient of similarity and some of its properties
+  type: article-journal
+  URL: http://www.jstor.org/stable/2528823?origin=crossref
+  volume: '27'
+- id: Krueger-Hadfield2019
+  accessed:
+  - year: 2021
+    month: 4
+    day: 12
+  author:
+  - family: Krueger‐Hadfield
+    given: Stacy A.
+  - family: Blakeslee
+    given: April M. H.
+  - family: Fowler
+    given: Amy E.
+  container-title: Journal of Phycology
+  DOI: 10/gjppkc
+  ISSN: 1529-8817
+  issue: '6'
+  issued:
+  - year: 2019
+  language: en
+  note: '_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1111/jpy.12906'
+  page: 1198-1207
+  source: Wiley Online Library
+  title: Incorporating Ploidy Diversity into Ecological and Community Genetics
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/jpy.12906
+  volume: '55'
+- id: Kubota2014
+  author:
+  - family: Kubota
+    given: Yasuhiro
+  - family: Hirao
+    given: Toshihide
+  - family: Fujii
+    given: Shin Jiro
+  - family: Shiono
+    given: Takayuki
+  - family: Kusumoto
+    given: Buntarou
+  container-title: Journal of Biogeography
+  DOI: 10.1111/jbi.12290
+  ISSN: '13652699'
+  issued:
+  - year: 2014
+  page: 1267-1276
+  title: 'Beta diversity of woody plants in the Japanese archipelago: The roles of
+    geohistorical and ecological processes'
+  type: article-journal
+  volume: '41'
+- id: Kusumoto2017
+  accessed:
+  - year: 2020
+    month: 6
+    day: 30
+  author:
+  - family: Kusumoto
+    given: Buntarou
+  - family: Shiono
+    given: Takayuki
+  - family: Konoshima
+    given: Masashi
+  - family: Yoshimoto
+    given: Atsushi
+  - family: Tanaka
+    given: Takayuki
+  - family: Kubota
+    given: Yasuhiro
+  container-title: Ecological Research
+  container-title-short: Ecol Res
+  DOI: 10/f96h8f
+  ISSN: 0912-3814, 1440-1703
+  issue: '3'
+  issued:
+  - year: 2017
+    month: 5
+  language: en
+  page: 299-311
+  source: DOI.org (Crossref)
+  title: How well are biodiversity drivers reflected in protected areas? A representativeness
+    assessment of the geohistorical gradients that shaped endemic flora in Japan
+  title-short: How well are biodiversity drivers reflected in protected areas?
+  type: article-journal
+  URL: http://doi.wiley.com/10.1007/s11284-017-1451-6
+  volume: '32'
+- id: Laliberte2010
+  author:
+  - family: Laliberté
+    given: Etienne
+  - family: Legendre
+    given: Pierre
+  container-title: Ecology
+  ISSN: 0012-9658
+  issue: '1'
+  issued:
+  - year: 2010
+    month: 1
+  page: 299-305
+  PMID: '20380219'
+  title: A distance-based framework for measuring functional diversity from multiple
+    traits.
+  type: article-journal
+  URL: http://www.ncbi.nlm.nih.gov/pubmed/20380219
+  volume: '91'
+- id: Lehtonen2011
+  author:
+  - family: Lehtonen
+    given: Samuli
+  container-title: PLoS ONE
+  DOI: https://doi.org/10.1371/journal.pone.0024851
+  ISSN: 1932-6203
+  issue: '10'
+  issued:
+  - year: 2011
+    month: 10
+  page: e24851
+  title: Towards resolving the complete fern tree of life
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1987
+  volume: '6'
+- id: Margules2000
+  accessed:
+  - year: 2021
+    month: 5
+    day: 18
+  author:
+  - family: Margules
+    given: C. R.
+  - family: Pressey
+    given: R. L.
+  container-title: Nature
+  DOI: 10/dn4xdx
+  ISSN: 1476-4687
+  issue: '6783'
+  issued:
+  - year: 2000
+    month: 5
+  language: en
+  number: '6783'
+  page: 243-253
+  publisher: Nature Publishing Group
+  source: www.nature.com
+  title: Systematic conservation planning
+  type: article-journal
+  URL: https://www.nature.com/articles/35012251
+  volume: '405'
+- id: Millien-Parra1999
+  accessed:
+  - year: 2020
+    month: 7
+    day: 6
+  author:
+  - family: Millien-Parra
+    given: Virginie
+  - family: Jaeger
+    given: Jean-Jacques
+  container-title: Journal of Biogeography
+  DOI: 10/dqc4qp
+  ISSN: 03050270, 13652699
+  issue: '5'
+  issued:
+  - year: 1999
+    month: 9
+  language: en
+  page: 959-972
+  source: DOI.org (Crossref)
+  title: 'Island biogeography of the Japanese terrestrial mammal assemblages: an example
+    of a relict fauna'
+  title-short: Island biogeography of the Japanese terrestrial mammal assemblages
+  type: article-journal
+  URL: http://doi.wiley.com/10.1046/j.1365-2699.1999.00346.x
+  volume: '26'
+- id: Mishler2014
+  author:
+  - family: Mishler
+    given: Brent D
+  - family: Knerr
+    given: Nunzio
+  - family: González-Orozco
+    given: Carlos E.
+  - family: Thornhill
+    given: Andrew H.
+  - family: Laffan
+    given: Shawn W.
+  - family: Miller
+    given: Joseph T.
+  container-title: Nature Communications
+  DOI: 10.1038/ncomms5473
+  ISSN: 2041-1723
+  issued:
+  - year: 2014
+  page: '4473'
+  title: Phylogenetic measures of biodiversity and neo- and paleo-endemism in Australian
+    Acacia
+  type: article-journal
+  URL: http://www.nature.com/doifinder/10.1038/ncomms5473
+  volume: '5'
+- id: Mishler2020
+  accessed:
+  - year: 2020
+    month: 6
+    day: 30
+  author:
+  - family: Mishler
+    given: Brent D.
+  - family: Guralnick
+    given: Robert
+  - family: Soltis
+    given: Pamela S.
+  - family: Smith
+    given: Stephen A.
+  - family: Soltis
+    given: Douglas E.
+  - family: Barve
+    given: Narayani
+  - family: Allen
+    given: Julie M.
+  - family: Laffan
+    given: Shawn W.
+  container-title: Journal of Systematics and Evolution
+  container-title-short: J. Syst. Evol.
+  DOI: 10/gg3h86
+  ISSN: 1674-4918, 1759-6831
+  issued:
+  - year: 2020
+    month: 5
+    day: 12
+  language: en
+  page: jse.12590
+  source: DOI.org (Crossref)
+  title: Spatial phylogenetics of the North American flora
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/jse.12590
+- id: Moran2001
+  author:
+  - family: Moran
+    given: R
+  - family: Smith
+    given: Alan R.
+  container-title: Brittonia
+  issue: '2'
+  issued:
+  - year: 2001
+  page: 304-351
+  title: Phytogeographic relationships between neotropical and African-Madagascan
+    pteridophytes
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1255
+  volume: '53'
+- id: Myers2000
+  author:
+  - family: Myers
+    given: N.
+  - family: Mittermeier
+    given: R. A.
+  - family: Mittermeier
+    given: C. G.
+  - family: Fonseca
+    given: G. A.
+    non-dropping-particle: da
+  - family: Kent
+    given: J.
+  container-title: Nature
+  container-title-short: Nature
+  DOI: 10.1038/35002501
+  ISSN: 0028-0836
+  issue: '6772'
+  issued:
+  - year: 2000
+    month: 2
+    day: 24
+  language: eng
+  page: 853-858
+  PMID: '10706275'
+  source: PubMed
+  title: Biodiversity hotspots for conservation priorities
+  type: article-journal
+  volume: '403'
+- id: Nguyen2015
+  author:
+  - family: Nguyen
+    given: Lam-Tung
+  - family: Schmidt
+    given: Heiko A.
+  - family: Haeseler
+    given: Arndt
+    non-dropping-particle: von
+  - family: Minh
+    given: Bui Quang
+  container-title: Molecular Biology and Evolution
+  DOI: 10.1093/molbev/msu300
+  ISSN: '15371719'
+  issue: '1'
+  issued:
+  - year: 2015
+  page: 268-274
+  title: 'IQ-TREE: A fast and effective stochastic algorithm for estimating maximum-likelihood
+    phylogenies'
+  type: article-journal
+  volume: '32'
+- id: Nitta2017
+  author:
+  - family: Nitta
+    given: Joel H.
+  - family: Meyer
+    given: Jean-Yves
+  - family: Taputuarai
+    given: Ravahere
+  - family: Davis
+    given: Charles C
+  container-title: Ecological Monographs
+  DOI: 10.1002/ecm.1246
+  ISSN: 00129615
+  issue: '2'
+  issued:
+  - year: 2017
+    month: 5
+    day: 2
+  page: 278-296
+  title: 'Life cycle matters: DNA barcoding reveals contrasting community structure
+    between fern sporophytes and gametophytes'
+  type: article-journal
+  URL: http://doi.wiley.com/10.1002/ecm.1246
+  volume: '87'
+- id: Orme2018
+  author:
+  - family: Orme
+    given: David
+  - family: Freckleton
+    given: Robert P
+  - family: Thomas
+    given: Gavin H
+  - family: Petzoldt
+    given: Thomas
+  - family: Fritz
+    given: Susanne A
+  - family: Isaac
+    given: Nick J B
+  - family: Pearse
+    given: William D
+  issued:
+  - year: 2018
+  title: 'caper: comparative analyses of phylogenetics and evolution in R'
+  type: article-journal
+  URL: http://cran.r-project.org/package=caper
+- id: Pagel1999
+  author:
+  - family: Pagel
+    given: Mark
+  container-title: Nature
+  DOI: 10.1038/44766
+  ISSN: 00280836
+  issue: '6756'
+  issued:
+  - year: 1999
+  page: 877-884
+  PMID: '10553904'
+  title: Inferring the historical patterns of biological evolution
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1989
+  volume: '401'
+- id: Petchey2002
+  accessed:
+  - year: 2020
+    month: 7
+    day: 3
+  author:
+  - family: Petchey
+    given: Owen L.
+  - family: Gaston
+    given: Kevin J.
+  container-title: Ecology Letters
+  container-title-short: Ecol Letters
+  DOI: 10/frgvzn
+  ISSN: 1461-023X, 1461-0248
+  issue: '3'
+  issued:
+  - year: 2002
+    month: 5
+  language: en
+  page: 402-411
+  source: DOI.org (Crossref)
+  title: Functional diversity (FD), species richness and community composition
+  type: article-journal
+  URL: http://doi.wiley.com/10.1046/j.1461-0248.2002.00339.x
+  volume: '5'
+- id: Pinson2016a
+  author:
+  - family: Pinson
+    given: Jerald B
+  - family: Chambers
+    given: Sally M.
+  - family: Nitta
+    given: Joel H.
+  - family: Kuo
+    given: Li-Yaung
+  - family: Sessa
+    given: Emily B
+  container-title: International Journal of Plant Sciences
+  DOI: 10.1086/688773
+  ISSN: 1058-5893
+  issue: '1'
+  issued:
+  - year: 2017
+    month: 1
+    day: 1
+  page: 1-18
+  title: 'The separation of generations: Biology and biogeography of long-lived sporophyteless
+    fern gametophytes'
+  type: article-journal
+  URL: http://www.journals.uchicago.edu/doi/10.1086/688773
+  volume: '178'
+- id: PteridophytePhylogenyGroupI2016
+  author:
+  - literal: Pteridophyte Phylogeny Group I
+  container-title: Journal of Systematics and Evolution
+  DOI: 10.1111/jse.12229
+  issue: '6'
+  issued:
+  - year: 2016
+  page: 563-603
+  title: A community-derived classification for extant lycophytes and ferns
+  type: article-journal
+  volume: '54'
+- id: RCoreTeam2020
+  author:
+  - literal: R Core Team
+  issued:
+  - year: 2020
+  title: 'R: A language and environment for statistical computing. 4.0.0'
+  type: article-journal
+- id: Revell2012
+  author:
+  - family: Revell
+    given: Liam J.
+  container-title: Methods in Ecology and Evolution
+  DOI: 10.1111/j.2041-210X.2011.00169.x
+  ISSN: 2041210X
+  issue: '2'
+  issued:
+  - year: 2012
+  page: 217-223
+  title: 'phytools: an R package for phylogenetic comparative biology (and other things)'
+  type: article-journal
+  volume: '3'
+- id: Rosauer2009
+  author:
+  - family: Rosauer
+    given: Dan F.
+  - family: Laffan
+    given: Shawn W.
+  - family: Crisp
+    given: M
+  - family: Donnellan
+    given: S
+  - family: Cook
+    given: L
+  container-title: Molecular Ecology
+  ISSN: 1365294X
+  issue: '19'
+  issued:
+  - year: 2009
+    month: 10
+  page: 4061-4072
+  title: 'Phylogenetic endemism: a new approach for identifying geographical concentrations
+    of evolutionary history'
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1890
+  volume: '18'
+- id: Rousset2014
+  author:
+  - family: Rousset
+    given: François
+  - family: Ferdy
+    given: Jean Baptiste
+  container-title: Ecography
+  DOI: 10.1111/ecog.00566
+  ISSN: '16000587'
+  issue: '8'
+  issued:
+  - year: 2014
+  page: 781-790
+  title: Testing environmental and genetic effects in the presence of spatial autocorrelation
+  type: article-journal
+  volume: '37'
+- id: Schuettpelz2007
+  author:
+  - family: Schuettpelz
+    given: Eric
+  - family: Pryer
+    given: Kathleen M
+  container-title: Taxon
+  DOI: 10.2307/25065903
+  issue: '4'
+  issued:
+  - year: 2007
+    month: 12
+  page: 1037-1050
+  title: Fern phylogeny inferred from 400 leptosporangiate species and three plastid
+    genes
+  type: article-journal
+  URL: http://www.ingentaconnect.com/content/iapt/tax/2007/00000056/00000004/art00007
+    papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p620
+  volume: '56'
+- id: Shimizu2014
+  accessed:
+  - year: 2020
+    month: 7
+    day: 13
+  author:
+  - family: Shimizu
+    given: Yoshikazu
+  container-title: 地域学研究
+  ISSN: 0915-4094
+  issue: '27'
+  issued:
+  - year: 2014
+    month: 3
+  page: 19-75
+  publisher: 駒澤大学応用地理研究所
+  source: CiNii
+  title: 'Process of the formation of Japanese forest and typification of vegetation
+    zone : From an East Asian viewpoint'
+  title-short: Process of the formation of Japanese forest and typification of vegetation
+    zone
+  type: article-journal
+  URL: https://ci.nii.ac.jp/naid/120006618020/
+- id: Shiono2015
+  author:
+  - family: Shiono
+    given: Takayuki
+  - family: Kusumoto
+    given: Buntarou
+  - family: Maeshiro
+    given: Ryo
+  - family: Fujii
+    given: Shin Jiro
+  - family: Götzenberger
+    given: Lars
+  - family: Bello
+    given: Francesco
+    non-dropping-particle: de
+  - family: Kubota
+    given: Yasuhiro
+  container-title: Journal of Biogeography
+  DOI: 10.1111/jbi.12503
+  ISSN: '13652699'
+  issue: '6'
+  issued:
+  - year: 2015
+  page: 1176-1186
+  title: Climatic drivers of trait assembly in woody plants in Japan
+  type: article-journal
+  volume: '42'
+- id: Smith2012
+  author:
+  - family: Smith
+    given: Stephen A
+  - family: O'Meara
+    given: Brian C.
+  container-title: Bioinformatics
+  DOI: 10.1093/bioinformatics/bts492
+  ISSN: '13674803'
+  issue: '20'
+  issued:
+  - year: 2012
+  page: 2689-2690
+  PMID: '22908216'
+  title: 'treePL: divergence time estimation using penalized likelihood for large
+    phylogenies'
+  type: article-journal
+  volume: '28'
+- id: Testo2016a
+  author:
+  - family: Testo
+    given: Weston L.
+  - family: Sundue
+    given: Michael A
+  container-title: Molecular Phylogenetics and Evolution
+  DOI: 10.1016/j.ympev.2016.09.003
+  ISSN: '10959513'
+  issued:
+  - year: 2016
+  page: 200-211
+  PMID: '27621129'
+  title: A 4000-species dataset provides new insight into the evolution of ferns
+  type: article-journal
+  URL: http://dx.doi.org/10.1016/j.ympev.2016.09.003
+  volume: '105'
+- id: Tryon1970
+  author:
+  - family: Tryon
+    given: Rolla
+  container-title: Biotropica
+  issue: '2'
+  issued:
+  - year: 1970
+  page: 76-84
+  title: Development and evolution of fern floras of oceanic islands
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p448
+  volume: '2'
