@@ -116,6 +116,7 @@ auxhook\n\
 bigintcalc\n\
 bitset\n\
 booktabs\n\
+environ\n\
 etexcmds\n\
 etoolbox\n\
 euenc\n\
@@ -135,17 +136,26 @@ kvsetkeys\n\
 latex-amsmath-dev\n\
 letltxmacro\n\
 ltxcmds\n\
+makecell\n\
 mdwtools\n\
 pdfescape\n\
+pdflscape\n\
 pdftexcmds\n\
 refcount\n\
 rerunfilecheck\n\
 setspace\n\
 siunitx\n\
 stringenc\n\
+tabu\n\
+threeparttable\n\
+threeparttablex\n\
 tipa\n\
+trimspaces\n\
+ulem\n\
 unicode-math\n\
 uniquecounter\n\
+varwidth\n\
+wrapfig\n\
 xcolor\n\
 xunicode\n\
 zapfding' >> latex_packages.txt \

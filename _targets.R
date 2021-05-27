@@ -456,7 +456,7 @@ tar_plan(
   ),
   
   ## Analyze Moran's I ----
-
+  
   # Make list of distances for run_moran_mc()
   # - environmental dataset
   dist_list_env = make_dist_list(biodiv_ferns_cent_env),
@@ -484,7 +484,7 @@ tar_plan(
     ),
     pattern = map(data_for_moran)
   ),
-
+  
   ## Spatial models ----
   
   # Prepare datasets for looping
@@ -633,11 +633,22 @@ tar_plan(
   signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
   
   # Render manuscript
+  # - doc
   tar_render(
-    ms,
+    ms_doc,
     path = "ms/manuscript.Rmd",
-    output_dir = "results",
-    
+    output_format = "officedown::rdocx_document",
+    knit_root_dir = here::here(),
+    output_file = here::here("results/manuscript.docx"),
+    params = list(doc_type = "doc")
+  ),
+  # - pdf
+  tar_render(
+    ms_pdf,
+    path = "ms/manuscript.Rmd",
+    output_format = "bookdown::pdf_document2",
+    knit_root_dir = here::here(),
+    output_file = here::here("results/manuscript.pdf"),
+    params = list(doc_type = "pdf")
   )
-  
 )
