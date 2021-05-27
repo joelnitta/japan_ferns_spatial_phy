@@ -121,13 +121,6 @@
       "Repository": "CRAN",
       "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
     },
-    "RefManageR": {
-      "Package": "RefManageR",
-      "Version": "1.2.12",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "c741c79676cf3c15d7dcc339aa43c9db"
-    },
     "SQUAREM": {
       "Package": "SQUAREM",
       "Version": "2020.3",
@@ -260,13 +253,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f2cf33875b859a757ad919a4471cdc0f"
-    },
-    "bibtex": {
-      "Package": "bibtex",
-      "Version": "0.4.2.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "8d96f3da9e7ec851e14e39c0872ad1ab"
     },
     "bitops": {
       "Package": "bitops",
@@ -1038,6 +1024,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "84b0ee361e2f78d6b7d670db9471c0c5"
+    },
+    "kableExtra": {
+      "Package": "kableExtra",
+      "Version": "1.3.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "49b625e6aabe4c5f091f5850aba8ff78"
     },
     "knitr": {
       "Package": "knitr",
@@ -1898,6 +1891,13 @@
       "Repository": "CRAN",
       "Hash": "1c5bb53bd428f3c42a25b7aeb983d8c7"
     },
+    "svglite": {
+      "Package": "svglite",
+      "Version": "2.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8fb6188960bf0f90996ce52f9c2106ac"
+    },
     "sys": {
       "Package": "sys",
       "Version": "3.3",
@@ -2103,6 +2103,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "20c45f1d511a3f730b7b469f4d11e104"
+    },
+    "webshot": {
+      "Package": "webshot",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e99d80ad34457a4853674e89d5e806de"
     },
     "whisker": {
       "Package": "whisker",
