@@ -650,5 +650,14 @@ tar_plan(
     knit_root_dir = here::here(),
     output_file = here::here("results/manuscript.pdf"),
     params = list(doc_type = "pdf")
+  ),
+  # - SI pdf
+  tar_render(
+    si_pdf,
+    path = "ms/SI.Rmd",
+    output_format = "bookdown::pdf_document2",
+    knit_root_dir = here::here(),
+    output_file = here::here("results/supp_info.pdf"),
+    params = list(doc_type = "pdf")
   )
 )
