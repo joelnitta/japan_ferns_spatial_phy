@@ -29,12 +29,18 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
+# Load libraries used for rendering Rmds
 library(officedown)
 library(officer)
 library(flextable)
 library(kableExtra)
+
+# Set knitr options
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
+
+# Load functions only used when rendering Rmds
+source(here::here("R/ms_functions.R"), local = TRUE)
 
 # Run these lines if rendering outside of targets plan
 # library(targets)
@@ -43,31 +49,8 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 # source(here::here("R/functions.R"))
 ```
 
-```{r macros}
-# Define formattting for some common custom words that may vary in style between journals
-ie <- "*ie*"
-eg <- "*eg*"
-# R packages
-pack <- function(x) {glue::glue("'{x}'")}
-# R functions
-func <- function(x) {glue::glue("'{x}'")}
-# Pagebreak for MS Word (doc) only
-pagebreak_doc <- function() {ifelse(params$doc_type == "doc", run_pagebreak(), return(""))}
-# Pagebreak for pdf only
-pagebreak_pdf <- function() {ifelse(params$doc_type == "pdf", return("\\clearpage"), return(""))}
-# Pagebreak for both
-pagebreak <- function() {
-  if (params$doc_type == "doc") {
-    run_pagebreak()
-  } else if (params$doc_type == "pdf") {
-    return("\\clearpage")
-  } else {
-    stop("doc_type parameter must be 'doc' or 'pdf'")
-  }
-}
-```
-
 ```{r load-data}
+# Load objects from targets workflow
 tar_load(c(
   "occ_point_data_ferns",
   "occ_point_data_ferns_unfiltered",
