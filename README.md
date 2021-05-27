@@ -2,7 +2,7 @@
 
 Code repostitory to run analyses and generate figures and manuscript for Nitta et al. "Exploring dimensions of biodiversity in Japanese ferns".
 
-All code is in [R](https://cran.r-project.org/). The [drake package](https://ropensci.github.io/drake/) is used to manage the workflow. To run all analyses and generate the manuscript, [clone this repository](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository) and run `drake::r_make()`.
+All code is in [R](https://cran.r-project.org/). The [targets package](https://docs.ropensci.org/targets/index.html) is used to manage the workflow. To run all analyses and generate the manuscript, [clone this repository](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository) and run `targets::tar_make()`.
 
 ## Data
 
@@ -27,13 +27,13 @@ Enter the container:
 docker exec -it japan_ferns_biogeo_analysis_1 bash
 ```
 
-Inside the container, run `drake::r_make()`:
+Inside the container, run `targets::tar_make()`:
 
 ```
-Rscript -e "drake::r_make()"
+Rscript -e "targets::tar_make()"
 ```
 
-You will see the targets being built by `drake`, and the final manuscript should be compiled at the end as `manuscript.pdf` and `manuscript.docx` in the `results` folder. Other figure and table files will also be compiled.
+You will see the targets being built by `targets`, and the final manuscript should be compiled at the end as `manuscript.pdf` and `manuscript.docx` in the `results` folder. Other figure and table files will also be compiled.
 
 When it's finished, exit the container and take it down:
 
