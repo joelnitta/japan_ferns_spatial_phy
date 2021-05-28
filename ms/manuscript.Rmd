@@ -644,8 +644,7 @@ env_model_params_pretty %>%
   rename("*t*-value" = t_value, "*p*-value" = p_value, "Variable" = term, "Estimate" = estimate, "Conditional SE" = cond_se) %>%
   as_grouped_data(groups = "resp_var") %>%
   as_flextable(hide_grouplabel = TRUE, col_keys = c("Variable", "Estimate", "Conditional SE", "*t*-value", "*p*-value")) %>%
-  bold(i = ~ signif == TRUE, bold = TRUE) %>%
-  colformat_md(part = "header")
+  bold(i = ~ signif == TRUE, bold = TRUE)
 ```
 
 ```{r env-model-params-pdf, results = "asis", eval = params$doc_type == "pdf"}
