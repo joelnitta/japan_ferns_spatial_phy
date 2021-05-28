@@ -35,6 +35,7 @@ library(officedown)
 library(officer)
 library(flextable)
 library(kableExtra)
+library(ftExtra)
 
 # Set knitr options
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
@@ -73,7 +74,10 @@ tar_load(c(
   "japan_points_raw",
   # "plastome_calibration_dates",
   # FIXME: remove until phylo analysis is working "plastome_tree",
-  "green_list"
+  "green_list",
+  "env_model_params",
+  "repro_model_params",
+  "aic_env_repro"
 ))
 ```
 
@@ -184,13 +188,13 @@ It is possible that endemism may be affected by species that are actually wide-r
 
 ### Spatial models
 
-We first tested for spatial autocorrelation in biodiversity metrics and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `moran.mc` function in the `spdep` package. In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05). Therefore, we used spatially explicit methods for modeling.
+We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD, PE p-score) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package. In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05). Therefore, we used spatially explicit methods for modeling.
 
-We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `modified.ttest` in the `SpatialPack` R package. This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature. The dataset including % apomictic taxa is smaller than the full dataset (_ vs _ taxa, respectively), so for the main modeling analysis we only included the following environmental variables: temperature, precipitation, and precipitation seasonality.
+We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package. This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature. The dataset including % apomictic taxa is smaller than the full dataset (_ vs _ taxa, respectively), so for the main modeling analysis we only included the following environmental variables: temperature, precipitation, and precipitation seasonality.
 
-We constructed a linear model for each response variable (richness, SES of PD, SES of FD, SES of RPD, SES of RFD, PE p-score) dependent on the environmental variables. We did not include any interaction terms as we had no a-priori reason to do so. Initial inspection of the relationship between richness and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature for the richness model only. We fit models including a Matérn correlation matrix based on the geographic centroids of each grid cell as a random effect with the R package spaMM [@Rousset2014]. We verified the significance of each term of the model by conducting likelihood ratio tests (LRTs) between the full model and models each with a single term of interest removed, in sequence. We also verified the significance of the full model relative to the null model (only including the Matérn correlation matrix) using LRTs.
+We constructed a linear model for each biodiversity metric dependent on the environmental variables. Initial inspection of the relationship between richness and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature for the richness model only. We fit models including a Matérn correlation matrix based on the geographic centroids of each grid cell as a random effect with the R package `r pack("spaMM")` [@Rousset2014]. We verified the significance of each term of the model by conducting likelihood ratio tests (LRTs) between the full model and models each with a single term of interest removed, in sequence. We also verified the significance of the full model relative to the null model (only including the Matérn correlation matrix) using LRTs.
 
-We postulated that % apomictic taxa might explain the distribution of genetic diversity better than temperature, so we also constructed a limited set of models to test this hypothesis. These models included response variables with a genetic component (SES of PD, SES of RPD, PE p-score) as dependent on either % apomictic taxa or temperature, precipitation, and precipitation seasonality, with random spatial effects as described above. We compared the fit between models including % apomictic taxa or temperature using conditional Akaike Information Criterion (cAIC).
+We postulated that % apomictic taxa might explain the distribution of genetic diversity better than temperature, so we also constructed a limited set of models to test this hypothesis. These models included biodiversity metrics with a genetic component (SES of PD, SES of RPD, PE p-score) as dependent on either % apomictic taxa or temperature, precipitation, and precipitation seasonality, with random spatial effects as described above. We compared the fit between models including % apomictic taxa or temperature using conditional Akaike Information Criterion (cAIC) [@Courtiol2017; @Vaida2005].
 
 ### Analysis of bioregions
 
@@ -332,9 +336,9 @@ After removing correlated and low-variance traits, the final trait set included 
 
 ```{r phy-sig-stats}
 # Verify that min lambda >0.95
-# assert_that(phy_sig_results %>% pull(lambda) %>% min > 0.95)
+assert_that(phy_sig_results %>% pull(lambda) %>% min > 0.95)
 # Verify that max K < 0.0.6
-# assert_that(phy_sig_results %>% pull(kval) %>% max < 0.06)
+assert_that(phy_sig_results %>% pull(kval) %>% max < 0.06)
 
 # Sum the number of traits with D < 0
 n_negative_d <-
@@ -344,7 +348,7 @@ binary_sig_results %>%
   sum
 ```
 
-<!-- All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). `r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`). -->
+All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). `r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`).
 
 ### Observed diversity
 
@@ -354,9 +358,9 @@ Taxonomic richness is lowest on the northernmost island of Hokkaido, then increa
 
 Grid-cells with significantly low PD were almost all located on Honshu, the main island of Japan (`r figure("rand-diversity")`A). A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). The area near Yakushima includes cells with both significantly high and low PD. Grid-cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu (`r figure("rand-diversity")`B). Grid-cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD (`r figure("rand-diversity")`C, D).
 
-### Correlations between biodiversity and reproductive mode
+### Relationships between biodiversity and climate or reproductive mode
 
-Spatial autocorrelation as measured with Moran's I was detected in linear models, but was not in any of the spatial mixed linear models. SES of RPD in particular shows a strong negative correlation with % apomictic taxa (_ estimated effect _, SD).
+All biodiversity metrics except for SES of RFD showed a significant relationship with temperature (`r table("env-model-params")`). 
 
 ### Categorical analysis of neo- and paleo-endemism
 
@@ -533,6 +537,29 @@ Finally, a long under-appreciated aspect of fern ecology is the role of the game
 
 `r pagebreak()`
 
+```{r table-prep}
+# Define nicely formatted terms for printing variable names
+resp_var_lookup <- tribble(
+  ~resp_var, ~resp_var_pretty,
+  "fd_obs_z", "SES of FD",
+  "pd_obs_z", "SES of PD",
+  "pe_obs_p_upper", "PE *p*-value",
+  "rfd_obs_z", "SES of RFD",
+  "richness", "Richness",
+  "rpd_obs_z", "SES of RPD",
+)
+
+indep_var_lookup <- tribble(
+  ~term, ~term_pretty,
+  "temp", "Temperature",
+  "precip", "Precipitation",
+  "precip_season", "Precipitation seasonality",
+  "I(temp^2)", "Temperature^2^",
+  "percent_apo", "% apomictic taxa"
+)
+```
+
+
 ```{r traits-used-prep}
 # Read in trait metadata
 trait_signif <- read_csv(here::here("data_raw/trait_functions.csv"))
@@ -577,6 +604,78 @@ traits_table %>%
 ```
 
 **`r table("traits-used")`**. Fern traits used in this study.
+
+`r pagebreak()`
+
+```{r env-model-params-prep}
+# Format model parameter summary for nice printing as a table
+env_model_params_pretty <-
+env_model_params %>%
+  # Remove intercept
+  filter(term != "(Intercept)") %>%
+  # Double check that log-likelihood of null model is less than full
+  verify(all(loglik_null < loglik_full)) %>%
+  select(resp_var, term, estimate, cond_se, t_value, p_value) %>%
+  # Format response variable and fixed effect names to look nice
+  left_join(resp_var_lookup, by = "resp_var") %>%
+  select(-resp_var) %>%
+  rename(resp_var = resp_var_pretty) %>%
+  left_join(indep_var_lookup, by = "term") %>%
+  select(-term) %>%
+  rename(term = term_pretty) %>%
+  # Round to 2 signif digits
+  mutate(across(c(estimate, cond_se, t_value), ~signif(., 2))) %>%
+  # Format p-value
+  mutate(
+    signif = if_else(p_value < 0.05, TRUE, FALSE),
+    p_value = case_when(
+      p_value < 0.0001 ~ "< 0.0001",
+      TRUE ~ signif(p_value, 2) %>% as.character
+    )
+  ) %>%
+  arrange(resp_var, term) %>%
+  select(resp_var, term, estimate, cond_se, t_value, p_value, signif)
+```
+
+```{r env-model-params-doc, results = "asis", eval = params$doc_type == "doc"}
+env_model_params_pretty %>%
+  mutate(
+    across(where(is.numeric), as.character)) %>%
+  rename("*t*-value" = t_value, "*p*-value" = p_value, "Variable" = term, "Estimate" = estimate, "Conditional SE" = cond_se) %>%
+  as_grouped_data(groups = "resp_var") %>%
+  as_flextable(hide_grouplabel = TRUE, col_keys = c("Variable", "Estimate", "Conditional SE", "*t*-value", "*p*-value")) %>%
+  bold(i = ~ signif == TRUE, bold = TRUE) %>%
+  colformat_md(part = "header")
+```
+
+```{r env-model-params-pdf, results = "asis", eval = params$doc_type == "pdf"}
+# Define row groups
+kbl_groups <-
+env_model_params_pretty %>%
+  transmute(resp_var, row_num = 1:nrow(.)) %>%
+  group_by(resp_var) %>%
+  summarize(start = min(row_num), end = max(row_num), .groups = "drop") %>%
+  split(.$resp_var)
+
+signif_rows <- env_model_params_pretty %>% pull(signif) %>% which()
+
+env_model_params_pretty %>%
+  mutate(
+    across(where(is.numeric), as.character)) %>%
+  rename("*t*-value" = t_value, "*p*-value" = p_value, "Variable" = term, "Estimate" = estimate, "Conditional SE" = cond_se) %>%
+  select(-resp_var, -signif) %>%
+  kbl(booktabs = TRUE) %>%
+  kable_styling() %>%
+  pack_rows(kbl_groups[[1]]$resp_var, kbl_groups[[1]]$start, kbl_groups[[1]]$end) %>%
+  pack_rows(kbl_groups[[2]]$resp_var, kbl_groups[[2]]$start, kbl_groups[[2]]$end) %>%
+  pack_rows(kbl_groups[[3]]$resp_var, kbl_groups[[3]]$start, kbl_groups[[3]]$end) %>%
+  pack_rows(kbl_groups[[4]]$resp_var, kbl_groups[[4]]$start, kbl_groups[[4]]$end) %>%
+  pack_rows(kbl_groups[[5]]$resp_var, kbl_groups[[5]]$start, kbl_groups[[5]]$end) %>%
+  pack_rows(kbl_groups[[6]]$resp_var, kbl_groups[[6]]$start, kbl_groups[[6]]$end) %>%
+  row_spec(row = signif_rows, bold = TRUE)
+```
+
+**`r table("env-model-params")`**. Parameter estimates of the effect of environmental variables on biodiversity metrics in the ferns of Japan. Significant effects (*p* < 0.05) in bold; significance assessed with likelihood ratio tests (see Methods). All models include random effect of geographical coordinates.
 
 `r pagebreak()`
 

@@ -530,6 +530,16 @@ tar_plan(
     pattern = map(data_for_lrt)
   ),
   
+  # Summarize spatial models:
+  # - model statistics (both env and repro models)
+  model_stats = get_model_stats(spatial_models),
+  # - environmental model parameters (fixed effects)
+  env_model_params = get_env_model_params(spatial_models, lrt_comp_table),
+  # - reproductive model parameters (fixed effects)
+  repro_model_params = get_repro_model_params(spatial_models, lrt_comp_table),
+  # - comparison between environmental and reproductive models by cAIC
+  aic_env_repro = compare_aic_env_repro(spatial_models),
+  
   # Conservation analysis ----
   
   ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)

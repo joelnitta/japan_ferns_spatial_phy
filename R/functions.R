@@ -3033,6 +3033,135 @@ get_aic <- function(model) {
     janitor::clean_names()
 }
 
+#' Summarize statistics of spatial models
+#' 
+#' @param spatial_models Tibble, each with a spatial model.
+#' Output of run_spamm()
+#'
+#' @return Tibble including columns: `resp_var` (response variable),
+#' `formula` (text string of formula used for model), `data_type` (dataset used for
+#' model; 'env' for environmental, 'repro' for reproductive), `loglik` (log-likelihood),
+#' `resid_var_phi` (residual variance), `nu` (correlation parameter of Matern matrix),
+#'  `rho` (correlation parameter of Matern matrix)
+#' 
+get_model_stats <- function(spatial_models) {
+  spatial_models %>%
+    # Extract log likelihood and residual variance (phi)
+    mutate(
+      loglik = map_dbl(model, logLik),
+      resid_var_phi = map_dbl(model, ~residVar(., "phi") %>% unique)
+    ) %>%
+    # Extract nu and rho
+    mutate(map_df(.$model, get_corr_pars)) %>%
+    # Ditch the model
+    select(-model)
+}
+
+#' Summarize parameters of spatial models
+#' 
+#' Filters to only environmental models (those based on temperature and precipitation)
+#'
+#' @param spatial_models Tibble, each with a spatial model.
+#' Output of run_spamm()
+#' @param lrt_comp_table Tibble, results of likelihood ratio test (LRT)
+#' Output of run_spamm_lrt()
+#'
+#' @return Tibble including columns `resp_var` (response variable), `term` (fixed effect parameter name),
+#'  `estimate` (slope of parameter) `cond_se` (conditional standard error), `t_value`, 
+#'  `chi2_LR` (chi-squared value of LRT), `df`, `p_value`, `loglik_null` (log-likelihood of null model), 
+#'  `loglik_full` (log-likelihood of full model),
+#' `null_formula`, `full_formula`
+#' 
+get_env_model_params <- function(spatial_models, lrt_comp_table) {
+  spatial_models %>%
+    filter(data_type == "env") %>%
+    # Extract fixed effects
+    mutate(fixed_effects = map(model, get_beta_table)) %>%
+    # Ditch the model
+    select(-model, -formula) %>%
+    unnest(fixed_effects) %>%
+    # Add LRT results
+    left_join(
+      lrt_comp_table,
+      by = c("resp_var", "data_type", term = "comparison")
+    )
+}
+
+#' Summarize parameters of reproductive models
+#' 
+#' Filters to only reproductive mode models (those including % apomictic taxa)
+#'
+#' @param spatial_models Tibble, each with a spatial model.
+#' Output of run_spamm()
+#' @param lrt_comp_table Tibble, results of likelihood ratio test (LRT)
+#' Output of run_spamm_lrt()
+#'
+#' @return Tibble including columns `resp_var` (response variable), `term` (fixed effect parameter name),
+#'  `estimate` (slope of parameter) `cond_se` (conditional standard error), `t_value`, 
+#'  `chi2_LR` (chi-squared value of LRT), `df`, `p_value`, `loglik_null` (log-likelihood of null model), 
+#'  `loglik_full` (log-likelihood of full model),
+#' `null_formula`, `full_formula`
+#' 
+get_repro_model_params <- function(spatial_models, lrt_comp_table) {
+  
+  # Subset LRT results to models including % apomictic taxa built with repro data set
+  lrt_comp_table_repro <-
+    lrt_comp_table %>%
+    filter(data_type == "repro") %>%
+    select(-data_type) %>%
+    tidyr::extract(full_formula, "model_type", "~ ([^ ]+) ", remove = FALSE) %>%
+    filter(model_type == "percent_apo") %>%
+    select(-model_type)
+  
+  spatial_models %>%
+    # Filter models to those including % apomictic taxa built with repro data set
+    filter(data_type == "repro") %>%
+    tidyr::extract(formula, "model_type", "~ ([^ ]+) ") %>%
+    filter(model_type == "percent_apo") %>%
+    select(-model_type) %>%
+    # Extract fixed effects
+    mutate(fixed_effects = map(model, get_beta_table)) %>%
+    # Drop the model
+    select(-model) %>%
+    unnest(fixed_effects) %>%
+    # Add LRT results
+    left_join(
+      lrt_comp_table_repro,
+      by = c("resp_var", term = "comparison")
+    )
+  
+}
+
+#' Compare between environmental and reproductive models using cAIC
+#'
+#' @param spatial_models Tibble, each with a spatial model.
+#' Output of run_spamm()
+#'
+#' @return Tibble including columns `resp_var` (response variable),
+#' `model_type` (% apomictic taxa or temperature), `marginal_aic`, `conditional_aic`,
+#'  `dispersion_aic`, `effective_df`,  `loglik` (log-likelihood), 
+#'  and `resid_var_phi` (residual variance)
+compare_aic_env_repro <- function(spatial_models) {
+  # Filter to models based on reproductive mode dataset
+  spatial_models %>%
+    filter(data_type == "repro") %>%
+    select(-data_type) %>%
+    # Extract model type (temp or % apomictic taxa)
+    tidyr::extract(formula, "model_type", "~ ([^ ]+) ") %>%
+    # Get AIC values and residual variance (phi) for each model
+    mutate(
+      map_df(model, get_aic),
+      loglik = map_dbl(model, logLik),
+      resid_var_phi = map_dbl(model, ~residVar(., "phi") %>% unique)
+    ) %>%
+    # Sort by conditional AIC
+    group_by(resp_var) %>%
+    arrange(conditional_aic, .by_group = TRUE) %>%
+    ungroup() %>%
+    # Ditch the model
+    select(-model) 
+}
+
 # Tests ----
 
 # Run tests to make sure custom functions work as expected
