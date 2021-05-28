@@ -1928,10 +1928,10 @@
     },
     "targets": {
       "Package": "targets",
-      "Version": "0.3.1",
+      "Version": "0.4.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "79ff2b6bb9c75ec0b4c3716a77dc24eb"
+      "Hash": "a46df8ab3d40fd1627deeca2783df151"
     },
     "taxastand": {
       "Package": "taxastand",
