@@ -30,6 +30,12 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
+# Run these lines if rendering outside of targets plan
+# library(targets)
+# library(tarchetypes)
+# source(here::here("R/packages.R"))
+# source(here::here("R/functions.R"))
+
 # Load libraries used for rendering Rmds
 library(officedown)
 library(officer)
@@ -42,12 +48,6 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 
 # Load functions only used when rendering Rmds
 source(here::here("R/ms_functions.R"), local = TRUE)
-
-# Run these lines if rendering outside of targets plan
-# library(targets)
-# library(tarchetypes)
-# source(here::here("R/packages.R"))
-# source(here::here("R/functions.R"))
 ```
 
 ```{r load-data}
@@ -216,7 +216,7 @@ Code to replicate all analyses, figures, and this manuscript are available at ht
 ### Taxon list ###
 # Make list of all native ferns in Japan (based off Green List), includes hybrids
 fern_list <-
-green_list %>%
+  green_list %>%
   mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
   left_join(ppgi) %>%
   filter(class == "Polypodiopsida")
@@ -234,11 +234,11 @@ phylogeny_age <- japan_fern_tree %>% phytools::nodeHeights() %>% max %>% round(1
 
 # Check monophyly of genera
 mono_status_genera <-
-tibble(
-  tip = japan_fern_tree$tip.label,
-  tip_no = 1:length(tip),
-  genus = str_split(tip, "_") %>% map_chr(1)
-) %>%
+  tibble(
+    tip = japan_fern_tree$tip.label,
+    tip_no = 1:length(tip),
+    genus = str_split(tip, "_") %>% map_chr(1)
+  ) %>%
   group_by(genus) %>%
   summarize(tip_vec = list(tip_no), .groups = "drop") %>%
   mutate(is_mono = map_lgl(tip_vec, ~ape::is.monophyletic(phy = japan_fern_tree, tips = .)))
@@ -252,11 +252,11 @@ n_fern_phylo_genera <- mono_status_genera %>% pull(genus) %>% n_distinct()
 
 # Check monophyly of families
 mono_status_families <-
-tibble(
-  tip = japan_fern_tree$tip.label,
-  tip_no = 1:length(tip),
-  genus = str_split(tip, "_") %>% map_chr(1)
-) %>%
+  tibble(
+    tip = japan_fern_tree$tip.label,
+    tip_no = 1:length(tip),
+    genus = str_split(tip, "_") %>% map_chr(1)
+  ) %>%
   left_join(ppgi, by = "genus") %>%
   group_by(family) %>%
   summarize(tip_vec = list(tip_no), .groups = "drop") %>%
@@ -269,11 +269,11 @@ n_fern_phylo_families <- mono_status_families %>% pull(family) %>% n_distinct()
 
 # Check monophyly of ferns
 mono_status_class <- 
-tibble(
-  tip = japan_pterido_tree$tip.label,
-  tip_no = 1:length(tip),
-  genus = str_split(tip, "_") %>% map_chr(1)
-) %>%
+  tibble(
+    tip = japan_pterido_tree$tip.label,
+    tip_no = 1:length(tip),
+    genus = str_split(tip, "_") %>% map_chr(1)
+  ) %>%
   left_join(ppgi, by = "genus") %>%
   group_by(class) %>%
   summarize(tip_vec = list(tip_no), .groups = "drop") %>%
@@ -289,7 +289,7 @@ n_specimens_taxa_percent <- n_specimens_taxa %>% magrittr::divide_by(total_fern_
 
 # Calculate mean redundancy
 mean_redundancy <-
-biodiv_ferns_spatial %>%
+  biodiv_ferns_spatial %>%
   select(redundancy) %>%
   st_set_geometry(NULL) %>%
   summarize(
@@ -298,7 +298,7 @@ biodiv_ferns_spatial %>%
   ) %>%
   mutate(text = glue::glue("{round(mean, 2)} ± {round(sd, 2)}")) %>%
   pull(text)
-  
+
 # Calculate number of excluded cells due to low redundancy
 n_excluded_cells <- nrow(comm_ferns_full) - nrow(comm_ferns)
 
@@ -312,7 +312,7 @@ n_qual_traits_as_binary <- traits_summary %>% filter(trait_type == "qualitative"
 
 # Calculate number/percent of missing data in trait matrix
 fern_traits_missing_summary <-
-fern_traits %>%
+  fern_traits %>%
   pivot_longer(-taxon) %>%
   mutate(missing_data = is.na(value)) %>%
   summarize(
@@ -321,7 +321,7 @@ fern_traits %>%
   )
 
 percent_traits_missing <-
-fern_traits_missing_summary$missing %>% 
+  fern_traits_missing_summary$missing %>% 
   divide_by(fern_traits_missing_summary$total) %>%
   scales::percent(accuracy = 0.01)
 ```
@@ -342,7 +342,7 @@ assert_that(phy_sig_results %>% pull(kval) %>% max < 0.06)
 
 # Sum the number of traits with D < 0
 n_negative_d <-
-binary_sig_results %>%
+  binary_sig_results %>%
   mutate(negative_d = ifelse(D <= 0, TRUE, FALSE)) %>%
   pull(negative_d) %>%
   sum
@@ -360,7 +360,54 @@ Grid-cells with significantly low PD were almost all located on Honshu, the main
 
 ### Relationships between biodiversity and climate or reproductive mode
 
-All biodiversity metrics except for SES of RFD showed a significant relationship with temperature (`r table("env-model-params")`). 
+```{r model-stats}
+# Verify the number of cases where models had significant fits for precipitation, precipitation seasonality, and temperature
+n_env_precip_sig <- 5
+n_env_precip_season_sig <- 2
+n_env_temp_sig <- 5
+
+env_model_params %>%
+  filter(str_detect(term, "Intercept", negate = TRUE)) %>%
+  filter(p_value < 0.05) %>%
+  count(term) %>%
+  verify(.$n[.$term == "precip"] == n_env_precip_sig) %>%
+  verify(.$n[.$term == "precip_season"] == n_env_precip_season_sig) %>%
+  verify(.$n[.$term == "temp"] == n_env_temp_sig)
+
+assert_that(all.equal(n_env_precip_sig, n_env_temp_sig))
+
+repro_model_params %>%
+  filter(str_detect(term, "Intercept", negate = TRUE)) %>%
+  filter(p_value < 0.05) %>%
+  count(term) %>%
+  verify(.$n[.$term == "percent_apo"] == 3) 
+
+# Add a column with estimate ± cond_se, then
+# split up table for easy referencing in inline chunks
+repro_cond_se <-
+repro_model_params %>%
+  mutate(
+    across(c(estimate, cond_se), ~signif(., 2)),
+    est_se = glue("{estimate} ± {cond_se}")
+) %>%
+  split(.$resp_var) %>%
+  map(~split(., .$term))
+
+env_cond_se <-
+env_model_params %>%
+  mutate(
+    across(c(estimate, cond_se), ~signif(., 2)),
+    est_se = glue("{estimate} ± {cond_se}")
+) %>%
+  split(.$resp_var) %>%
+  map(~split(., .$term))
+
+# Example:
+# parameter estimate +/- SE for SES of RPD in reproductive model:
+# repro_cond_se$rpd_obs_z$percent_apo$est_se
+```
+
+All spatial models were significant relative to null models without any fixed effects. Most biodiversity metrics showed a significant relationship with temperature and/or precipitation (each significant in `r english2(n_env_temp_sig)` out of six models), but precipitation seasonality was only significant in `r english2(n_env_precip_season_sig)` models (`r table("env-model-params")`). Models fit using % apomictic taxa instead of temperature had lower cAIC, indicating a better fit. All biodiversity metrics with a genetic component (PE *p*-value, SES of PD, SES of RPD) each had a significant, negative relationship to % apomictic taxa (`r table("repro-model-params")`).
 
 ### Categorical analysis of neo- and paleo-endemism
 
@@ -377,7 +424,7 @@ Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than c
 ```{r conserv-stats}
 # Convert signif_cells_protected_area to wide format
 signif_cells_protected_area_wide <-
-signif_cells_protected_area %>% select(status, metric, percent_protected) %>%
+  signif_cells_protected_area %>% select(status, metric, percent_protected) %>%
   pivot_wider(names_from = status, values_from = percent_protected) %>%
   rowwise %>%
   mutate(total = sum(medium, high)) %>%
@@ -484,7 +531,7 @@ Despite the good news that ferns enjoy relatively strong protection status in Ja
 ```{r limits-stats}
 # Summarize occurrences by latitude
 occ_data_by_lat <-
-occ_point_data_ferns %>%
+  occ_point_data_ferns %>%
   group_by(taxon) %>%
   summarize(
     min_lat = min(latitude),
@@ -503,7 +550,7 @@ taxon_with_widest_lat <- occ_data_by_lat %>%
 
 # Find number of species occurring across areas defined by straits
 n_widespread_taxa <-
-occ_data_by_lat %>%
+  occ_data_by_lat %>%
   # Filter by approx location of Tokara strait (29) and Tsugaru Strait (41.5)
   filter(min_lat < 29, max_lat > 41.5) %>%
   pull(taxon) %>%
@@ -607,15 +654,15 @@ traits_table %>%
 
 `r pagebreak()`
 
-```{r env-model-params-prep}
-# Format model parameter summary for nice printing as a table
-env_model_params_pretty <-
-env_model_params %>%
+```{r model-params-prep}
+# Format model parameter summaries for nice printing as a table
+model_params_pretty <-
+  # Combine environmental and reproductive model results to avoid repitition
+  bind_rows(env_model_params, repro_model_params) %>%
   # Remove intercept
   filter(term != "(Intercept)") %>%
   # Double check that log-likelihood of null model is less than full
   verify(all(loglik_null < loglik_full)) %>%
-  select(resp_var, term, estimate, cond_se, t_value, p_value) %>%
   # Format response variable and fixed effect names to look nice
   left_join(resp_var_lookup, by = "resp_var") %>%
   select(-resp_var) %>%
@@ -633,24 +680,35 @@ env_model_params %>%
       TRUE ~ signif(p_value, 2) %>% as.character
     )
   ) %>%
-  arrange(resp_var, term) %>%
-  select(resp_var, term, estimate, cond_se, t_value, p_value, signif)
+  arrange(data_type, resp_var, term) %>%
+  select(resp_var, term, estimate, cond_se, t_value, p_value, signif, data_type)
+
+env_model_params_pretty <- model_params_pretty %>%
+  filter(data_type == "env") %>%
+  select(-data_type)
+
+repro_model_params_pretty <- model_params_pretty %>%
+  filter(data_type == "repro") %>%
+  select(-data_type)
 ```
 
 ```{r env-model-params-doc, results = "asis", eval = params$doc_type == "doc"}
+# Print out environmental parameters formatted for word document
 env_model_params_pretty %>%
   mutate(
     across(where(is.numeric), as.character)) %>%
   rename("*t*-value" = t_value, "*p*-value" = p_value, "Variable" = term, "Estimate" = estimate, "Conditional SE" = cond_se) %>%
   as_grouped_data(groups = "resp_var") %>%
   as_flextable(hide_grouplabel = TRUE, col_keys = c("Variable", "Estimate", "Conditional SE", "*t*-value", "*p*-value")) %>%
-  bold(i = ~ signif == TRUE, bold = TRUE)
+  bold(i = ~ signif == TRUE, bold = TRUE) %>%
+  width(1, width = 1.5) %>%
+  width(2:5, width = 1)
 ```
 
 ```{r env-model-params-pdf, results = "asis", eval = params$doc_type == "pdf"}
 # Define row groups
 kbl_groups <-
-env_model_params_pretty %>%
+  env_model_params_pretty %>%
   transmute(resp_var, row_num = 1:nrow(.)) %>%
   group_by(resp_var) %>%
   summarize(start = min(row_num), end = max(row_num), .groups = "drop") %>%
@@ -675,6 +733,47 @@ env_model_params_pretty %>%
 ```
 
 **`r table("env-model-params")`**. Parameter estimates of the effect of environmental variables on biodiversity metrics in the ferns of Japan. Significant effects (*p* < 0.05) in bold; significance assessed with likelihood ratio tests (see Methods). All models include random effect of geographical coordinates.
+
+`r pagebreak()`
+
+```{r repro-model-params-doc, results = "asis", eval = params$doc_type == "doc"}
+# Print out environmental parameters formatted for word document
+repro_model_params_pretty %>%
+  mutate(
+    across(where(is.numeric), as.character)) %>%
+  rename("*t*-value" = t_value, "*p*-value" = p_value, "Variable" = term, "Estimate" = estimate, "Conditional SE" = cond_se) %>%
+  as_grouped_data(groups = "resp_var") %>%
+  as_flextable(hide_grouplabel = TRUE, col_keys = c("Variable", "Estimate", "Conditional SE", "*t*-value", "*p*-value")) %>%
+  bold(i = ~ signif == TRUE, bold = TRUE) %>%
+  width(1, width = 1.5) %>%
+  width(2:5, width = 1)
+```
+
+```{r repro-model-params-pdf, results = "asis", eval = params$doc_type == "pdf"}
+# Define row groups
+kbl_groups <-
+  repro_model_params_pretty %>%
+  transmute(resp_var, row_num = 1:nrow(.)) %>%
+  group_by(resp_var) %>%
+  summarize(start = min(row_num), end = max(row_num), .groups = "drop") %>%
+  split(.$resp_var)
+
+signif_rows <- repro_model_params_pretty %>% pull(signif) %>% which()
+
+repro_model_params_pretty %>%
+  mutate(
+    across(where(is.numeric), as.character)) %>%
+  rename("*t*-value" = t_value, "*p*-value" = p_value, "Variable" = term, "Estimate" = estimate, "Conditional SE" = cond_se) %>%
+  select(-resp_var, -signif) %>%
+  kbl(booktabs = TRUE) %>%
+  kable_styling() %>%
+  pack_rows(kbl_groups[[1]]$resp_var, kbl_groups[[1]]$start, kbl_groups[[1]]$end) %>%
+  pack_rows(kbl_groups[[2]]$resp_var, kbl_groups[[2]]$start, kbl_groups[[2]]$end) %>%
+  pack_rows(kbl_groups[[3]]$resp_var, kbl_groups[[3]]$start, kbl_groups[[3]]$end) %>%
+  row_spec(row = signif_rows, bold = TRUE)
+```
+
+**`r table("repro-model-params")`**. Parameter estimates of the effect of reproductive mode and environmental variables (precipitation) on biodiversity metrics in the ferns of Japan. Significant effects (*p* < 0.05) in bold; significance assessed with likelihood ratio tests (see Methods). All models include random effect of geographical coordinates.
 
 `r pagebreak()`
 
