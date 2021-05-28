@@ -116,6 +116,7 @@ auxhook\n\
 bigintcalc\n\
 bitset\n\
 booktabs\n\
+colortbl\n\
 environ\n\
 etexcmds\n\
 etoolbox\n\
@@ -138,6 +139,7 @@ letltxmacro\n\
 ltxcmds\n\
 makecell\n\
 mdwtools\n\
+multirow\n\
 pdfescape\n\
 pdflscape\n\
 pdftexcmds\n\
