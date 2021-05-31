@@ -447,6 +447,13 @@ tar_plan(
   biodiv_ferns_cent_repro = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
     filter_data_for_model(c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
   
+  # Scale data sets for correlation plots
+  biodiv_ferns_cent_env_scaled = biodiv_ferns_cent_env %>%
+    mutate(across(c(temp, precip, precip_season), ~scale(.) %>% as.vector)),
+  
+  biodiv_ferns_cent_repro_scaled = biodiv_ferns_cent_repro %>%
+    mutate(across(c(percent_apo, temp, precip, precip_season), ~scale(.) %>% as.vector)),
+  
   ## Correlation analysis ----
   
   # Check for correlation between independent variables in repro data
@@ -488,6 +495,7 @@ tar_plan(
   ## Spatial models ----
   
   # Prepare datasets for looping
+  # - unscaled data
   data_for_spamm = prepare_data_for_spamm(
     resp_var_env = resp_vars_env,
     biodiv_ferns_cent_env = biodiv_ferns_cent_env,
@@ -495,7 +503,16 @@ tar_plan(
     biodiv_ferns_cent_repro = biodiv_ferns_cent_repro
   ),
   
+  # - scaled data
+  data_for_spamm_scaled = prepare_data_for_spamm(
+    resp_var_env = resp_vars_env,
+    biodiv_ferns_cent_env = biodiv_ferns_cent_env_scaled,
+    resp_var_repro = resp_vars_repro,
+    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro_scaled
+  ),
+  
   # Loop across each formula and build a spatial model
+  # - unscaled data
   tar_target(
     spatial_models,
     run_spamm(
@@ -505,6 +522,18 @@ tar_plan(
       data_type = data_for_spamm$data_type[[1]]
     ),
     pattern = map(data_for_spamm)
+  ),
+  
+  # - scaled data
+  tar_target(
+    spatial_models_scaled,
+    run_spamm(
+      formula = data_for_spamm_scaled$formula[[1]], 
+      data = data_for_spamm_scaled$data[[1]], 
+      resp_var = data_for_spamm_scaled$resp_var[[1]], 
+      data_type = data_for_spamm_scaled$data_type[[1]]
+    ),
+    pattern = map(data_for_spamm_scaled)
   ),
   
   # Make a dataframe for running likelihood ratio tests (LRTs). 
