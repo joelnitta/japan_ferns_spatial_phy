@@ -9,3 +9,11 @@ temp
 *.job
 *.Rproj
 *.sh
+_targets
+data
+data_raw
+.git
+ms
+R
+renv
+treepl
