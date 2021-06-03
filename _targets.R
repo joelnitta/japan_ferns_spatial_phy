@@ -1,9 +1,10 @@
 library(targets)
 library(tarchetypes)
 
-# Load packages, functions
+# Load packages, functions, tests
 source("R/packages.R")
 source("R/functions.R")
+source("R/tests.R")
 
 # Set parallel back-end
 plan(callr)
