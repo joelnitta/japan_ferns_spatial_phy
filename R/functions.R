@@ -1742,10 +1742,11 @@ categorize_endemism <- function (df) {
 
 #' Categorize results of randomization test
 #'
-#' @param df Input dataframe
+#' @param df Input dataframe with upper and lower p-value rank for phylogenetic diversity
+#' metrics vs. a null distribution
 #'
 #' @return Dataframe with siginificance of randomization results categorized
-categorize_signif <- function (df) {
+categorize_signif_pd <- function (df) {
   
   df %>%
     mutate(
@@ -1767,7 +1768,20 @@ categorize_signif <- function (df) {
         TRUE ~ "not significant"
       ),
       rpd_signif = factor(rpd_signif, levels = c("< 0.01", "< 0.025", "not significant", "> 0.975", "> 0.99"))
-    ) %>%
+    )
+  
+}
+
+
+#' Categorize results of randomization test
+#'
+#' @param df Input dataframe with upper and lower p-value rank for functional diversity
+#' metrics vs. a null distribution
+#'
+#' @return Dataframe with siginificance of randomization results categorized
+categorize_signif_fd <- function (df) {
+  
+  df %>%
     mutate(
       fd_signif = case_when(
         fd_obs_p_upper > 0.99 ~ "> 0.99",
@@ -1790,6 +1804,7 @@ categorize_signif <- function (df) {
     )
   
 }
+
 
 #' Calculate the percentage of apomictic fern species in each community
 #'
@@ -2776,6 +2791,8 @@ run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
 }
 
 #' Prepare data for running spaMM in a loop
+#' 
+#' Includes a quadratic term for temperature only
 #'
 #' @param resp_var_env Response variables to include in spatial model for environmental dataset
 #' @param biodiv_ferns_cent_env Tibble with metrics of biodiversity for environmental dataset
@@ -2786,27 +2803,24 @@ run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
 #' "data_type" (character)
 #' 
 prepare_data_for_spamm <- function(
-  resp_var_env = c("fd_obs_z", "pd_obs_z", "pe_obs_p_upper", "rfd_obs_z", "richness", "rpd_obs_z"),
+  resp_var_env = c("fd_obs_z", "pd_obs_z", "rfd_obs_z", "richness", "rpd_obs_z"),
   biodiv_ferns_cent_env,
-  resp_var_repro = c("pd_obs_z", "pe_obs_p_upper", "rpd_obs_z"),
+  resp_var_repro = c("pd_obs_z", "rpd_obs_z"),
   biodiv_ferns_cent_repro
 ) {
   bind_rows(
-    crossing(
+    tibble(
       resp_var = resp_var_env,
-      formula = c("temp + precip + precip_season + Matern(1 | long + lat)")
+      formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat)")
     ) %>%
       mutate(
-        # Add quadratic term only for richness
-        formula = if_else(resp_var == "richness", "temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat)", formula),
-        formula = glue("{resp_var} ~ {formula}") %>% as.character(),
         data = list(biodiv_ferns_cent_env),
         data_type = "env"),
     crossing(
       resp_var = resp_var_repro,
       formula = c(
         "percent_apo + precip + precip_season + Matern(1 | long + lat)",
-        "temp + precip + precip_season + Matern(1 | long + lat)")
+        "temp+ I(temp^2) + precip + precip_season + Matern(1 | long + lat)")
     ) %>%
       mutate(
         formula = glue("{resp_var} ~ {formula}") %>% as.character(),
