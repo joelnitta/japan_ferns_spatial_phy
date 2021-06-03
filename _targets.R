@@ -730,5 +730,14 @@ tar_plan(
     knit_root_dir = here::here(),
     output_file = here::here("results/supp_info.pdf"),
     params = list(doc_type = "pdf")
+  ),
+  # - SI appendix on data exploration for models
+  tar_render(
+    si_data_exploration,
+    path = "ms/data_exploration.Rmd",
+    output_format = "rmarkdown::html_document",
+    knit_root_dir = here::here(),
+    output_file = here::here("results/data_exploration.html"),
+    params = list(knit_type = "targets")
   )
 )
