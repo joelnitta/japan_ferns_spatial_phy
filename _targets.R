@@ -1,9 +1,10 @@
 library(targets)
 library(tarchetypes)
 
-# Load packages, functions
+# Load packages, functions, tests
 source("R/packages.R")
 source("R/functions.R")
+source("R/tests.R")
 
 # Set parallel back-end
 plan(callr)
@@ -393,31 +394,41 @@ tar_plan(
     left_join(mean_climate, by = "grids") %>%
     # Categorize endemism and significance of randomization tests
     categorize_endemism() %>%
-    categorize_signif() %>%
+    categorize_signif_pd() %>% 
+    categorize_signif_fd() %>%
     # Format factors
     mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     # Add redundancy
     mutate(redundancy = 1 - (richness/abundance)),
   
+  # - Japan endemics only
+  biodiv_ferns_endemic_spatial =
+    shape_ferns %>%
+    left_join(rand_test_phy_ferns_endemic, by = c(grids = "site")) %>%
+    # Categorize endemism and significance of randomization tests
+    categorize_signif_pd() %>%
+    categorize_endemism(),
+  
   # - Only those with reproductive mode data available
-  biodiv_ferns_repro_spatial =
+  biodiv_ferns_repro_spatial_all =
     shape_ferns %>%
     left_join(rand_test_phy_ferns_with_repro, by = c(grids = "site")) %>%
     left_join(percent_apo, by = c(grids = "site")) %>%
     # Add environmental data
     left_join(mean_climate, by = "grids") %>%
-    # FIXME: add categorizing significance of randomization tests
-    # Categorize endemism 
+    # Categorize endemism and significance of randomization tests
+    categorize_signif_pd() %>% 
     categorize_endemism(),
   
-  # - Japan endemics only
-  biodiv_ferns_endemic_spatial =
-    shape_ferns %>%
-    left_join(rand_test_phy_ferns_endemic, by = c(grids = "site")) %>%
-    # FIXME: add categorizing significance of randomization tests
-    # Categorize endemism
-    categorize_endemism(),
+  # Drop one outlier value from repro dataset: 
+  # single extremely high percent_apo due to small number of species
+  biodiv_ferns_repro_spatial = 
+    biodiv_ferns_repro_spatial_all %>%
+    verify(max(percent_apo) > 0.6) %>%
+    filter(percent_apo != max(percent_apo)) %>%
+    verify(max(percent_apo) < 0.6) %>%
+    verify(nrow(.) == (nrow(biodiv_ferns_repro_spatial_raw) - 1)),
   
   # Spatial modeling ----
   
@@ -428,9 +439,9 @@ tar_plan(
   
   # Define variables for models
   # - response variables for environmental model
-  resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_p_upper"),
+  resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z"),
   # - response variables for reproductive model
-  resp_vars_repro = c("pd_obs_z", "rpd_obs_z", "pe_obs_p_upper"),
+  resp_vars_repro = c("pd_obs_z", "rpd_obs_z"),
   # - independent variables for environmental model
   indep_vars_env = c("temp", "precip", "precip_season"),
   # - independent variables for reproductive model
@@ -719,5 +730,14 @@ tar_plan(
     knit_root_dir = here::here(),
     output_file = here::here("results/supp_info.pdf"),
     params = list(doc_type = "pdf")
+  ),
+  # - SI appendix on data exploration for models
+  tar_render(
+    si_data_exploration,
+    path = "ms/data_exploration.Rmd",
+    output_format = "rmarkdown::html_document",
+    knit_root_dir = here::here(),
+    output_file = here::here("results/data_exploration.html"),
+    params = list(knit_type = "targets")
   )
 )
