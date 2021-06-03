@@ -2833,6 +2833,8 @@ prepare_data_for_spamm <- function(
 #' Fit a linear mixed model including spatial autocorrelation
 #' 
 #' Wrapper around spaMM::fitme() so it can be run as a loop in {targets}
+#' 
+#' A negative binomial model is fit for species richness; gaussian otherwise.
 #'
 #' @param formula Formula as a character string
 #' @param data Data for the model
@@ -2847,7 +2849,12 @@ run_spamm <- function(formula, data, resp_var, data_type) {
     resp_var = resp_var,
     formula = formula,
     data_type = data_type,
-    model = list(spaMM::fitme(as.formula(formula), data = data, family = "gaussian"))
+    model = 
+      if_else(
+        resp_var == "richness",
+        list(spaMM::fitme(as.formula(formula), data = data, family = negbin())),
+        list(spaMM::fitme(as.formula(formula), data = data, family = gaussian()))
+      )
   )
 }
 

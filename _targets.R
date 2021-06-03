@@ -580,27 +580,6 @@ tar_plan(
   # - comparison between environmental and reproductive models by cAIC
   aic_env_repro = compare_aic_env_repro(spatial_models),
   
-  # Experimental: test different models for richness ----
-  rich_temp_sq_poisson_mod = fitme(
-    richness ~ temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat), 
-    data = biodiv_ferns_cent_env, family = poisson()),
-  
-  rich_temp_poisson_mod = fitme(
-    richness ~ temp + precip + precip_season + Matern(1 | long + lat), 
-    data = biodiv_ferns_cent_env, family = poisson()),
-  
-  rich_temp_compoisson_mod = fitme(
-    richness ~ temp + precip + precip_season + Matern(1 | long + lat), 
-    data = biodiv_ferns_cent_env, family = COMPoisson()),
-  
-  rich_temp_sq_negbin_mod = fitme(
-    richness ~ temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat), 
-    data = biodiv_ferns_cent_env, family = negbin()),
-  
-  rich_temp_negbin_mod = fitme(
-    richness ~ temp + precip + precip_season + Matern(1 | long + lat), 
-    data = biodiv_ferns_cent_env, family = negbin()),
-  
   # Conservation analysis ----
   
   ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)
