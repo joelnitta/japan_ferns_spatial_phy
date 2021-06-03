@@ -274,9 +274,6 @@ richness_poisson_mod <- glm(
 
 # Check ratio of residual variance to df (should be near 1 to meet poisson assumptions)
 richness_poisson_mod$deviance / richness_poisson_mod$df.residual
-
-# Run statistical test
-AER::dispersiontest(richness_poisson_mod, trafo=1)
 ```
 
 That's very overdispersed. So we won't use poisson, but negative binomial instead.
