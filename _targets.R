@@ -428,7 +428,7 @@ tar_plan(
     verify(max(percent_apo) > 0.6) %>%
     filter(percent_apo != max(percent_apo)) %>%
     verify(max(percent_apo) < 0.6) %>%
-    verify(nrow(.) == (nrow(biodiv_ferns_repro_spatial_raw) - 1)),
+    verify(nrow(.) == (nrow(biodiv_ferns_repro_spatial_all) - 1)),
   
   # Spatial modeling ----
   

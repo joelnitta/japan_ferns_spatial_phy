@@ -2850,10 +2850,9 @@ run_spamm <- function(formula, data, resp_var, data_type) {
     formula = formula,
     data_type = data_type,
     model = 
-      if_else(
-        resp_var == "richness",
-        list(spaMM::fitme(as.formula(formula), data = data, family = negbin())),
-        list(spaMM::fitme(as.formula(formula), data = data, family = gaussian()))
+      case_when(
+        resp_var == "richness" ~ list(spaMM::fitme(as.formula(formula), data = data, family = negbin())),
+        resp_var != "richness" ~ list(spaMM::fitme(as.formula(formula), data = data, family = gaussian()))
       )
   )
 }
