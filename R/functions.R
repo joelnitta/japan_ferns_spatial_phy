@@ -2811,7 +2811,7 @@ prepare_data_for_spamm <- function(
   bind_rows(
     tibble(
       resp_var = resp_var_env,
-      formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + Matern(1 | long + lat)")
+      formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + Matern(1|long+lat)")
     ) %>%
       mutate(
         data = list(biodiv_ferns_cent_env),
@@ -2819,8 +2819,8 @@ prepare_data_for_spamm <- function(
     crossing(
       resp_var = resp_var_repro,
       formula = c(
-        "percent_apo + precip + precip_season + Matern(1 | long + lat)",
-        "temp+ I(temp^2) + precip + precip_season + Matern(1 | long + lat)")
+        "percent_apo + precip + precip_season + Matern(1|long+lat)",
+        "temp + I(temp^2) + precip + precip_season + Matern(1|long+lat)")
     ) %>%
       mutate(
         formula = glue("{resp_var} ~ {formula}") %>% as.character(),
@@ -3129,16 +3129,13 @@ get_repro_model_params <- function(spatial_models, lrt_comp_table) {
     lrt_comp_table %>%
     filter(data_type == "repro") %>%
     select(-data_type) %>%
-    tidyr::extract(full_formula, "model_type", "~ ([^ ]+) ", remove = FALSE) %>%
-    filter(model_type == "percent_apo") %>%
-    select(-model_type)
+    tidyr::extract(full_formula, "model_type", "~ ([^ ]+) ", remove = FALSE)
   
   spatial_models %>%
     # Filter models to those including % apomictic taxa built with repro data set
     filter(data_type == "repro") %>%
+    select(-data_type) %>%
     tidyr::extract(formula, "model_type", "~ ([^ ]+) ") %>%
-    filter(model_type == "percent_apo") %>%
-    select(-model_type) %>%
     # Extract fixed effects
     mutate(fixed_effects = map(model, get_beta_table)) %>%
     # Drop the model
@@ -3147,7 +3144,7 @@ get_repro_model_params <- function(spatial_models, lrt_comp_table) {
     # Add LRT results
     left_join(
       lrt_comp_table_repro,
-      by = c("resp_var", term = "comparison")
+      by = c("resp_var", "model_type", term = "comparison")
     )
   
 }
