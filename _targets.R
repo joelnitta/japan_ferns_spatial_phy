@@ -443,19 +443,26 @@ tar_plan(
   # - response variables for reproductive model
   resp_vars_repro = c("pd_obs_z", "rpd_obs_z"),
   # - independent variables for environmental model
-  indep_vars_env = c("temp", "precip", "precip_season"),
+  indep_vars_env = c("temp", "precip", "precip_season", "area"),
   # - independent variables for reproductive model
-  indep_vars_repro = c("percent_apo", "temp", "precip", "precip_season"),
+  indep_vars_repro = c("percent_apo", "temp", "precip", "precip_season", "area"),
+  
+  # Calculate area as rolling mean in 1 degree latitudinal windows
+  lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
   
   # Make biodiversity metrics dataframe with centroid of each site.
   # Keep only variables needed for model and only rows with zero missing data.
   # - all ferns dataset (for environmental model)
   biodiv_ferns_cent_env = sf_to_centroids(biodiv_ferns_spatial) %>%
+    # add area
+    add_roll_area(lat_area_ja) %>%
     # need 'grids' for Moran's I (used like rownames)
     filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_env)),
   
   # - only those with repro. data available (for reproductive model)
   biodiv_ferns_cent_repro = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
+    # add area
+    add_roll_area(lat_area_ja) %>%
     filter_data_for_model(c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
   
   # Scale data sets for correlation plots

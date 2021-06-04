@@ -8,6 +8,7 @@ library(rnaturalearthhires)
 library(miniUI)
 library(lwgeom)
 library(tflow)
+library(IRanges) # for fuzzyjoin::interval_inner_join()
 
 # considering these...
 library(ggtext)

@@ -3198,3 +3198,97 @@ grubbs_tidy <- function(x, type = 10, ...) {
     dplyr::select(g, u, p_value, method, alternative)
   
 }
+
+
+#' Crops an area then calculate its area in sq km
+#' 
+#' Helper function for calc_area_by_lat()
+#'
+#' @param x object of class sf or sfc
+#' @param ymin minimum y extent of cropping area
+#' @param ymax maximum y extent of cropping area
+#' @param xmin minimum y extent of cropping area
+#' @param xmax maximum y extent of cropping area
+#'
+#' @return Area in sq km of the cropped area
+#' 
+area_from_crop <- function(x, ymin, ymax, xmin, xmax) {
+  suppressMessages(sf::st_crop(x = x, ymin = ymin, ymax = ymax, xmin = xmin, xmax = xmax)) %>%
+    sf::st_area() %>%
+    units::set_units(km^2) %>%
+    as.numeric() %>%
+    # sf::st_area returns vec of length zero if no area
+    # convert those to an actual zero
+    ifelse(length(.) == 0, 0, .)
+}
+
+#' Calculate area in latitudinal bands of a geometric shape
+#' 
+#' Slices the shape into bands of width `lat_cut`, then calculates
+#' the area of each band and a rolling mean average of width `lat_window`
+#'
+#' @param shp Geometric shape; object of class sf or sfc
+#' @param lat_cut Width of latitude to slice the shape into
+#' @param lat_window Width of rolling window to calulate rolling mean area
+#'
+#' @return Tibble with columns `ymin`, `ymax`, `area`
+calc_area_by_lat <- function(shp, lat_cut = 0.2, lat_window = 1) {
+  
+  # Get bounding box of the input shape (xmin, xmax, ymin, ymax)
+  bounds <- st_bbox(shp) 
+  
+  # Define latitudes to cut along: every 0.2 degree
+  lat_cuts <- seq(
+    floor(bounds$ymin), 
+    ceiling(bounds$ymax), 
+    0.2)
+  
+  # Prepare tibble for looping
+  dat <- tibble(
+    ymin = lat_cuts[1:(length(lat_cuts) - 1)],
+    ymax = lat_cuts[2:length(lat_cuts)],
+    xmin = bounds$xmin %>% floor,
+    xmax = bounds$xmax %>% ceiling,
+    x = list(shp)
+  )
+  
+  # Determine rolling mean window in units of input data
+  # k x lat_cut = lat_window,
+  # so lat_window / lat_cut = 1 degree / 0.2 degree = 5
+  width_k <- lat_window / lat_cut
+  
+  # Calculate area in 0.2 degree latitudinal bands,
+  # then rolling mean in 1 degree bands
+  dat %>%
+    mutate(area = pmap_dbl(., area_from_crop)) %>%
+    select(ymin, ymax, area) %>%
+    # for the missing values on either end, just extend from the first non-missing value
+    mutate(area = zoo::rollmean(x = area, k = width_k, fill = c("extend", NA, "extend")))
+  
+}
+
+
+#' Add rolling mean area of latidudinal bands to biodiv data
+#'
+#' @param biodiv_ferns_cent_env Tibble
+#' @param lat_area_ja Tibble
+#'
+#' @return Tibble
+#' 
+add_roll_area <- function(biodiv_ferns_cent_env, lat_area_ja) {
+  # interval_inner_join() only works (properly) on integers
+  # lat has max 1 decimal, so multiply by 10 to convert to integer
+  biodiv_ferns_cent_env %>% 
+    mutate(ymin = lat*10,
+           ymin = as.integer(ymin)) %>%
+    mutate(ymax = ymin) %>%
+    fuzzyjoin::interval_inner_join(
+      mutate(lat_area_ja, ymin = as.integer(ymin*10), ymax = as.integer(ymax*10)),
+      type = "within",
+      by = c("ymin", "ymax")) %>%
+    # make sure the join worked properly
+    verify(nrow(.) == nrow(biodiv_ferns_cent_env)) %>%
+    select(-matches("ymin|ymax"))
+}
+
+
