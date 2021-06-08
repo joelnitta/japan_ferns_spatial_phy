@@ -64,6 +64,7 @@ The columns are as follows:
 * `temp`: mean annual temperature (10 x °C)
 * `precip`: total annual precipitation (mm)
 * `precip_season`: seasonality in precipitation
+* `area`: rolling mean of area in 0.2 degree latitudinal bands
 * `percent_apo`: percent of apogamous taxa in that grid cell (repro data only)
 
 ### Check for missing data

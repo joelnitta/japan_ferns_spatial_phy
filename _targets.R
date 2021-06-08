@@ -476,8 +476,9 @@ tar_plan(
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
-    sf_to_centroids(biodiv_ferns_repro_spatial), 
-    vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo")
+    sf_to_centroids(biodiv_ferns_repro_spatial) %>%
+    add_roll_area(lat_area_ja), 
+    vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo", "area")
   ),
   
   ## Analyze Moran's I ----

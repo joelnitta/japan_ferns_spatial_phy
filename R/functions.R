@@ -2811,7 +2811,7 @@ prepare_data_for_spamm <- function(
   bind_rows(
     tibble(
       resp_var = resp_var_env,
-      formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + Matern(1|long+lat)")
+      formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + area + Matern(1|long+lat)")
     ) %>%
       mutate(
         data = list(biodiv_ferns_cent_env),
@@ -2819,8 +2819,8 @@ prepare_data_for_spamm <- function(
     crossing(
       resp_var = resp_var_repro,
       formula = c(
-        "percent_apo + precip + precip_season + Matern(1|long+lat)",
-        "temp + I(temp^2) + precip + precip_season + Matern(1|long+lat)")
+        "percent_apo + precip + precip_season + area + Matern(1|long+lat)",
+        "temp + I(temp^2) + precip + precip_season + area + Matern(1|long+lat)")
     ) %>%
       mutate(
         formula = glue("{resp_var} ~ {formula}") %>% as.character(),
