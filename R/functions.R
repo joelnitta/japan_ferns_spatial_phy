@@ -2880,7 +2880,17 @@ generate_spatial_comparisons <- function(resp_var, indep_vars) {
     resp_var = resp_var,
     indep_var = indep_vars,
     full_formula = full_formula_string) %>%
-    mutate(null_formula = str_remove_all(full_formula_string, fixed(paste(indep_var, "+"))) %>% str_replace_all("  ", " ")) %>%
+    # Define string to remove from full formula to create null formula.
+    # In case of temperature, remove both temp and quadratic term (temp^2)
+    mutate(
+      indep_var_rm = case_when(
+        indep_var == "temp" ~ "temp + I(temp^2)",
+        TRUE ~ indep_var
+      ),
+      indep_var_rm = fixed(paste(indep_var_rm, "+"))
+    ) %>%
+    mutate(null_formula = str_remove_all(full_formula_string, indep_var_rm) %>% str_replace_all("  ", " ")) %>%
+    select(-indep_var_rm) %>%
     bind_rows(
       tibble(
         resp_var = resp_var,
