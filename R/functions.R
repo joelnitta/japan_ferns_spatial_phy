@@ -2712,19 +2712,12 @@ prepare_data_for_moran <- function(
   biodiv_ferns_cent_repro,
   dist_list_repro
 ) {
-  bind_rows(
     tibble(
       vars = morans_vars_env,
       data_type = "env",
       data = list(biodiv_ferns_cent_env),
       dist_list = list(dist_list_env)
-    ),
-    tibble(
-      vars = morans_vars_repro,
-      data_type = "repro",
-      data = list(biodiv_ferns_cent_repro),
-      dist_list = list(dist_list_repro))
-  )
+    )
 }
 
 #' Run permutation test for Moran's I statistic
@@ -2795,39 +2788,28 @@ run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
 #' Includes a quadratic term for temperature only
 #'
 #' @param resp_var_env Response variables to include in spatial model for environmental dataset
-#' @param biodiv_ferns_cent_env Tibble with metrics of biodiversity for environmental dataset
+#' @param biodiv_ferns_cent Tibble with metrics of biodiversity
 #' @param resp_var_repro Response variables to include in spatial model for repro. dataset
-#' @param biodiv_ferns_cent_repro Tibble with metrics of biodiversity for repro. dataset
 #'
 #' @return Tibble with columns "resp_var" (character), "formula" (character), "data" (list-column),
 #' "data_type" (character)
 #' 
 prepare_data_for_spamm <- function(
   resp_var_env = c("fd_obs_z", "pd_obs_z", "rfd_obs_z", "richness", "rpd_obs_z"),
-  biodiv_ferns_cent_env,
-  resp_var_repro = c("pd_obs_z", "rpd_obs_z"),
-  biodiv_ferns_cent_repro
+  biodiv_ferns_cent,
+  resp_var_repro = c("pd_obs_z", "rpd_obs_z")
 ) {
   bind_rows(
     tibble(
       resp_var = resp_var_env,
       formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + area + Matern(1|long+lat)")
-    ) %>%
-      mutate(
-        data = list(biodiv_ferns_cent_env),
-        data_type = "env"),
+    ),
     crossing(
       resp_var = resp_var_repro,
-      formula = c(
-        "percent_apo + precip + precip_season + area + Matern(1|long+lat)",
-        "temp + I(temp^2) + precip + precip_season + area + Matern(1|long+lat)")
-    ) %>%
-      mutate(
-        formula = glue("{resp_var} ~ {formula}") %>% as.character(),
-        data = list(biodiv_ferns_cent_repro),
-        data_type = "repro"
-      )
-  )
+      formula = glue("{resp_var_repro} ~ percent_apo + precip + precip_season + area + Matern(1|long+lat)")
+    )
+  ) %>%
+    mutate(data = list(biodiv_ferns_cent))
 }
 
 #' Fit a linear mixed model including spatial autocorrelation
@@ -2839,16 +2821,14 @@ prepare_data_for_spamm <- function(
 #' @param formula Formula as a character string
 #' @param data Data for the model
 #' @param resp_var Response variable
-#' @param data_type Data type ("env" or "repro")
 #'
 #' @return Tibble with columns: "resp_var" (character), "formula" (character),
-#' "data_type" (character), "model" (list)
+#' "model" (list)
 #' 
-run_spamm <- function(formula, data, resp_var, data_type) {
+run_spamm <- function(formula, data, resp_var) {
   tibble(
     resp_var = resp_var,
     formula = formula,
-    data_type = data_type,
     mod_family = case_when(
       resp_var == "richness" ~ "negbin",
       resp_var != "richness" ~ "gaussian"
@@ -3098,65 +3078,15 @@ get_model_stats <- function(spatial_models) {
 #'
 #' @return Tibble including columns `resp_var` (response variable), `term` (fixed effect parameter name),
 #'  `estimate` (slope of parameter) `cond_se` (conditional standard error), `t_value`, 
-#'  `chi2_LR` (chi-squared value of LRT), `df`, `p_value`, `loglik_null` (log-likelihood of null model), 
-#'  `loglik_full` (log-likelihood of full model),
-#' `null_formula`, `full_formula`
+#'  `chi2_LR` (chi-squared value of LRT), `df`
 #' 
-get_env_model_params <- function(spatial_models, lrt_comp_table) {
+get_model_params <- function(spatial_models) {
   spatial_models %>%
-    filter(data_type == "env") %>%
     # Extract fixed effects
     mutate(fixed_effects = map(model, get_beta_table)) %>%
     # Ditch the model
     select(-model, -formula) %>%
-    unnest(fixed_effects) %>%
-    # Add LRT results
-    left_join(
-      lrt_comp_table,
-      by = c("resp_var", "data_type", term = "comparison")
-    )
-}
-
-#' Summarize parameters of reproductive models
-#' 
-#' Filters to only reproductive mode models (those including % apomictic taxa)
-#'
-#' @param spatial_models Tibble, each with a spatial model.
-#' Output of run_spamm()
-#' @param lrt_comp_table Tibble, results of likelihood ratio test (LRT)
-#' Output of run_spamm_lrt()
-#'
-#' @return Tibble including columns `resp_var` (response variable), `term` (fixed effect parameter name),
-#'  `estimate` (slope of parameter) `cond_se` (conditional standard error), `t_value`, 
-#'  `chi2_LR` (chi-squared value of LRT), `df`, `p_value`, `loglik_null` (log-likelihood of null model), 
-#'  `loglik_full` (log-likelihood of full model),
-#' `null_formula`, `full_formula`
-#' 
-get_repro_model_params <- function(spatial_models, lrt_comp_table) {
-  
-  # Subset LRT results to models including % apomictic taxa built with repro data set
-  lrt_comp_table_repro <-
-    lrt_comp_table %>%
-    filter(data_type == "repro") %>%
-    select(-data_type) %>%
-    tidyr::extract(full_formula, "model_type", "~ ([^ ]+) ", remove = FALSE)
-  
-  spatial_models %>%
-    # Filter models to those including % apomictic taxa built with repro data set
-    filter(data_type == "repro") %>%
-    select(-data_type) %>%
-    tidyr::extract(formula, "model_type", "~ ([^ ]+) ") %>%
-    # Extract fixed effects
-    mutate(fixed_effects = map(model, get_beta_table)) %>%
-    # Drop the model
-    select(-model) %>%
-    unnest(fixed_effects) %>%
-    # Add LRT results
-    left_join(
-      lrt_comp_table_repro,
-      by = c("resp_var", "model_type", term = "comparison")
-    )
-  
+    unnest(fixed_effects)
 }
 
 #' Compare between environmental and reproductive models using cAIC
@@ -3171,8 +3101,6 @@ get_repro_model_params <- function(spatial_models, lrt_comp_table) {
 compare_aic_env_repro <- function(spatial_models) {
   # Filter to models based on reproductive mode dataset
   spatial_models %>%
-    filter(data_type == "repro") %>%
-    select(-data_type) %>%
     # Extract model type (temp or % apomictic taxa)
     tidyr::extract(formula, "model_type", "~ ([^ ]+) ") %>%
     # Get AIC values and residual variance (phi) for each model

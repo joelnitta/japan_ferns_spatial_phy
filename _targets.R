@@ -392,6 +392,8 @@ tar_plan(
     left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
     # Add environmental data
     left_join(mean_climate, by = "grids") %>%
+    # Add % apomictic taxa
+    left_join(percent_apo, by = c(grids = "site")) %>%
     # Categorize endemism and significance of randomization tests
     categorize_endemism() %>%
     categorize_signif_pd() %>% 
@@ -409,26 +411,26 @@ tar_plan(
     # Categorize endemism and significance of randomization tests
     categorize_signif_pd() %>%
     categorize_endemism(),
-  
-  # - Only those with reproductive mode data available
-  biodiv_ferns_repro_spatial_all =
-    shape_ferns %>%
-    left_join(rand_test_phy_ferns_with_repro, by = c(grids = "site")) %>%
-    left_join(percent_apo, by = c(grids = "site")) %>%
-    # Add environmental data
-    left_join(mean_climate, by = "grids") %>%
-    # Categorize endemism and significance of randomization tests
-    categorize_signif_pd() %>% 
-    categorize_endemism(),
-  
-  # Drop one outlier value from repro dataset: 
-  # single extremely high percent_apo due to small number of species
-  biodiv_ferns_repro_spatial = 
-    biodiv_ferns_repro_spatial_all %>%
-    verify(max(percent_apo) > 0.6) %>%
-    filter(percent_apo != max(percent_apo)) %>%
-    verify(max(percent_apo) < 0.6) %>%
-    verify(nrow(.) == (nrow(biodiv_ferns_repro_spatial_all) - 1)),
+  # 
+  # # - Only those with reproductive mode data available
+  # biodiv_ferns_repro_spatial_all =
+  #   shape_ferns %>%
+  #   left_join(rand_test_phy_ferns_with_repro, by = c(grids = "site")) %>%
+  #   left_join(percent_apo, by = c(grids = "site")) %>%
+  #   # Add environmental data
+  #   left_join(mean_climate, by = "grids") %>%
+  #   # Categorize endemism and significance of randomization tests
+  #   categorize_signif_pd() %>% 
+  #   categorize_endemism(),
+  # 
+  # # Drop one outlier value from repro dataset: 
+  # # single extremely high percent_apo due to small number of species
+  # biodiv_ferns_repro_spatial = 
+  #   biodiv_ferns_repro_spatial_all %>%
+  #   verify(max(percent_apo) > 0.6) %>%
+  #   filter(percent_apo != max(percent_apo)) %>%
+  #   verify(max(percent_apo) < 0.6) %>%
+  #   verify(nrow(.) == (nrow(biodiv_ferns_repro_spatial_all) - 1)),
   
   # Spatial modeling ----
   
@@ -453,30 +455,30 @@ tar_plan(
   # Make biodiversity metrics dataframe with centroid of each site.
   # Keep only variables needed for model and only rows with zero missing data.
   # - all ferns dataset (for environmental model)
-  biodiv_ferns_cent_env = sf_to_centroids(biodiv_ferns_spatial) %>%
+  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial) %>%
     # add area
     add_roll_area(lat_area_ja) %>%
     # need 'grids' for Moran's I (used like rownames)
-    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_env)),
+    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_repro)),
   
-  # - only those with repro. data available (for reproductive model)
-  biodiv_ferns_cent_repro = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
-    # add area
-    add_roll_area(lat_area_ja) %>%
-    filter_data_for_model(c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
+  # # - only those with repro. data available (for reproductive model)
+  # biodiv_ferns_cent_repro = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
+  #   # add area
+  #   add_roll_area(lat_area_ja) %>%
+  #   filter_data_for_model(c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
   
   # Scale data sets for correlation plots
-  biodiv_ferns_cent_env_scaled = biodiv_ferns_cent_env %>%
-    mutate(across(c(temp, precip, precip_season), ~scale(.) %>% as.vector)),
+  biodiv_ferns_cent_scaled = biodiv_ferns_cent %>%
+    mutate(across(all_of(indep_vars_repro), ~scale(.) %>% as.vector)),
   
-  biodiv_ferns_cent_repro_scaled = biodiv_ferns_cent_repro %>%
-    mutate(across(c(percent_apo, temp, precip, precip_season), ~scale(.) %>% as.vector)),
+  # biodiv_ferns_cent_repro_scaled = biodiv_ferns_cent_repro %>%
+  #   mutate(across(c(percent_apo, temp, precip, precip_season), ~scale(.) %>% as.vector)),
   
   ## Correlation analysis ----
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
-    sf_to_centroids(biodiv_ferns_repro_spatial) %>%
+    sf_to_centroids(biodiv_ferns_spatial) %>%
     add_roll_area(lat_area_ja), 
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo", "area")
   ),
@@ -484,26 +486,20 @@ tar_plan(
   ## Analyze Moran's I ----
   
   # Make list of distances for run_moran_mc()
-  # - environmental dataset
-  dist_list_env = make_dist_list(biodiv_ferns_cent_env),
-  # - reproductive dataset (% apogamous taxa only)
-  dist_list_repro = make_dist_list(biodiv_ferns_cent_repro),
+  dist_list = make_dist_list(biodiv_ferns_cent),
   
   # Prepare datasets for looping
-  data_for_moran = prepare_data_for_moran(
-    morans_vars_env = c(resp_vars_env, indep_vars_env),
-    biodiv_ferns_cent_env = biodiv_ferns_cent_env,
-    dist_list_env = dist_list_env,
-    morans_vars_repro = "percent_apo",
-    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro,
-    dist_list_repro = dist_list_repro
+  data_for_moran = tibble(
+    var = c(resp_vars_env, indep_vars_repro),
+    data = list(biodiv_ferns_cent),
+    dist_list = list(dist_list)
   ),
   
   # Loop over datasets and calculate Moran's I
   tar_target(
     morans_i,
     run_moran_mc(
-      var_name = data_for_moran$vars[[1]], 
+      var_name = data_for_moran$var[[1]], 
       biodiv_data = data_for_moran$data[[1]], 
       listw = data_for_moran$dist_list[[1]], 
       nsim = 1000
@@ -517,17 +513,15 @@ tar_plan(
   # - unscaled data
   data_for_spamm = prepare_data_for_spamm(
     resp_var_env = resp_vars_env,
-    biodiv_ferns_cent_env = biodiv_ferns_cent_env,
     resp_var_repro = resp_vars_repro,
-    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro
+    biodiv_ferns_cent = biodiv_ferns_cent
   ),
   
   # - scaled data
   data_for_spamm_scaled = prepare_data_for_spamm(
     resp_var_env = resp_vars_env,
-    biodiv_ferns_cent_env = biodiv_ferns_cent_env_scaled,
     resp_var_repro = resp_vars_repro,
-    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro_scaled
+    biodiv_ferns_cent = biodiv_ferns_cent_scaled
   ),
   
   # Loop across each formula and build a spatial model
@@ -537,8 +531,7 @@ tar_plan(
     run_spamm(
       formula = data_for_spamm$formula[[1]], 
       data = data_for_spamm$data[[1]], 
-      resp_var = data_for_spamm$resp_var[[1]], 
-      data_type = data_for_spamm$data_type[[1]]
+      resp_var = data_for_spamm$resp_var[[1]]
     ),
     pattern = map(data_for_spamm)
   ),
@@ -550,42 +543,16 @@ tar_plan(
       formula = data_for_spamm_scaled$formula[[1]], 
       data = data_for_spamm_scaled$data[[1]], 
       resp_var = data_for_spamm_scaled$resp_var[[1]], 
-      data_type = data_for_spamm_scaled$data_type[[1]]
     ),
     pattern = map(data_for_spamm_scaled)
   ),
   
-  # Make a dataframe for running likelihood ratio tests (LRTs). 
-  # Includes columns 'full_formula' and 'null_formula',
-  # each with a pair of model formulas to test using LRT.
-  data_for_lrt = prepare_data_for_lrt(
-    spatial_models = spatial_models, 
-    biodiv_ferns_cent_env = biodiv_ferns_cent_env, 
-    biodiv_ferns_cent_repro = biodiv_ferns_cent_repro),
-  
-  # Conduct LRTs between full models and models each with one variable removed 
-  # (also compares with null model)
-  tar_target(
-    lrt_comp_table,
-    run_spamm_lrt(
-      null_formula = data_for_lrt$null_formula[[1]], 
-      full_formula = data_for_lrt$full_formula[[1]], 
-      data = data_for_lrt$data[[1]], 
-      data_type = data_for_lrt$data_type[[1]], 
-      resp_var = data_for_lrt$resp_var[[1]], 
-      comparison = data_for_lrt$comparison[[1]]
-    ),
-    pattern = map(data_for_lrt)
-  ),
-  
   # Summarize spatial models:
-  # - model statistics (both env and repro models)
+  # - model statistics
   model_stats = get_model_stats(spatial_models),
-  # - environmental model parameters (fixed effects)
-  env_model_params = get_env_model_params(spatial_models, lrt_comp_table),
-  # - reproductive model parameters (fixed effects)
-  repro_model_params = get_repro_model_params(spatial_models, lrt_comp_table),
-  # - comparison between environmental and reproductive models by cAIC
+  # - model parameters (fixed effects)
+  model_params = get_env_model_params(spatial_models),
+  # - comparison between temp and reproductive models by cAIC
   aic_env_repro = compare_aic_env_repro(spatial_models),
   
   # Conservation analysis ----
