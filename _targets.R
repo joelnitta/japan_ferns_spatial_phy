@@ -542,7 +542,7 @@ tar_plan(
     run_spamm(
       formula = data_for_spamm_scaled$formula[[1]], 
       data = data_for_spamm_scaled$data[[1]], 
-      resp_var = data_for_spamm_scaled$resp_var[[1]], 
+      resp_var = data_for_spamm_scaled$resp_var[[1]]
     ),
     pattern = map(data_for_spamm_scaled)
   ),
