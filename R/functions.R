@@ -2804,7 +2804,7 @@ prepare_data_for_spamm <- function(
       resp_var = resp_var_env,
       formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + area + Matern(1|long+lat)")
     ),
-    crossing(
+    tibble(
       resp_var = resp_var_repro,
       formula = glue("{resp_var_repro} ~ percent_apo + precip + precip_season + area + Matern(1|long+lat)")
     )
@@ -3101,6 +3101,7 @@ get_model_params <- function(spatial_models) {
 compare_aic_env_repro <- function(spatial_models) {
   # Filter to models based on reproductive mode dataset
   spatial_models %>%
+    filter(resp_var %in% c("pd_obs_z", "rpd_obs_z")) %>%
     # Extract model type (temp or % apomictic taxa)
     tidyr::extract(formula, "model_type", "~ ([^ ]+) ") %>%
     # Get AIC values and residual variance (phi) for each model

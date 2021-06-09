@@ -551,7 +551,7 @@ tar_plan(
   # - model statistics
   model_stats = get_model_stats(spatial_models),
   # - model parameters (fixed effects)
-  model_params = get_env_model_params(spatial_models),
+  model_params = get_model_params(spatial_models),
   # - comparison between temp and reproductive models by cAIC
   aic_env_repro = compare_aic_env_repro(spatial_models),
   
