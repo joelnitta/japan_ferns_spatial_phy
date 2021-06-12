@@ -559,7 +559,7 @@ tar_plan(
       resp_var = data_for_lrt$resp_var[[1]],  
       comparison = data_for_lrt$comparison[[1]]
     ),
-    patterm = map(data_for_lrt)
+    pattern = map(data_for_lrt)
   ),
   
   # Summarize spatial models:
