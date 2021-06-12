@@ -479,7 +479,7 @@ tar_plan(
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
     sf_to_centroids(biodiv_ferns_spatial) %>%
-    add_roll_area(lat_area_ja), 
+      add_roll_area(lat_area_ja), 
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo", "area")
   ),
   
@@ -545,6 +545,21 @@ tar_plan(
       resp_var = data_for_spamm_scaled$resp_var[[1]]
     ),
     pattern = map(data_for_spamm_scaled)
+  ),
+  
+  # Conduct LRTs (likelihood ratio tests)
+  data_for_lrt = prepare_data_for_lrt(spatial_models, biodiv_ferns_cent),
+  
+  tar_target(
+    lrt_results,
+    run_spamm_lrt(
+      null_formula = data_for_lrt$null_formula[[1]],
+      full_formula = data_for_lrt$full_formula[[1]],
+      data = data_for_lrt$data[[1]], 
+      resp_var = data_for_lrt$resp_var[[1]],  
+      comparison = data_for_lrt$comparison[[1]]
+    ),
+    patterm = map(data_for_lrt)
   ),
   
   # Summarize spatial models:

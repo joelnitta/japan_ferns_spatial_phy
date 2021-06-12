@@ -2917,56 +2917,42 @@ extract_indep_vars <- function(formula_string) {
 #' @return Tibble in wide format with columns 'resp_var', 'comp_group', 'null_formula',
 #' and 'full_formula'
 #' 
-prepare_data_for_lrt <- function(spatial_models, biodiv_ferns_cent_env, biodiv_ferns_cent_repro) {
+prepare_data_for_lrt <- function(spatial_models, biodiv_ferns_cent) {
   
-  # First define full and null formulas
-  formulas <-
-    spatial_models %>%
-    # Extract independent variables
+  # Extract response and independent variables from models
+  spatial_models %>%
     mutate(indep_vars = map(formula, extract_indep_vars)) %>%
-    select(resp_var, indep_vars, data_type) %>%
+    select(resp_var, indep_vars) %>%
     # Construct formulas for comparing full vs. null model
     mutate(comp = map2(resp_var, indep_vars, generate_spatial_comparisons)) %>%
     select(-indep_vars, -resp_var) %>%
-    unnest(comp)
-  
-  # Next join data by data type
-  bind_rows(
-    formulas %>% 
-      filter(data_type == "env") %>%
-      left_join(
-        tibble(data_type = "env", data = list(biodiv_ferns_cent_env)),
-        by = "data_type"
-      ),
-    formulas %>%
-      filter(data_type == "repro") %>%
-      left_join(
-        tibble(data_type = "repro", data = list(biodiv_ferns_cent_repro)),
-        by = "data_type"
-      )
-  ) %>%
+    unnest(comp) %>%
+    # Add data
+    mutate(data = list(biodiv_ferns_cent)) %>%
     assert(not_na, everything())
   
 }
 
 #' Run a likelihood ratio test on formulas provided as a tibble
 #'
-#' @param lrt_table Tibble in wide format with columns 'resp_var', 'null_formula',
-#' and 'full_formula'
+#' @param null_formula Null formula as character vector for spaMM::fixedLRT()
+#' @param full_formula Full formula as character vector for spaMM::fixedLRT()
 #' @param data Data for model
+#' @param resp_var Name of response variable
+#' @param comparison Name of variable that is being compared (present in full
+#' formula but absent in null formula)
 #'
 #' @return Tibble with columns 'chi2_LR', 'df', 'p_value', 'loglik_null', 
-#' 'loglik_full', 'resp_var', 'comparison', and 'data_type'
+#' 'loglik_full', 'resp_var', and 'comparison'
 #' 
-#'
-run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var, comparison) {
+run_spamm_lrt <- function(null_formula, full_formula, data, resp_var, comparison) {
   
   # Conduct LRT
   lrt_res <- spaMM::fixedLRT(
     null.formula = as.formula(null_formula), 
     formula = as.formula(full_formula), 
     data = data, 
-    method = "ML")
+    method = "ML") %>%
   
   # Extract important statistics from result
   # (chi2, df, p-value, log-likelihoods of null and full model)
@@ -2979,8 +2965,7 @@ run_spamm_lrt <- function(null_formula, full_formula, data, data_type, resp_var,
       null_formula = null_formula,
       full_formula = full_formula,
       resp_var = resp_var, 
-      comparison = comparison, 
-      data_type = data_type)
+      comparison = comparison)
 }
 
 #' Extract beta table (fixed effects) from a model
@@ -3085,7 +3070,7 @@ get_model_params <- function(spatial_models) {
     # Extract fixed effects
     mutate(fixed_effects = map(model, get_beta_table)) %>%
     # Ditch the model
-    select(-model, -formula) %>%
+    select(-model) %>%
     unnest(fixed_effects)
 }
 
