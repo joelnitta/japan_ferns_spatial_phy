@@ -548,7 +548,7 @@ tar_plan(
   ),
   
   # Conduct LRTs (likelihood ratio tests)
-  data_for_lrt = prepare_data_for_lrt(spatial_models, biodiv_ferns_cent),
+  data_for_lrt = prepare_data_for_lrt(spatial_models_scaled, biodiv_ferns_cent_scaled),
   
   tar_target(
     lrt_results,
