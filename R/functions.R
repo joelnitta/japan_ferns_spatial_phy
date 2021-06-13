@@ -2952,7 +2952,7 @@ run_spamm_lrt <- function(null_formula, full_formula, data, resp_var, comparison
     null.formula = as.formula(null_formula), 
     formula = as.formula(full_formula), 
     data = data, 
-    method = "ML") %>%
+    method = "ML")
   
   # Extract important statistics from result
   # (chi2, df, p-value, log-likelihoods of null and full model)
