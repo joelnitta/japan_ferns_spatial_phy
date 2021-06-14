@@ -1727,6 +1727,7 @@ categorize_endemism <- function (df) {
   
   df %>% 
     mutate(
+      # Categorize endemism by CANAPE scheme
       endem_type = case_when(
         (pe_obs_p_upper >= 0.95 | pe_alt_obs_p_upper >= 0.95) & rpe_obs_p_upper >= 0.975 ~ "paleo",
         (pe_obs_p_upper >= 0.95 | pe_alt_obs_p_upper >= 0.95) & rpe_obs_p_lower >= 0.975~ "neo",
@@ -1734,7 +1735,9 @@ categorize_endemism <- function (df) {
         pe_obs_p_upper >= 0.95 | pe_alt_obs_p_upper >= 0.95 ~ "mixed",
         TRUE ~ "not significant"
       ),
-      endem_type = factor(endem_type, levels = c("paleo", "neo", "not significant", "mixed", "super"))
+      endem_type = factor(endem_type, levels = c("paleo", "neo", "not significant", "mixed", "super")),
+      # Categorize phy. endem. as significant or not
+      pe_obs_signif = if_else(pe_obs_p_upper > 0.95, TRUE, FALSE)
     )
   
 }
@@ -2829,9 +2832,11 @@ run_spamm <- function(formula, data, resp_var) {
   tibble(
     resp_var = resp_var,
     formula = formula,
+    # Specify model family according to response variable
     mod_family = case_when(
       resp_var == "richness" ~ "negbin",
-      resp_var != "richness" ~ "gaussian"
+      resp_var == "pe_obs_signif" ~ "binomial",
+      TRUE ~ "richness" ~ "gaussian"
     ),
     model = list(spaMM::fitme(as.formula(formula), data = data, family = mod_family))
   )

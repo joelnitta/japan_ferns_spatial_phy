@@ -441,9 +441,9 @@ tar_plan(
   
   # Define variables for models
   # - response variables for environmental model
-  resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z"),
+  resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_signif"),
   # - response variables for reproductive model
-  resp_vars_repro = c("pd_obs_z", "rpd_obs_z"),
+  resp_vars_repro = c("pd_obs_z", "rpd_obs_z", "pe_obs_signif"),
   # - independent variables for environmental model
   indep_vars_env = c("temp", "precip", "precip_season", "area"),
   # - independent variables for reproductive model
@@ -461,18 +461,9 @@ tar_plan(
     # need 'grids' for Moran's I (used like rownames)
     filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_repro)),
   
-  # # - only those with repro. data available (for reproductive model)
-  # biodiv_ferns_cent_repro = sf_to_centroids(biodiv_ferns_repro_spatial) %>%
-  #   # add area
-  #   add_roll_area(lat_area_ja) %>%
-  #   filter_data_for_model(c("grids", "lat", "long", resp_vars_repro, indep_vars_repro)),
-  
   # Scale data sets for correlation plots
   biodiv_ferns_cent_scaled = biodiv_ferns_cent %>%
     mutate(across(all_of(indep_vars_repro), ~scale(.) %>% as.vector)),
-  
-  # biodiv_ferns_cent_repro_scaled = biodiv_ferns_cent_repro %>%
-  #   mutate(across(c(percent_apo, temp, precip, precip_season), ~scale(.) %>% as.vector)),
   
   ## Correlation analysis ----
   
