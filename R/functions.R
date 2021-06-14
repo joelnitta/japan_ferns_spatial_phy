@@ -2836,7 +2836,7 @@ run_spamm <- function(formula, data, resp_var) {
     mod_family = case_when(
       resp_var == "richness" ~ "negbin",
       resp_var == "pe_obs_signif" ~ "binomial",
-      TRUE ~ "richness" ~ "gaussian"
+      TRUE ~ "gaussian"
     ),
     model = list(spaMM::fitme(as.formula(formula), data = data, family = mod_family))
   )
