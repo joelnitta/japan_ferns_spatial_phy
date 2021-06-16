@@ -3220,4 +3220,18 @@ add_roll_area <- function(biodiv_ferns_cent_env, lat_area_ja) {
     select(-matches("ymin|ymax"))
 }
 
-
+#' Drop one outlier value from biodiv data:
+#' single extremely high percent_apo (> 60%) due to small number of species
+#'
+#' @param data data on biodiversity of ferns in Japan, including
+#' columns `percent_apo`, `richness`, others
+#'
+#' @return data with one row dropped
+#' 
+drop_apo_outlier <- function (data) {
+  data %>%
+  verify(max(percent_apo) > 0.6) %>%
+  filter(percent_apo != max(percent_apo)) %>%
+  verify(max(percent_apo) < 0.6) %>%
+  verify(nrow(.) == (nrow(data) - 1))
+}
