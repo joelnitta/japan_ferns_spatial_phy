@@ -411,27 +411,7 @@ tar_plan(
     # Categorize endemism and significance of randomization tests
     categorize_signif_pd() %>%
     categorize_endemism(),
-  # 
-  # # - Only those with reproductive mode data available
-  # biodiv_ferns_repro_spatial_all =
-  #   shape_ferns %>%
-  #   left_join(rand_test_phy_ferns_with_repro, by = c(grids = "site")) %>%
-  #   left_join(percent_apo, by = c(grids = "site")) %>%
-  #   # Add environmental data
-  #   left_join(mean_climate, by = "grids") %>%
-  #   # Categorize endemism and significance of randomization tests
-  #   categorize_signif_pd() %>% 
-  #   categorize_endemism(),
-  # 
-  # # Drop one outlier value from repro dataset: 
-  # # single extremely high percent_apo due to small number of species
-  # biodiv_ferns_repro_spatial = 
-  #   biodiv_ferns_repro_spatial_all %>%
-  #   verify(max(percent_apo) > 0.6) %>%
-  #   filter(percent_apo != max(percent_apo)) %>%
-  #   verify(max(percent_apo) < 0.6) %>%
-  #   verify(nrow(.) == (nrow(biodiv_ferns_repro_spatial_all) - 1)),
-  
+
   # Spatial modeling ----
   
   # Model the effects of environment and percent apomictic taxa on each biodiversity metric, 
@@ -441,9 +421,9 @@ tar_plan(
   
   # Define variables for models
   # - response variables for environmental model
-  resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z", "pe_obs_signif"),
+  resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z"),
   # - response variables for reproductive model
-  resp_vars_repro = c("pd_obs_z", "rpd_obs_z", "pe_obs_signif"),
+  resp_vars_repro = c("pd_obs_z", "rpd_obs_z"),
   # - independent variables for environmental model
   indep_vars_env = c("temp", "precip", "precip_season", "area"),
   # - independent variables for reproductive model
@@ -452,13 +432,13 @@ tar_plan(
   # Calculate area as rolling mean in 1 degree latitudinal windows
   lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
   
-  # Make biodiversity metrics dataframe with centroid of each site.
-  # Keep only variables needed for model and only rows with zero missing data.
-  # - all ferns dataset (for environmental model)
+  # Make biodiversity metrics dataframe with centroid of each site for models
   biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial) %>%
     # add area
     add_roll_area(lat_area_ja) %>%
-    # need 'grids' for Moran's I (used like rownames)
+    # drop single percent_apo outlier
+    drop_apo_outlier %>%
+    # keep only variables needed for model and only rows with zero missing data
     filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_repro)),
   
   # Scale data sets for correlation plots
