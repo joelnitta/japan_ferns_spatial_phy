@@ -1676,7 +1676,7 @@ run_rand_analysis <- function(comm_df, phy = NULL, trait_distances = NULL, null_
   
   if ("rpe" %in% metrics) {
     pe_alt_obs <- phyloregion::phylo_endemism(comm_df_sparse, phy_alt, weighted = TRUE)
-    ses_pe_alt <- get_ses(random_vals, pe_obs, "pe_alt")}
+    ses_pe_alt <- get_ses(random_vals, pe_alt_obs, "pe_alt")}
   
   if ("rpe" %in% metrics) {
     rpe_obs <- pe_obs / pe_alt_obs
