@@ -13,9 +13,6 @@ plan(callr)
 # e.g., cpr_rand_test()
 plan(multicore, workers = 60) # IMPORTANT: Change the plan / num. workers as needed for your system!
 
-# Turn on progress bar for cpr_rand_test()
-progressr::handlers(global = TRUE)
-
 tar_plan(
   
   # Run tests on custom functions ----
