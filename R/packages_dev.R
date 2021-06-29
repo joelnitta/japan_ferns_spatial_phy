@@ -9,7 +9,7 @@ library(miniUI)
 library(lwgeom)
 library(tflow)
 library(IRanges) # for fuzzyjoin::interval_inner_join()
-library(canaper) # FIXME: remove this once canaper is used in _targets.R
+library(ROI.plugin.glpk)
 
 # considering these...
 library(ggtext)
