@@ -183,7 +183,7 @@ COPY ./renv.lock /tmp/project
 WORKDIR /tmp/project
 
 # Don't use cache (the symlinks won't work from Rstudio server)
-RUN Rscript -e 'install.packages("renv"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
+RUN Rscript -e 'devtools::install_github("rstudio/renv@0.13.2-87"); renv::consent(provided = TRUE); renv::settings$use.cache(FALSE); renv::init(bare = TRUE); renv::restore()'
 
 WORKDIR /home/rstudio/
 
