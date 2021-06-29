@@ -383,11 +383,11 @@ tar_plan(
     left_join(percent_apo) %>%
     # Classify endemism and significance of randomization tests
     cpr_classify_endem() %>%
-    cpr_classify_signif("pd") %>%
-    cpr_classify_signif("rpd") %>%
-    cpr_classify_signif("fd") %>%
-    cpr_classify_signif("rfd") %>%
-    cpr_classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
+    classify_signif("pd") %>%
+    classify_signif("rpd") %>%
+    classify_signif("fd") %>%
+    classify_signif("rfd") %>%
+    classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
     # Format factors
     mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
@@ -402,7 +402,7 @@ tar_plan(
     left_join(format_cpr_res(rand_test_phy_ferns_endemic), by = "grids") %>%
     # Classify endemism and significance of randomization tests
     cpr_classify_endem() %>%
-    cpr_classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
+    classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
     # Drop un-needed columns
     select(-matches("obs_p_upper$|obs_p_lower$")),
   
