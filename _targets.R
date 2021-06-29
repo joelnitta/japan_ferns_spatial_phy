@@ -392,9 +392,7 @@ tar_plan(
     mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     # Add redundancy
-    mutate(redundancy = 1 - (richness/abundance)) %>%
-    # Drop un-needed columns
-    select(-matches("obs_p_upper$|obs_p_lower$")),
+    mutate(redundancy = 1 - (richness/abundance)),
   
   # - Japan endemics only
   biodiv_ferns_endemic_spatial =
@@ -402,9 +400,7 @@ tar_plan(
     left_join(format_cpr_res(rand_test_phy_ferns_endemic), by = "grids") %>%
     # Classify endemism and significance of randomization tests
     cpr_classify_endem() %>%
-    classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
-    # Drop un-needed columns
-    select(-matches("obs_p_upper$|obs_p_lower$")),
+    classify_signif("pe", one_sided = TRUE, upper = TRUE),
   
   # Spatial modeling ----
   
