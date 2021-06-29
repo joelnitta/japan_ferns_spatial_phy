@@ -352,6 +352,12 @@
       "Repository": "CRAN",
       "Hash": "461aa75a11ce2400245190ef5d3995df"
     },
+    "canaper": {
+      "Package": "canaper",
+      "Version": "0.0.0.9000",
+      "Source": "Local",
+      "Hash": "96695bed72482a30aa505b52415c4e1c"
+    },
     "caper": {
       "Package": "caper",
       "Version": "1.0.1",
@@ -719,6 +725,13 @@
       "Repository": "CRAN",
       "Hash": "fe602b946aa77e12f5d9be91327f903c"
     },
+    "furrr": {
+      "Package": "furrr",
+      "Version": "0.2.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2aba4ab06e8707ac054c6683cb6fed56"
+    },
     "future": {
       "Package": "future",
       "Version": "1.21.0",
@@ -900,6 +913,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "7d7f283939f563670a697165b2cf5560"
+    },
+    "gridGraphics": {
+      "Package": "gridGraphics",
+      "Version": "0.5-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5b79228594f02385d4df4979284879ae"
     },
     "gridtext": {
       "Package": "gridtext",
@@ -1493,6 +1513,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "14dc9f7a3c91ebb14ec5bb9208a07061"
+    },
+    "progressr": {
+      "Package": "progressr",
+      "Version": "0.8.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a8742f0e454e8a40bc269920535e0afb"
     },
     "proj4": {
       "Package": "proj4",
