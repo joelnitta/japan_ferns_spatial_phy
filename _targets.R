@@ -10,7 +10,11 @@ source("R/tests.R")
 plan(callr)
 
 # Specify how to resolve futures for parallel tasks
-# plan(multicore)
+# e.g., cpr_rand_test()
+plan(multicore, workers = 60) # IMPORTANT: Change the plan / num. workers as needed for your system!
+
+# Turn on progress bar for cpr_rand_test()
+progressr::handlers(global = TRUE)
 
 tar_plan(
   
@@ -130,12 +134,6 @@ tar_plan(
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
     green_list = green_list
-  ),
-  
-  # Make community matrix subset to taxa with reproductive mode data
-  comm_ferns_with_repro = subset_comm_by_repro(
-    comm = comm_ferns,
-    repro_data = repro_data
   ),
   
   # # Phylogenetic analysis ----
@@ -266,6 +264,9 @@ tar_plan(
   # Make trait distance matrix using taxon IDs as labels
   trait_distance_matrix = make_trait_dist_matrix(traits_for_dist),
   
+  # Make trait dendrogram
+  japan_fern_trait_tree = make_trait_tree(trait_distance_matrix),
+  
   # Climate data ----
   
   # Load climate data downloaded from WorldClim database
@@ -276,59 +277,48 @@ tar_plan(
   mean_climate = calc_mean_climate(shape_ferns, ja_climate_data),
   
   # Randomization tests of diversity metrics ----
+  # Run these in the main workflow as they are parallelized with {future}
   
-  # Make list of communities for looping
-  fern_comm_list = list(comm_ferns, comm_ferns_with_repro, comm_ferns_endemic),
-  
-  # Make list of biodiv metrics to calculate for each community
-  fern_comm_metrics = list(
-    c("pd", "rpd", "pe", "rpe"),
-    c("pd", "rpd", "pe", "rpe"),
-    c("pe", "rpe")
-  ),
-  
-  # Specify data set names so we can filter results after looping
-  fern_comm_names = c("ja_ferns", "ja_ferns_with_repro", "ja_ferns_endemic"),
-  
-  # Conduct randomization tests of phylogeny-based metrics for all ferns and
-  # ferns endemic to Japan only
+  # - all ferns, phylogenetic diversity and endemism
   tar_target(
-    rand_test_phy,
-    run_rand_analysis(
-      comm = fern_comm_list,
+    rand_test_phy_ferns,
+    cpr_rand_test(
+      comm = comm_ferns,
       phy = japan_fern_tree,
       null_model = "independentswap",
       n_reps = 999,
       n_iterations = 100000,
-      metrics = fern_comm_metrics,
-      dataset_name = fern_comm_names) %>%
-      categorize_endemism,
-    pattern = map(
-      comm = fern_comm_list,
-      metrics = fern_comm_metrics,
-      dataset_name = fern_comm_names)
+      metrics = c("pd", "rpd", "pe", "rpe")),
+    deployment = "main"
   ),
   
-  # Separate out randomization results by dataset
-  rand_test_phy_ferns = filter(rand_test_phy, dataset == "ja_ferns") %>% 
-    select(-dataset),
+  # - endemic ferns, phylogenetic endemism
+  tar_target(
+    rand_test_phy_ferns_endemic,
+    cpr_rand_test(
+      comm = comm_ferns_endemic,
+      phy = japan_fern_tree,
+      null_model = "independentswap",
+      n_reps = 999,
+      n_iterations = 100000,
+      metrics = c("pe", "rpe")),
+    deployment = "main"
+  ),
   
-  rand_test_phy_ferns_with_repro = filter(rand_test_phy, dataset == "ja_ferns_with_repro") %>% 
-    select(-dataset),
-  
-  rand_test_phy_ferns_endemic = filter(rand_test_phy, dataset == "ja_ferns_endemic") %>% 
-    select(-dataset),
-  
-  # Conduct randomization tests of trait-based metrics for all ferns
-  rand_test_traits_ferns = run_rand_analysis(
-    comm = comm_ferns,
-    null_model = "independentswap",
-    n_reps = 999,
-    n_iterations = 100000,
-    metrics = c("fd", "rfd"),
-    trait_distances = trait_distance_matrix,
-    dataset_name = "ja_ferns") %>%
-    select(-dataset), # don't need to include dataset name in the result
+  # - all ferns, trait-based diversity
+  tar_target(
+    rand_test_traits_ferns,
+    cpr_rand_test(
+      comm = comm_ferns,
+      phy = japan_fern_trait_tree,
+      null_model = "independentswap",
+      n_reps = 999,
+      n_iterations = 100000,
+      metrics = c("pd", "rpd")) %>%
+      # rename columns as "fd" instead of "pd"
+      rename_with(~str_replace_all(., "pd_", "fd_")),
+    deployment = "main"
+  ),
   
   # Bioregions analysis ----
   
@@ -386,32 +376,39 @@ tar_plan(
   # - All ferns
   biodiv_ferns_spatial =
     shape_ferns %>%
-    left_join(rand_test_phy_ferns, by = c(grids = "site")) %>%
-    left_join(rand_test_traits_ferns, by = c(grids = "site")) %>%
+    left_join(format_cpr_res(rand_test_phy_ferns), by = "grids") %>%
+    left_join(format_cpr_res(rand_test_traits_ferns), by = "grids") %>%
     left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
     left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
     # Add environmental data
     left_join(mean_climate, by = "grids") %>%
     # Add % apomictic taxa
-    left_join(percent_apo, by = c(grids = "site")) %>%
-    # Categorize endemism and significance of randomization tests
-    categorize_endemism() %>%
-    categorize_signif_pd() %>% 
-    categorize_signif_fd() %>%
+    left_join(percent_apo) %>%
+    # Classify endemism and significance of randomization tests
+    cpr_classify_endem() %>%
+    cpr_classify_signif("pd") %>%
+    cpr_classify_signif("rpd") %>%
+    cpr_classify_signif("fd") %>%
+    cpr_classify_signif("rfd") %>%
+    cpr_classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
     # Format factors
     mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     # Add redundancy
-    mutate(redundancy = 1 - (richness/abundance)),
+    mutate(redundancy = 1 - (richness/abundance)) %>%
+    # Drop un-needed columns
+    select(-matches("obs_p_upper$|obs_p_lower$")),
   
   # - Japan endemics only
   biodiv_ferns_endemic_spatial =
     shape_ferns %>%
-    left_join(rand_test_phy_ferns_endemic, by = c(grids = "site")) %>%
-    # Categorize endemism and significance of randomization tests
-    categorize_signif_pd() %>%
-    categorize_endemism(),
-
+    left_join(format_cpr_res(rand_test_phy_ferns_endemic), by = "grids") %>%
+    # Classify endemism and significance of randomization tests
+    cpr_classify_endem() %>%
+    cpr_classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
+    # Drop un-needed columns
+    select(-matches("obs_p_upper$|obs_p_lower$")),
+  
   # Spatial modeling ----
   
   # Model the effects of environment and percent apomictic taxa on each biodiversity metric, 

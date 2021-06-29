@@ -1298,6 +1298,20 @@ make_trait_tree <- function(trait_distances) {
 
 # Community diversity ----
 
+#' Format the output of canaper::cpr_rand_test()
+#'
+#' @param df Dataframe; Output of canaper::cpr_rand_test()
+#'
+#' @return Tibble with columns corresponding to site names (`grids`), the observed
+#' metric (`*_obs`), z-score of the metric (`*_obs_z`), and percentage of time the
+#' observed value was observed greater than random simulations 
+#' (`*_obs_p_upper`) or lower than random simulations (`*_obs_p_lower`)
+#' 
+format_cpr_res <- function(df) {
+  df %>% as_tibble(rownames = "grids") %>%
+    select(matches("grids|_obs$|_obs_z$|_obs_p_upper$|_obs_p_lower$"))
+}
+
 #' Calculate the percentage of apomictic fern species in each community
 #'
 #' @param comm_ferns Dataframe; fern communities with species as columns and sites as rows
@@ -1307,16 +1321,16 @@ make_trait_tree <- function(trait_distances) {
 #' @return tibble; percent of apomictic species per community
 calc_perc_apo <- function(comm_ferns, repro_data) {
   comm_ferns %>%
-    rownames_to_column("site") %>%
+    rownames_to_column("grids") %>%
     as_tibble %>%
-    pivot_longer(values_to = "abun", names_to = "taxon", -site) %>%
+    pivot_longer(values_to = "abun", names_to = "taxon", -grids) %>%
     filter(abun > 0) %>%
     left_join(
       select(repro_data, taxon, apomict), by = "taxon"
     ) %>%
     # Drop species that lack reproductive mode data
     filter(!is.na(apomict)) %>%
-    group_by(site) %>%
+    group_by(grids) %>%
     summarize(
       richness = n_distinct(taxon),
       n_apo = sum(apomict),
@@ -1327,6 +1341,54 @@ calc_perc_apo <- function(comm_ferns, repro_data) {
     assert(not_na, everything()) %>%
     assert(within_bounds(0, 1), percent_apo) %>%
     select(-richness) # drop richness (won't need after joining other data)
+}
+
+
+#' Classify significance of randomization test
+#' 
+#' Modified version of canaper::cpr_classify_signif() that
+#' does not check the name of the metric
+#'
+#' @param df Results of canaper::cpr_rand_test()
+#' @param metric Selected metric to classify significance.
+#' @param one_sided Logical; is hypothesis one-sided?
+#' @param upper Logical; should values in the top 5% be counted?
+#' If FALSE, values in the bottom 5% are counted. Only applies if
+#' `one_sided` is TRUE.
+#'
+#' @return Dataframe
+#' 
+classify_signif <- function(df, metric, one_sided = FALSE, upper = FALSE) {
+  
+  df[[paste0(metric, "_obs_p_lower")]]
+  
+  if (!isTRUE(one_sided)) {
+    signif <- dplyr::case_when(
+      df[[paste0(metric, "_obs_p_lower")]] > 0.99 ~ "< 0.01",
+      df[[paste0(metric, "_obs_p_lower")]] > 0.975 ~ "< 0.025",
+      df[[paste0(metric, "_obs_p_upper")]] > 0.99 ~ "> 0.99",
+      df[[paste0(metric, "_obs_p_upper")]] > 0.975 ~ "> 0.975",
+      TRUE ~ "not significant"
+    ) } else {
+      if (isTRUE(upper)) {
+        signif <- dplyr::case_when(
+          df[[paste0(metric, "_obs_p_upper")]] > 0.99 ~ "> 0.99",
+          df[[paste0(metric, "_obs_p_upper")]] > 0.95 ~ "> 0.95",
+          TRUE ~ "not significant"
+        )
+      } else {
+        signif <- dplyr::case_when(
+          df[[paste0(metric, "_obs_p_lower")]] > 0.99 ~ "< 0.01",
+          df[[paste0(metric, "_obs_p_lower")]] > 0.95 ~ "< 0.05",
+          TRUE ~ "not significant"
+        )
+      }
+    }
+  
+  df[[paste0(metric, "_signif")]] <- signif
+  
+  df
+  
 }
 
 # Bioregions ----
