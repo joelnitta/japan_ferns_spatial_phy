@@ -1284,71 +1284,19 @@ analyze_binary_phylosig <- function (traits, phy) {
   
 }
 
+#' Make a trait dendrogram from a matrix of distances
+#'
+#' @param trait_distances Object of class "dist"; distances
+#' measured from trait data
+#'
+#' @return List of class "phylo"; trait dendrogram
+#' 
+make_trait_tree <- function(trait_distances) {
+  hclust(trait_distances, method = "average") %>%
+    ape::as.phylo()
+}
+
 # Community diversity ----
-
-#' Categorize results of randomization test
-#'
-#' @param df Input dataframe with upper and lower p-value rank for phylogenetic diversity
-#' metrics vs. a null distribution
-#'
-#' @return Dataframe with siginificance of randomization results categorized
-categorize_signif_pd <- function (df) {
-  
-  df %>%
-    mutate(
-      pd_signif = case_when(
-        pd_obs_p_upper > 0.99 ~ "> 0.99",
-        pd_obs_p_upper > 0.975 ~ "> 0.975",
-        pd_obs_p_lower > 0.99 ~ "< 0.01",
-        pd_obs_p_lower > 0.975 ~ "< 0.025",
-        TRUE ~ "not significant"
-      ),
-      pd_signif = factor(pd_signif, levels = c("< 0.01", "< 0.025", "not significant", "> 0.975", "> 0.99"))
-    ) %>%
-    mutate(
-      rpd_signif = case_when(
-        rpd_obs_p_upper > 0.99 ~ "> 0.99",
-        rpd_obs_p_upper > 0.975 ~ "> 0.975",
-        rpd_obs_p_lower > 0.99 ~ "< 0.01",
-        rpd_obs_p_lower > 0.975 ~ "< 0.025",
-        TRUE ~ "not significant"
-      ),
-      rpd_signif = factor(rpd_signif, levels = c("< 0.01", "< 0.025", "not significant", "> 0.975", "> 0.99"))
-    )
-  
-}
-
-#' Categorize results of randomization test
-#'
-#' @param df Input dataframe with upper and lower p-value rank for functional diversity
-#' metrics vs. a null distribution
-#'
-#' @return Dataframe with siginificance of randomization results categorized
-categorize_signif_fd <- function (df) {
-  
-  df %>%
-    mutate(
-      fd_signif = case_when(
-        fd_obs_p_upper > 0.99 ~ "> 0.99",
-        fd_obs_p_upper > 0.975 ~ "> 0.975",
-        fd_obs_p_lower > 0.99 ~ "< 0.01",
-        fd_obs_p_lower > 0.975 ~ "< 0.025",
-        TRUE ~ "not significant"
-      ),
-      fd_signif = factor(fd_signif, levels = c("< 0.01", "< 0.025", "not significant", "> 0.975", "> 0.99"))
-    ) %>%
-    mutate(
-      rfd_signif = case_when(
-        rfd_obs_p_upper > 0.99 ~ "> 0.99",
-        rfd_obs_p_upper > 0.975 ~ "> 0.975",
-        rfd_obs_p_lower > 0.99 ~ "< 0.01",
-        rfd_obs_p_lower > 0.975 ~ "< 0.025",
-        TRUE ~ "not significant"
-      ),
-      rfd_signif = factor(rfd_signif, levels = c("< 0.01", "< 0.025", "not significant", "> 0.975", "> 0.99"))
-    )
-  
-}
 
 #' Calculate the percentage of apomictic fern species in each community
 #'
