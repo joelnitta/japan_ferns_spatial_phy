@@ -42,6 +42,7 @@ library(officer)
 library(flextable)
 library(kableExtra)
 library(ftExtra)
+library(patchwork)
 
 # Set knitr options
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
@@ -75,8 +76,8 @@ tar_load(c(
   # "plastome_calibration_dates",
   # FIXME: remove until phylo analysis is working "plastome_tree",
   "green_list",
-  "env_model_params",
-  "repro_model_params",
+  "model_params",
+  "lrt_results",
   "aic_env_repro"
 ))
 ```
@@ -188,13 +189,13 @@ It is possible that endemism may be affected by species that are actually wide-r
 
 ### Spatial models
 
-We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD, PE p-score) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package. In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05). Therefore, we used spatially explicit methods for modeling.
+We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package. In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05). Therefore, we used spatially explicit methods for modeling.
 
-We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package. This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature. The dataset including % apomictic taxa is smaller than the full dataset (_ vs _ taxa, respectively), so for the main modeling analysis we only included the following environmental variables: temperature, precipitation, and precipitation seasonality.
+We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package. This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature, so for the main modeling analysis we only included the following environmental variables: mean annual temperature, precipitation, and precipitation seasonality.
 
-We constructed a linear model for each biodiversity metric dependent on the environmental variables. Initial inspection of the relationship between richness and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature for the richness model only. We fit models including a Matérn correlation matrix based on the geographic centroids of each grid cell as a random effect with the R package `r pack("spaMM")` [@Rousset2014]. We verified the significance of each term of the model by conducting likelihood ratio tests (LRTs) between the full model and models each with a single term of interest removed, in sequence. We also verified the significance of the full model relative to the null model (only including the Matérn correlation matrix) using LRTs.
+We constructed a linear mixed model for each biodiversity metric dependent on the environmental variables ("environmental models"). Initial inspection of the relationship between each biodiversity metric and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature only. Richness was fit with the negative binomial response family; others were Gaussian. We fit models including a Matérn correlation matrix based on the geographic centroids of each grid cell as a random effect with the R package `r pack("spaMM")` [@Rousset2014]. We verified the significance of each term of the model by conducting likelihood ratio tests (LRTs) between the full model and models each with a single term of interest removed, in sequence. We also verified the significance of the full model relative to the null model (only including the Matérn correlation matrix) using LRTs.
 
-We postulated that % apomictic taxa might explain the distribution of genetic diversity better than temperature, so we also constructed a limited set of models to test this hypothesis. These models included biodiversity metrics with a genetic component (SES of PD, SES of RPD, PE p-score) as dependent on either % apomictic taxa or temperature, precipitation, and precipitation seasonality, with random spatial effects as described above. We compared the fit between models including % apomictic taxa or temperature using conditional Akaike Information Criterion (cAIC) [@Courtiol2017; @Vaida2005].
+We postulated that % apomictic taxa might explain the distribution of genetic diversity better than temperature, so we also constructed a limited set of models to test this hypothesis ("reproductive models"). These models included biodiversity metrics with a genetic component (SES of PD and SES of RPD) as dependent on % apomictic taxa, precipitation, and precipitation seasonality, with random spatial effects as described above. We compared the fit between environmental models and reproductive models for SES of PD and SES of RPD using conditional Akaike Information Criterion (cAIC) [@Courtiol2017; @Vaida2005].
 
 ### Analysis of bioregions
 
@@ -360,11 +361,11 @@ Grid-cells with significantly low PD were almost all located on Honshu, the main
 
 ### Relationships between biodiversity and climate or reproductive mode
 
-All spatial models were significant relative to null models without any fixed effects. The effect of temperature dominated in most models, with only SES of PD showing a stronger effect of precipitation seasonality. Models fit using % apomictic taxa instead of temperature had lower cAIC, indicating a better fit. Biodiversity metrics with a genetic component (SES of PD, SES of RPD) each had a large, negative relationship with % apomictic taxa.
+All spatial models were significant relative to null models without any fixed effects. The effect of temperature dominated in most models, with only SES of PD showing a stronger effect of precipitation seasonality (`r figure("coeff")`A--E). Biodiversity metrics with a genetic component (SES of PD and SES of RPD) each had a large, negative relationship with % apomictic taxa (`r figure("coeff")`F--G). Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD, but not SES of PD.
 
 ### Categorical analysis of neo- and paleo-endemism
 
-Nearly all grid-cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere (`r figure("endemism")`). The vast majority of endemic grid-cells are mixed, with very few paleo- or neoendemic cells. Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
+Nearly all grid-cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere (`r figure("endemism")`). The vast majority of endemic grid-cells are mixed. A cluster of paleoendemic cells was observed in the Ryukyu Islands. Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
 
 ### Bioregions
 
@@ -830,6 +831,120 @@ rand_diversity_plot
 ```
 
 **`r figure("rand-diversity")`**. Results of randomization test for phylogenetic and functional diversity of the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diveristy (RPD). **C**, Functional diveristy (FD). **D**, relative functional diveristy (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Methods.
+
+`r pagebreak_pdf()`
+
+```{r coeff-make}
+### Make model coefficients plot ###
+
+# Format labels for printing
+resp_var_lookup <-
+  tibble(
+    resp_var = c("richness", "fd_obs_z", "pd_obs_z", "rfd_obs_z", "rpd_obs_z"),
+    resp_var_print = c("Richness", "SES of FD", "SES of PD", "SES of RFD", "SES of RPD")
+  )
+
+indep_var_lookup <-
+  tibble(
+    term = c("area", "I(temp^2)", "null_model", "percent_apo", "precip", "precip_season", "temp"),
+    term_print = c("Area", "Temp^2", "Null model", "% apomictic", "Precip.", "Precip.\nseasonality", "Temp.")
+  ) %>%
+  # Include "plain" version of term for arranging alphabetically
+  mutate(term_plain = str_replace_all(term, fixed("I(temp^2)"), "temp^2"))
+
+model_type_lookup <-
+  tibble(
+    model_type = c("temp", "percent_apo"),
+    model_type_print = c("env. model", "repro. model")
+  )
+
+# Format likelihood ratio test results
+lrt_signif <-
+  lrt_results %>%
+  # add model type (temp = environmental model, or percent_apo = repro model)
+  tidyr::extract(full_formula, "model_type", regex = " ~ ([^ ]+) ") %>%
+  select(-null_formula) %>%
+  select(resp_var, model_type, term = comparison, p_value) %>%
+  # Add column for significance
+  mutate(signif = p_value < 0.05)
+
+# Format parameter values for plotting
+model_params_for_plot <-
+  model_params %>%
+  # add model type
+  tidyr::extract(formula, "model_type", regex = " ~ ([^ ]+) ") %>%
+  # drop intercept
+  filter(term != "(Intercept)") %>%
+  # add LRT results and names formatted for printing
+  left_join(lrt_signif, by = c("resp_var", "term", "model_type")) %>%
+  left_join(resp_var_lookup, by = "resp_var") %>%
+  left_join(indep_var_lookup, by = "term") %>%
+  left_join(model_type_lookup, by = "model_type") %>%
+  # Make coefficient with greatest abs value bold
+  group_by(resp_var, model_type) %>%
+  mutate(
+    term_print = case_when(
+      abs(estimate) == max(abs(estimate)) ~ glue::glue("**{term_print}**"),
+      TRUE ~ term_print
+    ),
+    term_print = factor(term_print)
+  ) %>%
+  ungroup()
+
+# Define helper function to make a subplot showing coefficients
+plot_coeff <- function (df) {  
+  
+  plot_data <- df %>%
+    mutate(term_print = fct_reorder(term_print, rank(term_plain)) %>% fct_rev)
+  
+  ggplot(plot_data, aes(x = estimate, y = term_print, color = signif)) +
+    geom_vline(xintercept = 0, linetype = "dotted") +
+    geom_pointrange(aes(xmin = estimate - cond_se, xmax = estimate + cond_se), size = 0.25) +
+    scale_x_continuous(n.breaks = 4) +
+    scale_color_manual(
+      values = c("TRUE" = "grey20", "FALSE" = "grey70"),
+      labels = c("TRUE" = "*p* < 0.05", "FALSE" = "*p* > 0.05")) +
+    labs(
+      subtitle = glue("{unique(plot_data$resp_var_print)},\n{unique(plot_data$model_type_print)}"),
+      color = "Significance") +
+    theme_gray(base_size = 9) +
+    theme(
+      axis.title = element_blank(),
+      axis.text.y = element_markdown(),
+      legend.text = element_markdown(),
+      legend.position = "none")
+}
+
+# Loop across data and make a plot of each
+coeff_subplots <-
+model_params_for_plot %>%
+  group_by(resp_var, model_type) %>%
+  nest() %>%
+  ungroup %>%
+  mutate(plot = map(data, plot_coeff)) %>%
+  pull(plot)
+
+# We need a legend from one of these
+coeff_subplots[[7]] <- coeff_subplots[[7]] + theme(legend.position = "right")
+
+# Generate final plot
+coeff_plot <- wrap_plots(coeff_subplots) +
+  guide_area() +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = "A")
+```
+
+```{r coeff-save, eval = params$doc_type == "doc"}
+# Save plot if rendering to doc
+ggsave(result_file(figure("coeff"), "pdf"), coeff_plot, width = 7, height = 5, units = "in")
+```
+
+```{r coeff-print, fig.width = 7, fig.height = 5, eval = params$doc_type == "pdf"}
+# Print plot if rendering to PDF
+coeff_plot
+```
+
+**`r figure("coeff")`**. Regression coefficients of general mixed models. A--E, environmental models (models including temperature); F and G, reproductive models (models including % apomictic taxa). Error bars show 95% confidence interval. Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *p*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute coefficient value in bold for each model.
 
 `r pagebreak_pdf()`
 
