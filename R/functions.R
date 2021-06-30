@@ -2786,3 +2786,48 @@ drop_apo_outlier <- function (data) {
   verify(max(percent_apo) < 0.6) %>%
   verify(nrow(.) == (nrow(data) - 1))
 }
+
+
+#' Predict fitted values for a spatial model
+#'
+#' @param model Name of the model 
+#' @param indep_var Name of independent variable to use for predicting model fits
+#'
+#' @return Tibble with three columns: the name of the response variable,
+#' the formula used for the model, and a list-column of fitted values.
+#' The fitted values include the independent variable, the predicted response, and 
+#' 95% CI lower and upper bounds.
+#' 
+predict_fit <- function(model, indep_var, formula, resp_var) {
+  
+  fit <- spaMM::pdep_effects(model, focal_var = indep_var)
+  
+  colnames(fit)[colnames(fit) == "focal_var"] <- indep_var
+  colnames(fit)[colnames(fit) == "pointp"] <- model$predictor[[2]] %>% as.character()
+  
+  tibble(
+    resp_var = resp_var,
+    formula = formula,
+    fit = list(as_tibble(fit))
+  )
+  
+}
+
+#' Add column add selected predictor variable to spatial models
+#'
+#' @param spatial_models Tibble with spatial models
+#'
+#' @return `spatial_models` with column `indep_var_select` indicating the name of the
+#' independent variable to use for plotting
+#' 
+add_selected_pred_to_model <- function(spatial_models) {
+  
+  spatial_models %>%
+    mutate(indep_var_select = case_when(
+      str_detect(formula, "temp") ~ "temp",
+      str_detect(formula, "percent_apo") ~ "percent_apo",
+      TRUE ~ NA_character_
+    )) %>%
+    assert(not_na, indep_var_select)
+  
+}

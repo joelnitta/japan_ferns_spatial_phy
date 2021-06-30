@@ -468,7 +468,7 @@ tar_plan(
     pattern = map(data_for_moran)
   ),
   
-  ## Spatial models ----
+  ## Build spatial models ----
   
   # Prepare datasets for looping
   # - unscaled data
@@ -508,9 +508,12 @@ tar_plan(
     pattern = map(data_for_spamm_scaled)
   ),
   
-  # Conduct LRTs (likelihood ratio tests)
+  ## Conduct LRTs ----
+  
+  # Prepare data for looping
   data_for_lrt = prepare_data_for_lrt(spatial_models_scaled, biodiv_ferns_cent_scaled),
   
+  # Conduct LRTs in loop
   tar_target(
     lrt_results,
     run_spamm_lrt(
@@ -523,13 +526,31 @@ tar_plan(
     pattern = map(data_for_lrt)
   ),
   
-  # Summarize spatial models:
+  ## Summarize spatial models ----
+  
   # - model statistics
   model_stats = get_model_stats(spatial_models),
   # - model parameters (fixed effects)
-  model_params = get_model_params(spatial_models),
+  model_params = get_model_params(spatial_models_scaled),
   # - comparison between temp and reproductive models by cAIC
   aic_env_repro = compare_aic_env_repro(spatial_models),
+  
+  ## Predict model fits ---
+  
+  # Prepare data for looping
+  spatial_models_with_selected_pred = add_selected_pred_to_model(spatial_models),
+  
+  # Extract model fits in loop
+  tar_target(
+    model_fits,
+    predict_fit(
+      model = spatial_models_with_selected_pred$model[[1]],
+      indep_var = spatial_models_with_selected_pred$indep_var_select[[1]],
+      formula = spatial_models_with_selected_pred$formula[[1]], 
+      resp_var = spatial_models_with_selected_pred$resp_var[[1]]
+    ),
+    pattern = map(spatial_models_with_selected_pred)
+  ),
   
   # Conservation analysis ----
   
