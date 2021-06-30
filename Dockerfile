@@ -176,10 +176,15 @@ RUN echo 'Sys.setenv(RENV_PATHS_LIBRARY = "/renv")' >> /usr/local/lib/R/etc/Rpro
 
 # Initialize a 'dummy' project and restore the renv library.
 # Since the library path is specified as above, the library will be restored to /renv
-RUN mkdir /tmp/project
 
+RUN mkdir -p /tmp/project/renv/local
+
+# Copy needed files: renv.lock and a local package
 COPY ./renv.lock /tmp/project
 
+COPY ./renv/local/canaper_0.0.0.9000.tar.gz /tmp/project/renv/local
+
+# Install packages to the dummy project using renv::restore()
 WORKDIR /tmp/project
 
 # Don't use cache (the symlinks won't work from Rstudio server)
