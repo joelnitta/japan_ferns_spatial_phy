@@ -536,20 +536,12 @@ tar_plan(
   aic_env_repro = compare_aic_env_repro(spatial_models),
   
   ## Predict model fits ---
-  
-  # Prepare data for looping
-  spatial_models_with_selected_pred = add_selected_pred_to_model(spatial_models),
-  
-  # Extract model fits in loop
+
+  # Extract model fits in loop: use temperature for environmental models, and percent_apo for repro models
   tar_target(
     model_fits,
-    predict_fit(
-      model = spatial_models_with_selected_pred$model[[1]],
-      indep_var = spatial_models_with_selected_pred$indep_var_select[[1]],
-      formula = spatial_models_with_selected_pred$formula[[1]], 
-      resp_var = spatial_models_with_selected_pred$resp_var[[1]]
-    ),
-    pattern = map(spatial_models_with_selected_pred)
+    predict_fit(spatial_models),
+    pattern = map(spatial_models)
   ),
   
   # Conservation analysis ----

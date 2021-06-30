@@ -2790,15 +2790,23 @@ drop_apo_outlier <- function (data) {
 
 #' Predict fitted values for a spatial model
 #'
-#' @param model Name of the model 
-#' @param indep_var Name of independent variable to use for predicting model fits
+#' @param spatial_models One row of the spatial_models data frame
 #'
-#' @return Tibble with three columns: the name of the response variable,
+#' @return Tibble with four columns: the name of the response variable,
+#' the name of the independent variable ussed for fitting,
 #' the formula used for the model, and a list-column of fitted values.
 #' The fitted values include the independent variable, the predicted response, and 
 #' 95% CI lower and upper bounds.
 #' 
-predict_fit <- function(model, indep_var, formula, resp_var) {
+predict_fit <- function(spatial_models) {
+  
+  indep_var <- case_when(
+    str_detect(spatial_models$formula, "temp") ~ "temp",
+    str_detect(spatial_models$formula, "percent_apo") ~ "percent_apo",
+    TRUE ~ NA_character_
+  )
+  
+  model <- spatial_models$model[[1]]
   
   fit <- spaMM::pdep_effects(model, focal_var = indep_var)
   
@@ -2806,8 +2814,9 @@ predict_fit <- function(model, indep_var, formula, resp_var) {
   colnames(fit)[colnames(fit) == "pointp"] <- model$predictor[[2]] %>% as.character()
   
   tibble(
-    resp_var = resp_var,
-    formula = formula,
+    resp_var = spatial_models$resp_var,
+    indep_var = indep_var,
+    formula = spatial_models$formula,
     fit = list(as_tibble(fit))
   )
   
