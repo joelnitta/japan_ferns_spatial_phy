@@ -626,7 +626,6 @@ tar_plan(
     ms_doc,
     path = "ms/manuscript.Rmd",
     output_format = "bookdown::word_document2",
-    knit_root_dir = here::here(),
     output_file = here::here("results/manuscript.docx"),
     params = list(doc_type = "doc")
   ),
@@ -635,7 +634,6 @@ tar_plan(
     ms_pdf,
     path = "ms/manuscript.Rmd",
     output_format = "bookdown::pdf_document2",
-    knit_root_dir = here::here(),
     output_file = here::here("results/manuscript.pdf"),
     params = list(doc_type = "pdf")
   ),
@@ -644,7 +642,6 @@ tar_plan(
     si_pdf,
     path = "ms/SI.Rmd",
     output_format = "bookdown::pdf_document2",
-    knit_root_dir = here::here(),
     output_file = here::here("results/supp_info.pdf"),
     params = list(doc_type = "pdf")
   ),
@@ -653,7 +650,6 @@ tar_plan(
     si_data_exploration,
     path = "ms/data_exploration.Rmd",
     output_format = "rmarkdown::html_document",
-    knit_root_dir = here::here(),
     output_file = here::here("results/data_exploration.html"),
     params = list(knit_type = "targets")
   )
