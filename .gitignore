@@ -25,7 +25,7 @@ cached_zip/
 wc*/
 results/
 libs/
-main_library.bib
+main_library.yaml
 working*
 treepl
 iqtree

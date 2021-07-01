@@ -24,7 +24,7 @@ citations <-
   tibble(key = .)
 
 # Read in YAML including all references exported from Zotero
-ref_yaml <- yaml::read_yaml("data_raw/main_library.yaml")
+ref_yaml <- yaml::read_yaml("ms/main_library.yaml")
 
 # Extract citation keys from YAML, filter to only those in the RMD
 cite_keys <- map_chr(ref_yaml$references, "id") %>%
