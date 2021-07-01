@@ -10,11 +10,10 @@ bibliography:
   - references.yaml
   - references_other.yaml
 output: 
-  officedown::rdocx_document:
-    base_format: bookdown::word_document2
+  bookdown::word_document2:
     pandoc_args: [ "--csl", "journal-of-biogeography.csl"]
     toc: no
-    reference_num: false
+    number_sections: no
     reference_docx: template.docx
   bookdown::pdf_document2:
     citation_package: default
@@ -37,8 +36,8 @@ editor_options:
 # source(here::here("R/functions.R"))
 
 # Load libraries used for rendering Rmds
-library(officedown)
-library(officer)
+# library(officedown)
+# library(officer)
 library(flextable)
 library(kableExtra)
 library(ftExtra)
@@ -84,32 +83,41 @@ tar_load(c(
 ))
 ```
 
-<!-- Remove page numbers -->
-\pagenumbering{gobble}
-
 <!-- Set left justification -->
 \raggedright
 
 <!-- Don't indent -->
 \setlength{\parindent}{0ex}
 
-Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1^, and Atsushi Ebihara^3^
+Short running title: Biodiversity of Japanese ferns
 
-^1^Department of Biological Sciences, Graduate School of Science, The University of Tokyo, 2-11-16 Yayoi, Bunkyo-ku, Tokyo 113-0032, Japan
+Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1, 3, 4, 5, 6^, and Atsushi Ebihara^7^
 
-^2^University and Jepson Herbaria, University of California, Berkeley, CA 94720‐2465, USA
+^1^Department of Biological Sciences, Graduate School of Science, The University of Tokyo, Tokyo, Japan
 
-^3^Department of Botany, National Museum of Nature and Science, 4-1-1 Amakubo, Tsukuba-shi, Ibaraki, 305-0005, Japan  
+^2^University and Jepson Herbaria, University of California, Berkeley, CA, USA
+
+^3^Department of Computational Biology and Medical Sciences, Graduate School of Frontier Sciences, The University of Tokyo, Kashiwa, Japan
+
+^4^Atmosphere and Ocean Research Institute, The University of Tokyo, Kashiwa, Japan
+
+^5^Institute for Quantitative Biosciences, The University of Tokyo, Tokyo, Japan
+
+^6^Collaborative Research Institute for Innovative Microbiology, The University of Tokyo, Tokyo, Japan
+
+^7^Department of Botany, National Museum of Nature and Science, Tsukuba, Japan  
 
 Author for correspondence:  
 *Joel H. Nitta*  
 *Email: joelnitta@gmail.com*
 
+## Acknowledgements
+
 `r pagebreak()`
 
 ## Abstract
 
-**Aim** To characterize multiple facets of biodiversity and understand how these relate to bioregions and conservation status.
+**Aim** To characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
 
 **Location** Japan
 
@@ -119,7 +127,7 @@ Author for correspondence:
 
 **Results** We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. Grid-cells were grouped in to three (phylogenetic) or four (taxonomic) major bioregions. Conservation status (% protected area) is higher than the overall rate for grid-cells with significantly high biodiversity.
 
-**Main conclusions** The integrative approach used here reveals previously undetected patterns of biodiversity in the ferns of Japan. The different distributions of each diversity type reflect the major bioregions. Although peak areas of different diversity types are largely non-overlapping, each one has a relatively high protection status. Despite this, future conservation efforts must be cognizant of dangers not addressed here such as climate change and herbivory by deer.
+**Main conclusions** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. The different distributions of each diversity type reflect the major bioregions. Although peak areas of different diversity types are largely non-overlapping, each one has a relatively high protection status. Despite this, future conservation efforts must be cognizant of dangers not addressed here such as climate change and herbivory by deer.
 
 **Key words:** biodiversity, biogeography, phylogenetic diversity. 
 
@@ -187,7 +195,7 @@ $SES = \frac{obs - mean(null)}{sd(null)}$
 
 We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. 
 
-All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package (https://github.com/joelnitta/canaper), which calculates observed values of biodiversity using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
+All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package (https://github.com/joelnitta/canaper), which calculates raw biodiversity metrics using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
 
 It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. To account for this, we also calculated all endemism-related metrics using a dataset including only species endemic to Japan.
 
@@ -533,8 +541,6 @@ The extreme evolutionary distinctiveness of southern islands is both a major fea
 One piece of biodiversity that we did not consider here is hybrids. The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa. Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification. Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
 
 Finally, a long under-appreciated aspect of fern ecology is the role of the gametophyte. Unlike seed plants, ferns have gametophytes that are capable of growing independently from the sporophyte. Futhermore, the two halves of the life cycle have vastly different morphology and ecophysiology, and may even occur over partially to completely disjunct ranges [reviewed in @Pinson2016a]. Here, as in the vast majority of fern ecology studies, we consider only the sporophyte phase. However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes. The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA barcoding analyses to compare patterns of biodiversity between life cycles in ferns across large spatial scales.
-
-## Acknowledgements
 
 ## Author Contribution
 

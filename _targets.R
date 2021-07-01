@@ -625,7 +625,7 @@ tar_plan(
   tar_render(
     ms_doc,
     path = "ms/manuscript.Rmd",
-    output_format = "officedown::rdocx_document",
+    output_format = "bookdown::word_document2",
     knit_root_dir = here::here(),
     output_file = here::here("results/manuscript.docx"),
     params = list(doc_type = "doc")
