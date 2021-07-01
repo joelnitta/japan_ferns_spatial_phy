@@ -113,7 +113,7 @@ Author for correspondence:
 
 ## Acknowledgements
 
-`r pagebreak()`
+\newpage
 
 ## Abstract
 
@@ -131,7 +131,7 @@ Author for correspondence:
 
 **Key words:** biodiversity, biogeography, phylogenetic diversity. 
 
-`r pagebreak()`
+\newpage
 
 ## Introduction
 
@@ -548,7 +548,7 @@ Finally, a long under-appreciated aspect of fern ecology is the role of the game
 <!-- Insert <div id="refs"></div> to place the refs here instead of at the end -->
 <div id="refs"></div>
 
-`r pagebreak()`
+\newpage
 
 ```{r table-prep}
 # Define nicely formatted terms for printing variable names
@@ -618,7 +618,7 @@ traits_table %>%
 
 **`r table("traits-used")`**. Fern traits used in this study.
 
-`r pagebreak()`
+\newpage
 
 ```{r plot-prep}
 # crop high-res map of Japan to spatial div results area
