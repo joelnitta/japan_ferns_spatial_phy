@@ -1,20 +1,4 @@
 references:
-- id: Arrhenius1921
-  author:
-  - family: Arrhenius
-    given: Olof
-  container-title: The Journal of Ecology
-  DOI: 10.2307/2255763
-  ISSN: '00220477'
-  issue: '1'
-  issued:
-  - year: 1921
-  page: 95-99
-  PMID: '1534'
-  title: Species and area
-  type: article-journal
-  URL: http://www.jstor.org/stable/2255763?origin=crossref
-  volume: '9'
 - id: Barrington1993
   author:
   - family: Barrington
@@ -164,6 +148,50 @@ references:
   type: article-journal
   URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1946
   volume: '105'
+- id: Colwell2004a
+  author:
+  - family: Colwell
+    given: Robert K.
+  - family: Rahbek
+    given: Carsten
+  - family: Gotelli
+    given: Nicholas J
+  container-title: The American Naturalist
+  ISSN: 1537-5323
+  issue: '3'
+  issued:
+  - year: 2004
+  page: E1-E23
+  title: 'The mid‐domain effect and species richness patterns: What have we learned
+    so far?'
+  type: article-journal
+  URL: file:///Users/joelnitta/Documents/Papers/2004/Colwell/2004 Colwell The Mid‐Domain
+    Effect and Species.pdf papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p2066
+  volume: '163'
+- id: Courtiol2017
+  accessed:
+  - year: 2021
+    month: 5
+    day: 28
+  author:
+  - family: Courtiol
+    given: Alexandre
+  - family: Rousset
+    given: François
+  container-title: bioRxiv
+  DOI: 10/gj769c
+  issued:
+  - year: 2017
+    month: 10
+    day: 23
+  language: en
+  page: '207662'
+  publisher: Cold Spring Harbor Laboratory
+  section: New Results
+  source: www.biorxiv.org
+  title: Modelling isoscapes using mixed models
+  type: article-journal
+  URL: https://www.biorxiv.org/content/10.1101/207662v1
 - id: Daru2020
   accessed:
   - year: 2020
@@ -192,6 +220,37 @@ references:
   title: Endemism patterns are scale dependent
   type: article-journal
   URL: http://www.nature.com/articles/s41467-020-15921-6
+  volume: '11'
+- id: Daru2020a
+  accessed:
+  - year: 2021
+    month: 7
+    day: 1
+  author:
+  - family: Daru
+    given: Barnabas H.
+  - family: Karunarathne
+    given: Piyal
+  - family: Schliep
+    given: Klaus
+  container-title: Methods in Ecology and Evolution
+  container-title-short: Methods Ecol. Evol.
+  DOI: 10/gkzsjp
+  editor:
+  - family: Silvestro
+    given: Daniele
+  ISSN: 2041-210X, 2041-210X
+  issue: '11'
+  issued:
+  - year: 2020
+    month: 11
+  language: en
+  page: 1483-1491
+  source: DOI.org (Crossref)
+  title: 'phyloregion: R package for biogeographical regionalization and macroecology'
+  title-short: phyloregion
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/10.1111/2041-210X.13478
   volume: '11'
 - id: Ebihara2013
   author:
@@ -449,6 +508,91 @@ references:
   type: article-journal
   URL: http://www.jstor.org/stable/2528823?origin=crossref
   volume: '27'
+- id: Grusz2021
+  accessed:
+  - year: 2021
+    month: 3
+    day: 12
+  author:
+  - family: Grusz
+    given: Amanda L.
+  - family: Windham
+    given: Michael D.
+  - family: Picard
+    given: Kathryn T.
+  - family: Pryer
+    given: Kathleen M.
+  - family: Schuettpelz
+    given: Eric
+  - family: Haufler
+    given: Christopher H.
+  container-title: American Journal of Botany
+  DOI: 10/gjc84t
+  ISSN: 1537-2197
+  issue: '2'
+  issued:
+  - year: 2021
+  language: en
+  note: '_eprint: https://bsapubs.onlinelibrary.wiley.com/doi/pdf/10.1002/ajb2.1611'
+  page: 263-283
+  source: Wiley Online Library
+  title: 'A drought-driven model for the evolution of obligate apomixis in ferns:
+    evidence from pellaeids (Pteridaceae)'
+  title-short: A drought-driven model for the evolution of obligate apomixis in ferns
+  type: article-journal
+  URL: https://bsapubs.onlinelibrary.wiley.com/doi/abs/10.1002/ajb2.1611
+  volume: '108'
+- id: Kembel2010
+  author:
+  - family: Kembel
+    given: Steven W.
+  - family: Cowan
+    given: Peter D.
+  - family: Helmus
+    given: Matthew R.
+  - family: Cornwell
+    given: William K.
+  - family: Morlon
+    given: Helene
+  - family: Ackerly
+    given: David D
+  - family: Blomberg
+    given: Simon P.
+  - family: Webb
+    given: Campbell O
+  container-title: Bioinformatics
+  ISSN: 1460-2059
+  issue: '11'
+  issued:
+  - year: 2010
+    month: 6
+  page: 1463-1464
+  title: 'Picante: R tools for integrating phylogenies and ecology'
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1990
+  volume: '26'
+- id: Kessler2011a
+  author:
+  - family: Kessler
+    given: Michael
+  - family: Kluge
+    given: Jürgen
+  - family: Hemp
+    given: Andreas
+  - family: Ohlemüller
+    given: Ralf
+  container-title: Global Ecology and Biogeography
+  DOI: 10.1111/j.1466-8238.2011.00653.x
+  ISSN: 1466822X
+  issued:
+  - year: 2011
+    month: 3
+  page: 868-880
+  title: A global comparative analysis of elevational species richness patterns of
+    ferns
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1683
+  volume: '20'
 - id: Krueger-Hadfield2019
   accessed:
   - year: 2021
@@ -471,7 +615,7 @@ references:
   note: '_eprint: https://onlinelibrary.wiley.com/doi/pdf/10.1111/jpy.12906'
   page: 1198-1207
   source: Wiley Online Library
-  title: Incorporating Ploidy Diversity into Ecological and Community Genetics
+  title: Incorporating ploidy diversity into ecological and community genetics
   type: article-journal
   URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/jpy.12906
   volume: '55'
@@ -567,6 +711,32 @@ references:
   type: article-journal
   URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1987
   volume: '6'
+- id: Liu2012
+  author:
+  - family: Liu
+    given: Hong-Mei
+  - family: Dyer
+    given: R
+  - family: Guo
+    given: Z
+  - family: Meng
+    given: Z
+  - family: Li
+    given: J
+  - family: Schneider
+    given: Harald
+  container-title: Journal of Botany
+  ISSN: 2090-0139
+  issue: '2'
+  issued:
+  - year: 2012
+    month: 1
+  page: 1-11
+  title: 'The evolutionary dynamics of apomixis in ferns: a case study from polystichoid
+    ferns'
+  type: article-journal
+  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p2225
+  volume: '2012'
 - id: Margules2000
   accessed:
   - year: 2021
@@ -1019,6 +1189,29 @@ references:
     phylogenies'
   type: article-journal
   volume: '28'
+- id: Tanaka2014
+  author:
+  - family: Tanaka
+    given: Takayuki
+  - family: Isaka
+    given: Yuichi
+  - family: Hattori
+    given: Mitsuru
+  - family: Sato
+    given: Toshiyuki
+  container-title: Plant Systematics and Evolution
+  DOI: 10.1007/s00606-014-1036-6
+  ISSN: 0378-2697
+  issue: '9'
+  issued:
+  - year: 2014
+    month: 3
+  page: 2041-2050
+  title: Ecological and phylogenetic approaches for diversification of apogamous ferns
+    in Japan
+  type: article-journal
+  URL: http://link.springer.com/10.1007/s00606-014-1036-6
+  volume: '300'
 - id: Testo2016a
   author:
   - family: Testo
@@ -1049,3 +1242,52 @@ references:
   type: article-journal
   URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p448
   volume: '2'
+- id: Vaida2005
+  accessed:
+  - year: 2021
+    month: 5
+    day: 28
+  author:
+  - family: Vaida
+    given: Florin
+  - family: Blanchard
+    given: Suzette
+  container-title: Biometrika
+  container-title-short: Biometrika
+  DOI: 10/cstbq8
+  ISSN: 0006-3444
+  issue: '2'
+  issued:
+  - year: 2005
+    month: 6
+    day: 1
+  page: 351-370
+  source: Silverchair
+  title: Conditional Akaike information for mixed-effects models
+  type: article-journal
+  URL: https://doi.org/10.1093/biomet/92.2.351
+  volume: '92'
+- id: White2019
+  author:
+  - family: White
+    given: Alexander E.
+  - family: Dey
+    given: Kushal K.
+  - family: Mohan
+    given: Dhananjai
+  - family: Stephens
+    given: Matthew
+  - family: Price
+    given: Trevor D.
+  container-title: Nature Communications
+  DOI: 10.1038/s41467-019-10253-6
+  ISSN: 2041-1723
+  issue: '1'
+  issued:
+  - year: 2019
+  page: '2646'
+  title: Regional influences on community structure across the tropical-temperate
+    divide
+  type: article-journal
+  URL: http://www.nature.com/articles/s41467-019-10253-6
+  volume: '10'
