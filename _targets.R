@@ -414,10 +414,8 @@ tar_plan(
   resp_vars_env = c("richness", "pd_obs_z", "fd_obs_z", "rpd_obs_z", "rfd_obs_z"),
   # - response variables for reproductive model
   resp_vars_repro = c("pd_obs_z", "rpd_obs_z"),
-  # - independent variables for environmental model
-  indep_vars_env = c("temp", "precip", "precip_season", "area"),
-  # - independent variables for reproductive model
-  indep_vars_repro = c("percent_apo", "temp", "precip", "precip_season", "area"),
+  # - independent variables (both models)
+  indep_vars = c("percent_apo", "temp", "precip", "precip_season", "area"),
   
   # Calculate area as rolling mean in 1 degree latitudinal windows
   lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
@@ -429,11 +427,7 @@ tar_plan(
     # drop single percent_apo outlier
     drop_apo_outlier %>%
     # keep only variables needed for model and only rows with zero missing data
-    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars_repro)),
-  
-  # Scale data sets for correlation plots
-  biodiv_ferns_cent_scaled = biodiv_ferns_cent %>%
-    mutate(across(all_of(indep_vars_repro), ~scale(.) %>% as.vector)),
+    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars)),
   
   ## Correlation analysis ----
   
@@ -451,7 +445,7 @@ tar_plan(
   
   # Prepare datasets for looping
   data_for_moran = tibble(
-    var = c(resp_vars_env, indep_vars_repro),
+    var = c(resp_vars_env, indep_vars),
     data = list(biodiv_ferns_cent),
     dist_list = list(dist_list)
   ),
@@ -471,22 +465,13 @@ tar_plan(
   ## Build spatial models ----
   
   # Prepare datasets for looping
-  # - unscaled data
   data_for_spamm = prepare_data_for_spamm(
     resp_var_env = resp_vars_env,
     resp_var_repro = resp_vars_repro,
     biodiv_ferns_cent = biodiv_ferns_cent
   ),
   
-  # - scaled data
-  data_for_spamm_scaled = prepare_data_for_spamm(
-    resp_var_env = resp_vars_env,
-    resp_var_repro = resp_vars_repro,
-    biodiv_ferns_cent = biodiv_ferns_cent_scaled
-  ),
-  
   # Loop across each formula and build a spatial model
-  # - unscaled data
   tar_target(
     spatial_models,
     run_spamm(
@@ -497,21 +482,10 @@ tar_plan(
     pattern = map(data_for_spamm)
   ),
   
-  # - scaled data
-  tar_target(
-    spatial_models_scaled,
-    run_spamm(
-      formula = data_for_spamm_scaled$formula[[1]], 
-      data = data_for_spamm_scaled$data[[1]], 
-      resp_var = data_for_spamm_scaled$resp_var[[1]]
-    ),
-    pattern = map(data_for_spamm_scaled)
-  ),
-  
   ## Conduct LRTs ----
   
   # Prepare data for looping
-  data_for_lrt = prepare_data_for_lrt(spatial_models_scaled, biodiv_ferns_cent_scaled),
+  data_for_lrt = prepare_data_for_lrt(spatial_models, biodiv_ferns_cent),
   
   # Conduct LRTs in loop
   tar_target(
@@ -531,7 +505,7 @@ tar_plan(
   # - model statistics
   model_stats = get_model_stats(spatial_models),
   # - model parameters (fixed effects)
-  model_params = get_model_params(spatial_models_scaled),
+  model_params = get_model_params(spatial_models),
   # - comparison between temp and reproductive models by cAIC
   aic_env_repro = compare_aic_env_repro(spatial_models),
   
