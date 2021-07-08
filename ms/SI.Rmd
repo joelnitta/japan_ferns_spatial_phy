@@ -112,7 +112,7 @@ fs::file_delete(temp_file)
 phy_sig_results %>%
   mutate(across(c(kval, lambda, k_pval, lambda_pval), ~format(., digits = 2))) %>%
   kbl(booktabs = TRUE) %>%
-  kable_styling(latex_options = "striped")
+  kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
 **`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
@@ -125,7 +125,7 @@ binary_sig_results %>%
   arrange(trait) %>%
   mutate(across(c(D, prob_random, prob_brownian), ~format(., digits = 2))) %>%
   kbl(booktabs = TRUE) %>%
-  kable_styling(latex_options = c("striped", "scale_down"))
+  kable_styling(latex_options = c("striped", "scale_down", "HOLD_position"))
 ```
 
 **`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. D, Fritz and Purvis' *D*; *n* (present), number of times a trait was observed present; *n* (absent), number of times a trait was observed absent; *p* (random), probability of obtaining observed trait distribution given random distribution of traits; *p* (Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
@@ -150,7 +150,7 @@ lrt_table_data %>%
     col.names = colnames(.) %>% str_replace_all("resp_var", ""),
     booktabs = TRUE) %>%
   pack_rows(index = base::table(lrt_table_data$model_type)) %>%
-  kable_styling(latex_options = "striped")
+  kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
 **`r s_table("lrt-null")`**. Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
