@@ -624,6 +624,7 @@ tar_plan(
   # - doc
   tar_render(
     ms_doc,
+    knit_root_dir = here::here(),
     path = "ms/manuscript.Rmd",
     output_format = "bookdown::word_document2",
     output_file = here::here("results/manuscript.docx"),
@@ -632,6 +633,7 @@ tar_plan(
   # - pdf
   tar_render(
     ms_pdf,
+    knit_root_dir = here::here(),
     path = "ms/manuscript.Rmd",
     output_format = "bookdown::pdf_document2",
     output_file = here::here("results/manuscript.pdf"),
@@ -640,7 +642,7 @@ tar_plan(
   # - SI pdf
   tar_render(
     si_pdf,
-    knit_root_dir = here::here("ms"),
+    knit_root_dir = here::here(),
     path = "ms/SI.Rmd",
     output_format = "bookdown::pdf_document2",
     output_file = here::here("results/supp_info.pdf"),
@@ -649,6 +651,7 @@ tar_plan(
   # - SI appendix on data exploration for models
   tar_render(
     si_data_exploration,
+    knit_root_dir = here::here(),
     path = "ms/data_exploration.Rmd",
     output_format = "rmarkdown::html_document",
     output_file = here::here("results/data_exploration.html"),

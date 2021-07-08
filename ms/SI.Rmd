@@ -1,9 +1,6 @@
 ---
 title: "Exploring dimensions of biodiversity in Japanese ferns"
 date: '`r format(Sys.time(), "%d %B, %Y")`'
-bibliography: 
-  - /home/rstudio/japan_ferns_biogeo/repos/japan_ferns_biogeo/ms/references.yaml
-  - /home/rstudio/japan_ferns_biogeo/repos/japan_ferns_biogeo/ms/references_other.yaml
 mainfont: Roboto-Regular.ttf
 fontsize: 11pt
 mainfontoptions: 
@@ -27,6 +24,12 @@ editor_options:
 params:
   doc_type: pdf
 # nocite: | 
+---
+
+---
+bibliography:
+  - `r here::here("ms/references.yaml")`
+  - `r here::here("ms/references_other.yaml")`
 ---
 
 ```{r setup-si, include = FALSE, cache = FALSE}
@@ -105,7 +108,7 @@ fs::file_delete(temp_file)
 
 # Supplemental Information
 
-```{r phy-sig}
+```{r phy-sig, results = "as-is"}
 phy_sig_results %>%
   mutate(across(c(kval, lambda, k_pval, lambda_pval), ~format(., digits = 2))) %>%
   rename(
@@ -117,12 +120,15 @@ phy_sig_results %>%
     `*n*` = n
     ) %>%
   as_flextable() %>%
+  autofit() %>%
   colformat_md(part = "all")
 ```
 
 **`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
 
-```{r phy-sig-binary}
+\clearpage
+
+```{r phy-sig-binary, results = "as-is"}
 binary_sig_results %>%
   select(trait, D, num_present, num_absent, prob_random, prob_brownian) %>%
   arrange(trait) %>%
@@ -135,12 +141,16 @@ binary_sig_results %>%
     `*p* (Brownian)` = prob_brownian
     ) %>%
   as_flextable() %>%
+  fontsize(size = 7, part = "all") %>%
+  autofit() %>% 
   colformat_md(part = "all")
 ```
 
 **`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. D, Fritz and Purvis' *D*; *n* (present), number of times a trait was observed present; *n* (absent), number of times a trait was observed absent; *p* (random), probability of obtaining observed trait distribution given random distribution of traits; *p* (Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
 
-```{r lrt-null}
+\clearpage
+
+```{r lrt-null, results = "as-is"}
 lrt_results %>%
   filter(comparison == "null_model") %>%
   select(-null_formula, -comparison) %>%
@@ -164,10 +174,14 @@ lrt_results %>%
   as_flextable %>%
   merge_v(j = "Model type") %>% 
   valign(valign = "top") %>% 
+  fontsize(size = 7, part = "all") %>%
+  autofit() %>%
   colformat_md(part = "all")
 ```
 
 **`r s_table("lrt-null")`**. Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
+
+\clearpage
 
 ```{r map-plot-prep}
 # Change cluster to factor
