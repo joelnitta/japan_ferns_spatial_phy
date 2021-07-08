@@ -37,6 +37,9 @@ bibliography:
 source(here::here("R/ms_functions.R"), local = TRUE)
 # Set knitr options
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
+
+# Load packages only used when knitting Rmd
+library(kableExtra)
 ```
 
 ```{r libraries-no-run-in-plan, eval = FALSE}
@@ -49,9 +52,6 @@ source(here::here("R/functions.R"))
 ```
 
 ```{r load-data-si, cache = FALSE}
-library(flextable)
-library(ftExtra)
-
 tar_load(c(
   "japan_shp",
   "comm_scaled_list",
@@ -111,17 +111,8 @@ fs::file_delete(temp_file)
 ```{r phy-sig, results = "as-is"}
 phy_sig_results %>%
   mutate(across(c(kval, lambda, k_pval, lambda_pval), ~format(., digits = 2))) %>%
-  rename(
-    ` ` = trait,
-    `*K*` = kval,
-    `λ` = lambda,
-    `*p* (*K*)` = k_pval,
-    `*p* (λ)` = lambda_pval,
-    `*n*` = n
-    ) %>%
-  as_flextable() %>%
-  autofit() %>%
-  colformat_md(part = "all")
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped")
 ```
 
 **`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
@@ -133,17 +124,8 @@ binary_sig_results %>%
   select(trait, D, num_present, num_absent, prob_random, prob_brownian) %>%
   arrange(trait) %>%
   mutate(across(c(D, prob_random, prob_brownian), ~format(., digits = 2))) %>%
-  rename(
-    ` ` = trait,
-    `*n* (present)` = num_present,
-    `*n* (absent)` = num_absent,
-    `*p* (random)` = prob_random,
-    `*p* (Brownian)` = prob_brownian
-    ) %>%
-  as_flextable() %>%
-  fontsize(size = 7, part = "all") %>%
-  autofit() %>% 
-  colformat_md(part = "all")
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
 ```
 
 **`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. D, Fritz and Purvis' *D*; *n* (present), number of times a trait was observed present; *n* (absent), number of times a trait was observed absent; *p* (random), probability of obtaining observed trait distribution given random distribution of traits; *p* (Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
@@ -151,6 +133,7 @@ binary_sig_results %>%
 \clearpage
 
 ```{r lrt-null, results = "as-is"}
+lrt_table_data <-
 lrt_results %>%
   filter(comparison == "null_model") %>%
   select(-null_formula, -comparison) %>%
@@ -159,24 +142,15 @@ lrt_results %>%
   rename_model_type %>%
   select(model_type, resp_var, chi2_LR, df, loglik_null, loglik_full, p_value) %>%
   arrange(model_type, resp_var) %>%
-  mutate(across(where(is.double), ~format(., digits = 2))) %>%
-  # colformat_md() doesn't work on grouped tables
-  # group_by(model_type) %>%
-  # as_flextable(hide_grouplabel = TRUE) %>%
-  rename(
-    Response = resp_var,
-    `Model type` = model_type,
-    `χ^2^` = chi2_LR,
-    `logL (full model)` = loglik_full,
-    `logL (null model)` = loglik_null,
-    `*p*` = p_value
-  ) %>%
-  as_flextable %>%
-  merge_v(j = "Model type") %>% 
-  valign(valign = "top") %>% 
-  fontsize(size = 7, part = "all") %>%
-  autofit() %>%
-  colformat_md(part = "all")
+  mutate(across(where(is.double), ~format(., digits = 2)))
+  
+lrt_table_data %>%
+  select(-model_type) %>%
+  kbl(
+    col.names = colnames(.) %>% str_replace_all("resp_var", ""),
+    booktabs = TRUE) %>%
+  pack_rows(index = base::table(lrt_table_data$model_type)) %>%
+  kable_styling(latex_options = "striped")
 ```
 
 **`r s_table("lrt-null")`**. Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
