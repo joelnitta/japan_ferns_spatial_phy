@@ -122,6 +122,13 @@
       "Repository": "CRAN",
       "Hash": "6423e9ff238dea0559c38408b61ed106"
     },
+    "ROI.plugin.glpk": {
+      "Package": "ROI.plugin.glpk",
+      "Version": "1.0-0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b13d1b61260f4c843aa569c2c9711c4e"
+    },
     "Rcpp": {
       "Package": "Rcpp",
       "Version": "1.0.4.6",
@@ -142,6 +149,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
+    },
+    "Rglpk": {
+      "Package": "Rglpk",
+      "Version": "0.6-4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "94a9ae53d323c330f2bc5bda54ea9f31"
     },
     "S4Vectors": {
       "Package": "S4Vectors",
@@ -355,8 +369,14 @@
     "canaper": {
       "Package": "canaper",
       "Version": "0.0.0.9000",
-      "Source": "Local",
-      "Hash": "96695bed72482a30aa505b52415c4e1c"
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "joelnitta",
+      "RemoteRepo": "canaper",
+      "RemoteRef": "main",
+      "RemoteSha": "dcf643eff6db5e8531aad989b0d12462b035305e",
+      "Hash": "3a9d3af76dd11c13221f883dd6b48591"
     },
     "caper": {
       "Package": "caper",
@@ -1325,13 +1345,6 @@
       "Repository": "CRAN",
       "Hash": "df58958f293b166e4ab885ebcad90e02"
     },
-    "officedown": {
-      "Package": "officedown",
-      "Version": "0.2.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "8345bd6320df37519c16a9ca3cdfd5d2"
-    },
     "officer": {
       "Package": "officer",
       "Version": "0.3.18",
@@ -1670,10 +1683,10 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.10.0",
+      "Version": "0.13.2",
       "Source": "Repository",
-      "Repository": "RSPM",
-      "Hash": "0d3f1c2b63e70b3d918246b4e2ca59b7"
+      "Repository": "CRAN",
+      "Hash": "079cb1f03ff972b30401ed05623cbe92"
     },
     "reprex": {
       "Package": "reprex",
@@ -1726,10 +1739,10 @@
     },
     "rmarkdown": {
       "Package": "rmarkdown",
-      "Version": "2.3",
+      "Version": "2.9",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "202260e1b2c410edc086d5b8f1ed946e"
+      "Hash": "912c09266d5470516df4df7a303cde92"
     },
     "rnaturalearthdata": {
       "Package": "rnaturalearthdata",
@@ -1798,13 +1811,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "6a20c2cdf133ebc7ac45888c9ccc052b"
-    },
-    "rvg": {
-      "Package": "rvg",
-      "Version": "0.2.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a823d1d2fd9dcb8eb648d85ad68be046"
     },
     "rzmq": {
       "Package": "rzmq",
@@ -2089,10 +2095,10 @@
     },
     "tinytex": {
       "Package": "tinytex",
-      "Version": "0.23",
+      "Version": "0.32",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "a8c653ef8ce67683f588e6088ed45572"
+      "Hash": "db9a6f2cf147751322d22c9f6647c7bd"
     },
     "tmaptools": {
       "Package": "tmaptools",
@@ -2236,10 +2242,10 @@
     },
     "xfun": {
       "Package": "xfun",
-      "Version": "0.14",
+      "Version": "0.24",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "60e146e3aba37a547e12306dc3da77a6"
+      "Hash": "88cdb9779a657ad80ad942245fffba31"
     },
     "xml2": {
       "Package": "xml2",
