@@ -1,8 +1,9 @@
 ---
 title: "Exploring dimensions of biodiversity in Japanese ferns"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
 bibliography: 
-  - references.yaml
-  - references_other.yaml
+  - /home/rstudio/japan_ferns_biogeo/repos/japan_ferns_biogeo/ms/references.yaml
+  - /home/rstudio/japan_ferns_biogeo/repos/japan_ferns_biogeo/ms/references_other.yaml
 mainfont: Roboto-Regular.ttf
 fontsize: 11pt
 mainfontoptions: 

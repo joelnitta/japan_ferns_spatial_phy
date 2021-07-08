@@ -640,6 +640,7 @@ tar_plan(
   # - SI pdf
   tar_render(
     si_pdf,
+    knit_root_dir = here::here("ms"),
     path = "ms/SI.Rmd",
     output_format = "bookdown::pdf_document2",
     output_file = here::here("results/supp_info.pdf"),
