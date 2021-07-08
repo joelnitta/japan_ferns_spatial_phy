@@ -2840,3 +2840,52 @@ add_selected_pred_to_model <- function(spatial_models) {
     assert(not_na, indep_var_select)
   
 }
+
+# Manuscript rendering ----
+
+#' Rename response variables in data frame
+#' 
+#' For formatting results tables
+#'
+#' @param df 
+#'
+#' @return df with renamed variables
+#' 
+rename_resp_vars <- function(df) {
+  
+  lookup <-
+    tibble(
+      resp_var = c("richness", "fd_obs_z", "pd_obs_z", "rfd_obs_z", "rpd_obs_z"),
+      resp_var_print = c("Richness", "SES of FD", "SES of PD", "SES of RFD", "SES of RPD")
+    )
+  
+  df %>%
+    left_join(lookup, by = "resp_var") %>%
+    select(-resp_var) %>%
+    rename(resp_var = resp_var_print)
+  
+}
+
+#' Rename model type in data frame
+#' 
+#' For formatting results tables
+#'
+#' @param df 
+#'
+#' @return df with renamed model types
+#' 
+rename_model_type <- function(df) {
+  
+  lookup <-
+    tibble(
+      model_type = c("percent_apo", "temp"),
+      model_type_print = c("Reproductive", "Environmental")
+    )
+  
+  df %>%
+    left_join(lookup, by = "model_type") %>%
+    select(-model_type) %>%
+    rename(model_type = model_type_print)
+  
+}
+

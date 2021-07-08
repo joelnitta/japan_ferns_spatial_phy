@@ -35,13 +35,18 @@ source(here::here("R/ms_functions.R"), local = TRUE)
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
 ```
 
-```{r load-data-si, cache = FALSE}
+```{r libraries-no-run-in-plan, eval = FALSE}
 # This Rmd is meant to be knit as part of the target plan (R/_targets.R).
 # Run the lines below if rendering outside of targets plan
-# library(targets)
-# library(tarchetypes)
-# source(here::here("R/packages.R"))
-# source(here::here("R/functions.R"))
+library(targets)
+library(tarchetypes)
+source(here::here("R/packages.R"))
+source(here::here("R/functions.R"))
+```
+
+```{r load-data-si, cache = FALSE}
+library(flextable)
+library(ftExtra)
 
 tar_load(c(
   "japan_shp",
@@ -54,7 +59,8 @@ tar_load(c(
   "traits_nmds",
   "ppgi",
   "phy_sig_results",
-  "binary_sig_results"
+  "binary_sig_results",
+  "lrt_results"
 ))
 ```
 
@@ -100,22 +106,67 @@ fs::file_delete(temp_file)
 
 ```{r phy-sig}
 phy_sig_results %>%
-  rename(K = kval) %>%
-  mutate(K = round(K, 3)) %>% 
-  mutate(lambda = round(lambda, 3)) %>%
-  mutate(lambda_pval = format(lambda_pval, digits = 3)) %>%
-  write_csv(path = result_file(s_table("phy-sig"), "csv"))
+  mutate(across(c(kval, lambda, k_pval, lambda_pval), ~format(., digits = 2))) %>%
+  rename(
+    ` ` = trait,
+    `*K*` = kval,
+    `λ` = lambda,
+    `*p* (*K*)` = k_pval,
+    `*p* (λ)` = lambda_pval,
+    `*n*` = n
+    ) %>%
+  as_flextable() %>%
+  colformat_md(part = "all")
 ```
 
-**`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. K, Blomberg's *K*; lambda, Pagel's lambda.
+**`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
 
 ```{r phy-sig-binary}
 binary_sig_results %>%
+  select(trait, D, num_present, num_absent, prob_random, prob_brownian) %>%
   arrange(trait) %>%
-  write_csv(path = result_file(s_table("phy-sig-binary"), "csv"))
+  mutate(across(c(D, prob_random, prob_brownian), ~format(., digits = 2))) %>%
+  rename(
+    ` ` = trait,
+    `*n* (present)` = num_present,
+    `*n* (absent)` = num_absent,
+    `*p* (random)` = prob_random,
+    `*p* (Brownian)` = prob_brownian
+    ) %>%
+  as_flextable() %>%
+  colformat_md(part = "all")
 ```
 
-**`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. num_present, number of times a trait was observed present; num_absent, number of times a trait was observed absent; D, Fritz and Purvis' *D*; prob_random, probability of obtaining observed trait distribution given random distribution of traits; prob_brownian, probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
+**`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. D, Fritz and Purvis' *D*; *n* (present), number of times a trait was observed present; *n* (absent), number of times a trait was observed absent; *p* (random), probability of obtaining observed trait distribution given random distribution of traits; *p* (Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
+
+```{r lrt-null}
+lrt_results %>%
+  filter(comparison == "null_model") %>%
+  select(-null_formula, -comparison) %>%
+  tidyr::extract(full_formula, "model_type", "~ ([^ ]+) ") %>%
+  rename_resp_vars %>%
+  rename_model_type %>%
+  select(model_type, resp_var, chi2_LR, df, loglik_null, loglik_full, p_value) %>%
+  arrange(model_type, resp_var) %>%
+  mutate(across(where(is.double), ~format(., digits = 2))) %>%
+  # colformat_md() doesn't work on grouped tables
+  # group_by(model_type) %>%
+  # as_flextable(hide_grouplabel = TRUE) %>%
+  rename(
+    Response = resp_var,
+    `Model type` = model_type,
+    `χ^2^` = chi2_LR,
+    `logL (full model)` = loglik_full,
+    `logL (null model)` = loglik_null,
+    `*p*` = p_value
+  ) %>%
+  as_flextable %>%
+  merge_v(j = "Model type") %>% 
+  valign(valign = "top") %>% 
+  colformat_md(part = "all")
+```
+
+**`r s_table("lrt-null")`**. Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
 
 ```{r map-plot-prep}
 # Change cluster to factor
