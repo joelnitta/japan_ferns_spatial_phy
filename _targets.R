@@ -64,6 +64,9 @@ tar_plan(
   tar_file(japan_points_raw_file, "data_raw/japan_points_raw.csv"),
   japan_points_raw = read_csv(japan_points_raw_file),
   
+  # Calculate area as rolling mean in 1 degree latitudinal windows
+  lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
+  
   # Prepare occurrence data ----
   # Summary: from raw occurrence data, test binning into grid cells at four scales
   # select the optimal scale, filter out poorly sampled grid cells, generate
@@ -418,9 +421,6 @@ tar_plan(
   resp_vars_repro = c("pd_obs_z", "rpd_obs_z"),
   # - independent variables (both models)
   indep_vars = c("percent_apo", "temp", "precip", "precip_season", "area"),
-  
-  # Calculate area as rolling mean in 1 degree latitudinal windows
-  lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
   
   # Make biodiversity metrics dataframe with centroid of each site for models
   biodiv_ferns_cent = biodiv_ferns_spatial %>%

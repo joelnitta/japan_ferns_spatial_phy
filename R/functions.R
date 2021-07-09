@@ -2756,18 +2756,23 @@ calc_area_by_lat <- function(shp, lat_cut = 0.2, lat_window = 1) {
 
 #' Add rolling mean area of latidudinal bands to biodiv data
 #'
-#' @param biodiv_ferns_cent_env Tibble
-#' @param lat_area_ja Tibble
+#' @param biodiv_ferns_spatial Spatial dataframe including biodiveristy metrics and grid cells
+#' @param lat_area_ja Tibble with area (km2) in latitudinal bands in Japan (ymin and ymax indicate min and
+#' max latitude of each band)
 #'
 #' @return Tibble
 #' 
-add_roll_area <- function(biodiv_ferns_cent_env, lat_area_ja) {
+add_roll_area <- function(biodiv_ferns_spatial, lat_area_ja) {
   # interval_inner_join() only works (properly) on integers
   # lat has max 1 decimal, so multiply by 10 to convert to integer
-  biodiv_ferns_cent_env %>% 
+  area_mapped_to_centroids <-
+    biodiv_ferns_spatial %>% 
     mutate(ymin = lat*10,
            ymin = as.integer(ymin)) %>%
     mutate(ymax = ymin) %>%
+    # fuzzyjoin doesn't like spatial dataframes
+    sf::st_set_geometry(NULL) %>%
+    select(grids, ymin, ymax) %>%
     fuzzyjoin::interval_inner_join(
       mutate(lat_area_ja, ymin = as.integer(ymin*10), ymax = as.integer(ymax*10)),
       type = "within",
@@ -2775,6 +2780,10 @@ add_roll_area <- function(biodiv_ferns_cent_env, lat_area_ja) {
     # make sure the join worked properly
     verify(nrow(.) == nrow(biodiv_ferns_cent_env)) %>%
     select(-matches("ymin|ymax"))
+  
+  left_join(biodiv_ferns_spatial, area_mapped_to_centroids, by = "grids") %>%
+    assert(is_uniq, grids) %>%
+    assert(not_na, area)
 }
 
 #' Drop one outlier value from biodiv data:
