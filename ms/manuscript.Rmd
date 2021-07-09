@@ -126,11 +126,20 @@ Author for correspondence:
 
 **Taxon** Ferns
 
-**Methods** We used a list of >300,000 fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. We compared the overlap of significantly diverse grid-cells with existing conservation zones to assess conservation status.
+**Methods** We used a list of >300,000 fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
+We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. 
+We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. 
+We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. 
+We compared the overlap of significantly diverse grid-cells with existing conservation zones to assess conservation status.
 
-**Results** We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. Grid-cells were grouped in to three (phylogenetic) or four (taxonomic) major bioregions. Conservation status (% protected area) is higher than the overall rate for grid-cells with significantly high biodiversity.
+**Results** We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
+Grid-cells were grouped in to three (phylogenetic) or four (taxonomic) major bioregions. 
+Conservation status (% protected area) is higher than the overall rate for grid-cells with significantly high biodiversity.
 
-**Main conclusions** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. The different distributions of each diversity type reflect the major bioregions. Although peak areas of different diversity types are largely non-overlapping, each one has a relatively high protection status. Despite this, future conservation efforts must be cognizant of dangers not addressed here such as climate change and herbivory by deer.
+**Main conclusions** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
+The different distributions of each diversity type reflect the major bioregions. 
+Although peak areas of different diversity types are largely non-overlapping, each one has a relatively high protection status. 
+Despite this, future conservation efforts must be cognizant of dangers not addressed here such as climate change and herbivory by deer.
 
 **Key words:** biodiversity, biogeography, phylogenetic diversity. 
 
@@ -138,91 +147,169 @@ Author for correspondence:
 
 ## Introduction
 
-Characterizing the spatial distribution of biodiversity is a major goal of evolutionary biology with two equally important aspects: to understand the processes generating it, and to conserve it. The vast majority of studies seeking to understand the spatial distribution of biodiversity focus on species richness. Hotspots, or areas of exceptionally high richness, have received particular attention, resulting in a widely-recognized set of 34 terrestrial hotspots [@Myers2000] and motivating conservation strategies to preserve them [@Margules2000; @Brooks2006]. However, richness alone cannot provide a complete picture of biodiversity. All organisms are related by descent from a common ancestor, and these evolutionary relationships must be taken into account to obtain a full understanding of biodiversity.
+Characterizing the spatial distribution of biodiversity is a major goal of evolutionary biology with two equally important aspects: to understand the processes generating it, and to conserve it. 
+The vast majority of studies seeking to understand the spatial distribution of biodiversity focus on species richness. 
+Hotspots, or areas of exceptionally high richness, have received particular attention, resulting in a widely-recognized set of 34 terrestrial hotspots [@Myers2000] and motivating conservation strategies to preserve them [@Margules2000; @Brooks2006]. 
+However, richness alone cannot provide a complete picture of biodiversity. 
+All organisms are related by descent from a common ancestor, and these evolutionary relationships must be taken into account to obtain a full understanding of biodiversity.
 
-Presumably, the main reason phylogeny has not been taken into account more prominently in biodiversity studies is because data (DNA sequences) and analytic tools have only become available relatively recently. These tools and datasets now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity and phylogenetic endemism. Better ways to characterize biological regions ("bioregions") are also available, rather than relying on ad-hoc characterizations [e.g., @White2019; @Daru2020a]. Furthermore, incorporating these two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide particularly powerful insights into the processes structuring biodiversity and suggest conservation priorities.
+Presumably, the main reason phylogeny has not been taken into account more prominently in biodiversity studies is because data (DNA sequences) and analytic tools have only become available relatively recently. 
+These tools and datasets now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity and phylogenetic endemism. 
+Better ways to characterize biological regions ("bioregions") are also available, rather than relying on ad-hoc characterizations [e.g., @White2019; @Daru2020a]. 
+Furthermore, incorporating these two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide particularly powerful insights into the processes structuring biodiversity and suggest conservation priorities.
 
-However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale. The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for 221/721 taxa [70%]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
+However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale. 
+The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. 
+One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for 221/721 taxa [70%]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
 
-Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south. Furthermore, it is a mountainous country with great variation in elevation on the larger islands. Plant distributions often reflect physiological adaptations to climate (e.g., precipitation and temperature). Therefore, we expect the spatial distribution of biodiversity to be determined by climatic variation in addition to reproductive mode.
+Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south. 
+Furthermore, it is a mountainous country with great variation in elevation on the larger islands. 
+Plant distributions often reflect physiological adaptations to climate (e.g., precipitation and temperature). 
+Therefore, we expect the spatial distribution of biodiversity to be determined by climatic variation in addition to reproductive mode.
 
-Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail. We ask the following questions in our study system, the ferns of Japan: 1. How is biodiversity distributed? 2. How is biodiversity structured? 3. What environmental and biological factors influence biodiversity? 4. How well is biodiversity protected?
+Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail. 
+We ask the following questions in our study system, the ferns of Japan: 1. How is biodiversity distributed? 2. How is biodiversity structured? 3. What environmental and biological factors influence biodiversity? 4. How well is biodiversity protected?
 
 ## Materials and Methods
 
 ### Study Site
 
-Our data include all ferns known to occur within the political boundaries of Japan (20°N to 45°N, 122°E to 153°E). Japan consists of four main islands and thousands of smaller ones (`r figure("japan-map")`). The main islands have been in contact with the continent at various points in the past during periods of lower sea level, but the Ryukyu and Ogasawara archipelagos are oceanic islands that have never been connected to the mainland. The climate is subtropical in the south and temperate in other parts of the country. Map data were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
+Our data include all ferns known to occur within the political boundaries of Japan (20°N to 45°N, 122°E to 153°E). 
+Japan consists of four main islands and thousands of smaller ones (`r figure("japan-map")`). 
+The main islands have been in contact with the continent at various points in the past during periods of lower sea level, but the Ryukyu and Ogasawara archipelagos are oceanic islands that have never been connected to the mainland. 
+The climate is subtropical in the south and temperate in other parts of the country. 
+Map data were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
 
 ### Occurrence data
 
-We used a list of all non-hybrid fern specimens housed at herbaria in Japan. We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html).
+We used a list of all non-hybrid fern specimens housed at herbaria in Japan. 
+We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
+Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")`). 
+The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). 
+We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html).
 
-A necessary step in any analysis of biodiversity is to set the grain size used to define communities. Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of a grid-cell) for defining communities (co-occurring species). At each grain size, species occurrences were converted to a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid-cell). We calculated sampling redundancy (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). We filtered out any cells with redundancy < 0.1 and used this for subsequent analyses.
+A necessary step in any analysis of biodiversity is to set the grain size used to define communities. 
+Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. 
+We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of a grid-cell) for defining communities (co-occurring species). 
+At each grain size, species occurrences were converted to a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid-cell). 
+We calculated sampling redundancy (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. 
+Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). 
+We filtered out any cells with redundancy < 0.1 and used this for subsequent analyses.
 
 ### Morphological trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan as follows [@Ebihara2016b; @Ebihara2017]. Continuous traits were measured on 10 randomly selected specimens per species. Fertile (`r ie`, spore-bearing) and sterile fronds were measured separately, then averaged. Qualitative traits were scored by observing voucher specimens. All qualitative traits were scored in binary format; `r eg`, a single trait with three states was formatted as three binary traits. From the original trait list, we selected only traits with putative ecological function (`r table("traits-used")`), and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
+We used traits originally compiled for identification of ferns and lycophytes of Japan as follows [@Ebihara2016b; @Ebihara2017]. 
+Continuous traits were measured on 10 randomly selected specimens per species. 
+Fertile (`r ie`, spore-bearing) and sterile fronds were measured separately, then averaged. 
+Qualitative traits were scored by observing voucher specimens. 
+All qualitative traits were scored in binary format; `r eg`, a single trait with three states was formatted as three binary traits. 
+From the original trait list, we selected only traits with putative ecological function (`r table("traits-used")`), and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
 
 ### Reproductive mode data
 
-We used data compiled by @Ebihara2019b, which classifies each fern taxon as sexual, apomictic, mixed (both sexual and apomictic modes known from the same taxon), or unknown. We calculated the percentage of apomictic species in each grid cell as the sum of apomictic and mixed taxa divided by total number of taxa.
+We used data compiled by @Ebihara2019b, which classifies each fern taxon as sexual, apomictic, mixed (both sexual and apomictic modes known from the same taxon), or unknown. 
+We calculated the percentage of apomictic species in each grid cell as the sum of apomictic and mixed taxa divided by total number of taxa.
 
 ### Climate data
 
-We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")`, and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15). We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell. The R package `r pack("sf")` was used for GIS analyses.
+We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")`, and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15). 
+We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell. 
+The R package `r pack("sf")` was used for GIS analyses.
 
 ### Phylogenetic analysis
 
-Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (
+Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. 
+However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. 
+Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. 
+To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (
 <!-- FIXME: remove until phylo analysis is working  `r #ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` -->
-OTUs total). We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r #nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. We then trimmed the tree to Japanese taxa only and used this for all further analyses.
+OTUs total). 
+We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r #nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. 
+We then trimmed the tree to Japanese taxa only and used this for all further analyses.
 
 ### Phylogenetic signal
 
-We tested for phylogenetic signal in continuous traits using two alternative metrics, Blomberg's *K* [@Blomberg2003] and Pagel's lambda [@Pagel1999]. *K* describes the ratio between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); lambda is a scaling parameter that transforms the phylogeny such that trait values fit those most closely expected under BM. Both lambda and *K* = 1 under BM; lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). We measured *K* and lambda using the `r func("phylosig")` function in the R package `r pack("phytools")` [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the `r func("phylo.d")` function in the R package `r pack("caper")` [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM. 
+We tested for phylogenetic signal in continuous traits using two alternative metrics, Blomberg's *K* [@Blomberg2003] and Pagel's lambda [@Pagel1999]. 
+*K* describes the ratio between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); lambda is a scaling parameter that transforms the phylogeny such that trait values fit those most closely expected under BM. 
+Both lambda and *K* = 1 under BM; lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). 
+We measured *K* and lambda using the `r func("phylosig")` function in the R package `r pack("phytools")` [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. 
+We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the `r func("phylo.d")` function in the R package `r pack("caper")` [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM. 
 
 ### Analysis of biodiversity
 
 We measured taxonomic diversity using taxonomic richness.
 
-We measured phylogenetic diversity (PD) using the Faith's PD (the total branch length connecting all terminal taxa in a community, including the root of the phylogeny) [@Faith1992]. To detect areas with unusually long or short branch lengths, we calculated relative phylogenetic diversity (RPD), which is a ratio of observed PD to PD measured on a tree where all branch lengths have been transformed to equal length [@Mishler2014].
+We measured phylogenetic diversity (PD) using the Faith's PD (the total branch length connecting all terminal taxa in a community, including the root of the phylogeny) [@Faith1992]. 
+To detect areas with unusually long or short branch lengths, we calculated relative phylogenetic diversity (RPD), which is a ratio of observed PD to PD measured on a tree where all branch lengths have been transformed to equal length [@Mishler2014].
 
-We measured functional diversity (FD) following the method of @Petchey2002. We first calculated functional distances using Gower's method [@Gower1971] on the trait data with the `r func("gowdis")` function in the R package `r pack("FD")` [@Laliberte2010]. We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances. We then used the distances to build a trait dendrogram using the `r func("hclust")` function in the `r pack("stats")` R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. These functional analogs of PD and RPD are hereafter referred to as FD (functional diversity) and RFD (relative functional diversity).
+We measured functional diversity (FD) following the method of @Petchey2002. 
+We first calculated functional distances using Gower's method [@Gower1971] on the trait data with the `r func("gowdis")` function in the R package `r pack("FD")` [@Laliberte2010]. 
+We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances. 
+We then used the distances to build a trait dendrogram using the `r func("hclust")` function in the `r pack("stats")` R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. 
+These functional analogs of PD and RPD are hereafter referred to as FD (functional diversity) and RFD (relative functional diversity).
 
 We measured phylogenetic endemism (PE) as the sum of all branches at a site inversely weighted by their range [@Rosauer2009].
 
-Observed values of PD, RPD, FD, RFD, and PE are known to be closely related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. Statistical significance was assessed using a one-tailed test for PE or a two-tailed test for other metrics with alpha = 0.5; observed values in the extreme 5% of the null distribution were considered significant. We also calculated the standard effect size (SES) of each biodiversity metric. SES measures how extreme the observed value (*obs*) is relative to the null distribution (*null*): 
+Observed values of PD, RPD, FD, RFD, and PE are known to be closely related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. 
+Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. 
+We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. 
+Statistical significance was assessed using a one-tailed test for PE or a two-tailed test for other metrics with alpha = 0.5; observed values in the extreme 5% of the null distribution were considered significant. 
+We also calculated the standard effect size (SES) of each biodiversity metric. 
+SES measures how extreme the observed value (*obs*) is relative to the null distribution (*null*): 
 
 $SES = \frac{obs - mean(null)}{sd(null)}$
 
-We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. 
+We tested whether endemic areas have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. 
+Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). 
+Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. 
 
 All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package (https://github.com/joelnitta/canaper), which calculates raw biodiversity metrics using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
 
-It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. To account for this, we also calculated all endemism-related metrics using a dataset including only species endemic to Japan.
+It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). 
+This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. 
+To account for this, we also calculated all endemism-related metrics using a dataset including only species endemic to Japan.
 
 ### Spatial models
 
-We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package. In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05). Therefore, we used spatially explicit methods for modeling.
+We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package. 
+In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05). 
+Therefore, we used spatially explicit methods for modeling.
 
-We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package. This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature, so for the main modeling analysis we only included the following environmental variables: mean annual temperature, precipitation, and precipitation seasonality.
+We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package. 
+This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature, so for the main modeling analysis we only included the following environmental variables: mean annual temperature, precipitation, and precipitation seasonality.
 
-We constructed a linear mixed model for each biodiversity metric dependent on the environmental variables ("environmental models"). Initial inspection of the relationship between each biodiversity metric and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature only. Richness was fit with the negative binomial response family; others were Gaussian. We fit models including a Matérn correlation matrix based on the geographic centroids of each grid cell as a random effect with the R package `r pack("spaMM")` [@Rousset2014]. We verified the significance of each term of the model by conducting likelihood ratio tests (LRTs) between the full model and models each with a single term of interest removed, in sequence. We also verified the significance of the full model relative to the null model (only including the Matérn correlation matrix) using LRTs.
+We constructed a linear mixed model for each biodiversity metric dependent on the environmental variables ("environmental models"). 
+Initial inspection of the relationship between each biodiversity metric and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature only. 
+Richness was fit with the negative binomial response family; others were Gaussian. 
+We fit models including a Matérn correlation matrix based on the geographic centroids of each grid cell as a random effect with the R package `r pack("spaMM")` [@Rousset2014]. 
+We verified the significance of each term of the model by conducting likelihood ratio tests (LRTs) between the full model and models each with a single term of interest removed, in sequence. 
+We also verified the significance of the full model relative to the null model (only including the Matérn correlation matrix) using LRTs.
 
-We postulated that % apomictic taxa might explain the distribution of genetic diversity better than temperature, so we also constructed a limited set of models to test this hypothesis ("reproductive models"). These models included biodiversity metrics with a genetic component (SES of PD and SES of RPD) as dependent on % apomictic taxa, precipitation, and precipitation seasonality, with random spatial effects as described above. We compared the fit between environmental models and reproductive models for SES of PD and SES of RPD using conditional Akaike Information Criterion (cAIC) [@Courtiol2017; @Vaida2005].
+We postulated that % apomictic taxa might explain the distribution of genetic diversity better than temperature, so we also constructed a limited set of models to test this hypothesis ("reproductive models"). 
+These models included biodiversity metrics with a genetic component (SES of PD and SES of RPD) as dependent on % apomictic taxa, precipitation, and precipitation seasonality, with random spatial effects as described above. 
+We compared the fit between environmental models and reproductive models for SES of PD and SES of RPD using conditional Akaike Information Criterion (cAIC) [@Courtiol2017; @Vaida2005].
 
 ### Analysis of bioregions
 
-We analyzed bioregions using the framework of @Daru2020 and their R package `r pack("phyloregion")`. Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. The distances are used to construct a dendrogram, which is then split into into *k* bioregions. As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20.
+We analyzed bioregions using the framework of @Daru2020 and their R package `r pack("phyloregion")`. 
+Briefly, this involves first calculating beta diversity (change in composition between communities) using either species names (taxonomic bioregions) or phylogenetic distances (phylogenetic bioregions). 
+For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. 
+For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. 
+The distances are used to construct a dendrogram, which is then split into into *k* bioregions. 
+As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20.
 
 ### Assessment of conservation status
 
-We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "medium" (some human activities allowed by permit). We cropped grid-cells to only include land area, then calculated the percent of protected area of each status type within grid-cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
+We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html). 
+We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "medium" (some human activities allowed by permit). 
+We cropped grid-cells to only include land area, then calculated the percent of protected area of each status type within grid-cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. 
+For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. 
+For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
 
 ### Data accessibility
 
-Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_biogeo. Raw and processed data are openly available from the Dryad repository at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
+Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_biogeo. 
+Raw and processed data are openly available from the Dryad repository at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
 
 ## Results
 
@@ -342,11 +429,18 @@ percent_traits_missing <-
   scales::percent(accuracy = 0.01)
 ```
 
-The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent`) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families of native Japanese ferns. The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a]. Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* (families follow @PteridophytePhylogenyGroupI2016). The age of the fern clade is estimated to be `r phylogeny_age` ma.
+The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent`) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families of native Japanese ferns. 
+The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a]. 
+Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* (families follow @PteridophytePhylogenyGroupI2016). 
+The age of the fern clade is estimated to be `r phylogeny_age` ma.
 
-The cleaned list of specimens included `r n_specimens` specimens representing `r n_specimens_taxa` taxa (`r n_specimens_taxa_percent`). The distribution of collection locations was highly skewed, with > 3,000 specimens per grid-cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r s_figure("abundance")`A). Despite this, sampling redundancy was generally good [> 0.3; @Gonzalez-Orozco2014b] throughout the country (mean `r mean_redundancy`, final community data matrix; errors are SD unless mentioned otherwise) (`r s_figure("abundance")`B). The final community data matrix included `r ncol(comm_ferns)` taxa and `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` grid-cells. `r n_excluded_cells` grid-cells were excluded due to low redundancy (< 0.1); these were mostly from Hokkaido and coastal areas.
+The cleaned list of specimens included `r n_specimens` specimens representing `r n_specimens_taxa` taxa (`r n_specimens_taxa_percent`). 
+The distribution of collection locations was highly skewed, with > 3,000 specimens per grid-cell northwest of Tokyo in Saitama prefecture, and many fewer elsewhere (`r s_figure("abundance")`A). 
+Despite this, sampling redundancy was generally good [> 0.3; @Gonzalez-Orozco2014b] throughout the country (mean `r mean_redundancy`, final community data matrix; errors are SD unless mentioned otherwise) (`r s_figure("abundance")`B). 
+The final community data matrix included `r ncol(comm_ferns)` taxa and `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` grid-cells. `r n_excluded_cells` grid-cells were excluded due to low redundancy (< 0.1); these were mostly from Hokkaido and coastal areas.
 
-After removing correlated and low-variance traits, the final trait set included `r n_binary_traits` binary trait, `r n_cont_traits` continuous traits, and `r n_qual_traits` qualitative traits (coded as `r n_qual_traits_as_binary` binary traits) (`r table("traits-used")`). The trait matrix included `r nrow(fern_traits)` taxa and `r fern_traits %>% select(-taxon) %>% ncol()` traits, with `r percent_traits_missing` missing data.
+After removing correlated and low-variance traits, the final trait set included `r n_binary_traits` binary trait, `r n_cont_traits` continuous traits, and `r n_qual_traits` qualitative traits (coded as `r n_qual_traits_as_binary` binary traits) (`r table("traits-used")`). 
+The trait matrix included `r nrow(fern_traits)` taxa and `r fern_traits %>% select(-taxon) %>% ncol()` traits, with `r percent_traits_missing` missing data.
 
 ### Phylogenetic signal
 
@@ -364,29 +458,52 @@ n_negative_d <-
   sum
 ```
 
-All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). `r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`).
+All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). 
+`r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`).
 
 ### Observed diversity
 
-Taxonomic richness is lowest on the northernmost island of Hokkaido, then increases with decreasing latitude until reaching a maximum in southern Kyushu, then decreases again in smaller islands further south (`r figure("raw-diversity")`A). Observed values of PD and FD were highly correlated with richness as expected (`r figure("raw-diversity")`B, C), showing an initial steep slope that gradually starts to level off at higher richness (`r s_figure("raw-biplot")`A, C). Observed values of RPD and RFD were also closely related to richness, showing high variance at low species richness, and low variance at high species richness (`r s_figure("raw-biplot")`B, D).
+Taxonomic richness is lowest on the northernmost island of Hokkaido, then increases with decreasing latitude until reaching a maximum in southern Kyushu, then decreases again in smaller islands further south (`r figure("raw-diversity")`A). 
+Observed values of PD and FD were highly correlated with richness as expected (`r figure("raw-diversity")`B, C), showing an initial steep slope that gradually starts to level off at higher richness (`r s_figure("raw-biplot")`A, C). 
+Observed values of RPD and RFD were also closely related to richness, showing high variance at low species richness, and low variance at high species richness (`r s_figure("raw-biplot")`B, D).
 
 ### Randomization tests for phylogenetic and functional diversity
 
-Grid-cells with significantly low PD were almost all located on Honshu, the main island of Japan (`r figure("rand-diversity")`A). A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). The area near Yakushima includes cells with both significantly high and low PD. Grid-cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu (`r figure("rand-diversity")`B). Grid-cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD (`r figure("rand-diversity")`C, D).
+Grid-cells with significantly low PD were almost all located on Honshu, the main island of Japan (`r figure("rand-diversity")`A). 
+A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). 
+The area near Yakushima includes cells with both significantly high and low PD. 
+Grid-cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu (`r figure("rand-diversity")`B). 
+Grid-cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. 
+Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD (`r figure("rand-diversity")`C, D).
 
 ### Relationships between biodiversity and climate or reproductive mode
 
-All models were significant relative to null models without any fixed effects `r s_table("lrt-null")`. The effect of temperature dominated (had the greatest absolute *t*-value) in environmental models (`r figure("coeff")`A--E), and % apomictic taxa dominated in reproductive models (`r figure("coeff")`F--G); temperature and % apomictic taxa were significant in each model where they were included, whereas other predictors (area, precipitation, precipitation seasonality) were not significant in some models. Richness showed a hump-shaped relationship with temperature, reaching maximum richness at intermediate temperatures (`r figure("modelfit")`A). Phylogenetic and functional diversity showed either moderately (SES of PD, SES of FD) to strongly (SES of RPD, SES of RFD) hump-shaped relationships with temperature (`r figure("modelfit")`B--E). SES of RPD showed a clear, linear decline with % apomictic taxa (`r figure("modelfit")`G); a similar pattern was detected in SES of PD, but with wider confidence intervals (`r figure("modelfit")`F). Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD, but not SES of PD.
+All models were significant relative to null models without any fixed effects `r s_table("lrt-null")`. 
+The effect of temperature dominated (had the greatest absolute *t*-value) in environmental models (`r figure("coeff")`A--E), and % apomictic taxa dominated in reproductive models (`r figure("coeff")`F--G); temperature and % apomictic taxa were significant in each model where they were included, whereas other predictors (area, precipitation, precipitation seasonality) were not significant in some models. 
+Richness showed a hump-shaped relationship with temperature, reaching maximum richness at intermediate temperatures (`r figure("modelfit")`A). 
+Phylogenetic and functional diversity showed either moderately (SES of PD, SES of FD) to strongly (SES of RPD, SES of RFD) hump-shaped relationships with temperature (`r figure("modelfit")`B--E). 
+SES of RPD showed a clear, linear decline with % apomictic taxa (`r figure("modelfit")`G); a similar pattern was detected in SES of PD, but with wider confidence intervals (`r figure("modelfit")`F). 
+Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD, but not SES of PD.
 
 ### Categorical analysis of neo- and paleo-endemism
 
-Nearly all grid-cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere (`r figure("endemism")`). The vast majority of endemic grid-cells are mixed. A cluster of paleoendemic cells was observed in the Ryukyu Islands. Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
+Nearly all grid-cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere (`r figure("endemism")`). 
+The vast majority of endemic grid-cells are mixed. 
+A cluster of paleoendemic cells was observed in the Ryukyu Islands. 
+Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (Daisetsuzan mountains). 
+When we ran CANAPE with a reduced dataset including only taxa endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
 
 ### Bioregions
 
-Analysis of bioregions grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` clusters (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). Phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). The other much smaller clusters are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
+Analysis of bioregions grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` clusters (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
+The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). 
+Phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). 
+The other much smaller clusters are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
-Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2 (`r figure("div-by-tax-region")`). Clusters 3 and 4 also have consistently high PE *p*-scores, whereas clusters 1 and 2 have a much wider variation. Cluster 2 has lower RPD and RFD than cluster 1. Comparison of biodiversity metrics across phylogenetic clusters was similar, except that phylogenetic cluster 3 mostly corresponds to taxonomic clusters 3 and 4 combined.
+Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2 (`r figure("div-by-tax-region")`). 
+Clusters 3 and 4 also have consistently high PE *p*-scores, whereas clusters 1 and 2 have a much wider variation. 
+Cluster 2 has lower RPD and RFD than cluster 1. 
+Comparison of biodiversity metrics across phylogenetic clusters was similar, except that phylogenetic cluster 3 mostly corresponds to taxonomic clusters 3 and 4 combined.
 
 ### Conservation status
 
@@ -445,11 +562,16 @@ total_percent_protected_high <- total_percent_protected %>% filter(status == "hi
 total_percent_protected_all <- sum(total_percent_protected_medium, total_percent_protected_high)
 ```
 
-The percentage of protected area in grid-cells with significantly high biodiversity range from `r min_protected_total` to `r max_protected_total` total, including `r min_protected_high` to `r max_protected_high` with high status and `r min_protected_med` to `r max_protected_med` with medium status (`r figure("conserv-status")`). Areas with high PE were the best protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total). All cells with significantly high biodiversity had a greater percentage of area protected than the overall rate for Japan (`r scales::percent(total_percent_protected_high, accuracy = 0.1)` high, `r scales::percent(total_percent_protected_medium, accuracy = 0.1)` medium, `r scales::percent(total_percent_protected_all, accuracy = 0.1)` total).
+The percentage of protected area in grid-cells with significantly high biodiversity range from `r min_protected_total` to `r max_protected_total` total, including `r min_protected_high` to `r max_protected_high` with high status and `r min_protected_med` to `r max_protected_med` with medium status (`r figure("conserv-status")`). 
+Areas with high PE were the best protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total). 
+All cells with significantly high biodiversity had a greater percentage of area protected than the overall rate for Japan (`r scales::percent(total_percent_protected_high, accuracy = 0.1)` high, `r scales::percent(total_percent_protected_medium, accuracy = 0.1)` medium, `r scales::percent(total_percent_protected_all, accuracy = 0.1)` total).
 
 ## Discussion
 
-Here, we provide the first insights into the combined taxonomic, phylogenetic, and functional diversity of the ferns of Japan. Our integrative approach reveals distinct patterns of biodiversity in different parts of the archipelago and across biodiversity metrics, and suggest reproductive mode as an important driver in some cases. These clear differences are reflected in the bioregionalization results, which delimit three to four major bioregions. Finally, we consider the current conservation status of ferns in Japan and the implications of our findings for future conservation activity.
+Here, we provide the first insights into the combined taxonomic, phylogenetic, and functional diversity of the ferns of Japan. 
+Our integrative approach reveals distinct patterns of biodiversity in different parts of the archipelago and across biodiversity metrics, and suggest reproductive mode as an important driver in some cases. 
+These clear differences are reflected in the bioregionalization results, which delimit three to four major bioregions. 
+Finally, we consider the current conservation status of ferns in Japan and the implications of our findings for future conservation activity.
 
 ### Distribution and drivers of biodiversity
 
@@ -481,23 +603,49 @@ southern_families <-
 n_southern_families <- southern_families %>% pull(family) %>% n_distinct %>% english2
 ```
 
-The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`A) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015] and modeled distributions of woody plants [@Fukaya2020]. Our modeling analysis indicates that this is strongly linked to temperature, with maximum richness occurring at intermediate temperatures (`r figure("modelfit")`A). Such a hump-shaped pattern is often observed in ferns on mountains, particularly in tropical or sub-tropical areas [@Kessler2011a]. Hypotheses to explain such a pattern include pure geometrical constraints as well as biological hypothesis positing maximally favorable environmental conditions at mid-elevations [@Colwell2004a]. Another reason for the greater richness in southern Honshu compared to smaller southern islands is that southern Honshu harbors high elevational variation that may support a wide range of taxa that is not present in the southern islands.
+The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`A) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015] and modeled distributions of woody plants [@Fukaya2020]. 
+Our modeling analysis indicates that this is strongly linked to temperature, with maximum richness occurring at intermediate temperatures (`r figure("modelfit")`A). 
+Such a hump-shaped pattern is often observed in ferns on mountains, particularly in tropical or sub-tropical areas [@Kessler2011a]. 
+Hypotheses to explain such a pattern include pure geometrical constraints as well as biological hypothesis positing maximally favorable environmental conditions at mid-elevations [@Colwell2004a]. 
+Another reason for the greater richness in southern Honshu compared to smaller southern islands is that southern Honshu harbors high elevational variation that may support a wide range of taxa that is not present in the southern islands.
 
-The overwhelming pattern characterizing phylogenetic and functional diversity (PD and FD) is the high diversity of southern islands (Ryukyu and Ogasawara Isl.) (`r figure("rand-diversity")`A, C). This is almost certainly due to the presence of primarily tropical lineages that do not occur in other parts of the country; `r n_southern_genera` genera and `r n_southern_families` families only occur south of 30.1° latitude (just south of Yakushima Isl.). The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis, and suggests that in ferns, phylogeny can be used as a reasonable stand-in for functional diversity. Given their high phylogenetic diversity, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism; indeed, the vast majority of cells with significant levels of PE, as well as paleoendemic cells, are located in the southern islands. This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
+The overwhelming pattern characterizing phylogenetic and functional diversity (PD and FD) is the high diversity of southern islands (Ryukyu and Ogasawara Isl.) (`r figure("rand-diversity")`A, C). 
+This is almost certainly due to the presence of primarily tropical lineages that do not occur in other parts of the country; `r n_southern_genera` genera and `r n_southern_families` families only occur south of 30.1° latitude (just south of Yakushima Isl.). 
+The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis, and suggests that in ferns, phylogeny can be used as a reasonable stand-in for functional diversity. 
+Given their high phylogenetic diversity, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism; indeed, the vast majority of cells with significant levels of PE, as well as paleoendemic cells, are located in the southern islands. 
+This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
 
-Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu (`r figure("rand-diversity")`B). The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* and *Botrychium*. The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera such as *Dryopteris* and *Deparia*. 
+Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu (`r figure("rand-diversity")`B). 
+The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* and *Botrychium*. 
+The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera such as *Dryopteris* and *Deparia*. 
 
-Furthermore, we identified % apomictic taxa as a strong driver of SES of PD (`r figure("modelfit")`G); indeed, *Dryopteris* and *Deparia* are two such genera with high numbers of apomictic taxa. This is consistent with the hypothesis that communities with high proportions of asexual taxa have lower genetic diversity, and is the first time to our knowledge that this has been demonstrated in ferns. While temperature is also correlated with % apomictic taxa and therefore cannot be discounted, conditional AIC indicates a better fit of the reproductive model than the environmental model for SES of RPD. Ultimately, it is likely that temperature, in combination with other environmental conditions, is driving the predominance of apomictic taxa: @Tanaka2014 also found that the proportion of apomictic taxa reaches a maximum at ca. 34.8 °N latitude and increases with temperature in Japan (their study was limited to Honshu and did not include the southern islands). @Tanaka2014 assert that one limiting factor affecting establishment of apomictic ferns at high latitudes or cold climates is the large cell size of apomicts, which are typically polyploid; as fern gametophytes are only a single cell-layer in thickness with no cuticle or stomata, it is expected they would be particularly susceptible to freezing damage induced by larger cells with higher water content; however, no experimental studies have tested these hypotheses. 
+Furthermore, we identified % apomictic taxa as a strong driver of SES of PD (`r figure("modelfit")`G); indeed, *Dryopteris* and *Deparia* are two such genera with high numbers of apomictic taxa. 
+This is consistent with the hypothesis that communities with high proportions of asexual taxa have lower genetic diversity, and is the first time to our knowledge that this has been demonstrated in ferns. 
+While temperature is also correlated with % apomictic taxa and therefore cannot be discounted, conditional AIC indicates a better fit of the reproductive model than the environmental model for SES of RPD. 
+Ultimately, it is likely that temperature, in combination with other environmental conditions, is driving the predominance of apomictic taxa: @Tanaka2014 also found that the proportion of apomictic taxa reaches a maximum at ca. 34.8 °N latitude and increases with temperature in Japan (their study was limited to Honshu and did not include the southern islands). 
+@Tanaka2014 assert that one limiting factor affecting establishment of apomictic ferns at high latitudes or cold climates is the large cell size of apomicts, which are typically polyploid; as fern gametophytes are only a single cell-layer in thickness with no cuticle or stomata, it is expected they would be particularly susceptible to freezing damage induced by larger cells with higher water content; however, no experimental studies have tested these hypotheses. 
 
-Water limitation is thought to play an important role in promoting apomixis in ferns especially in deserts [@Grusz2021], since ferns depend on water for transfer of sperm to egg, and apomictic plants would be able to reproduce in the absence of water. A similar argument has been made to assert that areas with seasonal monsoons are linked to increased rates of apomictic ferns [@Liu2012; @Tanaka2014], but in Japan, although the areas including high percentages of apomictic taxa are monsoonal, the degree of seasonal water limitation does not approach that of a desert. The monsoon hypothesis is also not supported by our results, which show precipitation seasonality did not play a strong role in any model and was not correlated with % apomictic taxa.
+Water limitation is thought to play an important role in promoting apomixis in ferns especially in deserts [@Grusz2021], since ferns depend on water for transfer of sperm to egg, and apomictic plants would be able to reproduce in the absence of water. 
+A similar argument has been made to assert that areas with seasonal monsoons are linked to increased rates of apomictic ferns [@Liu2012; @Tanaka2014], but in Japan, although the areas including high percentages of apomictic taxa are monsoonal, the degree of seasonal water limitation does not approach that of a desert. 
+The monsoon hypothesis is also not supported by our results, which show precipitation seasonality did not play a strong role in any model and was not correlated with % apomictic taxa.
 
-The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values (`r figure("div-by-tax-region")`). Interestingly, the bioregions identified here correspond roughly to major forest types previously categorized on an *ad-hoc* basis; Cluster 1 corresponds to the cool or subartic deciduous type, Cluster 2 to the warm evergreen type, and Clusters 3 and 4 to the subtropical rainy type [@Shimizu2014]. This suggests that ferns are useful as possible bioindicators in Japan. Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl (`r figure("bioregions")`). The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
+The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values (`r figure("div-by-tax-region")`). 
+Interestingly, the bioregions identified here correspond roughly to major forest types previously categorized on an *ad-hoc* basis; Cluster 1 corresponds to the cool or subartic deciduous type, Cluster 2 to the warm evergreen type, and Clusters 3 and 4 to the subtropical rainy type [@Shimizu2014]. 
+This suggests that ferns are useful as possible bioindicators in Japan. 
+Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. 
+The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl (`r figure("bioregions")`). 
+The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
 
 ### Conservation status
 
-Although the different facets of biodiversity have different distribution patterns, we find that grid-cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric (`r figure("conserv-status")`). While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
+Although the different facets of biodiversity have different distribution patterns, we find that grid-cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric (`r figure("conserv-status")`). 
+While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
 
-Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. One such other threat is herbivory by native Japanese deer, *Cervus nippon*. Populations of these deer have been increasing exponentially since the 1970s due to a combination of climate change and a decrease in hunting and natural predators. The deer are capable of decimating the herb layer when populations become dense and have been causing extensive damage even within national parks, which have the highest protection status. Although various efforts to prevent deer herbivory have been deployed such as exclusion fences, much work remains to be done to save vulnerable plant populations.
+Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. 
+One such other threat is herbivory by native Japanese deer, *Cervus nippon*. 
+Populations of these deer have been increasing exponentially since the 1970s due to a combination of climate change and a decrease in hunting and natural predators. 
+The deer are capable of decimating the herb layer when populations become dense and have been causing extensive damage even within national parks, which have the highest protection status. 
+Although various efforts to prevent deer herbivory have been deployed such as exclusion fences, much work remains to be done to save vulnerable plant populations.
 
 ### Limits of the study and future outlook
 
@@ -537,13 +685,29 @@ n_hybrid_fern_taxa <- fern_list %>%
   n_distinct()
 ```
 
-There are a number of caveats that must be kept in mind when interpreting these results, but these also suggest avenues for future research. First, the data include species collected over a wide time period, so they do not represent the current distribution of ferns in Japan. Furthermore, the collections are not evenly collected throughout the country, but rather some areas have many more specimens than others (`r s_figure("abundance")`). Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
+There are a number of caveats that must be kept in mind when interpreting these results, but these also suggest avenues for future research. 
+First, the data include species collected over a wide time period, so they do not represent the current distribution of ferns in Japan. 
+Furthermore, the collections are not evenly collected throughout the country, but rather some areas have many more specimens than others (`r s_figure("abundance")`). 
+Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
 
-The extreme evolutionary distinctiveness of southern islands is both a major feature of the Japanese fern flora and a challenge for analysis. The tropical lineages occurring in these islands are likely responsible for the comparatively low (`r ie`, clustered) values of PD observed on Honshu (`r figure("rand-diversity")`A). If a more restricted null model was used that did not consider all taxa capable of dispersing anywhere within the study area, different results would likely be obtained for the randomization test [@Mishler2020]. However, ferns are known to have high dispersal abilities [@Tryon1970; @Barrington1993; @Moran2001]. In our dataset, the taxon with the greatest latitudinal distribution, `r taxon_with_widest_lat$text`, spans nearly the entire region (`r taxon_with_widest_lat$min_lat`°N to `r taxon_with_widest_lat$max_lat`°N), and `r n_widespread_taxa` taxa have latitudinal distributions spanning the Tokara strait in the south (29°N) to the Tsugaru strait in the north (41.5°N). Therefore, it seems reasonable to assume that ferns are capable of dispersing across the entire study area.
+The extreme evolutionary distinctiveness of southern islands is both a major feature of the Japanese fern flora and a challenge for analysis. 
+The tropical lineages occurring in these islands are likely responsible for the comparatively low (`r ie`, clustered) values of PD observed on Honshu (`r figure("rand-diversity")`A). 
+If a more restricted null model was used that did not consider all taxa capable of dispersing anywhere within the study area, different results would likely be obtained for the randomization test [@Mishler2020]. 
+However, ferns are known to have high dispersal abilities [@Tryon1970; @Barrington1993; @Moran2001]. 
+In our dataset, the taxon with the greatest latitudinal distribution, `r taxon_with_widest_lat$text`, spans nearly the entire region (`r taxon_with_widest_lat$min_lat`°N to `r taxon_with_widest_lat$max_lat`°N), and `r n_widespread_taxa` taxa have latitudinal distributions spanning the Tokara strait in the south (29°N) to the Tsugaru strait in the north (41.5°N). 
+Therefore, it seems reasonable to assume that ferns are capable of dispersing across the entire study area.
 
-One piece of biodiversity that we did not consider here is hybrids. The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa. Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification. Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
+One piece of biodiversity that we did not consider here is hybrids. 
+The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa. 
+Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification. 
+Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
 
-Finally, a long under-appreciated aspect of fern ecology is the role of the gametophyte. Unlike seed plants, ferns have gametophytes that are capable of growing independently from the sporophyte. Futhermore, the two halves of the life cycle have vastly different morphology and ecophysiology, and may even occur over partially to completely disjunct ranges [reviewed in @Pinson2016a]. Here, as in the vast majority of fern ecology studies, we consider only the sporophyte phase. However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes. The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA barcoding analyses to compare patterns of biodiversity between life cycles in ferns across large spatial scales.
+Finally, a long under-appreciated aspect of fern ecology is the role of the gametophyte. 
+Unlike seed plants, ferns have gametophytes that are capable of growing independently from the sporophyte. 
+Futhermore, the two halves of the life cycle have vastly different morphology and ecophysiology, and may even occur over partially to completely disjunct ranges [reviewed in @Pinson2016a]. 
+Here, as in the vast majority of fern ecology studies, we consider only the sporophyte phase. 
+However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes. 
+The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA barcoding analyses to compare patterns of biodiversity between life cycles in ferns across large spatial scales.
 
 ## Author Contribution
 
