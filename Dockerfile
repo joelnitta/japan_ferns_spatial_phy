@@ -182,8 +182,6 @@ RUN mkdir -p /tmp/project/renv/local
 # Copy needed files: renv.lock and a local package
 COPY ./renv.lock /tmp/project
 
-COPY ./renv/local/canaper_0.0.0.9000.tar.gz /tmp/project/renv/local
-
 # Install packages to the dummy project using renv::restore()
 WORKDIR /tmp/project
 
