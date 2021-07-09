@@ -53,7 +53,7 @@ tar_plan(
   # downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
   # on 2020-08-26
   tar_file(japan_pol_file, "data_raw/gm-jpn-all_u_2_2/polbnda_jpn.shp"),
-  jpn_pol = sf::st_read(japan_pol_file),
+  jpn_pol = st_read(japan_pol_file),
   
   # Collapse all the political units down to just one shape for the country
   japan_shp = jpn_pol %>%
@@ -425,7 +425,7 @@ tar_plan(
   # Make biodiversity metrics dataframe with centroid of each site for models
   biodiv_ferns_cent = biodiv_ferns_spatial %>%
     # drop geometry (only need centroids for modeling)
-    sf::st_set_geometry(NULL) %>%
+    st_set_geometry(NULL) %>%
     # drop single percent_apo outlier
     drop_apo_outlier %>%
     # keep only variables needed for model and only rows with zero missing data
@@ -435,7 +435,7 @@ tar_plan(
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
-    biodiv_ferns_spatial,
+    st_set_geometry(biodiv_ferns_spatial, NULL),
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo", "area")
   ),
   
@@ -528,7 +528,7 @@ tar_plan(
   # - low: protected area, but none of the above restrictions
   
   # 1: wilderness
-  protected_1 = sf::st_read("data_raw/map17/原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
+  protected_1 = st_read("data_raw/map17/原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
     mutate(
       status = case_when(
         ZONE == 1 ~ "high", # 1＝原生自然環境保全地域
@@ -539,7 +539,7 @@ tar_plan(
     ),
   
   # 2: quasi-national parks
-  protected_2 = sf::st_read("data_raw/map17/国定公園.shp") %>%
+  protected_2 = st_read("data_raw/map17/国定公園.shp") %>%
     mutate(
       status = case_when(
         ZONE == 1 ~ "high", # 1＝特別保護地区
@@ -553,7 +553,7 @@ tar_plan(
     ),
   
   # 3: national wildlife protection areas
-  protected_3 = sf::st_read("data_raw/map17/国指定鳥獣保護区.shp") %>%
+  protected_3 = st_read("data_raw/map17/国指定鳥獣保護区.shp") %>%
     mutate(
       status = case_when(
         ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
@@ -562,7 +562,7 @@ tar_plan(
     ),
   
   # 4: national parks
-  protected_4 = sf::st_read("data_raw/map17/国立公園.shp") %>%
+  protected_4 = st_read("data_raw/map17/国立公園.shp") %>%
     mutate(
       status = case_when(
         ZONE == 1 ~ "high", # 1＝特別保護地区
@@ -578,7 +578,7 @@ tar_plan(
     filter(NAME != "瀬戸内海"),
   
   # 5: prefectural wildlife protection areas
-  protected_5 = sf::st_read("data_raw/map17/都道府県指定鳥獣保護区.shp") %>%
+  protected_5 = st_read("data_raw/map17/都道府県指定鳥獣保護区.shp") %>%
     mutate(
       status = case_when(
         ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
@@ -588,7 +588,7 @@ tar_plan(
     ),
   
   # 6: prefectural natural parks
-  protected_6 = sf::st_read("data_raw/map17/都道府県立自然公園.shp") %>%
+  protected_6 = st_read("data_raw/map17/都道府県立自然公園.shp") %>%
     mutate(
       status = case_when(
         ZONE == 1 ~ "high", # 1＝特別保護地区
@@ -598,7 +598,7 @@ tar_plan(
     ),
   
   # 7: prefectural protection areas
-  protected_7 = sf::st_read("data_raw/map17/都道府県自然環境保全地域.shp") %>%
+  protected_7 = st_read("data_raw/map17/都道府県自然環境保全地域.shp") %>%
     mutate(
       status = case_when(
         ZONE == 0 ~ "high", # 0＝原生自然環境保全地域

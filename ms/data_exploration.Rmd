@@ -36,14 +36,14 @@ The `cent` part of the name indicates that they include geographic locations as 
 tar_load(biodiv_ferns_spatial)
 tar_load(resp_vars_env)
 tar_load(indep_vars)
-tar_load(lat_area_ja)
 
 # Make biodiversity metrics dataframe with centroid of each site for models
-  biodiv_ferns_cent <- sf_to_centroids(biodiv_ferns_spatial) %>%
-    # add area
-    add_roll_area(lat_area_ja) %>%
+  biodiv_ferns_cent <- 
+    biodiv_ferns_spatial %>%
     # keep only variables needed for model and only rows with zero missing data
-    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars))
+    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars)) %>%
+    sf::st_set_geometry(NULL) %>%
+    as_tibble()
 ```
 
 ### Structure of the data
