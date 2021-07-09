@@ -2194,9 +2194,11 @@ filter_data_for_model <- function(data, vars_keep) {
 #' @return Tibble with columns "lat" and "long" with latitude and
 #' longitude of the centroid of each geometrical feature
 #' 
-sf_to_centroids <- function(sf_data) {
-  # Start with Simple feature collection ("sf") dataframe
-  sf_data %>%
+sf_add_centroids <- function(sf_data) {
+  
+  # Extract centroids
+  centroids <-  # Start with Simple feature collection ("sf") dataframe
+    sf_data %>%
     # Calculate centroid of each geometry feature
     st_centroid() %>% 
     # Convert centroids to character (e.g., "c(140.9, 45.5)")
@@ -2210,7 +2212,11 @@ sf_to_centroids <- function(sf_data) {
     # Make sure it worked
     assert(not_na, long, lat) %>%
     assert(within_bounds(-180, 180), long) %>%
-    assert(within_bounds(-90, 90), lat)
+    assert(within_bounds(-90, 90), lat) %>%
+    select(grids, long, lat)
+  
+  # Add centroids to original data
+  left_join(sf_data, centroids, by = "grids")
 }
 
 #' Make a spatial weights list for testing spatial autocorrelation

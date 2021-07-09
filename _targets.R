@@ -378,6 +378,8 @@ tar_plan(
     left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
     left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
     # Add environmental data
+    sf_add_centroids %>%
+    add_roll_area(lat_area_ja) %>%
     left_join(mean_climate, by = "grids") %>%
     # Add % apomictic taxa
     left_join(percent_apo) %>%
@@ -421,9 +423,9 @@ tar_plan(
   lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
   
   # Make biodiversity metrics dataframe with centroid of each site for models
-  biodiv_ferns_cent = sf_to_centroids(biodiv_ferns_spatial) %>%
-    # add area
-    add_roll_area(lat_area_ja) %>%
+  biodiv_ferns_cent = biodiv_ferns_spatial %>%
+    # drop geometry (only need centroids for modeling)
+    sf::st_set_geometry(NULL) %>%
     # drop single percent_apo outlier
     drop_apo_outlier %>%
     # keep only variables needed for model and only rows with zero missing data
@@ -433,8 +435,7 @@ tar_plan(
   
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
-    sf_to_centroids(biodiv_ferns_spatial) %>%
-      add_roll_area(lat_area_ja), 
+    biodiv_ferns_spatial,
     vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo", "area")
   ),
   
