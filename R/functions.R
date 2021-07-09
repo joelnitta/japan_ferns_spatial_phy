@@ -2778,7 +2778,7 @@ add_roll_area <- function(biodiv_ferns_spatial, lat_area_ja) {
       type = "within",
       by = c("ymin", "ymax")) %>%
     # make sure the join worked properly
-    verify(nrow(.) == nrow(biodiv_ferns_cent_env)) %>%
+    verify(nrow(.) == nrow(biodiv_ferns_spatial)) %>%
     select(-matches("ymin|ymax"))
   
   left_join(biodiv_ferns_spatial, area_mapped_to_centroids, by = "grids") %>%
