@@ -1571,7 +1571,8 @@ cluster_phylo_regions <- function (comm_df, phy, k) {
 calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japan_shp) {
   
   # Add percent rank for richness
-  biodiv_ferns_spatial <- mutate(biodiv_ferns_spatial, richness_obs_p_upper = dplyr::percent_rank(richness))
+  biodiv_ferns_spatial <- mutate(biodiv_ferns_spatial, richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
+    select(-area) # drop latitudinal area (so we can join with protected area)
   
   # Crop to Japan to spatial div results area
   japan_shp <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
@@ -2234,6 +2235,7 @@ make_dist_list <- function(data) {
     # "grids" are the site names
     select(grids, long, lat) %>%
     # set rownames as sites so these carry through to list names in final result
+    as_tibble() %>%
     column_to_rownames("grids") %>% 
     as.matrix()
   
