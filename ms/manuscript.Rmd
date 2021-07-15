@@ -82,7 +82,7 @@ tar_load(c(
   "lrt_results",
   "aic_env_repro",
   "model_fits",
-  "spatial_models"
+  "biodiv_ferns_cent"
 ))
 ```
 
@@ -1145,10 +1145,13 @@ coeff_plot
 # Make plot showing model fits
 
 # Extract dataset used for model, including significance columns
-biodiv_ferns_used_for_model <- sf_to_centroids(biodiv_ferns_spatial) %>%
+biodiv_ferns_used_for_model <- biodiv_ferns_spatial %>%
+  # drop geometry (only need centroids for modeling)
+  st_set_geometry(NULL) %>%
+  as_tibble() %>%
   # filter to only sites used in model
   inner_join(
-    spatial_models$model[[1]]$data %>% as_tibble() %>% select(grids),
+    biodiv_ferns_cent %>% as_tibble() %>% select(grids),
     by = "grids"
   )
 
