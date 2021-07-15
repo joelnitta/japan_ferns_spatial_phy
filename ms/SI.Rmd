@@ -233,8 +233,6 @@ inext_out$iNextEst %>%
     legend.position="bottom", 
     legend.title=element_blank()
   )
-
-ggsave(result_file(s_figure("sampling-curve"), "pdf"), width = 4, height = 3, units = "in")
 ```
 
 **`r s_figure("sampling-curve")`**. Species collection curve for the ferns of Japan fit with the `r pack("iNEXT")` package. Grey shading indicates 95% confidence interval (not visible where it does not extend beyond the fitted line). Point indicates observed taxonomic richness (`r observed_data$qD` taxa, 95% confidence interval `r rich_interval` taxa). Taxa include species, subspecies, and varieties, excluding hybrids. Sampling completeness is estimated to be `r est_completeness` (95% confidence interval `r completeness_interval`).
@@ -308,8 +306,6 @@ c <- ggplot(redundancy_by_res, aes(x = redundancy, y = res)) +
 
 a + b + c +
   plot_annotation(tag_levels = 'A')
-
-ggsave(result_file(s_figure("grain-size"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
 **`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. **A**, Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). **B**, Percent of grid cells with redundancy = 0 by grain size. **C**, Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 0.1 to 0.2 degree grid-cells, but less improvement as grain size is increased beyond 0.2 degrees.
@@ -364,8 +360,6 @@ e <- plot_env("E", "Temperature", "temp", "°C", function(x) x/10)
 f <- plot_env("F", "Temp. season.", "temp_season")
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
-
-ggsave(result_file(figure("envir"), "pdf"), width = 6, height = 8, units = "in")
 ```
 
 **`r s_figure("envir")`**. Reproductive mode and environmental data in 0.2 degree grid cells across Japan. **A**, rolling mean area (km^2^) in 1° latitudinal bands.  **B**, % apomictic taxa. **C**, annual precipitation **D**, percipitation seasonality (coefficient of variation).  **E**, mean annual temperature. **F**, temperature seasonality (standard deviation × 100).
@@ -397,8 +391,6 @@ b <- ggplot() +
 
 a + b + 
   plot_layout(nrow = 1)
-
-ggsave(result_file(figure("abundance"), "pdf"), width = 7, height = 5, units = "in")
 ```
 
 **`r s_figure("abundance")`**. Observed number of specimens (**A**) and sampling redundancy (**B**) per 0.2° grid cell in the ferns of Japan.
@@ -425,8 +417,6 @@ d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
 a + b + c + d +
   plot_layout(ncol = 2, nrow = 2) +
   plot_annotation(tag_levels = 'A')
-
-ggsave(result_file(s_figure("raw-biplot"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
 **`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diversity (RPD). **C**, Functional diversity (FD). **D**, Relative functional diversity (RFD).
@@ -440,8 +430,6 @@ ggplot() +
   scale_fill_manual(values = canape_cols) +
   map_theme() +
   theme(legend.title = element_blank())
-
-ggsave(result_file(s_figure("endemism-restricted"), "pdf"), width = 5, height = 5, units = "in")
 ```
 
 **`r s_figure("endemism-restricted")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan. 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Methods.
@@ -490,8 +478,6 @@ b <- k_phylogeny$df %>%
 a + b +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = 'A')
-
-ggsave(result_file(s_figure("k-plot"), "pdf"), width = 7, height = 3, units = "in")
 ```
 
 **`r s_figure("k-plot")`**. Selection of *k* for bioregions. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
