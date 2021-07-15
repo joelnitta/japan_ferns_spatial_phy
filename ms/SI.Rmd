@@ -64,7 +64,8 @@ tar_load(c(
   "ppgi",
   "phy_sig_results",
   "binary_sig_results",
-  "lrt_results"
+  "lrt_results",
+  "japan_shp"
 ))
 ```
 
@@ -315,7 +316,63 @@ ggsave(result_file(s_figure("grain-size"), "pdf"), width = 7, height = 3, units 
 
 \clearpage
 
-```{r abundance, width = 7, height = 5}
+```{r envir, fig.width = 7, fig.height = 9}
+
+# Restrict sites to only those used in model
+# (drops outlier % apomictic site)
+biodiv_ferns_for_plotting <-
+  biodiv_ferns_spatial %>%
+  drop_apo_outlier
+
+# crop high-res map of Japan to spatial div results area
+japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_for_plotting))
+
+# Set CRS
+japan_crs <- sf::st_crs(japan)
+biodiv_ferns_for_plotting <- sf::st_set_crs(biodiv_ferns_for_plotting, japan_crs)
+
+# Define function for plotting environment
+plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::waiver()) {
+  ggplot() +
+    geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+    geom_sf(data = biodiv_ferns_for_plotting, aes(fill = .data[[var_select]]), color = "transparent", alpha = 0.8) +
+    annotate(
+      geom="richtext", y = Inf, x = -Inf, 
+      label = glue("<span style='color:black'>**{part}** {label}</span>"), 
+      hjust = "inward", vjust = "inward", color = "white") + 
+    labs(fill = fill_lab) +
+    scale_fill_scico(palette = "lajolla", labels = labels) +
+    scale_x_continuous(guide = guide_axis(check.overlap = TRUE)) +
+    theme_grey(base_size = 10) +
+    theme(
+      panel.grid.major = element_line(color = "grey60", size = 0.1),
+      panel.grid.minor = element_blank(),
+      panel.background = element_rect(fill = "transparent"),
+      axis.ticks = element_blank(),
+      axis.text = element_text(color = "grey60"),
+      axis.title = element_blank(),
+      legend.position = "right",
+      legend.title = element_markdown()
+    )
+}
+
+a <- plot_env("A", "Area", "area", "km^2")
+b <- plot_env("B", "% apomictic taxa", "percent_apo", labels = function(x) scales::percent(x, accuracy = 1))
+c <- plot_env("C", "Precipitation", "precip", "mm")
+d <- plot_env("D", "Precip. season.", "precip_season" , "")
+e <- plot_env("E", "Temperature", "temp", "°C", function(x) x/10)
+f <- plot_env("F", "Temp. season.", "temp_season")
+
+a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
+
+ggsave(result_file(figure("envir"), "pdf"), width = 6, height = 8, units = "in")
+```
+
+**`r s_figure("envir")`**. Reproductive mode and environmental data in 0.2 degree grid cells across Japan. **A**, rolling mean area (km^2^) in 1° latitudinal bands.  **B**, % apomictic taxa. **C**, annual precipitation **D**, percipitation seasonality (coefficient of variation).  **E**, mean annual temperature. **F**, temperature seasonality (standard deviation × 100).
+
+\clearpage
+
+```{r abundance, fig.width = 7, fig.height = 5}
 k <- scales::unit_format(unit = "k", scale = 1e-3, accuracy = 1, sep = "")
   
 a <- ggplot() +

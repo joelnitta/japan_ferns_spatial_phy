@@ -208,11 +208,11 @@ From the original trait list, we selected only traits with putative ecological f
 ### Reproductive mode data
 
 We used data compiled by @Ebihara2019b, which classifies each fern taxon as sexual, apomictic, mixed (both sexual and apomictic modes known from the same taxon), or unknown. 
-We calculated the percentage of apomictic species in each grid cell as the sum of apomictic and mixed taxa divided by total number of taxa.
+We calculated the percentage of apomictic species in each grid cell as the sum of apomictic and mixed taxa divided by total number of taxa (`r s_figure("envir")`B).
 
 ### Environmental data
 
-We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")`, and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15). 
+We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")`, and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15) (`r s_figure("envir")`). 
 We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell.
 We calculated area as rolling mean area (km^2^) across 1 degree latitudinal bands.
 This approach reflects the idea that the amount of area with a given climate regime enclosing each grid cell may influence species richness of that cell [@Fahrig2013], and that simply using raw island areas would not be appropriate in this context as there are just four very large islands with many much smaller ones located close by.
