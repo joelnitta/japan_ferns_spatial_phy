@@ -235,7 +235,7 @@ references:
     given: Klaus
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol. Evol.
-  DOI: 10/gkzsjp
+  DOI: 10.1111/2041-210x.13478
   editor:
   - family: Silvestro
     given: Daniele
@@ -353,6 +353,33 @@ references:
     Archipelago
   type: article-journal
   volume: '132'
+- id: Fahrig2013
+  accessed:
+  - year: 2021
+    month: 7
+    day: 9
+  author:
+  - family: Fahrig
+    given: Lenore
+  container-title: Journal of Biogeography
+  container-title-short: J. Biogeogr.
+  DOI: 10/ggk3qt
+  editor:
+  - family: Triantis
+    given: Kostas
+  ISSN: '03050270'
+  issue: '9'
+  issued:
+  - year: 2013
+    month: 9
+  language: en
+  page: 1649-1663
+  source: DOI.org (Crossref)
+  title: 'Rethinking patch size and isolation effects: the habitat amount hypothesis'
+  title-short: Rethinking patch size and isolation effects
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/10.1111/jbi.12130
+  volume: '40'
 - id: Faith1992
   author:
   - family: Faith
@@ -543,33 +570,43 @@ references:
   URL: https://bsapubs.onlinelibrary.wiley.com/doi/abs/10.1002/ajb2.1611
   volume: '108'
 - id: Kembel2010
+  accessed:
+  - year: 2021
+    month: 7
+    day: 12
   author:
   - family: Kembel
-    given: Steven W.
+    given: S. W.
   - family: Cowan
-    given: Peter D.
+    given: P. D.
   - family: Helmus
-    given: Matthew R.
+    given: M. R.
   - family: Cornwell
-    given: William K.
+    given: W. K.
   - family: Morlon
-    given: Helene
+    given: H.
   - family: Ackerly
-    given: David D
+    given: D. D.
   - family: Blomberg
-    given: Simon P.
+    given: S. P.
   - family: Webb
-    given: Campbell O
+    given: C. O.
   container-title: Bioinformatics
-  ISSN: 1460-2059
+  container-title-short: Bioinformatics
+  DOI: 10.1093/bioinformatics/btq166
+  ISSN: 1367-4803, 1460-2059
   issue: '11'
   issued:
   - year: 2010
     month: 6
+    day: 1
+  language: en
   page: 1463-1464
+  source: DOI.org (Crossref)
   title: 'Picante: R tools for integrating phylogenies and ecology'
+  title-short: Picante
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1990
+  URL: https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/btq166
   volume: '26'
 - id: Kessler2011a
   author:
