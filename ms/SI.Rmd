@@ -405,6 +405,49 @@ ggsave(result_file(figure("abundance"), "pdf"), width = 7, height = 5, units = "
 
 \clearpage
 
+```{r raw-biplot, fig.width = 7, fig.height = 7}
+a <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = pd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "PD")
+
+b <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rpd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "RPD")
+
+c <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = fd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "FD")
+
+d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
+  geom_point(alpha = 0.5) +
+  labs(x = "Richness", y = "RFD")
+
+a + b + c + d +
+  plot_layout(ncol = 2, nrow = 2) +
+  plot_annotation(tag_levels = 'A')
+
+ggsave(result_file(s_figure("raw-biplot"), "pdf"), width = 7, height = 3, units = "in")
+```
+
+**`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diversity (RPD). **C**, Functional diversity (FD). **D**, Relative functional diversity (RFD).
+
+\clearpage
+
+```{r endemism-restricted, fig.width = 5, fig.height = 5}
+ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent", alpha = 0.8) +
+  scale_fill_manual(values = canape_cols) +
+  map_theme() +
+  theme(legend.title = element_blank())
+
+ggsave(result_file(s_figure("endemism-restricted"), "pdf"), width = 5, height = 5, units = "in")
+```
+
+**`r s_figure("endemism-restricted")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan. 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Methods.
+
+\clearpage
+
 ```{r k-plot, fig.width = 7, fig.height = 3}
 a <- k_taxonomy$df %>%
   as_tibble() %>%
@@ -452,46 +495,3 @@ ggsave(result_file(s_figure("k-plot"), "pdf"), width = 7, height = 3, units = "i
 ```
 
 **`r s_figure("k-plot")`**. Selection of *k* for bioregions. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
-
-\clearpage
-
-```{r raw-biplot, fig.width = 7, fig.height = 7}
-a <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = pd_obs)) +
-  geom_point(alpha = 0.5) +
-  labs(x = "Richness", y = "PD")
-
-b <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rpd_obs)) +
-  geom_point(alpha = 0.5) +
-  labs(x = "Richness", y = "RPD")
-
-c <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = fd_obs)) +
-  geom_point(alpha = 0.5) +
-  labs(x = "Richness", y = "FD")
-
-d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
-  geom_point(alpha = 0.5) +
-  labs(x = "Richness", y = "RFD")
-
-a + b + c + d +
-  plot_layout(ncol = 2, nrow = 2) +
-  plot_annotation(tag_levels = 'A')
-
-ggsave(result_file(s_figure("raw-biplot"), "pdf"), width = 7, height = 3, units = "in")
-```
-
-**`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diversity (RPD). **C**, Functional diversity (FD). **D**, Relative functional diversity (RFD).
-
-\clearpage
-
-```{r endemism-restricted, fig.width = 5, fig.height = 5}
-ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent", alpha = 0.8) +
-  scale_fill_manual(values = canape_cols) +
-  map_theme() +
-  theme(legend.title = element_blank())
-
-ggsave(result_file(s_figure("endemism-restricted"), "pdf"), width = 5, height = 5, units = "in")
-```
-
-**`r s_figure("endemism-restricted")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan. 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Methods.
