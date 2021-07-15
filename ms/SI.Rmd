@@ -13,7 +13,7 @@ output:
     toc: no
     number_sections: no
     fig_caption: yes
-    keep_tex: yes
+    keep_tex: no
     latex_engine: xelatex
     pandoc_args: [ "--csl", "journal-of-biogeography.csl"]
 header-includes: 
