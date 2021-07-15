@@ -2906,3 +2906,21 @@ rename_model_type <- function(df) {
   
 }
 
+#' Clean a vector of variables for printing
+#'
+#' @param x Character vector (variables)
+#'
+#' @return Character vector
+#' 
+clean_vars <- function(x) {
+  x %>%
+    gsub("^([^_]+)_obs_z", "SES of \\U\\1", ., perl=TRUE) %>%
+    str_replace_all("^percent_apo$", "% apomictic taxa") %>%
+    str_replace_all("^temp$", "Temperature") %>%
+    str_replace_all("^temp_season$", "Temperature seasonality") %>%
+    str_replace_all("^precip_season$", "Precipitation seasonality") %>%
+    str_replace_all("^precip$", "Precipitation") %>%
+    str_replace_all("^area$", "Area") %>%
+    str_replace_all("^richness$", "Richness")
+}
+

@@ -94,7 +94,7 @@ tar_load(c(
 
 Short running title: Biodiversity of Japanese ferns
 
-Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1, 3, 4, 5, 6^, and Atsushi Ebihara^7^
+Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1,3,4,5,6^, and Atsushi Ebihara^7^
 
 ^1^Department of Biological Sciences, Graduate School of Science, The University of Tokyo, Tokyo, Japan
 
@@ -265,7 +265,7 @@ We tested whether endemic areas have an over-representation of old (paleoendemic
 Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). 
 Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. 
 
-All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package (https://github.com/joelnitta/canaper), which calculates raw biodiversity metrics using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
+All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package [@Nitta2021], which calculates raw biodiversity metrics using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
 
 It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (the "border effect"). 
 This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. 
@@ -274,11 +274,11 @@ To account for this, we also calculated all endemism-related metrics using a dat
 ### Spatial models
 
 We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package. 
-In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05). 
+In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05) (`r s_table("moran")`). 
 Therefore, we used spatially explicit methods for modeling.
 
 We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package. 
-This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature, so for the main modeling analysis we only included the following environmental variables: mean annual temperature, precipitation, and precipitation seasonality.
+This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature (`r s_table("corr")`), so for the main modeling analysis we only included the following environmental variables: mean annual temperature, precipitation, and precipitation seasonality.
 
 We constructed a linear mixed model for each biodiversity metric dependent on the environmental variables ("environmental models"). 
 Initial inspection of the relationship between each biodiversity metric and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature only. 
@@ -311,7 +311,8 @@ For taxonomic richness, cells ranked in the top >5% were considered highly diver
 ### Data accessibility
 
 Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_biogeo. 
-Raw and processed data are openly available from the Dryad repository at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
+A Docker image to run the code is available at https://hub.docker.com/repository/docker/joelnitta/japan_ferns_biogeo.
+Data are openly available from Figshare at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
 
 ## Results
 
@@ -485,7 +486,7 @@ The effect of temperature dominated (had the greatest absolute *t*-value) in env
 Richness showed a hump-shaped relationship with temperature, reaching maximum richness at intermediate temperatures (`r figure("modelfit")`A). 
 Phylogenetic and functional diversity showed either moderately (SES of PD, SES of FD) to strongly (SES of RPD, SES of RFD) hump-shaped relationships with temperature (`r figure("modelfit")`B--E). 
 SES of RPD showed a clear, linear decline with % apomictic taxa (`r figure("modelfit")`G); a similar pattern was detected in SES of PD, but with wider confidence intervals (`r figure("modelfit")`F). 
-Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD, but not SES of PD.
+Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD, but not SES of PD (`r s_table("aic")`).
 
 ### Categorical analysis of neo- and paleo-endemism
 
@@ -606,7 +607,7 @@ n_southern_families <- southern_families %>% pull(family) %>% n_distinct %>% eng
 ```
 
 The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`A) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015] and modeled distributions of woody plants [@Fukaya2020]. 
-Our modeling analysis indicates that this is strongly linked to temperature, with maximum richness occurring at intermediate temperatures (`r figure("modelfit")`A). 
+Our modeling analysis indicates that this is strongly linked to temperature, with maximum richness occurring at intermediate temperatures (`r figure("modelfit")`A).
 Such a hump-shaped pattern is often observed in ferns on mountains, particularly in tropical or sub-tropical areas [@Kessler2011a]. 
 Hypotheses to explain such a pattern include pure geometrical constraints as well as biological hypothesis positing maximally favorable environmental conditions at mid-elevations [@Colwell2004a]. 
 Another reason for the greater richness in southern Honshu compared to smaller southern islands is that southern Honshu harbors high elevational variation that may support a wide range of taxa that is not present in the southern islands.
@@ -618,8 +619,7 @@ Given their high phylogenetic diversity, it is perhaps not surprising that south
 This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
 
 Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu (`r figure("rand-diversity")`B). 
-The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* and *Botrychium*. 
-The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera such as *Dryopteris* and *Deparia*. 
+The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* and *Botrychium*. The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera such as *Dryopteris* and *Deparia*. 
 
 Furthermore, we identified % apomictic taxa as a strong driver of SES of PD (`r figure("modelfit")`G); indeed, *Dryopteris* and *Deparia* are two such genera with high numbers of apomictic taxa. 
 This is consistent with the hypothesis that communities with high proportions of asexual taxa have lower genetic diversity, and is the first time to our knowledge that this has been demonstrated in ferns. 
@@ -627,7 +627,7 @@ While temperature is also correlated with % apomictic taxa and therefore cannot 
 Ultimately, it is likely that temperature, in combination with other environmental conditions, is driving the predominance of apomictic taxa: @Tanaka2014 also found that the proportion of apomictic taxa reaches a maximum at ca. 34.8 °N latitude and increases with temperature in Japan (their study was limited to Honshu and did not include the southern islands). 
 @Tanaka2014 assert that one limiting factor affecting establishment of apomictic ferns at high latitudes or cold climates is the large cell size of apomicts, which are typically polyploid; as fern gametophytes are only a single cell-layer in thickness with no cuticle or stomata, it is expected they would be particularly susceptible to freezing damage induced by larger cells with higher water content; however, no experimental studies have tested these hypotheses. 
 
-Water limitation is thought to play an important role in promoting apomixis in ferns especially in deserts [@Grusz2021], since ferns depend on water for transfer of sperm to egg, and apomictic plants would be able to reproduce in the absence of water. 
+Water limitation is thought to play an important role in promoting apomixis in ferns especially in deserts [@Grusz2021], since ferns depend on water for transfer of sperm to egg, and apomictic plants would be able to reproduce in the absence of water.
 A similar argument has been made to assert that areas with seasonal monsoons are linked to increased rates of apomictic ferns [@Liu2012; @Tanaka2014], but in Japan, although the areas including high percentages of apomictic taxa are monsoonal, the degree of seasonal water limitation does not approach that of a desert. 
 The monsoon hypothesis is also not supported by our results, which show precipitation seasonality did not play a strong role in any model and was not correlated with % apomictic taxa.
 
@@ -637,6 +637,7 @@ This suggests that ferns are useful as possible bioindicators in Japan.
 Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. 
 The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl (`r figure("bioregions")`). 
 The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
+Rather, fern bioregions in Japan broadly separate along gradients of temperature and precipitation; in particular, precipitation splits taxonomic Cluster 3 (mostly the Ryukyu islands, wetter) from Cluster 4 (mostly the Ogasawara islands, drier) (`r s_figure("bioregions-env")`).
 
 ### Conservation status
 

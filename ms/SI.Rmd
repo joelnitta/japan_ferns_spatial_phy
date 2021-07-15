@@ -65,7 +65,10 @@ tar_load(c(
   "phy_sig_results",
   "binary_sig_results",
   "lrt_results",
-  "japan_shp"
+  "japan_shp",
+  "morans_i",
+  "t_test_results",
+  "aic_env_repro"
 ))
 ```
 
@@ -109,10 +112,73 @@ fs::file_delete(temp_file)
 
 # Supplemental Information
 
+```{r moran, results = "as-is"}
+morans_i %>%
+  select(resp_var = var, morans_i, pval_i) %>%
+  mutate(
+    across(c(morans_i, pval_i), ~format(., digits = 2)),
+    resp_var = clean_vars(resp_var) %>% 
+      factor(levels = c("Area", "% apomictic taxa", "Precipitation", "Precipitation seasonality", "Temperature", "Richness", "SES of PD", "SES of RPD", "SES of FD", "SES of RFD"))
+    ) %>%
+  assert(not_na, resp_var) %>%
+  arrange(resp_var) %>%
+  # format for kable/latex: since I use latex in headers, must escape latex elsewhere
+  mutate(resp_var = str_replace_all(resp_var, "%", "\\\\%")) %>%
+  rename(`\\textit{I}` = morans_i, `\\textit{P}` = pval_i, "Variable" = resp_var) %>%
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+```
+
+**`r s_table("moran")`**. Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*. Significant *I* > 0 indicates autocorrelation.
+
+\clearpage
+
+```{r corr, results = "as-is"}
+t_test_results_for_table <-
+t_test_results %>%
+  mutate(
+    var1 = clean_vars(var1),
+    var2 = clean_vars(var2)) %>%
+  arrange(var1, var2)
+
+# Identify which rows to make bold based on p < 0.05
+t_test_signif <- t_test_results_for_table$p_value < 0.05
+t_test_signif[is.na(t_test_signif)] <- FALSE
+t_test_signif <- which(t_test_signif)
+
+t_test_results_for_table %>%
+  mutate(across(where(is.double), ~format(., digits = 2))) %>%
+  # format for kable/latex
+  mutate(
+    var1 = str_replace_all(var1, "%", "\\\\%"),
+    var2 = str_replace_all(var2, "%", "\\\\%")) %>%
+  rename(
+    "Variable 1" = var1,
+    "Variable 2" = var2,
+    `\\textit{P}` = p_value,
+    `\\textit{r}` = corr,
+    `\\textit{f}` = f_stat,
+    "df" = dof) %>%
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
+  row_spec(row = t_test_signif, bold = TRUE) %>%
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+```
+
+**`r s_table("corr")`**. Results of modified *t*-test for correlation between variables while taking into account spatial position. Significantly correlated variables at *P* < 0.05 in bold.
+
+\clearpage
+
 ```{r phy-sig, results = "as-is"}
 phy_sig_results %>%
   mutate(across(c(kval, lambda, k_pval, lambda_pval), ~format(., digits = 2))) %>%
-  kbl(booktabs = TRUE) %>%
+  # format for kable/latex
+  mutate(trait = str_replace_all(trait, "_", "\\\\_")) %>%
+  rename(
+    "Trait" = trait,
+    `\\textit{K}` = kval, `\\textit{P}(\\textit{K})` = k_pval, 
+    `λ` = lambda, `\\textit{P}(λ)` = lambda_pval,
+    `\\textit{N}` = n) %>%
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
@@ -124,16 +190,26 @@ phy_sig_results %>%
 binary_sig_results %>%
   select(trait, D, num_present, num_absent, prob_random, prob_brownian) %>%
   arrange(trait) %>%
-  mutate(across(c(D, prob_random, prob_brownian), ~format(., digits = 2))) %>%
-  kbl(booktabs = TRUE) %>%
+  # format for kable/latex
+  mutate(trait = str_replace_all(trait, "_", "\\\\_")) %>%
+    rename(
+    "Trait" = trait,
+    `\\textit{N} present` = num_present,
+    `\\textit{N} absent` = num_absent,
+    `\\textit{D}` = D,
+    `\\textit{P}(random)` = prob_random, 
+    `\\textit{P}(Brownian)` = prob_brownian
+    ) %>%
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
   kable_styling(latex_options = c("striped", "scale_down", "HOLD_position"))
 ```
 
-**`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. D, Fritz and Purvis' *D*; *n* (present), number of times a trait was observed present; *n* (absent), number of times a trait was observed absent; *p* (random), probability of obtaining observed trait distribution given random distribution of traits; *p* (Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
+**`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
 
 \clearpage
 
 ```{r lrt-null, results = "as-is"}
+# Need to keep the input data separate for pack_rows()
 lrt_table_data <-
 lrt_results %>%
   filter(comparison == "null_model") %>%
@@ -147,14 +223,45 @@ lrt_results %>%
   
 lrt_table_data %>%
   select(-model_type) %>%
-  kbl(
-    col.names = colnames(.) %>% str_replace_all("resp_var", ""),
-    booktabs = TRUE) %>%
+  # format for kable/latex
+    rename(
+    "Response variable" = resp_var,
+    `χ\\textsuperscript{2}` = chi2_LR,
+    `LogL(null)` = loglik_null,
+    `LogL(full)` = loglik_full,
+    `\\textit{P}` = p_value
+    ) %>%
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
   pack_rows(index = base::table(lrt_table_data$model_type)) %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
 **`r s_table("lrt-null")`**. Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
+
+\clearpage
+
+```{r aic, results = "as-is"}
+aic_table_data <- aic_env_repro %>%
+  rename_resp_vars %>%
+  rename_model_type %>%
+  select(model_type, resp_var, conditional_aic, df = effective_df, loglik) %>%
+  arrange(model_type, resp_var) %>%
+  mutate(across(where(is.double), ~format(., digits = 2)))
+
+aic_table_data %>%
+  select(-model_type) %>%
+  # format for kable/latex
+    rename(
+    "Response variable" = resp_var,
+    "cAIC" = conditional_aic,
+    "LogL" = loglik
+    ) %>%
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
+  pack_rows(index = base::table(aic_table_data$model_type)) %>%
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+```
+
+**`r s_table("aic")`**. Model fit as measured with conditional Akaike Information Criterion (cAIC). Environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. Lower cAIC indicates better fit.
 
 \clearpage
 
@@ -178,7 +285,7 @@ biodiv_ferns_endemic_spatial <- sf::st_set_crs(biodiv_ferns_endemic_spatial, jap
 biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
 
 # Set color palettes
-# Randomization test significance
+# - Randomization test significance
 signif_cols <-
   c(
     "> 0.99" = "#e31a1c", 
@@ -187,8 +294,7 @@ signif_cols <-
     "< 0.025" = "#a6cee3",
     "not significant" = "#ffffcc"
   )
-
-# CANAPE
+# - CANAPE
 canape_cols <-
   c(
     "neo" = "#e31a1c", 
@@ -197,6 +303,9 @@ canape_cols <-
     "super" = "#4a1486",
     "not significant" = "#ffffcc"
   )
+# - Bioregions
+bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
+  set_names(1:8)
 ```
 
 ```{r sampling-curve, fig.width = 4, fig.height = 3}
@@ -305,7 +414,8 @@ c <- ggplot(redundancy_by_res, aes(x = redundancy, y = res)) +
   )
 
 a + b + c +
-  plot_annotation(tag_levels = 'A')
+  plot_annotation(tag_levels = "A") &
+    theme(plot.tag = element_text(face = "bold"))
 ```
 
 **`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. **A**, Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). **B**, Percent of grid cells with redundancy = 0 by grain size. **C**, Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 0.1 to 0.2 degree grid-cells, but less improvement as grain size is increased beyond 0.2 degrees.
@@ -416,7 +526,8 @@ d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
 
 a + b + c + d +
   plot_layout(ncol = 2, nrow = 2) +
-  plot_annotation(tag_levels = 'A')
+  plot_annotation(tag_levels = "A") &
+    theme(plot.tag = element_text(face = "bold"))
 ```
 
 **`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diversity (RPD). **C**, Functional diversity (FD). **D**, Relative functional diversity (RFD).
@@ -477,7 +588,34 @@ b <- k_phylogeny$df %>%
 
 a + b +
   plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = 'A')
+  plot_annotation(tag_levels = "A") &
+    theme(plot.tag = element_text(face = "bold"))
 ```
 
 **`r s_figure("k-plot")`**. Selection of *k* for bioregions. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
+
+\clearpage
+
+```{r bioregions-env, fig.width = 7, fig.height = 5}
+# Make pot showing bioregions by temperature and precipitation
+a <-
+ggplot(biodiv_ferns_spatial, aes(x = precip, y = temp, color = taxonomic_cluster)) +
+  geom_point(size = 1, alpha = 0.7) +
+  scale_color_manual(values = bioregion_cols) +
+  scale_y_continuous(labels = function(x) x/10) +
+  labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Cluster", subtitle = "Taxonomic bioregions") +
+  theme(legend.position = "bottom")
+
+b <-
+  ggplot(biodiv_ferns_spatial, aes(x = precip, y = temp, color = phylo_cluster)) +
+  geom_point(size = 1, alpha = 0.7) +
+  scale_color_manual(values = bioregion_cols) +
+  scale_y_continuous(labels = function(x) x/10) +
+  labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Cluster", subtitle = "Phylogenetic bioregions") +
+  theme(legend.position = "bottom")
+  
+a + b + plot_annotation(tag_levels = "A") &
+    theme(plot.tag = element_text(face = "bold"))
+```
+
+**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (**A**) taxonomic or (**B**) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.
