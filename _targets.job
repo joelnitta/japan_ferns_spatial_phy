@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=30
+#PBS -l walltime=120:00:00
+#PBS -p 0
+#PBS -N targets
+#PBS -j oe
+#PBS -m abe
+#PBS -M joelnitta@gmail.com
+#PBS -V
+# enter working directory
+cd japan_ferns_biogeo 
+# run targets workflow
+docker run --rm \
+  -v /home/joelnitta/japan_ferns_biogeo:/japan_ferns_biogeo \
+  -w /japan_ferns_biogeo \
+  joelnitta/japan_ferns_biogeo:latest \
+  Rscript -e "targets::tar_make_future(workers = 30)"
+
