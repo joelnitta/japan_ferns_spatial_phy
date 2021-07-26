@@ -40,6 +40,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 
 # Load packages only used when knitting Rmd
 library(kableExtra)
+library(scales)
 ```
 
 ```{r libraries-no-run-in-plan, eval = FALSE}
@@ -68,7 +69,9 @@ tar_load(c(
   "japan_shp",
   "morans_i",
   "t_test_results",
-  "aic_env_repro"
+  "aic_env_repro",
+  "comm_ferns",
+  "repro_data"
 ))
 ```
 
@@ -284,6 +287,12 @@ biodiv_ferns_endemic_spatial <- sf::st_set_crs(biodiv_ferns_endemic_spatial, jap
 
 biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
 
+# Subset ferns biodiversity dataframe: restrict sites to only those used in model
+# (drops outlier % apomictic site)
+biodiv_ferns_for_plotting <-
+  biodiv_ferns_spatial %>%
+  drop_apo_outlier
+
 # Set color palettes
 # - Randomization test significance
 signif_cols <-
@@ -423,20 +432,6 @@ a + b + c +
 \clearpage
 
 ```{r envir, fig.width = 7, fig.height = 9}
-
-# Restrict sites to only those used in model
-# (drops outlier % apomictic site)
-biodiv_ferns_for_plotting <-
-  biodiv_ferns_spatial %>%
-  drop_apo_outlier
-
-# crop high-res map of Japan to spatial div results area
-japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_for_plotting))
-
-# Set CRS
-japan_crs <- sf::st_crs(japan)
-biodiv_ferns_for_plotting <- sf::st_set_crs(biodiv_ferns_for_plotting, japan_crs)
-
 # Define function for plotting environment
 plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::waiver()) {
   ggplot() +
@@ -593,6 +588,102 @@ a + b +
 ```
 
 **`r s_figure("k-plot")`**. Selection of *k* for bioregions. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
+
+\clearpage
+
+```{r genus-map, fig.width = 7, fig.height = 9}
+# Define function for plotting genus-level abundance.
+# assumes `comm_ferns`, `japan` are in environment
+plot_genus <- function(part, genus_select) {
+  
+  genus_abun <-
+    comm_ferns %>%
+    rownames_to_column("grids") %>%
+    as_tibble() %>%
+    pivot_longer(-grids, names_to = "species", values_to = "abun") %>%
+    filter(str_detect(species, genus_select)) %>%
+    group_by(grids) %>%
+    summarize(richness = sum(abun), .groups = "drop") %>%
+    left_join(select(biodiv_ferns_spatial, -richness), ., by = "grids")
+  
+  ggplot() +
+    geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+    geom_sf(data = genus_abun, aes(fill = richness), color = "transparent", alpha = 0.8) +
+    annotate(
+      geom="richtext", y = Inf, x = -Inf, 
+      label = glue("<span style='color:black'>**{part}** *{genus_select}*</span>"), 
+      hjust = "inward", vjust = "inward", color = "white") + 
+    labs(fill = "Richness") +
+    scale_fill_scico(palette = "lajolla") +
+    scale_x_continuous(guide = guide_axis(check.overlap = TRUE)) +
+    theme_grey(base_size = 10) +
+    theme(
+      panel.grid.major = element_line(color = "grey60", size = 0.1),
+      panel.grid.minor = element_blank(),
+      panel.background = element_rect(fill = "transparent"),
+      axis.ticks = element_blank(),
+      axis.text = element_text(color = "grey60"),
+      axis.title = element_blank(),
+      legend.position = "right",
+      legend.title = element_markdown()
+    )
+}
+
+a <- plot_genus("A", "Equisetum")
+b <- plot_genus("B", "Deparia")
+c <- plot_genus("C", "Cyrtomium")
+d <- plot_genus("D", "Dryopteris")
+e <- plot_genus("E", "Pteris")
+f <- plot_genus("F", "Diplazium")
+
+a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
+```
+
+**`r s_figure("genus-map")`**. Map of species richness for selected genera of ferns of Japan. **A**, *Equisetum* is an example of a possible refugial lineage with greater species richness in northern Japan. **B**, *Deparia* is an example of a genus with possible recent radiation in southern Honshu. **C**--**F** show genera with high rates of apomictic taxa (`r s_figure("apo-genus")`), which tend to be greatest in southern Honshu.
+
+\clearpage
+
+```{r apo-genus, fig.width = 4, fig.height = 3}
+# Bar plot of % apo taxa by genus
+percent_apo_genus <-
+repro_data %>%
+  # Remove NA values, non-ferns
+  filter(!is.na(apomict)) %>%
+  filter(str_detect(taxon, "Lycopodiella|Lycopodium|Isoetes", negate = TRUE)) %>%
+  # Summarize percent apo by genus
+  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+  group_by(genus) %>%
+  add_count() %>%
+  group_by(genus, n) %>%
+  summarize(total_apo = sum(apomict), .groups = "drop") %>%
+  mutate(percent_apo = total_apo / n) %>%
+  arrange(desc(percent_apo))
+
+percent_apo_genus %>%
+  filter(total_apo > 1) %>%
+  group_by(genus) %>%
+  summarize(
+    n = mean(n),
+    total_apo = mean(total_apo),
+    percent_apo = mean(percent_apo),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    genus =  paste0("*", genus, "*"),
+    genus = fct_reorder(genus, percent_apo),
+    label = glue::glue("{total_apo}/{n}")) %>%
+  ggplot(aes(x = percent_apo, y = genus)) + 
+  geom_col() +
+  geom_text(aes(label = label), hjust = -.3) +
+  scale_x_continuous(labels = percent, limits = c(0, .85)) +
+  labs(x = "% apomictic taxa") +
+  theme(
+    axis.text.y = element_markdown(),
+    axis.title.y = element_blank()
+  )
+```
+
+**`r s_figure("apo-genus")`**. Rate of apomixis in genera of native, non-hybrid Japanese ferns with > 1 apomictic taxon. Numbers next to each bar show number of apomictic taxa out of total richness per genus.
 
 \clearpage
 

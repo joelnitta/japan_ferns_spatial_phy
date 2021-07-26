@@ -60,6 +60,25 @@ references:
   type: article-journal
   URL: https://onlinelibrary.wiley.com/doi/abs/10.1046/j.1420-9101.2003.00523.x
   volume: '16'
+- id: Bickford2006
+  author:
+  - family: Bickford
+    given: Sophia
+    dropping-particle: a.
+  - family: Laffan
+    given: Shawn W.
+  container-title: Global Ecology and Biogeography
+  DOI: 10.1111/j.1466-822X.2006.00250.x
+  ISSN: 1466-822X
+  issue: '0'
+  issued:
+  - year: 2006
+  page: 060811081017003-???
+  title: Multi-extent analysis of the relationship between pteridophyte species richness
+    and climate
+  type: article-journal
+  URL: http://doi.wiley.com/10.1111/j.1466-822X.2006.00250.x
+  volume: '0'
 - id: Blomberg2003
   author:
   - family: Blomberg
@@ -713,6 +732,31 @@ references:
   type: article-journal
   URL: http://doi.wiley.com/10.1007/s11284-017-1451-6
   volume: '32'
+- id: Laffan2016
+  author:
+  - family: Laffan
+    given: Shawn W
+  - family: Rosauer
+    given: Dan F
+  - family: Virgilio
+    given: Giovanni Di
+  - family: Miller
+    given: Joseph T
+  - family: Knerr
+    given: Nunzio
+  - family: Thornhill
+    given: Andrew H
+  - family: Mishler
+    given: Brent D
+  - family: Gonz
+    given: Carlos E
+  DOI: 10.1111/2041-210X.12513
+  issued:
+  - year: 2016
+  page: 580-588
+  title: Range-weighted metrics of species and phylogenetic turnover can better resolve
+    biogeographic transition zones
+  type: article-journal
 - id: Laliberte2010
   author:
   - family: Laliberté
@@ -748,6 +792,20 @@ references:
   type: article-journal
   URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1987
   volume: '6'
+- id: Link-Perez2018a
+  author:
+  - family: Link-Pérez
+    given: Melanie A.
+  - family: Laffan
+    given: Shawn W.
+  container-title: Journal of Systematics and Evolution
+  DOI: 10.1111/jse.12430
+  ISSN: '16744918'
+  issued:
+  - year: 2018
+  title: 'Fern and lycophyte diversity in the Pacific Northwest: Patterns and predictors'
+  type: article-journal
+  URL: http://doi.wiley.com/10.1111/jse.12430
 - id: Liu2012
   author:
   - family: Liu
@@ -932,6 +990,34 @@ references:
   title: Biodiversity hotspots for conservation priorities
   type: article-journal
   volume: '403'
+- id: Nagalingum2015
+  author:
+  - family: Nagalingum
+    given: Nathalie S
+  - family: Knerr
+    given: Nunzio
+  - family: Laffan
+    given: Shawn W.
+  - family: González-Orozco
+    given: Carlos E.
+  - family: Thornhill
+    given: Andrew H.
+  - family: Miller
+    given: Joseph T.
+  - family: Mishler
+    given: Brent D
+  container-title: Frontiers in Genetics
+  DOI: 10.3389/fgene.2015.00132
+  ISSN: 1664-8021
+  issue: April
+  issued:
+  - year: 2015
+  page: '132'
+  title: Continental scale patterns and predictors of fern richness and phylogenetic
+    diversity
+  type: article-journal
+  URL: http://journal.frontiersin.org/article/10.3389/fgene.2015.00132/abstract
+  volume: '6'
 - id: Nguyen2015
   author:
   - family: Nguyen
@@ -978,6 +1064,34 @@ references:
   type: article-journal
   URL: http://doi.wiley.com/10.1002/ecm.1246
   volume: '87'
+- id: Nitta2021
+  accessed:
+  - year: 2021
+    month: 6
+    day: 5
+  author:
+  - family: Nitta
+    given: Joel H.
+  - family: Watkins
+    given: James E.
+  - family: Holbrook
+    given: N. Michele
+  - family: Wang
+    given: Tristan W.
+  - family: Davis
+    given: Charles C.
+  DOI: 10.1101/2021.03.12.435213
+  genre: preprint
+  issued:
+  - year: 2021
+    month: 3
+    day: 14
+  language: en
+  publisher: Ecology
+  source: DOI.org (Crossref)
+  title: Ecophysiological differentiation between life stages in filmy ferns (Hymenophyllaceae)
+  type: report
+  URL: http://biorxiv.org/lookup/doi/10.1101/2021.03.12.435213
 - id: Orme2018
   author:
   - family: Orme
@@ -1078,6 +1192,60 @@ references:
   title: A community-derived classification for extant lycophytes and ferns
   type: article-journal
   volume: '54'
+- id: Qian2012
+  author:
+  - family: Qian
+    given: H
+  - family: Wang
+    given: S L
+  - family: Li
+    given: Y L
+  - family: Xiao
+    given: M
+  - family: Wang
+    given: X L
+  container-title: Plant Ecology
+  DOI: DOI 10.1007/s11258-012-0038-0
+  ISSN: 1385-0237
+  issue: '5'
+  issued:
+  - year: 2012
+  page: 749-756
+  title: Disentangling the relative effects of ambient energy, water availability,
+    and energy-water balance on pteridophyte species richness at a landscape scale
+    in China
+  type: article-journal
+  volume: '213'
+- id: Qian2021
+  accessed:
+  - year: 2021
+    month: 7
+    day: 15
+  author:
+  - family: Qian
+    given: Hong
+  - family: Kessler
+    given: Michael
+  - family: Deng
+    given: Tao
+  - family: Jin
+    given: Yi
+  container-title: Global Ecology and Biogeography
+  container-title-short: Global Ecol Biogeogr
+  DOI: 10/gk6mzf
+  editor:
+  - family: Baselga
+    given: Andres
+  ISSN: 1466-822X, 1466-8238
+  issued:
+  - year: 2021
+    month: 7
+  language: en
+  page: geb.13349
+  source: DOI.org (Crossref)
+  title: Patterns and drivers of phylogenetic structure of pteridophytes in China
+  type: article-journal
+  URL: https://onlinelibrary.wiley.com/doi/10.1111/geb.13349
 - id: RCoreTeam2020
   author:
   - literal: R Core Team
