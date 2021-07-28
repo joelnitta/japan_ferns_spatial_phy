@@ -62,3 +62,22 @@ references:
   title: 'Index Herbariorum: A global directory of public herbaria and associated staff'
   title-short: IH
   URL: http://sweetgum.nybg.org/science/ih/
+  
+- id: Tokita2006
+  author:
+  - family: Tokita
+    given: Kunihiko
+  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer eat world heritage sites: Ecology of deer and forests). In Japanese.'
+  editor:
+  - family: Yumoto
+    given: Takakazu
+  - family: Matsuda
+    given: Hiroyuki
+  issued:
+  - year: 2006
+  page: 20-37
+  publisher: Bunichi Sogo Shuppan
+  publisher-place: Tokyo
+  title: 'Shizen kouen ni okeru shika mondai (The problem of deer in natural parks). In Japanese.'
+  type: chapter
+  URL: https://ci.nii.ac.jp/naid/10029109218

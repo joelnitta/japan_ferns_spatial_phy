@@ -42,11 +42,10 @@ source(here::here("R/functions.R"))
 
 ```{r setup, include = FALSE}
 # Load libraries used for rendering Rmds
-# library(officedown)
-# library(officer)
 library(flextable)
 library(kableExtra)
 library(ftExtra)
+library(scales)
 library(patchwork)
 
 # Set knitr options
@@ -643,7 +642,7 @@ Indeed, *Dryopteris* is one such genus with a high rate of apomictic taxa (`r s_
 This is consistent with the hypothesis that communities with high proportions of asexual taxa have lower genetic diversity, and is the first time to our knowledge that this has been demonstrated in ferns. 
 While temperature is also correlated with % apomictic taxa and therefore cannot be discounted, conditional AIC indicates a better fit of the reproductive model than the environmental model for SES of RPD (`r s_table("aic")`). 
 Ultimately, it is likely that temperature, in combination with other environmental conditions, is driving the predominance of apomictic taxa: @Tanaka2014 also found that the proportion of apomictic taxa reaches a maximum at ca. 34.8 °N latitude and increases with temperature in Japan (their study was limited to Honshu and did not include the southern islands). 
-@Tanaka2014 assert that one limiting factor affecting establishment of apomictic ferns at high latitudes or cold climates is the large cell size of apomicts, which are typically polyploid. 
+@Tanaka2014 asserted that one limiting factor affecting establishment of apomictic ferns at high latitudes or cold climates is the large cell size of apomicts, which are typically polyploid. 
 As fern gametophytes are only a single cell-layer in thickness with no cuticle or stomata, it is expected they would be particularly susceptible to freezing damage induced by larger cells with higher water content; however, no experimental studies have tested these hypotheses. 
 
 Water limitation is thought to play an important role in promoting apomixis in ferns especially in deserts [@Grusz2021], since ferns depend on water for transfer of sperm to egg, and apomictic plants would be able to reproduce in the absence of water.
@@ -661,13 +660,15 @@ Rather, fern bioregions in Japan broadly separate along gradients of temperature
 ### Conservation status
 
 Although the different facets of biodiversity have different distribution patterns, we find that grid-cells with significantly high amounts of biodiversity tend to be relatively well protected compared to the baseline protection rate, regardless of biodiversity metric (`r figure("conserv-status")`). 
-While it is not clear why this is so---it is unlikely that ferns were emphasized as targets during the establishment of conservation zones---one possibility (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
+One possible reason is that in the past, some ferns have been included in lists of rare and endemic plants for consideration in designation of conservation areas (A. Ebihara, pers. comm.). 
+Another (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
 
 Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. 
 One such other threat is herbivory by native Japanese deer, *Cervus nippon*. 
-Populations of these deer have been increasing exponentially since the 1970s due to a combination of climate change and a decrease in hunting and natural predators. 
-The deer are capable of decimating the herb layer when populations become dense and have been causing extensive damage even within national parks, which have the highest protection status. 
-Although various efforts to prevent deer herbivory have been deployed such as exclusion fences, much work remains to be done to save vulnerable plant populations.
+Populations of these deer have increased rapidly since the 1970s due to a combination of climate change and a decrease in human hunters and natural predators [@Takatsuki2009]. 
+At dense populations, the deer can prevent forest regeneration and result in plant communities dominated by a limited number of species unpalatable to deer [@Takatsuki2009], although lower population sizes may promote plant diversity as per the intermediate disturbance hypothesis [@Nishizawa2016].
+They have caused extensive damage even within national parks [@Tokita2006], which have the highest protection status. 
+Although various efforts to prevent deer herbivory have been deployed such as culling and exclusion fences [@Takatsuki2009], much work remains to be done to save vulnerable plant populations.
 
 ### Limits of the study and future outlook
 
