@@ -709,7 +709,7 @@ n_hybrid_fern_taxa <- fern_list %>%
 ```
 
 There are a number of caveats that must be kept in mind when interpreting these results, but these also suggest avenues for future research. 
-First, the data include species collected over a wide time period, so they do not represent the current distribution of ferns in Japan. 
+First, the data include species collected over a wide time period, so they do not necessarily represent the current distribution of ferns in Japan. 
 Furthermore, the collections are not evenly collected throughout the country, but rather some areas have many more specimens than others (`r s_figure("abundance")`). 
 Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
 
@@ -724,13 +724,14 @@ One piece of biodiversity that we did not consider here is hybrids.
 The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa. 
 Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification. 
 Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
+Methods for calculating PD would need to be modified to take into account multiple lineages contributing to a terminal taxon.
 
 Finally, a long under-appreciated aspect of fern ecology is the role of the gametophyte. 
 Unlike seed plants, ferns have gametophytes that are capable of growing independently from the sporophyte. 
 Futhermore, the two stages of the life cycle have vastly different morphology and ecophysiology, and may even occur over partially to completely disjunct ranges [reviewed in @Pinson2016a]. 
 Here, as in the vast majority of fern ecology studies, we consider only the sporophyte stage. 
 However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes. 
-The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA barcoding analyses to compare patterns of biodiversity between life stages in ferns across large spatial scales.
+The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA sequencing analyses to compare patterns of biodiversity between life stages in ferns across large spatial scales.
 
 ## Author Contribution
 
@@ -740,7 +741,21 @@ The comprehensive molecular sampling of sporophytes in Japan makes this area ide
 
 \newpage
 
-```{r table-prep}
+| Trait               | Significance                                                | Reference         | 
+|---------------------|-------------------------------------------------------------|-------------------|
+| Indusium (b)        | Protects developing spores                                  | [@Poppinga2015]   |
+| Frond width (c)     | Scales with overall plant size                              | [@Creese2011]     |
+| No. pinna pairs (c) | Less divided fronds have lower rates of evapotranspiration  | [@Kluge2007]      |
+| Stipe length (c)    | Shorter lengths minimize resistance                         | [@WatkinsJr.2010] |
+| Frond margin (q)    | Thermoregulation                                            | [@Nicotra2011]    |
+| Frond shape (q)     | Less divided fronds have lower rates of evapotranspiration  | [@Kluge2007]      |
+| Frond texture (q)   | Thicker leaves have lower rates of evapotranspiration       | [@Givnish1987]    |
+ 
+**`r table("traits-used")`**. Fern traits used in this study. Letters in parentheses indicate trait type: b, binary; c, continuous; q, qualitative. Qualitative traits were coded as binary for analysis (see Methods).
+
+\newpage
+
+```{r plot-prep}
 # Define nicely formatted terms for printing variable names
 resp_var_lookup <- tribble(
   ~resp_var, ~resp_var_pretty,
@@ -760,58 +775,8 @@ indep_var_lookup <- tribble(
   "I(temp^2)", "Temperature^2^",
   "percent_apo", "% apomictic taxa"
 )
-```
 
-
-```{r traits-used-prep}
-# Read in trait metadata
-trait_signif <- read_csv(here::here("data_raw/trait_functions.csv"))
-
-# Format traits to look nice
-traits_table <- traits_summary %>%
-  left_join(trait_signif, by = "trait") %>%
-  mutate(
-    trait = case_when(
-      trait == "frond_width" ~ "Frond width",
-      trait == "number_pinna_pairs" ~ "No. pinna pairs",
-      trait == "stipe_length" ~ "Stipe length",
-      trait == "margin" ~ "Frond margin",
-      trait == "shape" ~ "Frond shape",
-      trait == "texture" ~ "Frond texture",
-      TRUE ~ str_to_sentence(trait)
-    ),
-    trait_type = case_when(
-      trait_type == "qualitative" ~ glue::glue("Qualitative (coded as {n} binary traits)"),
-      trait_type == "continuous" & str_detect(trait, "pinna pairs") ~ glue::glue("Continuous (integer)"),
-      trait_type == "continuous" ~ glue::glue("Continuous (cm)"),
-      TRUE ~ str_to_sentence(trait_type)
-    )
-  ) %>%
-  select(trait, Significance = significance)
-```
-
-```{r traits-used-pdf, results = "asis", eval = params$doc_type == "pdf"}
-# Print trait table to pdf
-traits_table %>%
-  column_to_rownames("trait") %>%
-  knitr::kable(format = "latex", booktabs = TRUE, escape = TRUE) 
-```
-
-```{r traits-used-doc, results = "asis", eval = params$doc_type == "doc"}
-# Print trait table to doc
-traits_table %>%
-  flextable() %>%
-  set_header_labels(trait = "") %>%
-  width(1, width = 1.25) %>%
-  width(2, width = 4)
-```
-
-**`r table("traits-used")`**. Fern traits used in this study.
-
-\newpage
-
-```{r plot-prep}
-# crop high-res map of Japan to spatial div results area
+# Crop high-res map of Japan to spatial div results area
 japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
 
 # Set CRS
