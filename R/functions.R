@@ -1024,39 +1024,6 @@ make_trait_summary <- function (traits) {
     arrange(trait_type, trait)
 }
 
-#' Categorize binary traits into their categorical versions
-#'
-#' Detects traits by name and groups them into categories
-#' (combined traits)
-#'
-#' @param traits Tibble of traits in binary format
-#'
-#' @return Tibble
-#'
-categorize_traits <- function(traits) {
-  
-  traits %>%
-    mutate(comp_trait = case_when(
-      str_detect(trait, "leaf_sorus_shape") ~ "sorus_shape",
-      str_detect(trait, "leaf_sorus_indusium_shape") ~ "indusium_shape",
-      str_detect(trait, "leaf_sorus_indusium_margin") ~ "indusium_margin",
-      str_detect(trait, "leaf_sorus_false_indusium_present") ~ "false_indusium_present",
-      str_detect(trait, "leaf_sorus_indusium_present") ~ "indusium_present",
-      str_detect(trait, "leaf_lamina_shape_sterile_frond") ~ "shape_sterile_frond",
-      str_detect(trait, "leaf_lamina_texture") ~ "leaf_lamina_texture",
-      str_detect(trait, "leaf_lamina_color") ~ "leaf_lamina_color",
-      str_detect(trait, "leaf_lamina_vennation") ~ "leaf_lamina_vennation",
-      str_detect(trait, "leaf_lamina_pseudo_veinlet_present") ~ "pseudo_veinlet_present",
-      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
-      str_detect(trait, "leaf_lamina_lateral_pinna_shape") ~ "lateral_pinna_shape",
-      str_detect(trait, "leaf_lamina_lateral_pinna_stalk") ~ "lateral_pinna_stalk",
-      str_detect(trait, "leaf_lamina_margin") ~ "leaf_lamina_margin",
-      str_detect(trait, "leaf_lamina_rhachis_adaxial_side_grooved") ~ "rhachis_adaxial_side_grooved",
-      str_detect(trait, "leaf_lamina_terminal_pinna") ~ "terminal_pinna",
-      TRUE ~ trait
-    ))
-}
-
 #' Make a traits distance matrix
 #'
 #' @param traits_for_dist Formatted trait data
@@ -1071,7 +1038,7 @@ make_trait_dist_matrix <- function (traits_for_dist) {
   states <- map_df(traits_for_dist, n_distinct) %>%
     gather(trait, n_states)
   
-  # Set up weighting.
+  # Set up weighting
   trait_categories <-
     traits_for_dist %>%
     select(-taxon) %>%
@@ -1083,23 +1050,27 @@ make_trait_dist_matrix <- function (traits_for_dist) {
       TRUE ~ "binary"
     )) %>%
     # Collapse binarized traits into their
-    # categorical version by name.
-    categorize_traits %>%
+    # categorical version by name
+    mutate(comp_trait = case_when(
+      str_detect(trait, "^margin_") ~ "margin",
+      str_detect(trait, "^shape_") ~ "shape",
+      str_detect(trait, "^texture_") ~ "texture",
+      TRUE ~ trait
+    )) %>%
     # First weigh by combined trait
-    add_count(comp_trait) %>%
-    mutate(weight_by_comp_trait = 1 / n) %>%
+    add_count(comp_trait) %>% 
+    mutate(weight_by_comp_trait = 1 / n) %>% 
     select(-n) %>%
     # Then weigh by trait type
     add_count(trait_type) %>%
     mutate(weight_by_type = 1 / n) %>%
     select(-n) %>%
     # Then weigh by combination of combined trait and trait type
-    mutate(final_weight = weight_by_comp_trait * weight_by_type)
-  
-  # Check trait weights
-  trait_categories$weight_by_comp_trait %>% sum
-  trait_categories$weight_by_type %>% sum
-  trait_categories$final_weight %>% sum
+    mutate(final_weight = weight_by_comp_trait * weight_by_type) %>%
+    # Make sure weights have been applied properly: equal within combined trait
+    # and equal across trait types (binary vs continuous)
+    verify(sum(weight_by_comp_trait) == n_distinct(comp_trait)) %>%
+    verify(sum(weight_by_type) == n_distinct(trait_type))
   
   # Make sure traits for calculating the distance matrix are in correct
   # order for weighting
