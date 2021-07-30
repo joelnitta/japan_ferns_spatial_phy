@@ -741,17 +741,17 @@ The comprehensive molecular sampling of sporophytes in Japan makes this area ide
 
 \newpage
 
-| Trait               | Significance                                                | Reference         | 
-|---------------------|-------------------------------------------------------------|-------------------|
-| Indusium (b)        | Protects developing spores                                  | [@Poppinga2015]   |
-| Frond width (c)     | Scales with overall plant size                              | [@Creese2011]     |
-| No. pinna pairs (c) | Less divided fronds have lower rates of evapotranspiration  | [@Kluge2007]      |
-| Stipe length (c)    | Shorter lengths minimize resistance                         | [@WatkinsJr.2010] |
-| Frond margin (q)    | Thermoregulation                                            | [@Nicotra2011]    |
-| Frond shape (q)     | Less divided fronds have lower rates of evapotranspiration  | [@Kluge2007]      |
-| Frond texture (q)   | Thicker leaves have lower rates of evapotranspiration       | [@Givnish1987]    |
+| Trait               | Significance                                               | Reference       | 
+|---------------------|------------------------------------------------------------|-----------------|
+| Indusium (b)        | Protects developing spores                                 | @Poppinga2015   |
+| Frond width (c)     | Scales with overall plant size                             | @Creese2011     |
+| No. pinna pairs (c) | Less divided fronds have lower rates of evapotranspiration | @Kluge2007      |
+| Stipe length (c)    | Shorter lengths minimize resistance                        | @WatkinsJr.2010 |
+| Frond margin (q)    | Thermoregulation                                           | @Nicotra2011    |
+| Frond shape (q)     | Less divided fronds have lower rates of evapotranspiration | @Kluge2007      |
+| Frond texture (q)   | Thicker leaves have lower rates of evapotranspiration      | @Givnish1987    |
  
-**`r table("traits-used")`**. Fern traits used in this study. Letters in parentheses indicate trait type: b, binary; c, continuous; q, qualitative. Qualitative traits were coded as binary for analysis (see Methods).
+**`r table("traits-used")`**. Fern traits used in this study. Letters in parentheses indicate trait type: b, binary; c, continuous; q, qualitative. Qualitative traits were coded as binary for analysis (see Materials and Methods).
 
 \newpage
 
@@ -997,7 +997,7 @@ ggsave(result_file(figure("rand-diversity"), "pdf"), rand_diversity_plot, width 
 rand_diversity_plot
 ```
 
-**`r figure("rand-diversity")`**. Results of randomization test for phylogenetic and functional diversity of the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diveristy (RPD). **C**, Functional diveristy (FD). **D**, relative functional diveristy (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Methods.
+**`r figure("rand-diversity")`**. Results of randomization test for phylogenetic and functional diversity of the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diveristy (RPD). **C**, Functional diveristy (FD). **D**, relative functional diveristy (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Materials and Methods.
 
 `r pagebreak_pdf()`
 
@@ -1235,7 +1235,7 @@ ggsave(result_file(figure("modelfit"), "pdf"), modelfit_plot, width = 7, height 
 modelfit_plot
 ```
 
-**`r figure("modelfit")`**. Relationship between biodiversity metrics and selected predictor variables. A--E, environmental models (models including temperature); F and G, reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For biodiversity metrics other than richness, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test.
+**`r figure("modelfit")`**. Relationship between biodiversity metrics and selected predictor variables. A--E, environmental models (models including temperature); F and G, reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For phylogenetic diversity (PD), relative PD (RPD), functional diversity (FD), and relative FD (RFD), the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 `r pagebreak_pdf()`
 
@@ -1258,7 +1258,7 @@ ggsave(result_file(figure("endemism"), "pdf"), endemism_plot, width = 5, height 
 endemism_plot
 ```
 
-**`r figure("endemism")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism). 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Methods.
+**`r figure("endemism")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism). 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
 
 `r pagebreak_pdf()`
 
