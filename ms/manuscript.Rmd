@@ -129,7 +129,7 @@ Author for correspondence:
 
 **Taxon** Ferns
 
-**Methods** We used data from >300,000 fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
+**Methods** We used data from >`r nrow(occ_point_data_ferns) %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
 We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. 
 We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. 
 We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. 
@@ -493,7 +493,7 @@ Observed values of RPD and RFD were not linearly related to richness, however, t
 ### Randomization tests for phylogenetic and functional diversity
 
 Grid-cells with significantly low PD were almost all located on Honshu, the main island of Japan (`r figure("rand-diversity")`A). 
-A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Amami, Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). 
+A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). 
 The area near Yakushima includes cells with both significantly high and low PD. 
 Grid-cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu (`r figure("rand-diversity")`B). 
 Grid-cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. 
@@ -512,15 +512,15 @@ Conditional AIC was lower (indicating better model fit) in the reproductive mode
 
 Nearly all grid-cells in islands south of Kyushu (Ryukyu and Ogasawara) have significant levels of phylogenetic endemism, with low (non-significant) endemism observed elsewhere (`r figure("endemism")`). 
 The vast majority of grid-cells with significant endemism are mixed.
-A concentration of paleoendemism was observed in the Ryukyu Islands. 
-Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in central Hokkaido (`r figure("endemism")`). 
-When we ran CANAPE with a reduced dataset including only taxa absolutely endemic to Japan to account for the border effect, there were fewer significant cells, but patterns were otherwise similar to the full dataset (`r s_figure("endemism-restricted")`).
+Concentrations of paleoendemism were observed in the Ryukyu archipelago, on Okinawa, Miyako, and Iriomote Islands. 
+Small clusters of significantly endemic cells were also observed northwest of Tokyo (Nagano prefecture), and in Hokkaido (`r figure("endemism")`). 
+When we ran CANAPE with a reduced dataset including only taxa absolutely endemic to Japan to account for the border effect, there were fewer significant cells, but a similar pattern of significantly endemic cells mostly occurring in the southern islands was observed (`r s_figure("endemism-restricted")`).
 
 ### Bioregions
 
 Analysis of bioregions grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` clusters (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
-The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Okinawa), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). 
-Phylogenetic distances produced similar results, but Okinawa and the Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). 
+The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Ryukyu Islands, excluding Yakushima), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). 
+Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). 
 The other much smaller clusters are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
 Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2 (`r figure("div-by-tax-region")`). 
@@ -812,13 +812,14 @@ bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
 
 # Set vectors of different areas to label
 main_islands <- c("Hokkaido", "Shikoku", "Kyushu", "Honshu")
-small_islands <- c("Okinawa", "Amamioshima", "Ogasawara", "Yakushima", "Izu Islands")
+small_islands <- c("Okinawa", "Amami", "Ogasawara Islands", "Yakushima", "Izu Islands", "Iriomote", "Miyako")
 other <- c("Tokyo")
 
 # Modify dataframe to include formatting for printing label on map
 japan_points <- 
   japan_points_raw %>%
-  as_tibble %>%
+  filter(is.na(lat_end)) %>%
+  select(-lat_end, -lon_end) %>%
   mutate(
     label = case_when(
       # Print main islands in bold
@@ -828,9 +829,17 @@ japan_points <-
     nudge = case_when(
       query == "Honshu" ~ "-0.5,-.7",
       query == "Tokyo" ~ "-1.2,0",
-      query == "Shikoku" ~ "1,-.5",
-      query == "Kyushu" ~ "1,-.6",
-      query %in% small_islands ~ "2.5,0",
+      query == "Shikoku" ~ "1.3,-.6",
+      query == "Kyushu" ~ "1.6,-.4",
+      query == "Miyako" ~ "1.5, 0",
+      query == "Iriomote" ~ "1.8, 0",
+      query == "Izu Islands" ~ "2.0, 0",
+      query == "Yakushima" ~ "2.2, 0",
+      query == "Ogasawara Islands" ~ "3.0, 0",
+      query == "Izu Peninsula" ~ "2.0, -0.3",
+      query == "Kii Peninsula" ~ "2.0, -0.5",
+      query == "Ryukyu Islands" ~ "8.0, 1.0",
+      query %in% small_islands ~ "2.0, 0",
       TRUE ~ "0,0"
     )
   ) %>%
@@ -841,9 +850,14 @@ japan_points <-
     lat_adj = lat + nudge_lat
   )
 
+japan_lines <- japan_points_raw %>%
+  filter(!is.na(lat_end))
+
 # Make map
 japan_map_plot <- ggplot(japan) + 
-  geom_sf() +
+  geom_sf(size = 0.25) +
+  geom_segment(data = japan_lines, aes(x = lon, y = lat, xend = lon_end, yend = lat_end, linetype = query)) +
+  scale_linetype_manual(values = c("Tsugaru Strait" = "solid", "Tokara Strait" = "longdash")) +
   geom_richtext(
     data = japan_points, 
     aes(x = lon_adj, y = lat_adj, label = label),
@@ -855,7 +869,10 @@ japan_map_plot <- ggplot(japan) +
     data = filter(japan_points, query == "Tokyo"),
     aes(x = lon, y = lat)
   ) +
-  map_theme()
+  map_theme() +
+  theme(legend.position = "none")
+
+ggsave("plot.pdf", japan_map_plot, width = 5, height = 5, units = "in")
 ```
 
 ```{r japan-map-save, eval = params$doc_type == "doc"}
@@ -868,7 +885,7 @@ ggsave(result_file(figure("japan-map"), "pdf"), japan_map_plot, width = 5, heigh
 japan_map_plot
 ```
 
-**`r figure("japan-map")`**. Map of Japan showing names of places mentioned in the text. Names of the four main islands in bold.
+**`r figure("japan-map")`**. Map of Japan showing names of places mentioned in the text. Names of the four main islands in bold. The Ryukyu Islands include Yakushima, Amami, Okinawa, Miyako, and Iriomote. Solid line shows location of Tsugaru Strait; dashed line shows Tokara Strait.
 
 `r pagebreak_pdf()`
 
