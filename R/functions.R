@@ -1058,18 +1058,16 @@ make_trait_dist_matrix <- function (traits_for_dist) {
       TRUE ~ trait
     )) %>%
     # First weigh by combined trait
-    add_count(comp_trait) %>% 
-    mutate(weight_by_comp_trait = 1 / n) %>% 
-    select(-n) %>%
+    # use weighting as suggested by W. Iwasaki: each trait state weighted x0.5
+    mutate(weight_by_comp_trait = 1 / 2) %>% 
     # Then weigh by trait type
     add_count(trait_type) %>%
     mutate(weight_by_type = 1 / n) %>%
     select(-n) %>%
     # Then weigh by combination of combined trait and trait type
     mutate(final_weight = weight_by_comp_trait * weight_by_type) %>%
-    # Make sure weights have been applied properly: equal within combined trait
-    # and equal across trait types (binary vs continuous)
-    verify(sum(weight_by_comp_trait) == n_distinct(comp_trait)) %>%
+    # Make sure weights have been applied properly:
+    # equal across trait types (binary vs continuous)
     verify(sum(weight_by_type) == n_distinct(trait_type))
   
   # Make sure traits for calculating the distance matrix are in correct
