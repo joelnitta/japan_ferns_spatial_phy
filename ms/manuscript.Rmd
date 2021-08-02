@@ -453,7 +453,7 @@ percent_traits_missing <-
 ```
 
 The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent`) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families of native Japanese ferns. 
-The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a]. 
+The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a] (`r s_figure("tree")`). 
 Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* (families follow @PteridophytePhylogenyGroupI2016). 
 The age of the fern clade is estimated to be `r phylogeny_age` ma.
 
@@ -519,8 +519,8 @@ When we ran CANAPE with a reduced dataset including only taxa absolutely endemic
 ### Bioregions
 
 Analysis of bioregions grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` clusters (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
-The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Ryukyu Islands, excluding Yakushima), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A). 
-Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B). 
+The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Ryukyu Islands, excluding Yakushima), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`A; `r s_figure("dendrogram")`A). 
+Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single cluster (`r figure("bioregions")`B; `r s_figure("dendrogram")`B). 
 The other much smaller clusters are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
 Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2 (`r figure("div-by-tax-region")`). 

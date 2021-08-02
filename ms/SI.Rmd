@@ -41,6 +41,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = 
 # Load packages only used when knitting Rmd
 library(kableExtra)
 library(scales)
+library(ggtree)
 ```
 
 ```{r libraries-no-run-in-plan, eval = FALSE}
@@ -71,7 +72,8 @@ tar_load(c(
   "t_test_results",
   "aic_env_repro",
   "comm_ferns",
-  "repro_data"
+  "repro_data",
+  "japan_pterido_tree"
 ))
 ```
 
@@ -471,6 +473,37 @@ a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 
 \clearpage
 
+```{r tree, fig.width = 8, fig.height = 8}
+phy <- japan_pterido_tree
+
+phy$tip.label <- str_replace_all(phy$tip.label, "_", " ")
+
+# Make a dataframe (tibble) with node IDs (integers) and their corresponding bootstrap support values
+# The tibble has two columns: one called "node", the other can be named as we like (here, "bootstrap")
+bs_tibble <- tibble(
+  # hard-code node ID: internal nodes start after tip nodes,
+  # and phy$node.label is in the same order as internal nodes
+  node=1:Nnode(phy) + Ntip(phy), 
+  # Don't print BS < 50%
+  # (or to show all BS, just do `bootstrap = phy$node.label`)
+  bootstrap_raw = phy$node.label,
+  bootstrap = parse_number(bootstrap_raw))
+
+p <- ggtree(phy, layout = "fan", size = 0.25, open.angle = 3) %<+% 
+  bs_tibble +
+  geom_nodepoint(aes(color = bootstrap), size = 0.2) +
+  geom_tiplab(size = 0.6)  +
+  theme(legend.justification = c(1, 0), legend.position = c(1, 0)) +
+  scale_color_scico(palette = "turku", direction = -1, na.value = "grey", name = "BS") +
+  geom_treescale(x = 220, y = 708, width = 100, fontsize = 0)
+
+rotate_tree(p, 3)
+```
+
+**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding hybrids. Points at nodes indicate bootstrap support. Scalebar 100 my.
+
+\clearpage
+
 ```{r abundance, fig.width = 7, fig.height = 5}
 k <- scales::unit_format(unit = "k", scale = 1e-3, accuracy = 1, sep = "")
   
@@ -588,6 +621,64 @@ a + b +
 ```
 
 **`r s_figure("k-plot")`**. Selection of *k* for bioregions. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
+
+\clearpage
+
+```{r dendrogram-a, fig.width = 7, fig.height = 9}
+# Extract dendrogram from phyloregions analysis, convert to phylogeny
+dendro_tax <- attributes(k_taxonomy$df)$meta$hclust.obj %>% as.phylo() %>% ladderize()
+
+# Map taxonomic clusters to grid cells
+clusters_tax <-
+  biodiv_ferns_spatial %>%
+  as_tibble() %>%
+  select(grids, cluster = taxonomic_cluster) %>%
+  # Convert cluster to numeric to use max() later
+  mutate(cluster = levels(cluster)[cluster] %>% as.numeric)
+
+cluster_nodes_tax_tbl <- map_df(1:max(clusters_tax$cluster), ~map_cluster_to_nodes(dendro_tax, clusters_tax, .)) %>%
+  mutate(cluster = as.factor(cluster))
+
+# Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
+ggtree(dendro_tax) %<+% 
+  cluster_nodes_tax_tbl +
+  aes(color = cluster) +
+  scale_color_manual(
+    values = bioregion_cols, na.value = "grey", name = "Cluster") +
+  theme(legend.position = "right") +
+  labs(subtitle = "**A** Taxonomic") +
+  theme(plot.subtitle = element_markdown())
+```
+
+**`r s_figure("dendrogram")`**. Bioregion dendrogram. Tips are sites (names not shown); color shows cluster; internal branches between clusters 'NA'. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. 
+\clearpage
+
+```{r dendrogram-b, fig.width = 7, fig.height = 9}
+# Extract dendrogram from phyloregions analysis, convert to phylogeny
+dendro_phy <- attributes(k_phylogeny$df)$meta$hclust.obj %>% as.phylo() %>% ladderize()
+
+# Map taxonomic clusters to grid cells
+clusters_phy <-
+  biodiv_ferns_spatial %>%
+  as_tibble() %>%
+  select(grids, cluster = phylo_cluster) %>%
+  # Convert cluster to numeric to use max() later
+  mutate(cluster = levels(cluster)[cluster] %>% as.numeric)
+
+cluster_nodes_phy_tbl <- map_df(1:max(clusters_phy$cluster), ~map_cluster_to_nodes(dendro_phy, clusters_phy, .)) %>%
+  mutate(cluster = as.factor(cluster))
+
+# Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
+ggtree(dendro_phy) %<+% 
+  cluster_nodes_phy_tbl +
+  aes(color = cluster) +
+  scale_color_manual(values = bioregion_cols, na.value = "grey", name = "Cluster") +
+  theme(legend.position = "right") +
+  labs(subtitle = "**B** Phylogenetic") +
+  theme(plot.subtitle = element_markdown())
+```
+
+**`r s_figure("dendrogram")`**, continued.
 
 \clearpage
 

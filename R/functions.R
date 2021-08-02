@@ -2895,3 +2895,30 @@ clean_vars <- function(x) {
     str_replace_all("^richness$", "Richness")
 }
 
+#' Make a tibble matching the nodes of a dendrogram to the cluster they belong to
+#'
+#' @param dendro Dendrogram; list of class "phylo". Dendrogram clustering sites. Part of output of phyloregion::phyloregion()
+#' @param tax_clusters Tibble with two columns, "grids" (site names) and "cluster" (ID of cluster for each site)
+#' @param cluster_select Value indicating the cluster to select for making the tibble
+#'
+#' @return Tibble
+#' 
+map_cluster_to_nodes <- function(dendro, tax_clusters, cluster_select) {
+  
+  # Get vector of tips matching the selected cluster
+  tips <- tax_clusters %>% filter(cluster == cluster_select) %>% pull(grids)
+  
+  if(length(tips) == 1) {
+    # If only one tip, just return that node (tip) number
+    nodes <- which(dendro$tip.label == tips)
+  } else if (length(tips) > 1) {
+    # If multiple tips, get MRCA, then all descendents
+    node_mrca <- ape::getMRCA(dendro, tips)
+    nodes <- phytools::getDescendants(dendro, node_mrca)
+  } else {
+    stop("Can't find that cluster")
+  }
+  
+  # Return a tibble mapping nodes to the cluster
+  tibble(node = nodes, cluster = cluster_select)
+}
