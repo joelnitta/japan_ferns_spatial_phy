@@ -247,6 +247,13 @@
       "Repository": "CRAN",
       "Hash": "efa2aeb2b8bba66b428bd9cffa5c26eb"
     },
+    "aplot": {
+      "Package": "aplot",
+      "Version": "0.0.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9f5934d50a5994ccc8349eed5706b827"
+    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.1",
@@ -864,6 +871,19 @@
       "Repository": "CRAN",
       "Hash": "c59f6b5f5847da34158788d99d857ed7"
     },
+    "ggtree": {
+      "Package": "ggtree",
+      "Version": "3.1.2.992",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "YuLab-SMU",
+      "RemoteRepo": "ggtree",
+      "RemoteRef": "master",
+      "RemoteSha": "6e9e7e27850f77add449b3c1c0e2c1e7567bc632",
+      "Remotes": "GuangchuangYu/treeio",
+      "Hash": "b6ea2894fca829a6a9c4a41f074763c1"
+    },
     "gh": {
       "Package": "gh",
       "Version": "1.2.1",
@@ -1162,6 +1182,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "e9a046d514942f36bf8ae2a5e3ded35f"
+    },
+    "lazyeval": {
+      "Package": "lazyeval",
+      "Version": "0.2.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "d908914ae53b04d4c0c0fd72ecc35370"
     },
     "lifecycle": {
       "Package": "lifecycle",
@@ -1805,6 +1832,13 @@
       "Repository": "CRAN",
       "Hash": "06c85365a03fdaf699966cc1d3cf53ea"
     },
+    "rvcheck": {
+      "Package": "rvcheck",
+      "Version": "0.1.8",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "11ebf2d3d4990e8bb9f28d5ab0c204fc"
+    },
     "rvest": {
       "Package": "rvest",
       "Version": "0.3.5",
@@ -2079,6 +2113,18 @@
       "Repository": "CRAN",
       "Hash": "6ea435c354e8448819627cf686f66e0a"
     },
+    "tidytree": {
+      "Package": "tidytree",
+      "Version": "0.3.4",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "YuLab-SMU",
+      "RemoteRepo": "tidytree",
+      "RemoteRef": "master",
+      "RemoteSha": "3113023ac0aa1f22aeea9d3bf3eb0e8fb9913946",
+      "Hash": "c17515707f509a165e963d79a905e173"
+    },
     "tidyverse": {
       "Package": "tidyverse",
       "Version": "1.3.0",
@@ -2113,6 +2159,18 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "50470c7ed0cc8099cbc17b38f0ef621f"
+    },
+    "treeio": {
+      "Package": "treeio",
+      "Version": "1.17.2",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "GuangchuangYu",
+      "RemoteRepo": "treeio",
+      "RemoteRef": "master",
+      "RemoteSha": "ca7af290571dcb6d6f1a9953265b2a00255ad4b9",
+      "Hash": "076c16e7701301b9d28519bbceb68699"
     },
     "triebeard": {
       "Package": "triebeard",
