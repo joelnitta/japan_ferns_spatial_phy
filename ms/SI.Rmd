@@ -640,7 +640,7 @@ cluster_nodes_tax_tbl <- map_df(1:max(clusters_tax$cluster), ~map_cluster_to_nod
   mutate(cluster = as.factor(cluster))
 
 # Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
-ggtree(dendro_tax) %<+% 
+ggtree(dendro_tax, size = 0.15) %<+% 
   cluster_nodes_tax_tbl +
   aes(color = cluster) +
   scale_color_manual(
@@ -669,7 +669,7 @@ cluster_nodes_phy_tbl <- map_df(1:max(clusters_phy$cluster), ~map_cluster_to_nod
   mutate(cluster = as.factor(cluster))
 
 # Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
-ggtree(dendro_phy) %<+% 
+ggtree(dendro_phy, size = 0.15) %<+% 
   cluster_nodes_phy_tbl +
   aes(color = cluster) +
   scale_color_manual(values = bioregion_cols, na.value = "grey", name = "Cluster") +
