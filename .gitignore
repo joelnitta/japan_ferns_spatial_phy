@@ -31,3 +31,4 @@ treepl
 iqtree
 _targets
 *.swp
+targets.o*
