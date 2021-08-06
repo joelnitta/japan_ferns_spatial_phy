@@ -714,15 +714,15 @@
     },
     "fnmate": {
       "Package": "fnmate",
-      "Version": "0.0.4.9000",
+      "Version": "0.0.5",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "milesmcbain",
       "RemoteRepo": "fnmate",
       "RemoteRef": "master",
-      "RemoteSha": "105aa8f0f6593c3051f576c7259c5c2cf4e3a4e1",
-      "Hash": "ba2c43e4865ed0c6db1ed5ea4ca18812"
+      "RemoteSha": "8fc70bc1af795423dfc2dbd74b26e6bbef4a07e8",
+      "Hash": "eeeba514370df617a43573e229ec65c3"
     },
     "forcats": {
       "Package": "forcats",
@@ -2090,7 +2090,8 @@
       "RemoteRepo": "tflow",
       "RemoteRef": "master",
       "RemoteSha": "9b7c7db2f9461600bf2996ab96c222d377ce58d0",
-      "Hash": "946612d4aa7bb816271afb8b6b2f5c4f"
+      "Remotes": "milesmcbain/fnmate, milesmcbain/capsule",
+      "Hash": "4386dfb0872042570b7471022c33979c"
     },
     "tibble": {
       "Package": "tibble",
