@@ -1654,21 +1654,24 @@ read_greenlist_from_zip <- function (zip_folder) {
 #'
 #' @param broad_alignment_list List of DNA alignments, including one called "rbcL"
 #' @param japan_rbcL List of class DNAbin; rbcL sequences of ferns from Japan
+#' @return Matrix; DNA alignment including Japanese rbcL sequences aligned with
+#' other ferns, plus DNA sequences for other genes not including Japanese species
 #'
 combine_ja_rbcL_with_global <- function (broad_alignment_list, japan_rbcL) {
   
-  # Remove Japan names from broad alignment list
+  # Remove all sequences matching a Japan fern name from broad alignment list
   reduced <- map(broad_alignment_list, ~magrittr::extract(., !(rownames(.) %in% rownames(japan_rbcL)),))
   
   # Add Japan rbcL sequences back, align with mafft
   reduced[["rbcL"]] <- c(as.list(reduced[["rbcL"]]), as.list(japan_rbcL)) %>%
     ips::mafft(x = ., exec = "/usr/bin/mafft", options = "--adjustdirection") %>%
     remove_mafft_r %>%
-    # Trim any column that is >90% gaps
+    # Trim any rbcL column that is >90% gaps
     ips::deleteGaps(gap.max = nrow(.)*0.9)
   
-  # Concatenate genes
-  concatenate_genes(reduced)
+  # Concatenate all genes
+  do.call(cbind.DNAbin, c(reduced, check.names = TRUE, fill.with.gaps = TRUE))
+
 }
 
 # Remove sequences that are all missing from an alignment
@@ -1720,36 +1723,6 @@ load_ftol_alignment <- function (ftol_plastid_concat, ftol_plastid_parts) {
     # Remove empty sequences from each gene
     map(remove_blank_seqs)
 }
-
-#' Concatenate a list of aligned genes
-#'
-#' @param dna_list List of matrices of class DNAbin
-#'
-#' @return Matrix of class DNAbin
-#'
-#' @examples
-#' data(woodmouse)
-#' gene_1 <- woodmouse[,1:100]
-#' gene_2 <- woodmouse[,101:200]
-#' woodmouse_genes <- list(gene_1, gene_2)
-#' concatenate_genes(woodmouse_genes)
-concatenate_genes <- function (dna_list) {
-  require(apex)
-  
-  assertthat::assert_that(is.list(dna_list))
-  assertthat::assert_that(all(lapply(dna_list, class) == "DNAbin"), 
-                          msg = "All elements of dna_list must be of class DNAbin")
-  assertthat::assert_that(all(sapply(dna_list, is.matrix)), 
-                          msg = "All elements of dna_list must be matrices")
-  
-  # Check that there are no duplicate sequence names (species) within a gene
-  map_df(dna_list, ~rownames(.) %>% tibble(species = .), .id = "gene") %>%
-    assert_rows(col_concat, is_uniq, species, gene, error_fun = assertr::error_stop)
-  
-  dna_multi <- new("multidna", dna_list) 
-  apex::concatenate(dna_multi)
-}
-
 
 #' Format Japan rbcL sequence names
 #'
