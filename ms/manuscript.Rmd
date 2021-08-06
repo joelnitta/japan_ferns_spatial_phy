@@ -78,8 +78,8 @@ tar_load(c(
   "comm_ferns_full",
   "comm_ferns",
   "japan_points_raw",
-  # "plastome_calibration_dates",
-  # FIXME: remove until phylo analysis is working "plastome_tree",
+  "plastome_calibration_dates",
+  "plastome_tree",
   "green_list",
   "model_params",
   "lrt_results",
@@ -243,10 +243,8 @@ The R package `r pack("sf")` was used for GIS analyses.
 Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. 
 However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. 
 Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. 
-To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (
-<!-- FIXME: remove until phylo analysis is working  `r #ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` -->
-OTUs total). 
-We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r #nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. 
+To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total). 
+We conducted phylogenetic analysis with IQTREE [@Nguyen2015] and molecular dating with treePL [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. 
 We then trimmed the tree to Japanese taxa only and used this for all further analyses.
 
 ### Phylogenetic signal
@@ -471,7 +469,7 @@ The trait matrix included `r nrow(fern_traits)` taxa and `r fern_traits %>% sele
 # Verify that min lambda >0.95
 assert_that(phy_sig_results %>% pull(lambda) %>% min > 0.95)
 # Verify that max K < 0.0.6
-assert_that(phy_sig_results %>% pull(kval) %>% max < 0.06)
+assert_that(phy_sig_results %>% pull(kval) %>% max < 0.17)
 
 # Sum the number of traits with D < 0
 n_negative_d <-
@@ -481,7 +479,7 @@ n_negative_d <-
   sum
 ```
 
-All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.06, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). 
+All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.17, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). 
 `r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`).
 
 ### Observed diversity
