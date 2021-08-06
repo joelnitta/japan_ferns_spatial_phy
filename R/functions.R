@@ -1812,7 +1812,7 @@ run_treepl_cv <- function (
   plsimaniter = "5000",
   nthreads = "1",
   seed,
-  thorough = TRUE, wd, echo) {
+  thorough = TRUE, wd) {
   
   # Check that all taxa are in tree
   taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
@@ -1903,7 +1903,7 @@ run_treepl_prime <- function (
   plsimaniter = "5000",
   nthreads = "1",
   seed,
-  thorough = TRUE, wd, echo) {
+  thorough = TRUE, wd) {
   
   # Check that all taxa are in tree
   taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
