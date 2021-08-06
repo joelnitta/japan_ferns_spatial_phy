@@ -11,7 +11,7 @@ plan(callr)
 
 # Specify how to resolve futures for parallel tasks
 # e.g., cpr_rand_test()
-plan(multicore, workers = 60) # IMPORTANT: Change the plan / num. workers as needed for your system!
+plan(multicore, workers = 30) # IMPORTANT: Change the plan / num. workers as needed for your system!
 
 tar_plan(
   
@@ -236,7 +236,10 @@ tar_plan(
   japan_fern_tree = subset_tree(
     phy = japan_pterido_tree, 
     ppgi = ppgi),
-  
+
+  # Also make phylogram (not ultrametric tree) of ferns in Japan
+  japan_fern_phylogram = ape::keep.tip(plastome_tree_rooted, japan_fern_tree$tip.label),
+
   # Format trait data ----
   
   # Format trait data, subset to ferns in tree
@@ -284,6 +287,19 @@ tar_plan(
       n_reps = 999,
       n_iterations = 100000,
       metrics = c("pd", "rpd", "pe", "rpe")),
+    deployment = "main"
+  ),
+
+  # - all ferns, phylogenetic diversity, using phylogram (not ultrametric)
+  tar_target(
+    rand_test_phy_ferns_not_ult,
+    cpr_rand_test(
+      comm = comm_ferns,
+      phy = japan_fern_phylogram,
+      null_model = "independentswap",
+      n_reps = 999,
+      n_iterations = 100000,
+      metrics = c("pd", "rpd")),
     deployment = "main"
   ),
   
@@ -401,6 +417,18 @@ tar_plan(
     # Classify endemism and significance of randomization tests
     cpr_classify_endem() %>%
     classify_signif("pe", one_sided = TRUE, upper = TRUE),
+
+  # - Phylogram (not ultrametric)
+  biodiv_ferns_not_ult = 
+    shape_ferns %>%
+    left_join(format_cpr_res(rand_test_phy_ferns_not_ult), by = "grids") %>%
+    classify_signif("pd") %>%
+    classify_signif("rpd") %>%
+    # Add environmental data, % apomictic taxa
+    sf_add_centroids %>%
+    add_roll_area(lat_area_ja) %>%
+    left_join(mean_climate, by = "grids") %>%
+    left_join(percent_apo),
   
   # Spatial modeling ----
   
