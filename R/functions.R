@@ -1749,35 +1749,6 @@ rename_alignment <- function (alignment, taxon_id_map) {
   
 }
 
-#' Concatenate a list of aligned genes
-#'
-#' @param dna_list List of matrices of class DNAbin
-#'
-#' @return Matrix of class DNAbin
-#'
-#' @examples
-#' data(woodmouse)
-#' gene_1 <- woodmouse[,1:100]
-#' gene_2 <- woodmouse[,101:200]
-#' woodmouse_genes <- list(gene_1, gene_2)
-#' concatenate_genes(woodmouse_genes)
-concatenate_genes <- function (dna_list) {
-  require(apex)
-  
-  assertthat::assert_that(is.list(dna_list))
-  assertthat::assert_that(all(lapply(dna_list, class) == "DNAbin"), 
-                          msg = "All elements of dna_list must be of class DNAbin")
-  assertthat::assert_that(all(sapply(dna_list, is.matrix)), 
-                          msg = "All elements of dna_list must be matrices")
-  
-  # Check that there are no duplicate sequence names (species) within a gene
-  map_df(dna_list, ~rownames(.) %>% tibble(species = .), .id = "gene") %>%
-    assert_rows(col_concat, is_uniq, species, gene, error_fun = assertr::error_stop)
-  
-  dna_multi <- new("multidna", dna_list) 
-  apex::concatenate(dna_multi)
-}
-
 # Dating with treePL ----
 
 #' Read in calibration and configure dates for treepl
