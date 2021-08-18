@@ -219,13 +219,6 @@
       "Repository": "CRAN",
       "Hash": "afb4cb7b51681e837275748658f28738"
     },
-    "adegenet": {
-      "Package": "adegenet",
-      "Version": "2.1.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0952bb0e4924be641265a6984d9e1955"
-    },
     "animation": {
       "Package": "animation",
       "Version": "2.6",
@@ -239,13 +232,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "82370851316f464d3b04fd6f84ecfcb7"
-    },
-    "apex": {
-      "Package": "apex",
-      "Version": "1.0.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "efa2aeb2b8bba66b428bd9cffa5c26eb"
     },
     "aplot": {
       "Package": "aplot",
