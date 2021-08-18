@@ -1793,6 +1793,8 @@ load_calibration_dates <- function(date_file_path) {
 #' load_calibration_dates()
 #' @param write_tree Logical; should the phylogeny be written to working
 #' directory before running treePL?
+#' @param priming_results Results of running treePL with `prime` option to
+#' determine optional parameters. Output of run_treepl_prime().
 #' @param cvstart Start value for cross-validation
 #' @param cvstop Stop value for cross-validation
 #' @param cvsimaniter Start the number of cross validation simulated annealing 
@@ -1807,6 +1809,7 @@ load_calibration_dates <- function(date_file_path) {
 run_treepl_cv <- function (
   phy, alignment, calibration_dates, 
   write_tree = TRUE,
+  priming_results = NULL,
   cvstart = "1000", cvstop = "0.1",
   cvsimaniter = "5000", 
   plsimaniter = "5000",
@@ -1846,7 +1849,11 @@ run_treepl_cv <- function (
     glue("cvoutfile = {outfile_path}"),
     glue("seed = {seed}"),
     glue("nthreads = {nthreads}"),
-    "randomcv"
+    "randomcv",
+    # Include specifications from priming
+    priming_results %>% extract(., str_detect(., "opt =")),
+    priming_results %>% extract(., str_detect(., "optad =")),
+    priming_results %>% extract(., str_detect(., "optcvad ="))
   )
   
   if(thorough) treepl_config <- c(treepl_config, "thorough")
@@ -1884,8 +1891,6 @@ run_treepl_cv <- function (
 #' @param write_tree Logical; should the phylogeny be written to working
 #' directory before running treePL? Can be FALSE if it is already there from
 #' run_treepl_initial().
-#' @param cv_results Output of run_treepl_cv() so the best smoothing
-#' parameter can be selected.
 #' @param cvsimaniter Start the number of cross validation simulated annealing 
 #' iterations, default = 5000 for cross-validation
 #' @param plsimaniter the number of penalized likelihood simulated annealing 
@@ -1897,10 +1902,7 @@ run_treepl_cv <- function (
 #'
 run_treepl_prime <- function (
   phy, alignment, calibration_dates, 
-  cv_results,
   write_tree = FALSE,
-  cvsimaniter = "5000", 
-  plsimaniter = "5000",
   nthreads = "1",
   seed,
   thorough = TRUE, wd) {
@@ -1920,25 +1922,7 @@ run_treepl_prime <- function (
   
   # Get number of sites in alignment
   num_sites <- dim(alignment)[2]
-  
-  # Get best smoothing parameter
-  # Select the optimum smoothing value (smallest chisq) from cross-validation
-  # The raw output looks like this:
-  # chisq: (1000) 6.7037e+30
-  # chisq: (100) 3673.45
-  # etc.
-  best_smooth <-
-    tibble(cv_result = cv_results) %>%
-    mutate(smooth = str_match(cv_result, "\\((.*)\\)") %>% 
-             magrittr::extract(,2) %>%
-             parse_number()) %>%
-    mutate(chisq = str_match(cv_result, "\\) (.*)$") %>% 
-             magrittr::extract(,2) %>%
-             parse_number()) %>%
-    arrange(chisq) %>%
-    slice(1) %>%
-    pull(smooth)
-  
+    
   # Write config file to working directory
   treepl_config <- c(
     glue("treefile = {phy_path}"),
@@ -1946,10 +1930,7 @@ run_treepl_prime <- function (
     calibration_dates$mrca,
     calibration_dates %>% filter(!is.na(min_dates)) %>% pull(min_dates),
     calibration_dates %>% filter(!is.na(max_dates)) %>% pull(max_dates),
-    glue("cvsimaniter = {cvsimaniter}"),
-    glue("plsimaniter = {plsimaniter}"),
     glue("seed = {seed}"),
-    glue("smooth = {best_smooth}"),
     glue("nthreads = {nthreads}"),
     "prime"
   )
@@ -1963,7 +1944,7 @@ run_treepl_prime <- function (
     fs::path(wd, .)
   
   # Run treePL
-  results <- processx::run("treePL", "treepl_prime_config", wd = wd, stderr = stderr_path)
+  results <- processx::run(command = "treePL", args = "treepl_prime_config", wd = wd, stderr = stderr_path)
   
   # Return stdout
   read_lines(results$stdout)
@@ -2038,7 +2019,8 @@ run_treepl <- function (
     mutate(chisq = str_match(cv_result, "\\) (.*)$") %>% 
              magrittr::extract(,2) %>%
              parse_number()) %>%
-    arrange(chisq) %>%
+    # If chisq is tied, take smaller smooth value
+    arrange(chisq, smooth) %>%
     slice(1) %>%
     pull(smooth)
   

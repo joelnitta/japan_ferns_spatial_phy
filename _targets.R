@@ -188,33 +188,32 @@ tar_plan(
   
   # Date tree
   
-  # Run initial treepl search to identify smoothing parameter
-  treepl_cv_results = run_treepl_cv(
-    phy = plastome_tree_rooted,
-    alignment = plastome_alignment,
-    calibration_dates = plastome_calibration_dates,
-    cvstart = "1000",
-    cvstop = "0.000001",
-    plsimaniter = "200000", # preliminary output suggested > 100000
-    seed = 7167,
-    thorough = TRUE,
-    wd = here::here("treepl"),
-    nthreads = 1
-  ),
-  
   # Run priming analysis to determine optimal states for other parameters
   treepl_priming_results = run_treepl_prime(
     phy = plastome_tree_rooted,
     alignment = plastome_alignment,
     calibration_dates = plastome_calibration_dates,
-    cv_results = treepl_cv_results,
-    plsimaniter = "200000", # preliminary output suggested > 100000
     seed = 7167,
     thorough = TRUE,
-    wd = here::here("treepl"),
-    nthreads = 1
+    write_tree = TRUE,
+    wd = here::here("treepl")
   ),
   
+  # Run initial treepl search to identify smoothing parameter
+  treepl_cv_results = run_treepl_cv(
+    phy = plastome_tree_rooted,
+    alignment = plastome_alignment,
+    calibration_dates = plastome_calibration_dates,
+    priming_results = treepl_priming_results,
+    cvstart = "1000",
+    cvstop =  "0.000001",
+    seed = 7167,
+    thorough = TRUE,
+    write_tree = FALSE,
+    wd = here::here("treepl"),
+    nthreads = 20
+  ),
+
   # Run treePL dating analysis
   treepl_dating_results = run_treepl(
     phy = plastome_tree_rooted,
@@ -222,11 +221,11 @@ tar_plan(
     calibration_dates = plastome_calibration_dates,
     cv_results = treepl_cv_results,
     priming_results = treepl_priming_results,
-    plsimaniter = "200000", # preliminary output suggested > 100000
+    plsimaniter = "1000000", # preliminary output suggested > 100000
     seed = 7167,
     thorough = TRUE,
     wd = here::here("treepl"),
-    nthreads = 7
+    nthreads = 20
   ),
   
   # Subset to just pteridophytes in Japan
