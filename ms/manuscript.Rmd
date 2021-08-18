@@ -635,9 +635,10 @@ This is clearly due to the small land area of these islands, which are the only 
 Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu (`r figure("rand-diversity")`B). 
 The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to refugial lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* (`r s_figure("genus-map")`A). The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera in that area such as *Deparia* (`r s_figure("genus-map")`B) and *Dryopteris* (`r s_figure("genus-map")`D).
 
-Furthermore, we identified % apomictic taxa as a strong driver of SES of PD (`r figure("modelfit")`G).
+Furthermore, we identified % apomictic taxa as a strong driver of SES of RPD (`r figure("modelfit")`G).
 Indeed, *Dryopteris* is one such genus with a high rate of apomictic taxa (`r s_figure("apo-genus")`), and other genera with high rates of apomixis (*Cyrtomium*, *Pteris*; `r s_figure("apo-genus")`) also reach greatest richness in southern Honshu (`r s_figure("genus-map")`).
 This is consistent with the hypothesis that communities with high proportions of asexual taxa have lower genetic diversity, and is the first time to our knowledge that this has been demonstrated in ferns. 
+We verified that this relationship is also observed when analyzed with a phylogeny with branch lengths in units of genetic change (`r ie`, the output of the maximum likelihood phylogenetic analysis, before dating), consistent with an effect on genetic diversity (`r s_figure("modelfit-not-ult")`B).
 While temperature is also correlated with % apomictic taxa and therefore cannot be discounted, conditional AIC indicates a better fit of the reproductive model than the environmental model for SES of RPD (`r s_table("aic")`). 
 Ultimately, it is likely that temperature, in combination with other environmental conditions, is driving the predominance of apomictic taxa: @Tanaka2014 also found that the proportion of apomictic taxa reaches a maximum at ca. 34.8 °N latitude and increases with temperature in Japan (their study was limited to Honshu and did not include the southern islands). 
 @Tanaka2014 asserted that one limiting factor affecting establishment of apomictic ferns at high latitudes or cold climates is the large cell size of apomicts, which are typically polyploid. 
@@ -1157,60 +1158,6 @@ biodiv_ferns_used_for_model <- biodiv_ferns_spatial %>%
     biodiv_ferns_cent %>% as_tibble() %>% select(grids),
     by = "grids"
   )
-
-# Define function for plotting model fit and actual data
-plot_fits <- function(resp_var, resp_var_print, indep_var, signif_var, fit, model_data, ...) {
-  
-  # Setup randomization test significance colors
-  signif_cols <-
-    c(
-      "> 0.99" = "#e31a1c", 
-      "> 0.975" = "#fb9a99",
-      "< 0.01" = "#1f78b4", 
-      "< 0.025" = "#a6cee3",
-      "not significant" = "#ffffcc"
-    )
-  
-  # Basic plot setup
-  p <- ggplot(model_data, aes(x = .data[[indep_var]], y = .data[[resp_var]])) +
-    labs(y = resp_var_print) +
-    theme_gray(base_size = 9) +
-    theme(panel.grid.minor = element_blank())
-  
-  # Add points, color by significance if not plotting richness
-  if (resp_var != "richness") {
-    p <- p + 
-      geom_point(aes(color = .data[[signif_var]]), size = 0.5) +
-      scale_color_manual(values = signif_cols)
-  } else {
-    p <- p + 
-      geom_point(size = 0.5, color = "grey20")
-  }
-  
-  # Add line and ribbon of model fit
-  p <- p +
-    geom_line(data = fit, alpha = 0.35, color = "blue") +
-    geom_ribbon(
-      data = fit,
-      aes(ymin = low, ymax = up), 
-      alpha = 0.15
-    ) +
-    theme(legend.position = "none")
-  
-  # Format x-axis ticks and labels
-  if (indep_var == "temp") {
-    p <- p +
-      scale_x_continuous(labels = function(x) x*0.1) +
-      labs(x = "Temperature (°C)")
-  } else if (indep_var == "percent_apo") {
-    p <- p +
-      scale_x_continuous(labels = function(x) scales::percent(x, accuracy = 1)) +
-      labs(x = "% apomictic taxa")
-  }
-  
-  p
-  
-}
 
 # Generate final plot
 modelfit_plot_list <- 

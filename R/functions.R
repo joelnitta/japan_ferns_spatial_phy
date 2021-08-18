@@ -2848,3 +2848,57 @@ map_cluster_to_nodes <- function(dendro, tax_clusters, cluster_select) {
   # Return a tibble mapping nodes to the cluster
   tibble(node = nodes, cluster = cluster_select)
 }
+
+# Define function for plotting model fit and actual data
+plot_fits <- function(resp_var, resp_var_print, indep_var, signif_var, fit, model_data, ...) {
+  
+  # Setup randomization test significance colors
+  signif_cols <-
+    c(
+      "> 0.99" = "#e31a1c", 
+      "> 0.975" = "#fb9a99",
+      "< 0.01" = "#1f78b4", 
+      "< 0.025" = "#a6cee3",
+      "not significant" = "#ffffcc"
+    )
+  
+  # Basic plot setup
+  p <- ggplot(model_data, aes(x = .data[[indep_var]], y = .data[[resp_var]])) +
+    labs(y = resp_var_print) +
+    theme_gray(base_size = 9) +
+    theme(panel.grid.minor = element_blank())
+  
+  # Add points, color by significance if not plotting richness
+  if (resp_var != "richness") {
+    p <- p + 
+      geom_point(aes(color = .data[[signif_var]]), size = 0.5) +
+      scale_color_manual(values = signif_cols)
+  } else {
+    p <- p + 
+      geom_point(size = 0.5, color = "grey20")
+  }
+  
+  # Add line and ribbon of model fit
+  p <- p +
+    geom_line(data = fit, alpha = 0.35, color = "blue") +
+    geom_ribbon(
+      data = fit,
+      aes(ymin = low, ymax = up), 
+      alpha = 0.15
+    ) +
+    theme(legend.position = "none")
+  
+  # Format x-axis ticks and labels
+  if (indep_var == "temp") {
+    p <- p +
+      scale_x_continuous(labels = function(x) x*0.1) +
+      labs(x = "Temperature (°C)")
+  } else if (indep_var == "percent_apo") {
+    p <- p +
+      scale_x_continuous(labels = function(x) scales::percent(x, accuracy = 1)) +
+      labs(x = "% apomictic taxa")
+  }
+  
+  p
+  
+}

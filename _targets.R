@@ -488,13 +488,21 @@ tar_plan(
   ## Build spatial models ----
   
   # Prepare datasets for looping
+  # - ultrametric tree (full  analysis)
   data_for_spamm = prepare_data_for_spamm(
     resp_var_env = resp_vars_env,
     resp_var_repro = resp_vars_repro,
     biodiv_ferns_cent = biodiv_ferns_cent
   ),
+  # - non ultrametric tree (% apo only)
+  data_for_spamm_not_ult = prepare_data_for_spamm(
+    resp_var_env = resp_vars_env,
+    resp_var_repro = resp_vars_repro,
+    biodiv_ferns_cent = biodiv_ferns_not_ult
+  ) %>% filter(str_detect(formula, "percent_apo")),
   
   # Loop across each formula and build a spatial model
+  # - ultrametric tree (full  analysis)
   tar_target(
     spatial_models,
     run_spamm(
@@ -504,10 +512,20 @@ tar_plan(
     ),
     pattern = map(data_for_spamm)
   ),
+  # - non ultrametric tree (% apo only)
+  tar_target(
+    spatial_models_not_ult,
+    run_spamm(
+      formula = data_for_spamm_not_ult$formula[[1]], 
+      data = data_for_spamm_not_ult$data[[1]], 
+      resp_var = data_for_spamm_not_ult$resp_var[[1]]
+    ),
+    pattern = map(data_for_spamm_not_ult)
+  ),
   
   ## Conduct LRTs ----
   
-  # Prepare data for looping
+  # Prepare data for looping (full analysis only)
   data_for_lrt = prepare_data_for_lrt(spatial_models, biodiv_ferns_cent),
   
   # Conduct LRTs in loop
@@ -535,10 +553,17 @@ tar_plan(
   ## Predict model fits ---
 
   # Extract model fits in loop: use temperature for environmental models, and percent_apo for repro models
+  # - ultrametric tree (full  analysis)
   tar_target(
     model_fits,
     predict_fit(spatial_models),
     pattern = map(spatial_models)
+  ),
+  # - non ultrametric tree (% apo only)
+  tar_target(
+    model_fits_not_ult,
+    predict_fit(spatial_models_not_ult),
+    pattern = map(spatial_models_not_ult)
   ),
   
   # Conservation analysis ----

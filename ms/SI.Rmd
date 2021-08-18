@@ -73,7 +73,9 @@ tar_load(c(
   "aic_env_repro",
   "comm_ferns",
   "repro_data",
-  "japan_pterido_tree"
+  "japan_pterido_tree",
+  "model_fits_not_ult",
+  "biodiv_ferns_cent"
 ))
 ```
 
@@ -317,6 +319,18 @@ canape_cols <-
 # - Bioregions
 bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
   set_names(1:8)
+
+# Specify subplot order
+model_subplot_order <- tribble(
+  ~resp_var, ~indep_var, ~order,
+  "richness", "temp", 1,
+  "pd_obs_z", "temp", 2,
+  "rpd_obs_z", "temp", 3,
+  "fd_obs_z", "temp", 4,
+  "rfd_obs_z", "temp", 5,
+  "pd_obs_z", "percent_apo", 6,
+  "rpd_obs_z", "percent_apo", 7
+)
 ```
 
 ```{r sampling-curve, fig.width = 4, fig.height = 3}
@@ -775,6 +789,49 @@ percent_apo_genus %>%
 ```
 
 **`r s_figure("apo-genus")`**. Rate of apomixis in genera of native, non-hybrid Japanese ferns with > 1 apomictic taxon. Numbers next to each bar show number of apomictic taxa out of total richness per genus.
+
+\clearpage
+
+```{r modelfit-not-ult, fig.width = 7, fig.height = 3}
+# Extract dataset used for model, including significance columns
+biodiv_ferns_used_for_model <- biodiv_ferns_spatial %>%
+  # drop geometry (only need centroids for modeling)
+  st_set_geometry(NULL) %>%
+  as_tibble() %>%
+  # filter to only sites used in model
+  inner_join(
+    biodiv_ferns_cent %>% as_tibble() %>% select(grids),
+    by = "grids"
+  )
+
+# Generate final plot
+modelfit_plot_list <- 
+  model_fits_not_ult %>%
+  mutate(
+    signif_var = str_replace_all(resp_var, "_obs_z", "_signif"),
+    resp_var_print = case_when(
+      resp_var == "richness" ~ "Richness (no. spp.)",
+      TRUE ~ str_to_upper(resp_var) %>% word(1, 1, "_") %>% paste("SES of", .)
+    ),
+    model_data = list(biodiv_ferns_used_for_model)) %>%
+  left_join(model_subplot_order, by = c("resp_var", "indep_var")) %>%
+  arrange(order) %>%
+  pmap(plot_fits)
+
+# Need one subplot with a legend
+modelfit_plot_list[[2]] <- modelfit_plot_list[[2]] +
+  theme(legend.position = "right") +
+  labs(color = "Significance") +
+  # Increase size of points in legend
+  guides(colour = guide_legend(override.aes = list(size = 1.5)))
+
+wrap_plots(modelfit_plot_list) +
+  guide_area() +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = "A") 
+```
+
+**`r figure("modelfit-not-ult")`**. Relationship between (**A**) phylogenetic diversity (PD) and (**B**) relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For RPD, the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 \clearpage
 
