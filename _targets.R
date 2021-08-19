@@ -418,7 +418,7 @@ tar_plan(
     classify_signif("pe", one_sided = TRUE, upper = TRUE),
 
   # - Phylogram (not ultrametric)
-  biodiv_ferns_not_ult = 
+  biodiv_ferns_spatial_not_ult = 
     shape_ferns %>%
     left_join(format_cpr_res(rand_test_phy_ferns_not_ult), by = "grids") %>%
     classify_signif("pd") %>%
@@ -445,14 +445,15 @@ tar_plan(
   indep_vars = c("percent_apo", "temp", "precip", "precip_season", "area"),
   
   # Make biodiversity metrics dataframe with centroid of each site for models
-  biodiv_ferns_cent = biodiv_ferns_spatial %>%
-    # drop geometry (only need centroids for modeling)
-    st_set_geometry(NULL) %>%
-    # drop single percent_apo outlier
-    drop_apo_outlier %>%
-    # keep only variables needed for model and only rows with zero missing data
-    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars)),
-  
+  # - ultrametric tree (full  analysis)
+  biodiv_ferns_cent = spatial_to_cent(
+    biodiv_ferns_spatial,
+    c("grids", "lat", "long", resp_vars_env, indep_vars)),
+  # - non ultrametric tree (% apo only)
+  biodiv_ferns_not_ult = spatial_to_cent(
+    biodiv_ferns_spatial_not_ult,
+    c("grids", "lat", "long", resp_vars_repro, indep_vars)),
+    
   ## Correlation analysis ----
   
   # Check for correlation between independent variables in repro data

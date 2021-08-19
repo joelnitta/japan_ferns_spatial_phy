@@ -2072,18 +2072,26 @@ run_treepl <- function (
 
 # Spatial models ----
 
-#' Filter data for modeling
+#' Convert spatial dataframe to dataframe with centroids for modeling
 #'
-#' Only rows with no missing values in the selected columns will be retained
+#' Also drops single percent_apo outlier, retains only variables needed
+#' for modeling
 #' 
 #' @param data Input data
 #' @param vars_keep Character vector of column names to keep
 #'
 #' @return Tibble
-filter_data_for_model <- function(data, vars_keep) {
-  select(data, all_of(vars_keep)) %>%
-    ggplot2::remove_missing()
+spatial_to_cent <- function(data, vars_keep) {
+  data %>%
+  # drop geometry (only need centroids for modeling)
+  st_set_geometry(NULL) %>%
+  # drop single percent_apo outlier
+  drop_apo_outlier %>%
+  # keep only variables needed for model and only rows with zero missing data
+  select(all_of(vars_keep)) %>%
+  ggplot2::remove_missing()
 }
+
 
 #' Calculate centroids from SF (simple features) data
 #'
@@ -2700,7 +2708,6 @@ drop_apo_outlier <- function (data) {
   verify(max(percent_apo) < 0.6) %>%
   verify(nrow(.) == (nrow(data) - 1))
 }
-
 
 #' Predict fitted values for a spatial model
 #'
