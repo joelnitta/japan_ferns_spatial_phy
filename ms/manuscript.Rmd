@@ -8,7 +8,7 @@ mainfontoptions:
   - BoldItalicFont=Roboto-BoldItalic.ttf
 output: 
   bookdown::word_document2:
-    pandoc_args: [ "--csl", "journal-of-biogeography.csl"]
+    pandoc_args: [ "--csl", "apa-6th-edition.csl"]
     toc: no
     number_sections: no
     reference_docx: template.docx
@@ -18,7 +18,7 @@ output:
     number_sections: no
     fig_caption: yes
     latex_engine: xelatex
-    pandoc_args: [ "--csl", "journal-of-biogeography.csl"]
+    pandoc_args: [ "--csl", "apa-6th-edition.csl"]
 params:
   doc_type: doc
 editor_options: 

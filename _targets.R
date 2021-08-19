@@ -674,7 +674,7 @@ tar_plan(
   tar_file(refs_yaml, here::here("ms/references.yaml")),
   tar_file(refs_other_yaml, here::here("ms/references_other.yaml")),
   tar_file(template_file, here::here("ms/template.docx")),
-  tar_file(csl_file, here::here("ms/journal-of-biogeography.csl")),
+  tar_file(csl_file, here::here("ms/apa-6th-edition.csl")),
   
   # MS, docx format
   tar_render(
