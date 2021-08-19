@@ -137,7 +137,7 @@ We compared the overlap of significantly diverse grid-cells with existing conser
 **Results** We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
 Grid-cells were grouped in to three (phylogenetic) or four (taxonomic) major bioregions. 
 Temperature and apomixis were identified as likely drivers of patterns of taxonomic and phylogenetic diversity.
-Conservation status (% protected area) is higher than the overall rate for grid-cells with significantly high biodiversity.
+Conservation status (% protected area) is generally higher than the overall rate for grid-cells with significantly high biodiversity.
 
 **Main conclusions** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
 The different distributions of each diversity type reflect the major bioregions. 
@@ -179,7 +179,7 @@ Better ways to characterize biological regions ("bioregions") are also available
 Furthermore, incorporating these two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide particularly powerful insights into the processes structuring biodiversity and suggest conservation priorities.
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale. 
-The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled. 
+The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled [reviewed in @Ebihara2019b]. 
 One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa excluding hybrids [`r repro_count$known$percent`]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
 
 Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south. 
@@ -218,7 +218,7 @@ We filtered out any cells with redundancy < 0.1 and used this size for subsequen
 
 ### Morphological trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan following Ebihara [-@Ebihara2016b; -@Ebihara2017]. 
+We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017]. 
 Continuous traits were measured on 10 randomly selected specimens per species. 
 Fertile (`r ie`, spore-bearing) and sterile fronds were measured separately, then averaged. 
 Qualitative traits were scored by observing voucher specimens. 
@@ -236,7 +236,7 @@ We downloaded climate data at the 2.5 minute scale from the WorldClim database u
 We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell.
 We calculated area as rolling mean area (km^2^) across 1 degree latitudinal bands.
 This approach reflects the idea that the amount of area with a given climate regime enclosing each grid cell may influence species richness of that cell [@Fahrig2013], and that using raw island areas would not be appropriate in this context as there are just four very large islands with many much smaller ones located close by.
-The R package `r pack("sf")` was used for GIS analyses.
+The R package `r pack("sf")` was used for GIS analyses [@Pebesma2018].
 
 ### Phylogenetic analysis
 
@@ -284,7 +284,7 @@ We tested whether endemic areas have an over-representation of old (paleoendemic
 Low RPE indicates short branchlengths (neoendemism) and high RPE indicates long branchlengths (paleoendemism). 
 Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. 
 
-All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package [@Nitta2021], which calculates raw biodiversity metrics using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
+All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package [@Nitta2021a], which calculates raw biodiversity metrics using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
 
 It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (a "border effect"). 
 This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. 
@@ -486,20 +486,19 @@ Observed values of RPD and RFD were not linearly related to richness, however, t
 ### Randomization tests for phylogenetic and functional diversity
 
 Grid-cells with significantly low PD were almost all located on Honshu, the main island of Japan (`r figure("rand-diversity")`a). 
-A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Ryukyu, Izu, Ogasawara) islands or coastal areas (Izu Peninsula, Kii Peninsula). 
-The area near Yakushima includes cells with both significantly high and low PD. 
+A smaller number of cells had significantly high PD, and these were located mostly on smaller southern (Ryukyu, Izu, Ogasawara) islands or coastal areas (Kii Peninsula). 
 Grid-cells with significantly low RPD were mostly observed in southern Honshu, particularly in and around Kyushu (`r figure("rand-diversity")`b). 
 Grid-cells with significantly high RPD are located both in the southern islands and northern Honshu and Hokkaido. 
-Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity, but with more significant cells for FD than PD and fewer significant cells for RFD than RPD (`r figure("rand-diversity")`c, d).
+Results of the randomization test for functional diversity were broadly similar to phylogenetic diversity (`r figure("rand-diversity")`c, d).
 
 ### Relationships between biodiversity and climate or reproductive mode
 
-All models were significant relative to null models without any fixed effects `r s_table("lrt-null")`. 
+All models were significant relative to null models without any fixed effects (`r s_table("lrt-null")`). 
 The effect of temperature dominated (had the greatest absolute *t*-value) in environmental models (`r figure("coeff")`a--e), and % apomictic taxa dominated in reproductive models (`r figure("coeff")`f--g); temperature and % apomictic taxa were significant in each model where they were included, whereas other predictors (area, precipitation, precipitation seasonality) were not significant in some models. 
 Richness showed a hump-shaped relationship with temperature, reaching maximum richness at intermediate temperatures (`r figure("modelfit")`a). 
 Phylogenetic and functional diversity showed either moderately (SES of PD, SES of FD) to strongly (SES of RPD, SES of RFD) hump-shaped relationships with temperature (`r figure("modelfit")`b--e). 
 SES of RPD showed a clear, linear decline with % apomictic taxa (`r figure("modelfit")`g); a similar pattern was detected in SES of PD, but with wider confidence intervals (`r figure("modelfit")`f). 
-Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD, but not SES of PD (`r s_table("aic")`).
+Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD and SES of PD (`r s_table("aic")`).
 
 ### Categorical analysis of neo- and paleo-endemism
 
@@ -580,7 +579,7 @@ total_percent_protected_all <- sum(total_percent_protected_medium, total_percent
 
 The percentage of protected area in grid-cells with significantly high biodiversity range from `r min_protected_total` to `r max_protected_total` total, including `r min_protected_high` to `r max_protected_high` with high status and `r min_protected_med` to `r max_protected_med` with medium status (`r figure("conserv-status")`). 
 Areas with high PE were the best protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total). 
-All cells with significantly high biodiversity had a greater percentage of area protected than the overall rate for Japan (`r scales::percent(total_percent_protected_high, accuracy = 0.1)` high, `r scales::percent(total_percent_protected_medium, accuracy = 0.1)` medium, `r scales::percent(total_percent_protected_all, accuracy = 0.1)` total).
+Cells with significantly high biodiversity generally had a greater percentage of area protected than the overall rate for Japan (`r scales::percent(total_percent_protected_high, accuracy = 0.1)` high, `r scales::percent(total_percent_protected_medium, accuracy = 0.1)` medium, `r scales::percent(total_percent_protected_all, accuracy = 0.1)` total); only FD was lower than the overall rate for highly protected areas.
 
 ## Discussion
 
@@ -627,7 +626,7 @@ The similarity in patterns of PD and FD is likely due to the moderate degree of 
 Given their high phylogenetic diversity, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism; indeed, the vast majority of cells with significant levels of PE, as well as paleoendemic cells, are located in the southern islands. 
 This is clearly due to the small land area of these islands, which are the only areas with a subtropical climate in Japan.
 
-Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu (`r figure("rand-diversity")`)b. 
+Another striking pattern revealed here is the predominance of long branches in the northern half of Honshu and in southern islands, and the predominance of short branches in the southern half on Honshu, particularly Kyushu (`r figure("rand-diversity")`b). 
 The long branches in the southern islands are likely being driven by the tropical lineages mentioned previously; those in the north may be due to refugial lineages that are distantly related to others and become more species rich at high-latitudes, such as *Equisetum* (`r s_figure("genus-map")`a). The preponderance of short branches in southern Honshu may be due to the radiation of certain species-rich genera in that area such as *Deparia* (`r s_figure("genus-map")`b) and *Dryopteris* (`r s_figure("genus-map")`d).
 
 Furthermore, we identified % apomictic taxa as a strong driver of SES of RPD (`r figure("modelfit")`g).
@@ -726,8 +725,6 @@ Futhermore, the two stages of the life cycle have vastly different morphology an
 Here, as in the vast majority of fern ecology studies, we consider only the sporophyte stage. 
 However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes. 
 The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA sequencing analyses to compare patterns of biodiversity between life stages in ferns across large spatial scales.
-
-## Author Contribution
 
 \newpage
 
@@ -861,8 +858,6 @@ japan_map_plot <- ggplot(japan) +
   ) +
   map_theme() +
   theme(legend.position = "none")
-
-ggsave("plot.pdf", japan_map_plot, width = 5, height = 5, units = "in")
 ```
 
 ```{r japan-map-save, eval = params$doc_type == "doc"}
@@ -1386,7 +1381,7 @@ ggsave(result_file(figure("div-by-tax-region"), "pdf"), div_by_tax_region_plot, 
 div_by_tax_region_plot
 ```
 
-**`r figure("div-by-tax-region")`**. Phylogenetic and morphological diversity of the ferns of Japan by bioregion. (a), Standard effect size (SES) of phylogenetic diversity (PD). (b), SES of relative PD (RPD). (c), SES of functional diversity (FD). (d), SES of relative FD (RFD). (e), *p*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
+**`r figure("div-by-tax-region")`**. Phylogenetic and morphological diversity of the ferns of Japan by taxonomic bioregion. (a), Standard effect size (SES) of phylogenetic diversity (PD). (b), SES of relative PD (RPD). (c), SES of functional diversity (FD). (d), SES of relative FD (RFD). (e), *p*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
 
 `r pagebreak_pdf()`
 
@@ -1431,7 +1426,7 @@ ggsave(result_file(figure("conserv-status"), "pdf"), conserv_status_plot, width 
 conserv_status_plot
 ```
 
-**`r figure("conserv-status")`**. Percent of land area with protected status for grid cells with significantly high biodiversity. Biodiversity metrics include phylogenetic diversity (PD), functional diversity (FD), relative PD (RPD), relative FD (RFD), and phylogenetic endemism (PE). Significance of biodiversity metrics assessed by a one-tailed test comparing observed values to a null distribution of 999 random values (see Methods). Vertical lines indicate total percent area protected across Japan regardless of degree of biodiversity; dashed, high protection level (`r scales::percent(total_percent_protected_high, accuracy = 0.1)`); dotted, medium protection level (`r scales::percent(total_percent_protected_medium, accuracy = 0.1)`).
+**`r figure("conserv-status")`**. Percent of land area with protected status for grid cells with significantly high biodiversity. Biodiversity metrics include phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of biodiversity metrics assessed by a one-tailed test comparing observed values to a null distribution of 999 random values (see Methods). Vertical lines indicate total percent area protected across Japan regardless of degree of biodiversity; dashed, high protection level (`r scales::percent(total_percent_protected_high, accuracy = 0.1)`); dotted, medium protection level (`r scales::percent(total_percent_protected_medium, accuracy = 0.1)`).
 
 ## Data availability statement
 

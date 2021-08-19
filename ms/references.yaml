@@ -1177,35 +1177,27 @@ references:
   type: article-journal
   URL: http://doi.wiley.com/10.1002/ecm.1246
   volume: '87'
-- id: Nitta2021
+- id: Nitta2021a
   accessed:
   - year: 2021
     month: 8
-    day: 3
+    day: 19
   author:
   - family: Nitta
     given: Joel H.
-  - family: Watkins
-    given: James E.
-  - family: Holbrook
-    given: N. Michele
-  - family: Wang
-    given: Tristan W.
-  - family: Davis
-    given: Charles C.
-  container-title: Journal of Plant Research
-  container-title-short: J Plant Res
-  DOI: 10/gmdh4p
-  ISSN: 0918-9440, 1618-0860
+  DOI: 10.5281/ZENODO.5094033
   issued:
   - year: 2021
-    month: 6
-    day: 12
+    month: 7
+    day: 13
   language: en
-  source: DOI.org (Crossref)
-  title: Ecophysiological differentiation between life stages in filmy ferns (Hymenophyllaceae)
-  type: article-journal
-  URL: https://link.springer.com/10.1007/s10265-021-01318-z
+  publisher: Zenodo
+  source: DOI.org (Datacite)
+  title: canaper
+  title-short: joelnitta/canaper
+  type: book
+  URL: https://zenodo.org/record/5094033
+  version: 0.0.0.9000
 - id: Orme2018
   author:
   - family: Orme
@@ -1243,6 +1235,29 @@ references:
   type: article-journal
   URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1989
   volume: '401'
+- id: Pebesma2018
+  accessed:
+  - year: 2021
+    month: 8
+    day: 19
+  author:
+  - family: Pebesma
+    given: Edzer
+  container-title: The R Journal
+  container-title-short: The R Journal
+  DOI: 10/gf2ztt
+  ISSN: 2073-4859
+  issue: '1'
+  issued:
+  - year: 2018
+  language: en
+  page: '439'
+  source: DOI.org (Crossref)
+  title: 'Simple features for R: Standardized support for spatial vector data'
+  title-short: Simple Features for R
+  type: article-journal
+  URL: https://journal.r-project.org/archive/2018/RJ-2018-009/index.html
+  volume: '10'
 - id: Petchey2002
   accessed:
   - year: 2020
