@@ -1,6 +1,5 @@
 ---
-title: "Exploring dimensions of biodiversity in Japanese ferns"
-date: '`r format(Sys.time(), "%d %B, %Y")`'
+title: "Appendix S1: Supporting Information"
 mainfont: Roboto-Regular.ttf
 fontsize: 11pt
 mainfontoptions: 
@@ -116,8 +115,6 @@ fs::file_delete(temp_file)
 
 <!-- Don't indent -->
 \setlength{\parindent}{0ex}
-
-# Supplemental Information
 
 ```{r moran, results = "as-is"}
 morans_i %>%
@@ -439,11 +436,13 @@ c <- ggplot(redundancy_by_res, aes(x = redundancy, y = res)) +
   )
 
 a + b + c +
-  plot_annotation(tag_levels = "A") &
+  plot_annotation(tag_levels = "a",
+    tag_prefix = "(",
+    tag_suffix = ")") &
     theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. **A**, Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). **B**, Percent of grid cells with redundancy = 0 by grain size. **C**, Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 0.1 to 0.2 degree grid-cells, but less improvement as grain size is increased beyond 0.2 degrees.
+**`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. (a), Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). (b), Percent of grid cells with redundancy = 0 by grain size. (c), Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 0.1 to 0.2 degree grid-cells, but less improvement as grain size is increased beyond 0.2 degrees.
 
 \clearpage
 
@@ -455,7 +454,7 @@ plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::w
     geom_sf(data = biodiv_ferns_for_plotting, aes(fill = .data[[var_select]]), color = "transparent", alpha = 0.8) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
-      label = glue("<span style='color:black'>**{part}** {label}</span>"), 
+      label = glue("<span style='color:black'>**({part})** {label}</span>"), 
       hjust = "inward", vjust = "inward", color = "white") + 
     labs(fill = fill_lab) +
     scale_fill_scico(palette = "lajolla", labels = labels) +
@@ -473,17 +472,17 @@ plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::w
     )
 }
 
-a <- plot_env("A", "Area", "area", "km^2")
-b <- plot_env("B", "% apomictic taxa", "percent_apo", labels = function(x) scales::percent(x, accuracy = 1))
-c <- plot_env("C", "Precipitation", "precip", "mm")
-d <- plot_env("D", "Precip. season.", "precip_season" , "")
-e <- plot_env("E", "Temperature", "temp", "°C", function(x) x/10)
-f <- plot_env("F", "Temp. season.", "temp_season")
+a <- plot_env("a", "Area", "area", "km^2")
+b <- plot_env("b", "% apomictic taxa", "percent_apo", labels = function(x) scales::percent(x, accuracy = 1))
+c <- plot_env("c", "Precipitation", "precip", "mm")
+d <- plot_env("d", "Precip. season.", "precip_season" , "")
+e <- plot_env("e", "Temperature", "temp", "°C", function(x) x/10)
+f <- plot_env("f", "Temp. season.", "temp_season")
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
 
-**`r s_figure("envir")`**. Reproductive mode and environmental data in 0.2 degree grid cells across Japan. **A**, rolling mean area (km^2^) in 1° latitudinal bands.  **B**, % apomictic taxa. **C**, annual precipitation **D**, percipitation seasonality (coefficient of variation).  **E**, mean annual temperature. **F**, temperature seasonality (standard deviation × 100).
+**`r s_figure("envir")`**. Reproductive mode and environmental data in 0.2 degree grid cells across Japan. (a), rolling mean area (km^2^) in 1° latitudinal bands.  (b), % apomictic taxa. (c), annual precipitation. (d), percipitation seasonality (coefficient of variation).  (e), mean annual temperature. (f), temperature seasonality (standard deviation × 100).
 
 \clearpage
 
@@ -526,7 +525,7 @@ a <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = abundance), color = "transparent", alpha = 0.8) +
   scale_fill_scico(palette = "lajolla", label = k) +
   labs(fill = "No. specimens") +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)**</span>", hjust = "inward", vjust = "inward", color = "white") + 
   map_theme()
 
 
@@ -535,7 +534,7 @@ b <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = redundancy), color = "transparent", alpha = 0.8) +
   scale_fill_scico(palette = "lajolla") +
   labs(fill = "Redundancy") +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)**</span>", hjust = "inward", vjust = "inward", color = "white") + 
   map_theme() +
   theme(
     axis.text.y = element_blank()
@@ -545,7 +544,7 @@ a + b +
   plot_layout(nrow = 1)
 ```
 
-**`r s_figure("abundance")`**. Observed number of specimens (**A**) and sampling redundancy (**B**) per 0.2° grid cell in the ferns of Japan.
+**`r s_figure("abundance")`**. Observed number of specimens (a) and sampling redundancy (b) per 0.2° grid cell in the ferns of Japan.
 
 \clearpage
 
@@ -568,11 +567,13 @@ d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
 
 a + b + c + d +
   plot_layout(ncol = 2, nrow = 2) +
-  plot_annotation(tag_levels = "A") &
+  plot_annotation(tag_levels = "a",
+    tag_prefix = "(",
+    tag_suffix = ")") &
     theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. **A**, Phylogenetic diversity (PD). **B**, Relative phylogenetic diversity (RPD). **C**, Functional diversity (FD). **D**, Relative functional diversity (RFD).
+**`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. (a), Phylogenetic diversity (PD). (b), Relative phylogenetic diversity (RPD). (c), Functional diversity (FD). (d), Relative functional diversity (RFD).
 
 \clearpage
 
@@ -630,11 +631,13 @@ b <- k_phylogeny$df %>%
 
 a + b +
   plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = "A") &
+  plot_annotation(tag_levels = "a",
+    tag_prefix = "(",
+    tag_suffix = ")") &
     theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("k-plot")`**. Selection of *k* for bioregions. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
+**`r s_figure("k-plot")`**. Selection of *k* for bioregions. (a), taxonomic bioregions. (b), phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
 
 \clearpage
 
@@ -660,11 +663,11 @@ ggtree(dendro_tax, size = 0.15) %<+%
   scale_color_manual(
     values = bioregion_cols, na.value = "grey", name = "Cluster") +
   theme(legend.position = "right") +
-  labs(subtitle = "**A** Taxonomic") +
+  labs(subtitle = "**(a)** Taxonomic") +
   theme(plot.subtitle = element_markdown())
 ```
 
-**`r s_figure("dendrogram")`**. Bioregion dendrogram. Tips are sites (names not shown); color shows cluster; internal branches between clusters 'NA'. **A**, taxonomic bioregions. **B**, phylogenetic bioregions. 
+**`r s_figure("dendrogram")`**. Bioregion dendrogram. Tips are sites (names not shown); color shows cluster; internal branches between clusters 'NA'. (a), taxonomic bioregions. (b), phylogenetic bioregions. 
 \clearpage
 
 ```{r dendrogram-b, fig.width = 7, fig.height = 9}
@@ -688,7 +691,7 @@ ggtree(dendro_phy, size = 0.15) %<+%
   aes(color = cluster) +
   scale_color_manual(values = bioregion_cols, na.value = "grey", name = "Cluster") +
   theme(legend.position = "right") +
-  labs(subtitle = "**B** Phylogenetic") +
+  labs(subtitle = "**(b)** Phylogenetic") +
   theme(plot.subtitle = element_markdown())
 ```
 
@@ -716,7 +719,7 @@ plot_genus <- function(part, genus_select) {
     geom_sf(data = genus_abun, aes(fill = richness), color = "transparent", alpha = 0.8) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
-      label = glue("<span style='color:black'>**{part}** *{genus_select}*</span>"), 
+      label = glue("<span style='color:black'>**({part})** *{genus_select}*</span>"), 
       hjust = "inward", vjust = "inward", color = "white") + 
     labs(fill = "Richness") +
     scale_fill_scico(palette = "lajolla") +
@@ -734,17 +737,17 @@ plot_genus <- function(part, genus_select) {
     )
 }
 
-a <- plot_genus("A", "Equisetum")
-b <- plot_genus("B", "Deparia")
-c <- plot_genus("C", "Cyrtomium")
-d <- plot_genus("D", "Dryopteris")
-e <- plot_genus("E", "Pteris")
-f <- plot_genus("F", "Diplazium")
+a <- plot_genus("a", "Equisetum")
+b <- plot_genus("b", "Deparia")
+c <- plot_genus("c", "Cyrtomium")
+d <- plot_genus("d", "Dryopteris")
+e <- plot_genus("e", "Pteris")
+f <- plot_genus("f", "Diplazium")
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
 
-**`r s_figure("genus-map")`**. Map of species richness for selected genera of ferns of Japan. **A**, *Equisetum* is an example of a possible refugial lineage with greater species richness in northern Japan. **B**, *Deparia* is an example of a genus with possible recent radiation in southern Honshu. **C**--**F** show genera with high rates of apomictic taxa (`r s_figure("apo-genus")`), which tend to be greatest in southern Honshu.
+**`r s_figure("genus-map")`**. Map of species richness for selected genera of ferns of Japan. (a), *Equisetum* is an example of a possible refugial lineage with greater species richness in northern Japan. (b), *Deparia* is an example of a genus with possible recent radiation in southern Honshu. (c)--(f) show genera with high rates of apomictic taxa (`r s_figure("apo-genus")`), which tend to be greatest in southern Honshu.
 
 \clearpage
 
@@ -828,10 +831,13 @@ modelfit_plot_list[[2]] <- modelfit_plot_list[[2]] +
 wrap_plots(modelfit_plot_list) +
   guide_area() +
   plot_layout(guides = "collect") +
-  plot_annotation(tag_levels = "A") 
+  plot_annotation(tag_levels = "a",
+                  tag_prefix = "(",
+                  tag_suffix = ")") &
+  theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r figure("modelfit-not-ult")`**. Relationship between (**A**) phylogenetic diversity (PD) and (**B**) relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For RPD, the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
+**`r s_figure("modelfit-not-ult")`**. Relationship between (a) phylogenetic diversity (PD) and (b) relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For RPD, the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 \clearpage
 
@@ -853,8 +859,10 @@ b <-
   labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Cluster", subtitle = "Phylogenetic bioregions") +
   theme(legend.position = "bottom")
   
-a + b + plot_annotation(tag_levels = "A") &
+a + b + plot_annotation(tag_levels = "a",
+    tag_prefix = "(",
+    tag_suffix = ")") &
     theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (**A**) taxonomic or (**B**) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.
+**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.

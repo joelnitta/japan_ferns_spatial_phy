@@ -669,8 +669,14 @@ tar_plan(
   # Calculate percent protection for grid cells with significantly high biodiversity
   signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
   
-  # Render manuscript
-  # - doc
+  # Render manuscript ----
+  # Track ms files
+  tar_file(refs_yaml, here::here("ms/references.yaml")),
+  tar_file(refs_other_yaml, here::here("ms/references_other.yaml")),
+  tar_file(template_file, here::here("ms/template.docx")),
+  tar_file(csl_file, here::here("ms/journal-of-biogeography.csl")),
+  
+  # MS, docx format
   tar_render(
     ms_doc,
     knit_root_dir = here::here(),
@@ -679,7 +685,7 @@ tar_plan(
     output_file = here::here("results/manuscript.docx"),
     params = list(doc_type = "doc")
   ),
-  # - pdf
+  # MS, pdf format
   tar_render(
     ms_pdf,
     knit_root_dir = here::here(),
@@ -688,7 +694,7 @@ tar_plan(
     output_file = here::here("results/manuscript.pdf"),
     params = list(doc_type = "pdf")
   ),
-  # - SI pdf
+  # SI
   tar_render(
     si_pdf,
     knit_root_dir = here::here(),
@@ -697,7 +703,7 @@ tar_plan(
     output_file = here::here("results/supp_info.pdf"),
     params = list(doc_type = "pdf")
   ),
-  # - SI appendix on data exploration for models
+  # SI appendix on data exploration for models
   tar_render(
     si_data_exploration,
     knit_root_dir = here::here(),

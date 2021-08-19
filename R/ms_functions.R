@@ -26,12 +26,24 @@ result_file <- function (result_num, extension) {
 }
 
 #' Format R packages names
+#' 
+#' J. Biogeography: Packages in R should in roman and quotations (e.g. 'vegan') and the relevant reference provided)
 #'
 #' @param x Name of R package
 #'
 #' @return Name of R package formatted according to journal requirements
 #' 
 pack <- function(x) {glue::glue("'{x}'")}
+
+#' Format other software names
+#' 
+#' J. Biogeography: All software programs should be written in small caps, first written in roman (e.g. MrBayes or BEAST)
+#'
+#' @param x Name of software
+#'
+#' @return Name of software formatted according to journal requirements
+#' 
+software <- function(x) {glue::glue('<span style="font-variant:small-caps;">{x}</span>')}
 
 #' Format R function names
 #'
@@ -91,8 +103,8 @@ pagebreak <- function(rmd_params = params) {
 # (except I never use the caption in the function, and instead replace with 'blank')
 figure_full <- captioner::captioner(prefix = "Fig.", suffix = "")
 table_full <- captioner::captioner(prefix = "Table")
-s_figure_full <- captioner::captioner(prefix = "Fig. S", auto_space = FALSE, suffix = "")
-s_table_full <- captioner::captioner(prefix = "Table S", auto_space = FALSE, suffix = "")
+s_figure_full <- captioner::captioner(prefix = "Fig. S1.", auto_space = FALSE, suffix = "")
+s_table_full <- captioner::captioner(prefix = "Table S1.", auto_space = FALSE, suffix = "")
 
 # - Make a short function that prints only the object type and number, e.g., "Fig. 1"
 figure <- pryr::partial(figure_full, display = "cite", caption = "blank")
