@@ -866,4 +866,6 @@ a + b + plot_annotation(tag_levels = "a",
 
 **`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.
 
+\clearpage
+
 ## References

@@ -117,7 +117,7 @@ Author for correspondence:
 
 ## Acknowledgements
 
-FIXME: add acknowledgements (not including reviewers)
+FIXME: add acknowledgements (not including reviewers) JSPS KAKENHI Grant Number 16H06279 
 
 \newpage
 
@@ -332,7 +332,7 @@ Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the J
 However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. 
 Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. 
 To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b (`r n_japan_fern_taxa` taxa) with a globally sampled plastid dataset including all fern sequences on GenBank for four widely-sequenced plastid genes (*atpA*, *atpB*, *rbcL*, and *rps4*; `r n_ftol_fern_taxa` taxa) and `r n_plastome_genes` other coding, single-copy plastid genes extracted from `r n_plastome_fern_taxa` complete fern plastomes (Nitta et al., in prep.) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total, including outgroup taxa). 
-We conducted phylogenetic analysis with `r software("IQTREE")` [@Nguyen2015] and molecular dating with `r software("treePL")` [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. 
+We conducted phylogenetic analysis with `r software("IQTREE")` [@Nguyen2015] and molecular dating with `r software("treePL")` [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020]. 
 We then trimmed the tree to Japanese taxa only and used this for all further analyses.
 Tree visualization was done with the `r pack("ggtree")` R package [@Yu2017].
 

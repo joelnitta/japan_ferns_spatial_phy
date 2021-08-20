@@ -924,6 +924,35 @@ references:
   type: article-journal
   URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p2225
   volume: '2012'
+- id: Loiseau2020
+  author:
+  - family: Loiseau
+    given: Oriane
+  - family: Weigand
+    given: Anna
+  - family: Noben
+    given: Sarah
+  - family: Rolland
+    given: Jonathan
+  - family: Silvestro
+    given: Daniele
+  - family: Kessler
+    given: Michael
+  - family: Lehnert
+    given: Marcus
+  - family: Salamin
+    given: Nicolas
+  container-title: Annals of Botany
+  DOI: 10.1093/aob/mcz145
+  ISSN: '10958290'
+  issue: '1'
+  issued:
+  - year: 2020
+  page: 93-103
+  title: 'Slowly but surely: Gradual diversification and phenotypic evolution in the
+    hyperdiverse tree fern family Cyatheaceae'
+  type: article-journal
+  volume: '125'
 - id: Margules2000
   accessed:
   - year: 2021
