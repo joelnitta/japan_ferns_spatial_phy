@@ -365,7 +365,7 @@ inext_out$iNextEst %>%
   )
 ```
 
-**`r s_figure("sampling-curve")`**. Species collection curve for the ferns of Japan fit with the `r pack("iNEXT")` package. Grey shading indicates 95% confidence interval (not visible where it does not extend beyond the fitted line). Point indicates observed taxonomic richness (`r observed_data$qD` taxa, 95% confidence interval `r rich_interval` taxa). Taxa include species, subspecies, and varieties, excluding hybrids. Sampling completeness is estimated to be `r est_completeness` (95% confidence interval `r completeness_interval`).
+**`r s_figure("sampling-curve")`**. Species collection curve for the ferns of Japan fit with the `r pack("iNEXT")` package [@Hsieh2016]. Grey shading indicates 95% confidence interval (not visible where it does not extend beyond the fitted line). Point indicates observed taxonomic richness (`r observed_data$qD` taxa, 95% confidence interval `r rich_interval` taxa). Taxa include species, subspecies, and varieties, excluding hybrids. Sampling completeness is estimated to be `r est_completeness` (95% confidence interval `r completeness_interval`).
 
 \clearpage
 
@@ -865,3 +865,5 @@ a + b + plot_annotation(tag_levels = "a",
 ```
 
 **`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.
+
+## References
