@@ -87,7 +87,9 @@ tar_load(c(
   "refs_yaml",
   "refs_other_yaml",
   "template_file",
-  "csl_file"
+  "csl_file",
+  "broad_alignment_list",
+  "japan_rbcL"
 ))
 ```
 
@@ -190,6 +192,8 @@ We ask the following questions in our study system, the ferns of Japan: 1. How i
 
 ## Materials and Methods
 
+All computational analyses were carried out in R v.`r getRversion()` [@RCoreTeam2020] unless otherwise stated. The `r pack("targets")` R package was used to maintain analysis workflow [@Landau2021].
+
 ### Study Site
 
 Our data include all ferns known to occur within the boundaries of Japan (20°N to 45°N, 122°E to 153°E). 
@@ -230,7 +234,7 @@ We calculated the percentage of apomictic species in each grid cell as the sum o
 
 ### Environmental data
 
-We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")`, and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15) (`r s_figure("envir")`). 
+We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")` [@R-raster], and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15) (`r s_figure("envir")`). 
 We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell.
 We calculated area as rolling mean area (km^2^) across 1 degree latitudinal bands.
 This approach reflects the idea that the amount of area with a given climate regime enclosing each grid cell may influence species richness of that cell [@Fahrig2013], and that using raw island areas would not be appropriate in this context as there are just four very large islands with many much smaller ones located close by.
@@ -238,10 +242,96 @@ The R package `r pack("sf")` was used for GIS analyses [@Pebesma2018].
 
 ### Phylogenetic analysis
 
+```{r phylo-analysis-stats}
+# Calculate stats related to Fern Tree of Life (FTOL) dataset
+
+# Define outgroup taxa
+plastome_og <-
+  tibble(
+    taxon = c(
+      "Physcomitrium_patens",
+      "Marchantia_polymorpha",
+      "Anthoceros_angustus",
+      "Isoetes_virginica",
+      "Lycopodium_clavatum",
+      "Selaginella_moellendorffii",
+      "Sciadopitys_verticillata",
+      "Ginkgo_biloba",
+      "Kadsura_longipedunculata",
+      "Trithuria_inconspicua",
+      "Amborella_trichopoda",
+      "Acorus_calamus",
+      "Magnolia_tripetala",
+      "Lamprocapnos_spectabilis",
+      "Plumbago_auriculata",
+      "Nicotiana_tabacum",
+      "Liquidambar_formosana",
+      "Sorbus_torminalis"),
+    taxon_status = "outgroup")
+
+# Define Sanger-sequenced genes
+sanger_genes <- c("atpA", "atpB", "rbcL", "rps4")
+
+# Make gene x taxon table for plastome alignment
+plastome_sampling <-
+  tibble(
+    gene = names(broad_alignment_list),
+    taxon = map(broad_alignment_list, rownames)
+  ) %>%
+  unnest(cols = taxon) %>%
+  # Check that all Sanger genes are included
+  verify(all(sanger_genes %in% gene)) %>%
+  # Check that all outgroup taxa are included
+  verify(all(plastome_og$taxon %in% taxon)) %>%
+  # Categorize genes into Sanger or other
+  mutate(data_type = if_else(
+    gene %in% sanger_genes,
+    "sanger",
+    "full_plastome"
+  ))
+
+# Number of full plastome genes in FTOL dataset
+n_plastome_genes <- plastome_sampling %>%
+  filter(data_type == "full_plastome") %>%
+  pull(gene) %>%
+  n_distinct() %>%
+  number(big.mark = ",")
+
+# Number of fern taxa with full plastome sequences in FTOL dataset
+n_plastome_fern_taxa <- plastome_sampling %>%
+  filter(data_type == "full_plastome") %>%
+  # Exclude outgroups
+  anti_join(plastome_og, by = "taxon") %>%
+  pull(taxon) %>%
+  n_distinct() %>%
+  number(big.mark = ",")
+
+# Number of fern taxa in FTOL dataset
+n_ftol_fern_taxa <- plastome_sampling %>%
+  # Exclude outgroups
+  anti_join(plastome_og, by = "taxon") %>%
+  pull(taxon) %>%
+  n_distinct() %>%
+  number(big.mark = ",")
+
+# Number of taxa in Japan fern rbcL dataset
+n_japan_fern_taxa <- japan_rbcL %>% 
+  rownames %>% 
+  n_distinct() %>%
+  number(big.mark = ",")
+
+# Verify that tips in the plastome tree are accounted for
+# by FTOL sampling + japan fern rbcL
+tibble(taxon = plastome_tree$tip.label) %>%
+  anti_join(select(plastome_sampling, taxon) %>% unique) %>%
+  anti_join(tibble(taxon = rownames(japan_rbcL))) %>%
+  verify(nrow(.) == 0, success_fun = success_logical)
+```
+
 Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the Japanese fern flora [@Ebihara2019b]. 
 However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. 
 Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. 
-To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b with a globally sampled plastid dataset including all fern sequences on GenBank for four plastid genes (*rbcL*, *atpB*, *aptA*, and *rps4*) and 66 other coding, single-copy plastid genes extracted from 100 complete fern plastomes (Nitta et al., in prep) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total). 
+To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b (`r n_japan_fern_taxa` taxa) with a globally sampled plastid dataset including all fern sequences on GenBank for four widely-sequenced plastid genes (*atpA*, *atpB*, *rbcL*, and *rps4*; `r n_ftol_fern_taxa` taxa) and `r n_plastome_genes` other coding, single-copy plastid genes extracted from `r n_plastome_fern_taxa` complete fern plastomes (Nitta et al., in prep.) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total, including outgroup taxa). 
 We conducted phylogenetic analysis with `r software("IQTREE")` [@Nguyen2015] and molecular dating with `r software("treePL")` [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a. 
 We then trimmed the tree to Japanese taxa only and used this for all further analyses.
 Tree visualization was done with the `r pack("ggtree")` R package [@Yu2017].
@@ -291,11 +381,11 @@ To partially account for this, we also calculated all endemism-related metrics u
 
 ### Spatial models
 
-We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package. 
+We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package [@Bivand2013]. 
 In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05) (`r s_table("moran")`). 
 Therefore, we used spatially explicit methods for modeling.
 
-We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package. 
+We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package [@SpatialPack2020]. 
 This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature (`r s_table("corr")`), so for the main modeling analysis we only included the following environmental variables: mean annual temperature, precipitation, and precipitation seasonality.
 
 We constructed a linear mixed model for each biodiversity metric dependent on the environmental variables ("environmental models"). 
