@@ -26,9 +26,8 @@ params:
 ---
 
 ---
-bibliography:
+bibliography: 
   - `r here::here("ms/references.yaml")`
-  - `r here::here("ms/references_other.yaml")`
 ---
 
 ```{r setup-si, include = FALSE, cache = FALSE}

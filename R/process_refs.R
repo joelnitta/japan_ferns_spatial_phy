@@ -7,37 +7,88 @@ library(tidyverse)
 library(yaml)
 library(assertr)
 
-# Set path to RMD file
-rmd_file <- "ms/manuscript.Rmd"
+#' Filter a list of references in YAML format to those occurring in an Rmd file
+#'
+#' @param rmd_file Character vector; Path to Rmd file(s)
+#' @param yaml_in String or list; if string, the path to the YAML file to filter.
+#' If list, should be result of reading in a YAML file with yaml::read_yaml()
+#' @param yaml_out Path to write filtered YAML reference file
+#'
+#' @return NULL; externally, the filtered YAML will be written to `yaml_out`
+#' 
+filter_refs_yaml <- function(rmd_file, yaml_in = "ms/main_library.yaml", yaml_out = "ms/references.yaml") {
+  
+  # Helper function to extract citations (formatted like `[@key]`) from an Rmd file
+  extract_citations <- function(rmd_file) {
+      read_lines(rmd_file) %>%
+      stringr::str_split(" |;") %>% 
+      unlist %>% 
+      magrittr::extract(., stringr::str_detect(., "@")) %>% 
+      stringr::str_remove_all("\\[|\\]|\\)|\\(|\\.$|,|\\{|\\}") %>% 
+      magrittr::extract(., stringr::str_detect(., "^@|^-@")) %>% 
+      stringr::str_remove_all("^@|^-@") %>% 
+      unique %>% 
+      sort %>%
+      tibble(key = .)
+  }
+  
+  # Parse RMD file and extract citation keys
+  citations <- map_df(rmd_file, extract_citations)
+    
+  # Read in YAML including all references exported from Zotero
+  if(inherits(yaml_in, "character")) {
+    ref_yaml <- yaml::read_yaml(yaml_in)
+  } else if(inherits(yaml_in, "list")) {
+    ref_yaml <- yaml_in
+  } else {
+    stop("`yaml_in` must be a path to a YAML file (string) or a list read in with yaml::read_yaml()")
+  }
+  
+  # Extract all citation keys from full YAML
+  cite_keys_all <- map_chr(ref_yaml$references, "id") %>%
+    tibble(
+      key = .,
+      order = 1:length(.)
+    )
+  
+  # Check that all keys in the yaml are present in the input YAML
+  missing <- citations %>% anti_join(cite_keys_all, by = "key")
+  
+  assertthat::assert_that(
+    nrow(missing) == 0,
+    msg = glue("The following ref keys are present in the Rmd but missing from the input YAML: {missing$key}"))
+  
+  cite_keys_filtered <- citations %>% inner_join(cite_keys_all, by = "key")
+  
+  # Filter YAML to only those citation keys in the RMD
+  ref_yaml_filtered <- list(references = ref_yaml$references[cite_keys_filtered$order])
+  
+  # Write out the YAML file
+  yaml::write_yaml(ref_yaml_filtered, file = yaml_out)
+}
 
-# Parse RMD file and extract citation keys
-citations <- 
-  readr::read_lines(rmd_file) %>% 
-  stringr::str_split(" |;") %>% 
-  unlist %>% 
-  magrittr::extract(., stringr::str_detect(., "@")) %>% 
-  stringr::str_remove_all("\\[|\\]|\\)|\\(|\\.$|,|\\{|\\}") %>% 
-  magrittr::extract(., stringr::str_detect(., "^@|^-@")) %>% 
-  stringr::str_remove_all("^@|^-@") %>% 
-  unique %>% 
-  sort %>%
-  tibble(key = .)
+# Prepare YAML references for filtering ----
+# Combine references_other.yaml (manually entered yaml) with 
+# main_library.yaml (yaml automatically exported from zotero)
+# Prefer manually entered values if duplicated.
+refs_other <- read_yaml("ms/references_other.yaml")
 
-# Read in YAML including all references exported from Zotero
-ref_yaml <- yaml::read_yaml("ms/main_library.yaml")
+cite_keys_other <- map_chr(refs_other$references, "id") %>%
+  tibble(key = ., order = 1:length(.))
 
-# Extract citation keys from YAML, filter to only those in the RMD
-cite_keys <- map_chr(ref_yaml$references, "id") %>%
-  tibble(
-    key = .,
-    order = 1:length(.)
-  ) %>%
-  inner_join(citations, by = "key") %>%
-  # Stop if any keys are missing
-  assert(not_na, everything())
+refs_all <- read_yaml("ms/main_library.yaml")
 
-# Filter YAML to only those citation keys in the RMD
-ref_yaml_filtered <- list(references = ref_yaml$references[cite_keys$order])
+cite_keys_all <- map_chr(refs_all$references, "id") %>%
+  tibble(key = ., order = 1:length(.))
 
-# Write out the YAML file
-yaml::write_yaml(ref_yaml_filtered, file = "ms/references.yaml")
+cite_keys_keep <- cite_keys_all %>%
+  anti_join(cite_keys_other, by = "key")
+
+refs_combined <- list(
+  references = c(
+    refs_other$references,
+    refs_all$references[cite_keys_keep$order])
+)
+
+# Filter YAML references ----
+filter_refs_yaml(c("ms/manuscript.Rmd", "ms/SI.Rmd"), refs_combined, "ms/references.yaml")

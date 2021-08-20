@@ -81,3 +81,34 @@ references:
   title: 'Shizen kouen ni okeru shika mondai (The problem of deer in natural parks). In Japanese.'
   type: chapter
   URL: https://ci.nii.ac.jp/naid/10029109218
+
+- id: R-raster
+  type: webpage
+  author:
+  - family: Hijmans
+    given: Robert J.
+  issued:
+  - year: 2020
+  title: 'Raster: Geographic data analysis and modeling'
+  title-short: Raster
+  note: R package version 3.1-5
+  URL: https://CRAN.R-project.org/package=raster
+  
+- id: SpatialPack2020
+  type: book
+  author:
+  - family: Vallejos
+    given: R.
+  - family: Osorio
+    given: F.
+  - family: Bevilacqua
+    given: M.
+  issued:
+  - year: 2020
+  title: 'Spatial relationships between two georeferenced variables: With applications
+    in r'
+  title-short: Spatial relationships between two georeferenced variables
+  publisher: Springer
+  publisher-place: New York
+  note: ISBN 978-3-030-56680-7
+  URL: http://srb2gv.mat.utfsm.cl/
