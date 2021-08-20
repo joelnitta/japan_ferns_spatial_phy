@@ -14,7 +14,7 @@ output:
     fig_caption: yes
     keep_tex: no
     latex_engine: xelatex
-    pandoc_args: [ "--csl", "journal-of-biogeography.csl"]
+    pandoc_args: [ "--csl", "apa-6th-edition.csl"]
 header-includes: 
   \usepackage{float}
   \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
