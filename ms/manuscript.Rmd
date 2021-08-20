@@ -166,7 +166,6 @@ repro_count$known$total
 repro_count$known$percent <- (repro_count$known$total/(repro_count$unknown$total + repro_count$known$total)) %>% percent(accuracy = 0.1)
 ```
 
-
 Characterizing the spatial distribution of biodiversity is a major goal of evolutionary biology with two equally important aspects: to understand the processes generating it, and to conserve it. 
 The vast majority of studies seeking to understand the spatial distribution of biodiversity focus on species richness. 
 Hotspots, or areas of exceptionally high richness, have received particular attention, resulting in a widely-recognized set of 34 terrestrial hotspots [@Myers2000] and motivating conservation strategies to preserve them [@Margules2000; @Brooks2006]. 
@@ -265,7 +264,8 @@ To detect areas with unusually long or short branch lengths, we calculated relat
 
 We measured functional diversity (FD) following the method of @Petchey2002. 
 We first calculated functional distances using Gower's method [@Gower1971] on the trait data with the `r func("gowdis")` function in the R package `r pack("FD")` [@Laliberte2010]. 
-We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances. 
+We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances.
+We also tested alternative weighting schemes, but these produced very similar results (data not shown).
 We then used the distances to build a trait dendrogram using the `r func("hclust")` function in the `r pack("stats")` R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. 
 These functional analogs of PD and RPD are hereafter referred to as FD (functional diversity) and RFD (relative functional diversity).
 
@@ -1442,4 +1442,4 @@ Data files, including the DNA alignment, phylogenetic tree, and community data m
 
 Joel H. Nitta's research focuses on patterns and processes of diversification in ferns. For more information, see https://joelnitta.com.
 
-Author contributions: J.H.N., B.M., and A.E. conceived the ideas; A.E. provided the data; J.H.N. analyzed the data; I.W. provided computational resources; J.H.N. wrote the manuscript with input from all co-authors.
+Author contributions: J.H.N., B.M., and A.E. conceived the ideas; A.E. provided the data; J.H.N. analyzed the data; W.I provided resources; J.H.N. wrote the manuscript with input from all co-authors.
