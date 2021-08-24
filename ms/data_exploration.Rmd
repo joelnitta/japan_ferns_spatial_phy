@@ -40,9 +40,11 @@ tar_load(indep_vars)
 # Make biodiversity metrics dataframe with centroid of each site for models
   biodiv_ferns_cent <- 
     biodiv_ferns_spatial %>%
+    # drop geometry (only need centroids for modeling)
+    st_set_geometry(NULL) %>%
     # keep only variables needed for model and only rows with zero missing data
-    filter_data_for_model(c("grids", "lat", "long", resp_vars_env, indep_vars)) %>%
-    sf::st_set_geometry(NULL) %>%
+    select(all_of(c("grids", "lat", "long", resp_vars_env, indep_vars))) %>%
+    ggplot2::remove_missing() %>%
     as_tibble()
 ```
 
