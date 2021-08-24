@@ -2857,17 +2857,7 @@ map_cluster_to_nodes <- function(dendro, tax_clusters, cluster_select) {
 }
 
 # Define function for plotting model fit and actual data
-plot_fits <- function(resp_var, resp_var_print, indep_var, signif_var, fit, model_data, ...) {
-  
-  # Setup randomization test significance colors
-  signif_cols <-
-    c(
-      "> 0.99" = "#e31a1c", 
-      "> 0.975" = "#fb9a99",
-      "< 0.01" = "#1f78b4", 
-      "< 0.025" = "#a6cee3",
-      "not significant" = "#ffffcc"
-    )
+plot_fits <- function(resp_var, resp_var_print, indep_var, signif_var, fit, model_data, signif_cols, ...) {
   
   # Basic plot setup
   p <- ggplot(model_data, aes(x = .data[[indep_var]], y = .data[[resp_var]])) +

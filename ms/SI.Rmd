@@ -30,16 +30,16 @@ bibliography:
   - `r here::here("ms/references.yaml")`
 ---
 
-```{r setup-si, include = FALSE, cache = FALSE}
-# Load functions only used when rendering Rmds
-source(here::here("R/ms_functions.R"), local = TRUE)
-# Set knitr options
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
-
+```{r setup-si, include = FALSE, cache = FALSE, eval = TRUE}
 # Load packages only used when knitting Rmd
 library(kableExtra)
 library(scales)
 library(ggtree)
+library(RColorBrewer)
+# Load functions and variables only used when rendering Rmds
+source(here::here("R/ms_functions.R"), local = TRUE)
+# Set knitr options
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
 ```
 
 ```{r libraries-no-run-in-plan, eval = FALSE}
@@ -269,13 +269,6 @@ aic_table_data %>%
 \clearpage
 
 ```{r map-plot-prep}
-# Change cluster to factor
-biodiv_ferns_spatial <- biodiv_ferns_spatial %>%
-  mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-  # Add redundancy
-  mutate(redundancy = 1 - (richness/abundance))
-
 # Download high-res map of Japan,
 # crop to spatial div results area
 japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
@@ -283,38 +276,35 @@ japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
 # Set CRS
 japan_crs <- sf::st_crs(japan)
 
-biodiv_ferns_endemic_spatial <- sf::st_set_crs(biodiv_ferns_endemic_spatial, japan_crs)
+# Format biodiv_ferns_spatial data
+biodiv_ferns_spatial <-
+  biodiv_ferns_spatial %>% 
+  # Set CRS
+  sf::st_set_crs(japan_crs) %>%
+  # Set order of factor levels for plotting
+  mutate(
+    endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super")),
+    # can ignore warning about unknown levels, since they don't exist in all variables but that's OK
+    across(
+      contains("signif"),
+      ~fct_relevel(.x, "< 0.01",  "< 0.025", "not significant", "> 0.975", "> 0.99")
+    )
+  )
 
-biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
+biodiv_ferns_endemic_spatial <-
+  biodiv_ferns_endemic_spatial %>% 
+  # Set CRS
+  sf::st_set_crs(japan_crs) %>%
+  # Set order of factor levels for plotting
+  mutate(
+    endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super"))
+    )
 
 # Subset ferns biodiversity dataframe: restrict sites to only those used in model
 # (drops outlier % apomictic site)
 biodiv_ferns_for_plotting <-
   biodiv_ferns_spatial %>%
   drop_apo_outlier
-
-# Set color palettes
-# - Randomization test significance
-signif_cols <-
-  c(
-    "> 0.99" = "#e31a1c", 
-    "> 0.975" = "#fb9a99",
-    "< 0.01" = "#1f78b4", 
-    "< 0.025" = "#a6cee3",
-    "not significant" = "#ffffcc"
-  )
-# - CANAPE
-canape_cols <-
-  c(
-    "neo" = "#e31a1c", 
-    "paleo" = "#1f78b4",
-    "mixed" = "#6a51a3",
-    "super" = "#4a1486",
-    "not significant" = "#ffffcc"
-  )
-# - Bioregions
-bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
-  set_names(1:8)
 
 # Specify subplot order
 model_subplot_order <- tribble(
@@ -512,7 +502,7 @@ p <- ggtree(phy, layout = "fan", size = 0.25, open.angle = 3) %<+%
 rotate_tree(p, 3)
 ```
 
-**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding hybrids. Points at nodes indicate bootstrap support. Scalebar 100 my.
+**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding hybrids. Points at nodes indicate bootstrap support. Scalebar 100 my. Tree visualized with the `r pack("ggtree")` R package [@Yu2017].
 
 \clearpage
 
@@ -815,7 +805,8 @@ modelfit_plot_list <-
       resp_var == "richness" ~ "Richness (no. spp.)",
       TRUE ~ str_to_upper(resp_var) %>% word(1, 1, "_") %>% paste("SES of", .)
     ),
-    model_data = list(biodiv_ferns_used_for_model)) %>%
+    model_data = list(biodiv_ferns_used_for_model),
+    signif_cols = list(signif_cols)) %>%
   left_join(model_subplot_order, by = c("resp_var", "indep_var")) %>%
   arrange(order) %>%
   pmap(plot_fits)

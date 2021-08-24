@@ -38,18 +38,19 @@ source(here::here("R/packages.R"))
 source(here::here("R/functions.R"))
 ```
 
-```{r setup, include = FALSE}
+```{r setup, include = FALSE, cache = FALSE}
 # Load libraries used for rendering Rmds
 library(flextable)
 library(kableExtra)
 library(ftExtra)
 library(scales)
 library(patchwork)
+library(RColorBrewer)
 
 # Set knitr options
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
 
-# Load functions only used when rendering Rmds
+# Load functions and variables only used when rendering Rmds
 source(here::here("R/ms_functions.R"), local = TRUE)
 ```
 
@@ -89,7 +90,8 @@ tar_load(c(
   "template_file",
   "csl_file",
   "broad_alignment_list",
-  "japan_rbcL"
+  "japan_rbcL",
+  "ms_functions"
 ))
 ```
 
@@ -334,7 +336,6 @@ Because one goal of the study is to understand the distribution of paleo- vs. ne
 To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b (`r n_japan_fern_taxa` taxa) with a globally sampled plastid dataset including all fern sequences on GenBank for four widely-sequenced plastid genes (*atpA*, *atpB*, *rbcL*, and *rps4*; `r n_ftol_fern_taxa` taxa) and `r n_plastome_genes` other coding, single-copy plastid genes extracted from `r n_plastome_fern_taxa` complete fern plastomes (Nitta et al., in prep.) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total, including outgroup taxa). 
 We conducted phylogenetic analysis with `r software("IQTREE")` [@Nguyen2015] and molecular dating with `r software("treePL")` [@Smith2012] using `r nrow(plastome_calibration_dates)` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020]. 
 We then trimmed the tree to Japanese taxa only and used this for all further analyses.
-Tree visualization was done with the `r pack("ggtree")` R package [@Yu2017].
 
 ### Phylogenetic signal
 
@@ -832,6 +833,8 @@ The comprehensive molecular sampling of sporophytes in Japan makes this area ide
 \newpage
 
 ```{r plot-prep}
+# (color palettes are set in ms_functions.R)
+
 # Define nicely formatted terms for printing variable names
 resp_var_lookup <- tribble(
   ~resp_var, ~resp_var_pretty,
@@ -854,33 +857,22 @@ indep_var_lookup <- tribble(
 
 # Crop high-res map of Japan to spatial div results area
 japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
-
-# Set CRS
 japan_crs <- sf::st_crs(japan)
-biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
 
-# Set color palettes:
-# - Randomization test significance
-signif_cols <-
-  c(
-    "> 0.99" = "#e31a1c", 
-    "> 0.975" = "#fb9a99",
-    "< 0.01" = "#1f78b4", 
-    "< 0.025" = "#a6cee3",
-    "not significant" = "#ffffcc"
+# Format biodiv_ferns_spatial data
+biodiv_ferns_spatial <-
+  biodiv_ferns_spatial %>% 
+  # Set CRS
+  sf::st_set_crs(japan_crs) %>%
+  # Set order of factor levels for plotting
+  mutate(
+    endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super")),
+    # can ignore warning about unknown levels, since they don't exist in all variables but that's OK
+    across(
+      contains("signif"),
+      ~fct_relevel(.x, "< 0.01",  "< 0.025", "not significant", "> 0.975", "> 0.99")
+    )
   )
-# - CANAPE
-canape_cols <-
-  c(
-    "neo" = "#e31a1c", 
-    "paleo" = "#1f78b4",
-    "mixed" = "#6a51a3",
-    "super" = "#4a1486",
-    "not significant" = "#ffffcc"
-  )
-# - Bioregions
-bioregion_cols <- rcartocolor::carto_pal(9, "Bold")[1:8] %>%
-  set_names(1:8)
 ```
 
 ```{r japan-map-make}
@@ -964,10 +956,16 @@ japan_map_plot
 `r pagebreak_pdf()`
 
 ```{r raw-diversity-make}
+# Use thinner coast lines for this plot
+# it's smaller, so the grey lines appear relatively thicker
+coast_lwd_old <- coast_lwd
+coast_lwd <- 0.05
+
 # Richness
 a <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = richness), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = richness), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** Richness</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "No. taxa") +
   scale_fill_scico(palette = "lajolla") + 
@@ -977,34 +975,35 @@ a <- ggplot() +
 
 # Raw PD
 b <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_obs), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_obs), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** PD</span>", hjust = "inward", vjust = "inward", color = "white") +
   labs(fill = "Relative\nbranch\nlength") +
   scale_fill_scico(palette = "lajolla") + 
   scale_x_continuous(breaks = c(125, 135, 145)) +
   scale_y_continuous(breaks = c(25, 35, 45)) +
   map_theme() +
-  theme(
-    axis.text.y = element_blank()
-  )
+  theme(axis.text.y = element_blank())
 
 # Raw FD
-c <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_obs), color = "transparent", alpha = 0.8) +
+c <- ggplot() + 
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_obs), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(c)** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Relative\nbranch\nlength") +
   scale_fill_scico(palette = "lajolla") + 
   scale_x_continuous(breaks = c(125, 135, 145)) +
   scale_y_continuous(breaks = c(25, 35, 45)) +
   map_theme() +
-  theme(
-    axis.text.y = element_blank()
-  )
+  theme(axis.text.y = element_blank())
 
 raw_diversity_plot <- a + b + c +
   plot_layout(nrow = 1)
+
+# Reset coastline width
+coast_lwd <- coast_lwd_old
 ```
 
 ```{r raw-diversity-save, eval = params$doc_type == "doc"}
@@ -1024,8 +1023,12 @@ raw_diversity_plot
 ```{r rand-diversity-make}
 # PD
 a <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_signif), color = "transparent", alpha = 0.8) +
+  # white base map, no outline
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  # colored cells
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_signif), color = "transparent") +
+  # light grey coastline
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** PD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   scale_fill_manual(values = signif_cols) +
   map_theme() +
@@ -1036,8 +1039,9 @@ a <- ggplot() +
 
 # RPD
 b <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = rpd_signif), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = rpd_signif), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** RPD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "") +
   scale_fill_manual(values = signif_cols) +
@@ -1050,8 +1054,9 @@ b <- ggplot() +
 
 # FD
 c <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_signif), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_signif), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(c)** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "") +
   scale_fill_manual(values = signif_cols) +
@@ -1061,8 +1066,9 @@ c <- ggplot() +
 
 # RFD
 d <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = rfd_signif), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = rfd_signif), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(d)** RFD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "") +
   scale_fill_manual(values = signif_cols) +
@@ -1247,7 +1253,8 @@ modelfit_plot_list <-
       resp_var == "richness" ~ "Richness (no. spp.)",
       TRUE ~ str_to_upper(resp_var) %>% word(1, 1, "_") %>% paste("SES of", .)
     ),
-    model_data = list(biodiv_ferns_used_for_model)) %>%
+    model_data = list(biodiv_ferns_used_for_model),
+    signif_cols = list(signif_cols)) %>%
   left_join(model_subplot_order, by = c("resp_var", "indep_var")) %>%
   arrange(order) %>%
   pmap(plot_fits)
@@ -1285,9 +1292,10 @@ modelfit_plot
 `r pagebreak_pdf()`
 
 ```{r endemism-make}
-endemism_plot <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = endem_type), color = "transparent", alpha = 0.8) +
+endemism_plot <- ggplot() + 
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = endem_type), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_manual(values = canape_cols) +
   map_theme() +
   theme(legend.title = element_blank())
@@ -1310,8 +1318,9 @@ endemism_plot
 ```{r bioregions-make}
 # Taxonomic bioregions
 a <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = taxonomic_cluster), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = taxonomic_cluster), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
   scale_fill_manual(values = bioregion_cols) +
@@ -1319,15 +1328,14 @@ a <- ggplot() +
 
 # Phylogenetic bioregions
 b <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = phylo_cluster), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = phylo_cluster), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
   scale_fill_manual(values = bioregion_cols) +
   map_theme() +
-  theme(
-    axis.text.y = element_blank()
-  )
+  theme(axis.text.y = element_blank())
 
 bioregions_plot <- a + b +
   plot_layout(ncol = 2)
@@ -1354,12 +1362,9 @@ data <-
   as_tibble %>%
   select(pd_obs_z, rpd_obs_z, fd_obs_z, rfd_obs_z, pe_obs_p_upper, taxonomic_cluster)
 
-cluster_cols <- carto_pal(8, "Bold")[1:4] %>%
-  set_names(1:4)
-
 a <- ggplot(data, aes(x = taxonomic_cluster, y = pd_obs_z)) +
   geom_jitter(aes(color = taxonomic_cluster)) +
-  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
   geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
   labs(
     y = "SES PD",
@@ -1378,7 +1383,7 @@ a <- ggplot(data, aes(x = taxonomic_cluster, y = pd_obs_z)) +
 
 b <- ggplot(data, aes(x = taxonomic_cluster, y = rpd_obs_z)) +
   geom_jitter(aes(color = taxonomic_cluster)) +
-  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
   geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
   labs(
     y = "SES RPD",
@@ -1397,7 +1402,7 @@ b <- ggplot(data, aes(x = taxonomic_cluster, y = rpd_obs_z)) +
 
 c <- ggplot(data, aes(x = taxonomic_cluster, y = fd_obs_z)) +
   geom_jitter(aes(color = taxonomic_cluster)) +
-  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
   geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
   labs(
     y = "SES FD",
@@ -1416,7 +1421,7 @@ c <- ggplot(data, aes(x = taxonomic_cluster, y = fd_obs_z)) +
 
 d <- ggplot(data, aes(x = taxonomic_cluster, y = rfd_obs_z)) +
   geom_jitter(aes(color = taxonomic_cluster)) +
-  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
   geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
   labs(
     y = "SES RFD",
@@ -1433,7 +1438,7 @@ d <- ggplot(data, aes(x = taxonomic_cluster, y = rfd_obs_z)) +
 
 e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_p_upper)) +
   geom_jitter(aes(color = taxonomic_cluster)) +
-  scale_color_manual(values = cluster_cols, breaks = 1:4) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
   geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
   labs(
     y = "PE *p*-score",
@@ -1490,8 +1495,8 @@ conserv_status_plot <- signif_cells_protected_area %>%
   geom_col(position = position_dodge()) +
   geom_vline(xintercept = total_percent_protected_medium, color = "grey40", linetype = 3) +
   geom_vline(xintercept = total_percent_protected_high, color = "grey40", linetype = 2) +
-  scale_fill_viridis_d() +
-  scale_x_continuous(labels = scales::percent) +
+  scale_fill_manual(values = protection_cols) +
+  scale_x_continuous(labels = function(x) scales::percent(x, accuracy = 1)) +
   labs(
     x = "Percent protected",
     y = "Biodiversity metric",

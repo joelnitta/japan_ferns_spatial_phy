@@ -1,29 +1,55 @@
-# Manuscript rendering functions and variables ----
+# Manuscript rendering functions and variables
 
+# Color palettes ----
+
+# - Coastline width across all plots
+coast_lwd <- 0.05
+# - Coast color across all plots
+coast_col <- "grey50"
+
+# - Randomization test significance (colorbrewer CVD safe)
+colorb_paired <- brewer.pal(n = 8, name = "Paired")
+colorb_ylgn <- brewer.pal(n = 5, name = "YlGn")
+signif_cols <-
+  c(
+    "> 0.99" = colorb_paired[[2]], # Dark blue 
+    "> 0.975" = colorb_paired[[1]], # Light blue 
+    "< 0.025" = colorb_paired[[5]], # Light red
+    "< 0.01" = colorb_paired[[6]], #  Dark red
+    "not significant" = colorb_ylgn[[1]] # Beige
+  )
+
+# - CANAPE (Okabe-Ito CVD safe)
+canape_cols <-
+  c(
+    "neo" = "#D55E00", # red
+    "paleo" = "#0072B2", # dark blue
+    "mixed" = "#009E73", # green
+    "super" = "#F0E442", # yellow
+    "not significant" = "grey90" # grey
+  )
+
+# - Bioregions (Okabe-Ito CVD safe)
+bioregion_cols <- c( 
+  "6" = "#E69F00", # goldenrod
+  "5" = "#56B4E9", # light blue
+  "1" = "#009E73", # green
+  "2" = "#F0E442", # yellow
+  "3" = "#0072B2", # dark blue
+  "4" = "#D55E00", # red
+  "7" = "#CC79A7", # magenta
+  "8" ="#000000") # black
+
+# - Protected areas (Okabe-Ito CVD safe)
+protection_cols <- c(
+  "Medium" = "#E69F00", # goldenrod
+  "High" = "#0072B2" # dark blue
+)
+
+# Words ----
 # Define formatting for some common custom words that may vary in style between journals
 ie <- "*ie*"
 eg <- "*eg*"
-
-#' Generate a path to save a results file
-#' 
-#' Only works for figures or tables cited in text, and outputs
-#' files to the "results" folder
-#'
-#' @param result_num Number of result, e.g. "Fig. 2"
-#' @param extension Extension to use for file
-#'
-#' @return String.
-#' 
-result_file <- function (result_num, extension) {
-  
-  fs::path(
-    here::here("results"),
-    result_num %>%
-      str_remove_all("\\.") %>% 
-      str_replace_all(" ", "_")
-  ) %>%
-    fs::path_ext_set(extension)
-}
 
 #' Format R packages names
 #' 
@@ -52,6 +78,8 @@ software <- function(x) {glue::glue('<span style="font-variant:small-caps;">{x}<
 #' @return Name of R function formatted according to journal requirements
 #' 
 func <- function(x) {glue::glue("'{x}'")}
+
+# Pagebreaks ----
 
 #' Pagebreak for MS Word (doc) only
 #' 
@@ -85,6 +113,29 @@ pagebreak <- function(rmd_params = params) {
   } else {
     stop("doc_type parameter must be 'doc' or 'pdf'")
   }
+}
+
+# Figure output ----
+
+#' Generate a path to save a results file
+#' 
+#' Only works for figures or tables cited in text, and outputs
+#' files to the "results" folder
+#'
+#' @param result_num Number of result, e.g. "Fig. 2"
+#' @param extension Extension to use for file
+#'
+#' @return String.
+#' 
+result_file <- function (result_num, extension) {
+  
+  fs::path(
+    here::here("results"),
+    result_num %>%
+      str_remove_all("\\.") %>% 
+      str_replace_all(" ", "_")
+  ) %>%
+    fs::path_ext_set(extension)
 }
 
 # Captions ----
