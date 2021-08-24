@@ -26,7 +26,7 @@ canape_cols <-
     "paleo" = "#0072B2", # dark blue
     "mixed" = "#009E73", # green
     "super" = "#F0E442", # yellow
-    "not significant" = "grey90" # grey
+    "not significant" = "grey97" # grey, almost white
   )
 
 # - Bioregions (Okabe-Ito CVD safe)
@@ -168,3 +168,142 @@ figure_num <- function (name) {figure(name) %>% str_remove("Fig. ")}
 table_num <- function (name) {table(name) %>% str_remove("Table ")}
 s_figure_num <- function (name) {s_figure(name) %>% str_remove("Fig. ")}
 s_table_num <- function (name) {s_table(name) %>% str_remove("Table ")}
+
+# Etc ----
+
+#' Rename response variables in data frame
+#' 
+#' For formatting results tables
+#'
+#' @param df 
+#'
+#' @return df with renamed variables
+#' 
+rename_resp_vars <- function(df) {
+  
+  lookup <-
+    tibble(
+      resp_var = c("richness", "fd_obs_z", "pd_obs_z", "rfd_obs_z", "rpd_obs_z"),
+      resp_var_print = c("Richness", "SES of FD", "SES of PD", "SES of RFD", "SES of RPD")
+    )
+  
+  df %>%
+    left_join(lookup, by = "resp_var") %>%
+    select(-resp_var) %>%
+    rename(resp_var = resp_var_print)
+  
+}
+
+#' Rename model type in data frame
+#' 
+#' For formatting results tables
+#'
+#' @param df 
+#'
+#' @return df with renamed model types
+#' 
+rename_model_type <- function(df) {
+  
+  lookup <-
+    tibble(
+      model_type = c("percent_apo", "temp"),
+      model_type_print = c("Reproductive", "Environmental")
+    )
+  
+  df %>%
+    left_join(lookup, by = "model_type") %>%
+    select(-model_type) %>%
+    rename(model_type = model_type_print)
+  
+}
+
+#' Clean a vector of variables for printing
+#'
+#' @param x Character vector (variables)
+#'
+#' @return Character vector
+#' 
+clean_vars <- function(x) {
+  x %>%
+    gsub("^([^_]+)_obs_z", "SES of \\U\\1", ., perl=TRUE) %>%
+    str_replace_all("^percent_apo$", "% apomictic taxa") %>%
+    str_replace_all("^temp$", "Temperature") %>%
+    str_replace_all("^temp_season$", "Temperature seasonality") %>%
+    str_replace_all("^precip_season$", "Precipitation seasonality") %>%
+    str_replace_all("^precip$", "Precipitation") %>%
+    str_replace_all("^area$", "Area") %>%
+    str_replace_all("^richness$", "Richness")
+}
+
+#' Make a tibble matching the nodes of a dendrogram to the cluster they belong to
+#'
+#' @param dendro Dendrogram; list of class "phylo". Dendrogram clustering sites. Part of output of phyloregion::phyloregion()
+#' @param tax_clusters Tibble with two columns, "grids" (site names) and "cluster" (ID of cluster for each site)
+#' @param cluster_select Value indicating the cluster to select for making the tibble
+#'
+#' @return Tibble
+#' 
+map_cluster_to_nodes <- function(dendro, tax_clusters, cluster_select) {
+  
+  # Get vector of tips matching the selected cluster
+  tips <- tax_clusters %>% filter(cluster == cluster_select) %>% pull(grids)
+  
+  if(length(tips) == 1) {
+    # If only one tip, just return that node (tip) number
+    nodes <- which(dendro$tip.label == tips)
+  } else if (length(tips) > 1) {
+    # If multiple tips, get MRCA, then all descendents
+    node_mrca <- ape::getMRCA(dendro, tips)
+    nodes <- phytools::getDescendants(dendro, node_mrca)
+  } else {
+    stop("Can't find that cluster")
+  }
+  
+  # Return a tibble mapping nodes to the cluster
+  tibble(node = nodes, cluster = cluster_select)
+}
+
+# Define function for plotting model fit and actual data
+plot_fits <- function(resp_var, resp_var_print, indep_var, signif_var, fit, model_data, signif_cols, ...) {
+  
+  # Basic plot setup
+  p <- ggplot(model_data, aes(x = .data[[indep_var]], y = .data[[resp_var]])) +
+    labs(y = resp_var_print) +
+    theme_gray(base_size = 9) +
+    theme(panel.grid.minor = element_blank())
+  
+  # Add points, color by significance if not plotting richness
+  if (resp_var != "richness") {
+    p <- p + 
+      geom_point(aes(color = .data[[signif_var]]), size = 0.5, shape = 16) +
+      scale_color_manual(values = signif_cols)
+  } else {
+    p <- p + 
+      geom_point(size = 0.5, color = "grey20", alpha = 0.5, shape = 16)
+  }
+  
+  # Add line and ribbon of model fit
+  p <- p +
+    geom_line(data = fit, alpha = 0.35, color = "blue") +
+    geom_ribbon(
+      data = fit,
+      aes(ymin = low, ymax = up), 
+      alpha = 0.15
+    ) +
+    theme(legend.position = "none")
+  
+  # Format x-axis ticks and labels
+  if (indep_var == "temp") {
+    p <- p +
+      scale_x_continuous(labels = function(x) x*0.1) +
+      labs(x = "Temperature (°C)")
+  } else if (indep_var == "percent_apo") {
+    p <- p +
+      scale_x_continuous(labels = function(x) scales::percent(x, accuracy = 1)) +
+      labs(x = "% apomictic taxa")
+  }
+  
+  p
+  
+}
+

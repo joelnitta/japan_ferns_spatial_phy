@@ -27,7 +27,7 @@ params:
 
 ---
 bibliography: 
-  - `r here::here("ms/references.yaml")`
+- `r here::here("ms/references.yaml")`
 ---
 
 ```{r setup-si, include = FALSE, cache = FALSE, eval = TRUE}
@@ -122,7 +122,7 @@ morans_i %>%
     across(c(morans_i, pval_i), ~format(., digits = 2)),
     resp_var = clean_vars(resp_var) %>% 
       factor(levels = c("Area", "% apomictic taxa", "Precipitation", "Precipitation seasonality", "Temperature", "Richness", "SES of PD", "SES of RPD", "SES of FD", "SES of RFD"))
-    ) %>%
+  ) %>%
   assert(not_na, resp_var) %>%
   arrange(resp_var) %>%
   # format for kable/latex: since I use latex in headers, must escape latex elsewhere
@@ -138,7 +138,7 @@ morans_i %>%
 
 ```{r corr, results = "as-is"}
 t_test_results_for_table <-
-t_test_results %>%
+  t_test_results %>%
   mutate(
     var1 = clean_vars(var1),
     var2 = clean_vars(var2)) %>%
@@ -195,14 +195,14 @@ binary_sig_results %>%
   arrange(trait) %>%
   # format for kable/latex
   mutate(trait = str_replace_all(trait, "_", "\\\\_")) %>%
-    rename(
+  rename(
     "Trait" = trait,
     `\\textit{N} present` = num_present,
     `\\textit{N} absent` = num_absent,
     `\\textit{D}` = D,
     `\\textit{P}(random)` = prob_random, 
     `\\textit{P}(Brownian)` = prob_brownian
-    ) %>%
+  ) %>%
   kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
   kable_styling(latex_options = c("striped", "scale_down", "HOLD_position"))
 ```
@@ -214,7 +214,7 @@ binary_sig_results %>%
 ```{r lrt-null, results = "as-is"}
 # Need to keep the input data separate for pack_rows()
 lrt_table_data <-
-lrt_results %>%
+  lrt_results %>%
   filter(comparison == "null_model") %>%
   select(-null_formula, -comparison) %>%
   tidyr::extract(full_formula, "model_type", "~ ([^ ]+) ") %>%
@@ -223,17 +223,17 @@ lrt_results %>%
   select(model_type, resp_var, chi2_LR, df, loglik_null, loglik_full, p_value) %>%
   arrange(model_type, resp_var) %>%
   mutate(across(where(is.double), ~format(., digits = 2)))
-  
+
 lrt_table_data %>%
   select(-model_type) %>%
   # format for kable/latex
-    rename(
+  rename(
     "Response variable" = resp_var,
     `χ\\textsuperscript{2}` = chi2_LR,
     `LogL(null)` = loglik_null,
     `LogL(full)` = loglik_full,
     `\\textit{P}` = p_value
-    ) %>%
+  ) %>%
   kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
   pack_rows(index = base::table(lrt_table_data$model_type)) %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
@@ -254,11 +254,11 @@ aic_table_data <- aic_env_repro %>%
 aic_table_data %>%
   select(-model_type) %>%
   # format for kable/latex
-    rename(
+  rename(
     "Response variable" = resp_var,
     "cAIC" = conditional_aic,
     "LogL" = loglik
-    ) %>%
+  ) %>%
   kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
   pack_rows(index = base::table(aic_table_data$model_type)) %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
@@ -298,7 +298,7 @@ biodiv_ferns_endemic_spatial <-
   # Set order of factor levels for plotting
   mutate(
     endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super"))
-    )
+  )
 
 # Subset ferns biodiversity dataframe: restrict sites to only those used in model
 # (drops outlier % apomictic site)
@@ -373,7 +373,7 @@ redundancy_by_res <-
     "0.2" = comm_scaled_list %>% filter(resol == 0.2) %>% pull(poly_shp) %>% pluck(1),
     "0.3" = comm_scaled_list %>% filter(resol == 0.3) %>% pull(poly_shp) %>% pluck(1),
     "0.4" = comm_scaled_list %>% filter(resol == 0.4) %>% pull(poly_shp) %>% pluck(1)
-    ) %>%
+  ) %>%
   map_df(~as_tibble(.) %>% select(grids, abundance, richness), .id = "res") %>%
   # Calculate redundancy
   mutate(redundancy = 1 - (richness/abundance))
@@ -426,9 +426,9 @@ c <- ggplot(redundancy_by_res, aes(x = redundancy, y = res)) +
 
 a + b + c +
   plot_annotation(tag_levels = "a",
-    tag_prefix = "(",
-    tag_suffix = ")") &
-    theme(plot.tag = element_text(face = "bold"))
+                  tag_prefix = "(",
+                  tag_suffix = ")") &
+  theme(plot.tag = element_text(face = "bold"))
 ```
 
 **`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. (a), Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). (b), Percent of grid cells with redundancy = 0 by grain size. (c), Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 0.1 to 0.2 degree grid-cells, but less improvement as grain size is increased beyond 0.2 degrees.
@@ -439,8 +439,9 @@ a + b + c +
 # Define function for plotting environment
 plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::waiver()) {
   ggplot() +
-    geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-    geom_sf(data = biodiv_ferns_for_plotting, aes(fill = .data[[var_select]]), color = "transparent", alpha = 0.8) +
+    geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+    geom_sf(data = biodiv_ferns_spatial, aes(fill = .data[[var_select]]), color = "transparent") +
+    geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
       label = glue("<span style='color:black'>**({part})** {label}</span>"), 
@@ -508,10 +509,11 @@ rotate_tree(p, 3)
 
 ```{r abundance, fig.width = 7, fig.height = 5}
 k <- scales::unit_format(unit = "k", scale = 1e-3, accuracy = 1, sep = "")
-  
-a <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = abundance), color = "transparent", alpha = 0.8) +
+
+a <- ggplot() + 
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = abundance), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_scico(palette = "lajolla", label = k) +
   labs(fill = "No. specimens") +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)**</span>", hjust = "inward", vjust = "inward", color = "white") + 
@@ -519,8 +521,9 @@ a <- ggplot() +
 
 
 b <- ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = redundancy), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = redundancy), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_scico(palette = "lajolla") +
   labs(fill = "Redundancy") +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)**</span>", hjust = "inward", vjust = "inward", color = "white") + 
@@ -557,9 +560,9 @@ d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
 a + b + c + d +
   plot_layout(ncol = 2, nrow = 2) +
   plot_annotation(tag_levels = "a",
-    tag_prefix = "(",
-    tag_suffix = ")") &
-    theme(plot.tag = element_text(face = "bold"))
+                  tag_prefix = "(",
+                  tag_suffix = ")") &
+  theme(plot.tag = element_text(face = "bold"))
 ```
 
 **`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. (a), Phylogenetic diversity (PD). (b), Relative phylogenetic diversity (RPD). (c), Functional diversity (FD). (d), Relative functional diversity (RFD).
@@ -568,8 +571,9 @@ a + b + c + d +
 
 ```{r endemism-restricted, fig.width = 5, fig.height = 5}
 ggplot() +
-  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-  geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent", alpha = 0.8) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+  geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent") +
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_manual(values = canape_cols) +
   map_theme() +
   theme(legend.title = element_blank())
@@ -621,9 +625,9 @@ b <- k_phylogeny$df %>%
 a + b +
   plot_layout(ncol = 2) +
   plot_annotation(tag_levels = "a",
-    tag_prefix = "(",
-    tag_suffix = ")") &
-    theme(plot.tag = element_text(face = "bold"))
+                  tag_prefix = "(",
+                  tag_suffix = ")") &
+  theme(plot.tag = element_text(face = "bold"))
 ```
 
 **`r s_figure("k-plot")`**. Selection of *k* for bioregions. (a), taxonomic bioregions. (b), phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
@@ -704,8 +708,9 @@ plot_genus <- function(part, genus_select) {
     left_join(select(biodiv_ferns_spatial, -richness), ., by = "grids")
   
   ggplot() +
-    geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
-    geom_sf(data = genus_abun, aes(fill = richness), color = "transparent", alpha = 0.8) +
+    geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
+    geom_sf(data = genus_abun, aes(fill = richness), color = "transparent") +
+    geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
       label = glue("<span style='color:black'>**({part})** *{genus_select}*</span>"), 
@@ -743,7 +748,7 @@ a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```{r apo-genus, fig.width = 4, fig.height = 3}
 # Bar plot of % apo taxa by genus
 percent_apo_genus <-
-repro_data %>%
+  repro_data %>%
   # Remove NA values, non-ferns
   filter(!is.na(apomict)) %>%
   filter(str_detect(taxon, "Lycopodiella|Lycopodium|Isoetes", negate = TRUE)) %>%
@@ -834,7 +839,7 @@ wrap_plots(modelfit_plot_list) +
 ```{r bioregions-env, fig.width = 7, fig.height = 5}
 # Make pot showing bioregions by temperature and precipitation
 a <-
-ggplot(biodiv_ferns_spatial, aes(x = precip, y = temp, color = taxonomic_cluster)) +
+  ggplot(biodiv_ferns_spatial, aes(x = precip, y = temp, color = taxonomic_cluster)) +
   geom_point(size = 1, alpha = 0.7) +
   scale_color_manual(values = bioregion_cols) +
   scale_y_continuous(labels = function(x) x/10) +
@@ -848,11 +853,11 @@ b <-
   scale_y_continuous(labels = function(x) x/10) +
   labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Cluster", subtitle = "Phylogenetic bioregions") +
   theme(legend.position = "bottom")
-  
+
 a + b + plot_annotation(tag_levels = "a",
-    tag_prefix = "(",
-    tag_suffix = ")") &
-    theme(plot.tag = element_text(face = "bold"))
+                        tag_prefix = "(",
+                        tag_suffix = ")") &
+  theme(plot.tag = element_text(face = "bold"))
 ```
 
 **`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.
