@@ -56,6 +56,36 @@ unzip_ftol <- function (zip_file, exdir) {
   
 }
 
+#' Load Green List from Ebihara and Nitta 2019 data file
+#'
+#' @param ebihara_2019_zip_file Zip file (doi_10.5061_dryad.4362p32__v4.zip) downloaded
+#' from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32
+#'
+#' @return Tibble; taxonomic data of Japanese pteridophytes
+#' 
+load_green_list <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.4362p32__v4.zip") {
+  temp_dir <- tempdir()
+  unzip(ebihara_2019_zip_file, "FernGreenListV1.01E.xls", exdir = temp_dir)
+  res <- read_excel(fs::path(temp_dir, "FernGreenListV1.01E.xls")) %>% tidy_japan_names()
+  fs::file_delete(fs::path(temp_dir, "FernGreenListV1.01E.xls"))
+  res
+}
+
+#' Load PPGI data from Ebihara and Nitta 2019 data file
+#'
+#' @param ebihara_2019_zip_file Zip file (doi_10.5061_dryad.4362p32__v4.zip) downloaded
+#' from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32
+#'
+#' @return Tibble; taxonomic data of pteridophytes
+#' 
+load_ppgi <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.4362p32__v4.zip") {
+  temp_dir <- tempdir()
+  unzip(ebihara_2019_zip_file, "ppgi_taxonomy.csv", exdir = temp_dir)
+  res <- readr::read_csv(fs::path(temp_dir, "ppgi_taxonomy.csv"))
+  fs::file_delete(fs::path(temp_dir, "ppgi_taxonomy.csv"))
+  res
+}
+
 #' Tidy taxonomic data of pteridophytes of Japan
 #'
 #' Data is from Japan Green list
