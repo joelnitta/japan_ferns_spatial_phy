@@ -21,33 +21,23 @@ tar_plan(
   
   # Load and process various data ----
   
-  # Unzip data files from Ebihara and Nitta 2019
+  # Load data files from Ebihara and Nitta 2019
   # This requires doi_10.5061_dryad.4362p32__v4.zip to be downloaded to data_raw/
   # from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32 first
   tar_file(ebihara_2019_zip_file, "data_raw/doi_10.5061_dryad.4362p32__v4.zip"),
-  
-  ebihara_2019_data = unzip_ebihara_2019(
-    dryad_zip_file = ebihara_2019_zip_file, 
-    exdir = "data_raw/ebihara_2019"
-  ),
-  
-  # Split out paths for each unzipped data file
-  tar_file(ppgi_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ppgi")]),
-  tar_file(green_list_file, ebihara_2019_data[str_detect(ebihara_2019_data, "FernGreenListV1")]),
-  tar_file(esm1_file, ebihara_2019_data[str_detect(ebihara_2019_data, "ESM1")]),
-  
-  # Load Pteridophyte Phylogeny Group I (PPGI) taxonomy,
+
+  # - Pteridophyte Phylogeny Group I (PPGI) taxonomy,
   # modified slightly for ferns of Japan
-  ppgi = read_csv(ppgi_file) %>% modify_ppgi,
+  ppgi = load_ppgi(ebihara_2019_zip_file),
   
-  # Load Fern Green List (official taxonomy + conservation status for each species)
-  green_list = read_excel(green_list_file) %>% tidy_japan_names(),
+  # - Fern Green List (official taxonomy + conservation status for each species)
+  green_list = load_green_list(ebihara_2019_zip_file),
   
-  # Load reproductive mode data (Ebihara et al 2019 ESM1)
-  repro_data_raw = read_csv(esm1_file),
+  # - Raw reproductive mode data (Ebihara et al 2019 ESM1)
+  repro_data_raw = load_repro_data(ebihara_2019_zip_file),
   
-  # Clean up reproductive mode data
-  repro_data = process_repro_data(repro_data_raw, green_list),
+  # - Japan rbcL alignment
+  japan_rbcL_raw = read_ja_rbcL_from_zip(ebihara_2019_zip_file),
   
   # Load a map of Japan
   # downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
@@ -139,9 +129,6 @@ tar_plan(
   # Phylogenetic analysis ----
   # Summary: combine Japan rbcL sequences with global sampling, infer global tree,
   # estimate divergence times, trim tree to just Japan ferns
-  
-  # Read in Japan rbcL alignment
-  japan_rbcL_raw = read_ja_rbcL_from_zip(ebihara_2019_zip_file),
   
   # Rename Japan rbcL to use species names instead of taxon ID
   japan_rbcL = rename_alignment(
@@ -376,6 +363,10 @@ tar_plan(
   traits_summary = make_trait_summary(fern_traits),
   
   # Reproductive mode analysis ----
+
+  # Clean up reproductive mode data
+  repro_data = process_repro_data(repro_data_raw, green_list),
+
   # Calculate % apomictic species in each fern community
   percent_apo = calc_perc_apo(comm_ferns, repro_data),
   

@@ -73,6 +73,9 @@ load_green_list <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.
 
 #' Load PPGI data from Ebihara and Nitta 2019 data file
 #'
+#' Also modifies Pteridophyte Phylogeny Group I taxonomy
+#' to match the version used for Pteridophytes of Japan
+#'
 #' @param ebihara_2019_zip_file Zip file (doi_10.5061_dryad.4362p32__v4.zip) downloaded
 #' from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32
 #'
@@ -81,8 +84,23 @@ load_green_list <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.
 load_ppgi <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.4362p32__v4.zip") {
   temp_dir <- tempdir()
   unzip(ebihara_2019_zip_file, "ppgi_taxonomy.csv", exdir = temp_dir)
-  res <- readr::read_csv(fs::path(temp_dir, "ppgi_taxonomy.csv"))
+  res <- readr::read_csv(fs::path(temp_dir, "ppgi_taxonomy.csv")) %>% modify_ppgi
   fs::file_delete(fs::path(temp_dir, "ppgi_taxonomy.csv"))
+  res
+}
+
+#' Load supplementary data 1 (ESM1.csv) from Ebihara and Nitta 2019
+#'
+#' @param ebihara_2019_zip_file Zip file (doi_10.5061_dryad.4362p32__v4.zip) downloaded
+#' from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32
+#'
+#' @return Tibble; taxonomic data of pteridophytes in Japan with data on reproductive mode
+#' 
+load_repro_data <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.4362p32__v4.zip") {
+  temp_dir <- tempdir()
+  unzip(ebihara_2019_zip_file, "ESM1.csv", exdir = temp_dir)
+  res <- readr::read_csv(fs::path(temp_dir, "ESM1.csv"))
+  fs::file_delete(fs::path(temp_dir, "ESM1.csv"))
   res
 }
 
