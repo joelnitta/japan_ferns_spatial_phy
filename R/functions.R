@@ -56,24 +56,33 @@ unzip_ftol <- function (zip_file, exdir) {
   
 }
 
-
 #' Tidy taxonomic data of pteridophytes of Japan
 #'
 #' Data is from Japan Green list
+#' 
+#' Requires gnparser to be installed (https://github.com/gnames/gnparser)
 #'
-#' @param data 
+#' @param data Data read in from "FernGreenListV1.01E.xls" in doi_10.5061_dryad.4362p32__v4.zip
+#' available from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return Tidied data, including column for taxon (taxon name to infraspecific
+#' level, without scientific author)
+#' 
 tidy_japan_names <- function (data) {
-  data %>%
+  # rename columns
+  data <- data %>%
     select(taxon_id = ID20160331, scientific_name = `GreenList Name`,
            endemic = Endemism, conservation_status = RL2012,
-           hybrid = Hybrid) %>%
+           hybrid = Hybrid)
+  
+  # Parse names (split out taxon without author)
+  parsed_names <-
+    rgnparser::gn_parse_tidy(data$scientific_name) %>% 
+    select(scientific_name = verbatim, taxon = canonicalsimple)
+  
+  data %>%
+    left_join(parsed_names, by = "scientific_name") %>%
     # Simplify taxon names, replace space with underscore
-    taxastand::add_parsed_names(scientific_name, taxon) %>%
     mutate(taxon = str_replace_all(taxon, " ", "_")) %>%
     mutate(taxon_id = as.character(taxon_id)) %>%
     # Change hybrid to TRUE/FALSE
