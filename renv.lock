@@ -1134,13 +1134,6 @@
       "Repository": "CRAN",
       "Hash": "915a6f0134cdbdf016d7778bc80b2eda"
     },
-    "kokudosuuchi": {
-      "Package": "kokudosuuchi",
-      "Version": "1.0.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "e871433cd4a9e7b9f5f7dd91203c3c14"
-    },
     "labeling": {
       "Package": "labeling",
       "Version": "0.3",
@@ -1173,7 +1166,7 @@
       "Package": "lazyeval",
       "Version": "0.2.2",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Hash": "d908914ae53b04d4c0c0fd72ecc35370"
     },
     "lifecycle": {
@@ -1735,6 +1728,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "4b63e0cfe930613d0b28bb0761e84aad"
+    },
+    "rgnparser": {
+      "Package": "rgnparser",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9bbcf8403b28711a8879874f2bb11666"
     },
     "ritis": {
       "Package": "ritis",

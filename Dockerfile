@@ -67,7 +67,12 @@ RUN mkdir $APPS_HOME
 WORKDIR $APPS_HOME
 
 ### treePL ###
+# patches have been applied since v1.0 but no further version tagged.
+# so use the most recent commit hash
+ENV VERSION=6e23cdb08c7ec9283ebbee909d783cb0d44e64d5
 RUN git clone https://github.com/blackrim/treePL.git \
+  && cd $APPS_HOME/treePL \
+  && git checkout $VERSION \
   && cd $APPS_HOME/treePL/deps/ \
   && tar xvzf adol-c_git_saved.tar.gz \
   && cd $APPS_HOME/treePL/deps/adol-c/ \
@@ -85,24 +90,23 @@ RUN git clone https://github.com/blackrim/treePL.git \
 ### gnparser ###
 WORKDIR $APPS_HOME
 ENV APP_NAME=gnparser
-ENV VERSION=0.14.1
+ENV VERSION=1.3.3
 ENV DEST=$APPS_HOME/$APP_NAME/$VERSION
-RUN wget https://gitlab.com/gogna/gnparser/uploads/7d6ed7e3b1eee0fd6c9ae51f5bf711c0/$APP_NAME-v$VERSION-linux.tar.gz \
+RUN wget https://github.com/gnames/$APP_NAME/releases/download/v$VERSION/$APP_NAME-v$VERSION-linux.tar.gz \
   && tar xf $APP_NAME-v$VERSION-linux.tar.gz \
   && rm $APP_NAME-v$VERSION-linux.tar.gz \
   && mv "$APP_NAME" /usr/local/bin/
   
 ### IQ Tree ###
 WORKDIR $APPS_HOME
-ENV APP_NAME=IQ-TREE
-RUN git clone https://github.com/Cibiv/$APP_NAME.git && \
-	cd $APP_NAME && \
-	mkdir build && \
-	cd build && \
-	cmake -DIQTREE_FLAGS=omp .. && \
-	make && \
-	cp iqtree /usr/local/bin
-	
+ENV APP_NAME=iqtree
+ENV VERSION=1.6.12
+ENV DEST=$APPS_HOME/$APP_NAME/$VERSION
+RUN wget https://github.com/Cibiv/IQ-TREE/releases/download/v$VERSION/$APP_NAME-$VERSION-Linux.tar.gz \
+  && tar xf $APP_NAME-$VERSION-Linux.tar.gz \
+  && rm $APP_NAME-$VERSION-Linux.tar.gz \
+  && mv "$APP_NAME-$VERSION-Linux/bin/iqtree" /usr/local/bin/
+
 ###########################################
 ### Install latex package with tiny tex ###
 ###########################################

@@ -17,3 +17,7 @@ library(gghighlight)
 
 # needed for patchwork to plot ggplot and base together
 library(gridGraphics)
+
+# temporarily include here while updating functions.R
+# can remove once rgnparser::gn_parse_tidy() is included in a commit to functions.R
+library(rgnparser)
