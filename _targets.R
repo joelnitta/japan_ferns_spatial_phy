@@ -523,7 +523,7 @@ tar_plan(
   
   # Conservation analysis ----
   
-  ## Read in protected areas, assign protection levels following Kusamoto et al. 2017:
+  ## Read in protected areas, assign protection levels following Kusumoto et al. 2017:
   # - high: no human activities allowed
   # - medium: permission required for economic activities
   # - low: protected area, but none of the above restrictions

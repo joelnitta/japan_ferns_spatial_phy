@@ -722,7 +722,7 @@ summarize_fern_lat_span <- function (occ_point_data_ferns) {
 #' Load protected areas
 #'
 #' Read in protected areas (7 separate shape files corresponding to different kinds of areas),
-#' assign protection levels following Kusamoto et al. 2017
+#' assign protection levels following Kusumoto et al. 2017
 #' - high: no human activities allowed
 #' - medium: permission required for economic activities
 #' - low: protected area, but none of the above restrictions
