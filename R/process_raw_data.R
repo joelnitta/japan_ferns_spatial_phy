@@ -64,10 +64,10 @@ tar_plan(
   # Filter out duplicates, restrict to only points in second-degree mesh
   # Shape file downloaded from http://gis.biodic.go.jp/
   # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
-  tar_file(mesh2_file, "data_raw/mesh2/mesh2.shp"),
+  tar_file(mesh2_file, "data_raw/mesh2.zip"),
   occ_point_data_ferns = filter_occ_points(
     occ_point_data = occ_point_data_ferns_unfiltered,
-    shape_file = mesh2_file),
+    mesh2_zip_file = mesh2_file),
   
   # Calculate richness, abundance, and redundancy at four scales: 
   # 0.1, 0.2, 0.3, and 0.4 degree grid squares
@@ -93,7 +93,9 @@ tar_plan(
   # Write out geographic shapes in GeoPackage format (https://www.geopackage.org/)
   tar_file(
     shape_ferns_full_out,
-    st_write_tar(shape_ferns_full, "data/japan_ferns_shape_full.gpkg")
+    # Include manual time stamp so that sha is stable
+    # https://github.com/r-spatial/rgeopackage
+    st_write_tar(shape_ferns_full, "data/japan_ferns_shape_full.gpkg", time_stamp = as.Date("2021-08-26"))
   ),
   
   # Extract community matrix from shapes
@@ -143,7 +145,7 @@ tar_plan(
   # Write out geographic shapes in GeoPackage format (https://www.geopackage.org/)
   tar_file(
     ja_climate_data_out,
-    st_write_tar(ja_climate_data, "data/japan_climate.gpkg")
+    st_write_tar(ja_climate_data, "data/japan_climate.gpkg", time_stamp = as.Date("2021-08-26"))
   )
   
 )

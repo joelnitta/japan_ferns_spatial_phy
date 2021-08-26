@@ -787,13 +787,6 @@
       "Repository": "CRAN",
       "Hash": "4c64a588b497f8c088e1d308ddd40bc6"
     },
-    "gghighlight": {
-      "Package": "gghighlight",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "58f845f7658236684f19e715d87bb2d1"
-    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.3.1",
@@ -1659,6 +1652,18 @@
       "Repository": "CRAN",
       "Hash": "bb5996d0bd962d214a11140d77589917"
     },
+    "rgeopackage": {
+      "Package": "rgeopackage",
+      "Version": "0.0.0.900",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "r-spatial",
+      "RemoteRepo": "rgeopackage",
+      "RemoteRef": "master",
+      "RemoteSha": "66ea0fe6037f2110863f6d3450fe61a47d478686",
+      "Hash": "5cac92545981ff21c6e127d37425f6e4"
+    },
     "rgeos": {
       "Package": "rgeos",
       "Version": "0.5-3",
@@ -1748,6 +1753,13 @@
       "Repository": "CRAN",
       "Hash": "19feb38a48f30f0eadd56c1b06c58d92"
     },
+    "s2": {
+      "Package": "s2",
+      "Version": "1.0.6",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "fb018249cc4b7ae7147d511fd33ddf82"
+    },
     "scales": {
       "Package": "scales",
       "Version": "1.1.1",
@@ -1799,10 +1811,10 @@
     },
     "sf": {
       "Package": "sf",
-      "Version": "0.9-3",
+      "Version": "1.0-2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f16ad0ac903df6727dbfb2e30eafcc26"
+      "Hash": "464dca3e4f0bb13cf202630bfed2753a"
     },
     "shiny": {
       "Package": "shiny",
@@ -2139,6 +2151,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "caf4781c674ffa549a4676d2d77b13cc"
+    },
+    "wk": {
+      "Package": "wk",
+      "Version": "0.5.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "60e191a866c5649a8f58a458f5e60edf"
     },
     "xfun": {
       "Package": "xfun",

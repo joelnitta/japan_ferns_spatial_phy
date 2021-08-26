@@ -8,12 +8,6 @@ library(rnaturalearthhires)
 library(miniUI)
 library(lwgeom)
 library(tflow)
-library(IRanges) # for fuzzyjoin::interval_inner_join()
+library(IRanges) # for fuzzyjoin::interval_inner_join() used in add_roll_area()
 library(ROI.plugin.glpk)
-
-# considering these...
-library(ggtext)
-library(gghighlight)
-
-# needed for patchwork to plot ggplot and base together
-library(gridGraphics)
+library(gridGraphics) # for patchwork to plot ggplot and base together

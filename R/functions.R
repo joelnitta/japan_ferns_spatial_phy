@@ -105,15 +105,29 @@ load_repro_data <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.
 }
 
 #' Write simple features object to file or database
+#' 
+#' Will overwrite any identically named file, if it exists.
 #'
 #' @param obj object of class sf or sfc
 #' @param dsn data source name (path to write out file)
+#' @param time_stamp String of class "Date" or "POSIXct" or "POSIXt";
+#' time stamp to include in `.gpkg` file.
 #' @param ... Other arguments passed to sf::st_write()
 #'
 #' @return Path to file that was written out
 #' 
-st_write_tar <- function(obj, dsn, ...) {	
-  sf::st_write(obj = obj, dsn = dsn, ...)
+st_write_tar <- function(obj, dsn, time_stamp = NULL, ...) {	
+  
+  # Format time_stamp exactly for geopackage
+  # see https://github.com/r-spatial/rgeopackage#related-functionality-in-core-spatial-r-packages
+  time_stamp <- format(time_stamp, format = "%Y-%m-%dT%H:%M:%S.000Z", tz = "UTC")
+  # Write out with fixed time stamp so md5sum doesn't change every time on writing
+  if(!is.null(time_stamp)) {
+    require(rgeopackage)
+    sf::st_write(obj = obj, dsn = dsn, append = FALSE, config_options = c(OGR_CURRENT_DATE = time_stamp), ...)
+  } else {
+    sf::st_write(obj = obj, dsn = dsn, append = FALSE, ...)
+  }
   dsn
 }
 
@@ -565,10 +579,10 @@ comm_from_comm_scaled_list <- function (comm_scaled_list, resol_select) {
 #'
 #' @param occ_point_data Occurrence points dataframe,
 #' including columns for taxon, longitude, and latitude
-#' @param shape_file Path to shape file to use as mask
+#' @param mesh2_zip_file Path to zip file containing `mesh2.shp` shape file
 #'
 #' @return Filtered data points
-filter_occ_points <- function(occ_point_data, shape_file) {
+filter_occ_points <- function(occ_point_data, mesh2_zip_file) {
   
   # Remove duplicates (same species collected on same day at same site)
   occ_point_data <-
@@ -584,7 +598,7 @@ filter_occ_points <- function(occ_point_data, shape_file) {
   
   # Read in shape file to use for mask
   # (here, the second-degree mesh map of Japan)
-  second_degree_mesh <- sf::st_read(shape_file) %>%
+  second_degree_mesh <- load_shape_from_zip(mesh2_zip_file, "mesh2.shp") %>%
     select(id = NAME)
   
   # Convert point data to SF object,
