@@ -54,8 +54,9 @@ source(here::here("R/functions.R"))
 ```{r load-data-si, cache = FALSE}
 tar_load(c(
   "japan_shp",
-  "comm_scaled_list",
-  "occ_point_data_ferns",
+  "inext_res",
+  "redundancy_by_res",
+  "redundancy_summary",
   "biodiv_ferns_spatial",
   "biodiv_ferns_endemic_spatial",
   "k_taxonomy",
@@ -269,8 +270,7 @@ aic_table_data %>%
 \clearpage
 
 ```{r map-plot-prep}
-# Download high-res map of Japan,
-# crop to spatial div results area
+# Crop high-res map of Japan to spatial div results area
 japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
 
 # Set CRS
@@ -320,26 +320,16 @@ model_subplot_order <- tribble(
 ```
 
 ```{r sampling-curve, fig.width = 4, fig.height = 3}
-# Format fern abundances (no hybrids) as numeric vector
-fern_abun <-
-  occ_point_data_ferns %>%
-  group_by(taxon) %>%
-  count(sort = TRUE) %>%
-  pull(n)
-
-# Run iNEXT
-inext_out <- iNEXT::iNEXT(fern_abun, q=0, datatype="abundance")
-
 # create subset of observed points to add to plot as dots
-observed_data <- inext_out$iNextEst[inext_out$iNextEst$method == "observed",]
+observed_data <- inext_res[inext_res$method == "observed",]
 
 # check estimated completeness
-est_completeness <- inext_out$iNextEst %>% filter(method == "observed") %>% pull(SC) %>% scales::percent()
+est_completeness <- inext_res %>% filter(method == "observed") %>% pull(SC) %>% scales::percent()
 rich_interval <- glue::glue("{observed_data$qD.LCL %>% round} to {observed_data$qD.UCL %>% round}")
 completeness_interval <- glue::glue("{observed_data$SC.LCL %>% scales::percent()} to {observed_data$SC.UCL %>% scales::percent()}")
 
 # Make iNEXT plot
-inext_out$iNextEst %>%
+inext_res %>%
   filter(method != "observed") %>%
   ggplot(aes(x=m, y=qD)) +
   geom_ribbon(aes(ymin = qD.LCL, ymax = qD.UCL), fill = "grey70") +
@@ -366,32 +356,8 @@ degree_lab <- function (x) {
     scales::number(suffix = "\u00b0", accuracy = 0.1)
 }
 
-# Combine results of building community matrices at different grain sizes
-redundancy_by_res <- 
-  list(
-    "0.1" = comm_scaled_list %>% filter(resol == 0.1) %>% pull(poly_shp) %>% pluck(1),
-    "0.2" = comm_scaled_list %>% filter(resol == 0.2) %>% pull(poly_shp) %>% pluck(1),
-    "0.3" = comm_scaled_list %>% filter(resol == 0.3) %>% pull(poly_shp) %>% pluck(1),
-    "0.4" = comm_scaled_list %>% filter(resol == 0.4) %>% pull(poly_shp) %>% pluck(1)
-  ) %>%
-  map_df(~as_tibble(.) %>% select(grids, abundance, richness), .id = "res") %>%
-  # Calculate redundancy
-  mutate(redundancy = 1 - (richness/abundance))
-
 # Summarize redundancy statistics by grain size
-redundancy_summary <-
-  redundancy_by_res %>%
-  mutate(above_50 = ifelse(redundancy > 0.5, 1, 0)) %>%
-  mutate(singleton = ifelse(redundancy == 0, 1, 0)) %>%
-  group_by(res) %>%
-  summarize(
-    n_total = n(),
-    n_above_50 = sum(above_50),
-    n_singletons = sum(singleton),
-    percent_above_50 = n_above_50/n_total,
-    percent_singletons = n_singletons/ n_total,
-    .groups = "drop"
-  )
+redundancy_summary <- sum_redundancy_by_res(redundancy_by_res)
 
 # Percent of grid cells with redundancy > 0.5 by grain size
 a <- ggplot(redundancy_summary, aes(x = res, y = percent_above_50)) +

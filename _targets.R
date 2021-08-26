@@ -21,10 +21,10 @@ tar_plan(
   
   # Load and process various data ----
   
-  # Load data files from Ebihara and Nitta 2019
-  # This requires doi_10.5061_dryad.4362p32__v4.zip to be downloaded to data_raw/
+  ## Data files from Ebihara and Nitta 2019 ----
+  # This requires doi_10.5061_dryad.4362p32__v4.zip to be downloaded to data/
   # from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32 first
-  tar_file(ebihara_2019_zip_file, "data_raw/doi_10.5061_dryad.4362p32__v4.zip"),
+  tar_file(ebihara_2019_zip_file, "data/doi_10.5061_dryad.4362p32__v4.zip"),
 
   # - Pteridophyte Phylogeny Group I (PPGI) taxonomy,
   # modified slightly for ferns of Japan
@@ -38,12 +38,20 @@ tar_plan(
   
   # - Japan rbcL alignment
   japan_rbcL_raw = read_ja_rbcL_from_zip(ebihara_2019_zip_file),
+
+  # - Summary of occurrence point data
+  tar_file(occ_point_data_summary_file, "data/japan_ferns_occ_summary.csv"),
+  occ_point_data_summary = read_csv(occ_point_data_summary_file),
   
-  # Load a map of Japan
-  # downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
+  # - Summary of latitudinal span by taxon
+  tar_file(lat_span_summary_file, "data/japan_ferns_lat_span.csv"),
+  lat_span_summary = read_csv(lat_span_summary_file),
+  
+  ## Map data ----
+  # Load shape file of Japan downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
   # on 2020-08-26
-  tar_file(japan_pol_file, "data_raw/gm-jpn-all_u_2_2/polbnda_jpn.shp"),
-  jpn_pol = st_read(japan_pol_file),
+  tar_file(japan_pol_zip_file, "data/gm-jpn-all_u_2_2.zip"),
+  jpn_pol = load_shape_from_zip(japan_pol_zip_file, "polbnda_jpn.shp"),
   
   # Collapse all the political units down to just one shape for the country
   japan_shp = jpn_pol %>%
@@ -51,65 +59,31 @@ tar_plan(
     summarize(),
   
   # Load manually entered points of interest for drawing a map of Japan
-  tar_file(japan_points_raw_file, "data_raw/japan_points_raw.csv"),
+  tar_file(japan_points_raw_file, "data/japan_points_raw.csv"),
   japan_points_raw = read_csv(japan_points_raw_file),
   
   # Calculate area as rolling mean in 1 degree latitudinal windows
   lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
   
-  # Prepare occurrence data ----
-  # Summary: from raw occurrence data, test binning into grid cells at four scales
-  # select the optimal scale, filter out poorly sampled grid cells, generate
-  # community data matrix (sites x species)
+  ## Occurrence data ----
+  # Raw occurrence data processing was done in R/process_raw_data.R
+   
+  # Load geographic shapes, richness, and number of specimens at 0.2 degree grid scale
+  tar_file(japan_ferns_shape_full_file, "data/japan_ferns_shape_full.gpkg"),
+  shape_ferns_full = sf::st_read(japan_ferns_shape_full_file),
   
-  # Load raw occurrence data of pteridophytes in Japan, excluding hybrids (717 taxa)
-  tar_file(occ_point_data_raw_file, "data_raw/JP_pterid_excl_hyb200620.xlsx"),
-  occ_point_data_raw = readxl::read_excel(
-    occ_point_data_raw_file,
-    col_types = c("text", "numeric", "numeric", "text", "text", "text", "text"),
-    col_names = c("species", "longitude", "latitude", "date", "tns_barcode", "herbarium_code", "taxon_id"),
-    skip = 1),
-  
-  # Standardize names to Green List
-  occ_point_data = rename_taxa(occ_point_data_raw, green_list) %>%
-    # check for missing data
-    assert(not_na, longitude, latitude, taxon),
-  
-  # Subset to just ferns (674 taxa)
-  occ_point_data_ferns_unfiltered = subset_to_ferns(occ_point_data, ppgi),
-  
-  # Filter out duplicates, restrict to only points in second-degree mesh
-  # Shape file downloaded from http://gis.biodic.go.jp/
-  # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
-  tar_file(mesh2_file, "data_raw/mesh2/mesh2.shp"),
-  occ_point_data_ferns = filter_occ_points(
-    occ_point_data = occ_point_data_ferns_unfiltered,
-    shape_file = mesh2_file),
-  
-  # Calculate richness, abundance, and redundancy at four scales: 
-  # 0.1, 0.2, 0.3, and 0.4 degree grid squares
-  scales_to_test = c(0.1, 0.2, 0.3, 0.4),
-  tar_target(
-    comm_scaled_list,
-    comm_from_points(
-      species_coods = occ_point_data_ferns,
-      resol = scales_to_test,
-      lon = "longitude",
-      lat = "latitude",
-      species = "taxon"),
-    pattern = map(scales_to_test)
-  ),
-  
-  # After inspecting results, 0.2 is optimal scale.
-  
-  # Extract geographic shapes, richness, and number of specimens at 0.2 degree grid scale
-  shape_ferns_full = shape_from_comm_scaled_list(comm_scaled_list, 0.2) %>%
-    # calculate redundancy
-    mutate(redundancy = 1 - (richness/abundance)),
-  
-  # Extract community matrix
-  comm_ferns_full = comm_from_comm_scaled_list(comm_scaled_list, 0.2),
-  
+  # Load community matrix at 0.2 degree grid scale (not filtered by redundancy)
+  tar_file(japan_ferns_comm_full_file, "data/japan_ferns_comm_full.csv"),
+  comm_ferns_full = load_jferns_comm(japan_ferns_comm_full_file),
+
+  # Load summaries of testing different grid cell sizes
+  tar_file(redundancy_by_res_file, "data/redundancy_by_res.csv"),
+  redundancy_by_res = read_csv(redundancy_by_res_file, col_types = cols(res = col_character())),
+
+  # Load results of assessing sampling completeness with iNEXT
+  tar_file(inext_res_file, "data/inext_results.csv"),
+  inext_res = read_csv(inext_res_file),
+
   # Subset geographic shapes to redundancy > 0.1
   shape_ferns = filter(shape_ferns_full, redundancy > 0.1),
   
@@ -136,22 +110,11 @@ tar_plan(
     taxon_id_map = green_list),
   
   # Read in list of globally sampled genes including rbcL
-  tar_file(ftol_zip_file, "data_raw/ftol_data_release_v0.0.1.zip"),
-  
-  ftol_data = unzip_ftol(
-    zip_file = ftol_zip_file,
-    exdir = "data_raw"
-  ),
-  
-  # Split out paths for each data file
-  tar_file(ftol_plastid_concat, ftol_data[str_detect(ftol_data, "ftol_plastid_concat")]),
-  tar_file(ftol_plastid_parts, ftol_data[str_detect(ftol_data, "ftol_plastid_parts")]),
-  
-  # Load list of aligned genes
-  broad_alignment_list = load_ftol_alignment(ftol_plastid_concat, ftol_plastid_parts),
+  tar_file(ftol_zip_file, "data/ftol_data_release_v0.0.1.zip"),
+  broad_alignment_list = load_ftol_alignment(ftol_zip_file),
   
   # Read in calibration dates
-  tar_file(calibration_dates_file, "data_raw/testo_sundue_2016_calibrations.csv"),
+  tar_file(calibration_dates_file, "data/testo_sundue_2016_calibrations.csv"),
   plastome_calibration_dates = load_calibration_dates(calibration_dates_file),
   
   # Combine the Japan rbcL data with global sampling
@@ -229,10 +192,10 @@ tar_plan(
   # Format trait data ----
   
   # Format trait data, subset to ferns in tree
-  tar_file(raw_trait_data_file, "data_raw/JpFernLUCID_forJoel.xlsx"),
+  tar_file(raw_trait_data_file, "data/japan_ferns_traits_lucid.csv"),
   
   fern_traits = format_traits(
-    path_to_lucid_traits = raw_trait_data_file,
+    traits_lucid_path = raw_trait_data_file,
     taxon_id_map = green_list,
     taxon_keep_list = japan_fern_tree$tip.label),
   
@@ -253,10 +216,10 @@ tar_plan(
   
   # Climate data ----
   
-  # Load climate data downloaded from WorldClim database
-  tar_file(worldclim_dir, "data_raw/world_clim"),
-  ja_climate_data = load_ja_worldclim_data(worldclim_dir),
-  
+  # Load climate data from WorldClim database at 2.5 minute resolution
+  tar_file(ja_climate_data_file, "data/japan_climate.gpkg"),
+  ja_climate_data = sf::st_read(ja_climate_data_file),
+
   # Calculate mean climate values in each grid cell
   mean_climate = calc_mean_climate(shape_ferns, ja_climate_data),
   
@@ -560,103 +523,13 @@ tar_plan(
   
   # Conservation analysis ----
   
-  ## Read in protected areas (7 separate shape files corresponding to different kinds of areas)
-  # Assign protection levels following Kusamoto et al. 2017
+  ## Read in protected areas, assign protection levels following Kusamoto et al. 2017:
   # - high: no human activities allowed
   # - medium: permission required for economic activities
   # - low: protected area, but none of the above restrictions
-  
-  # 1: wilderness
-  protected_1 = st_read("data_raw/map17/原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
-    mutate(
-      status = case_when(
-        ZONE == 1 ~ "high", # 1＝原生自然環境保全地域
-        ZONE == 2 ~ "high", # 2＝特別地区
-        ZONE == 3 ~ "high", # 3＝海中特別地区
-        ZONE == 4 ~ "low" # 4＝普通地区
-      )
-    ),
-  
-  # 2: quasi-national parks
-  protected_2 = st_read("data_raw/map17/国定公園.shp") %>%
-    mutate(
-      status = case_when(
-        ZONE == 1 ~ "high", # 1＝特別保護地区
-        ZONE == 20 ~ "high", # 20＝特別地域
-        ZONE == 21 ~ "medium", # 21＝第1種特別地域
-        ZONE == 22 ~ "medium", # 22＝第2種特別地域
-        ZONE == 23 ~ "medium", # 23＝第3種特別地域
-        ZONE == 3 ~ "low", # 3＝普通地区
-        ZONE == 5 ~ "marine" #5＝海域公園地区
-      )
-    ),
-  
-  # 3: national wildlife protection areas
-  protected_3 = st_read("data_raw/map17/国指定鳥獣保護区.shp") %>%
-    mutate(
-      status = case_when(
-        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
-        ZONE == 2 ~ "medium", # 2＝特別保護地区
-      )
-    ),
-  
-  # 4: national parks
-  protected_4 = st_read("data_raw/map17/国立公園.shp") %>%
-    mutate(
-      status = case_when(
-        ZONE == 1 ~ "high", # 1＝特別保護地区
-        ZONE == 20 ~ "high", # 20＝特別地域
-        ZONE == 21 ~ "medium", # 21＝第1種特別地域
-        ZONE == 22 ~ "medium", # 22＝第2種特別地域
-        ZONE == 23 ~ "medium", # 23＝第3種特別地域
-        ZONE == 3 ~ "low", # 3＝普通地区
-        ZONE == 5 ~ "marine" #5＝海域公園地区
-      )
-    ) %>%
-    # Remove protected area in inland sea (marine)
-    filter(NAME != "瀬戸内海"),
-  
-  # 5: prefectural wildlife protection areas
-  protected_5 = st_read("data_raw/map17/都道府県指定鳥獣保護区.shp") %>%
-    mutate(
-      status = case_when(
-        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
-        ZONE == 2 ~ "medium", # 2＝特別保護地区
-        ZONE == 3 ~ "low" # not specified, but assume no other special protection
-      )
-    ),
-  
-  # 6: prefectural natural parks
-  protected_6 = st_read("data_raw/map17/都道府県立自然公園.shp") %>%
-    mutate(
-      status = case_when(
-        ZONE == 1 ~ "high", # 1＝特別保護地区
-        ZONE == 20 ~ "high", # 20＝特別地域
-        ZONE == 3 ~ "low" # 3＝普通地区
-      )
-    ),
-  
-  # 7: prefectural protection areas
-  protected_7 = st_read("data_raw/map17/都道府県自然環境保全地域.shp") %>%
-    mutate(
-      status = case_when(
-        ZONE == 0 ~ "high", # 0＝原生自然環境保全地域
-        ZONE == 2 ~ "high", # 2＝特別地区
-        ZONE == 4 ~ "low" # 4＝普通地区
-      )
-    ),
-  
-  # Combine protected areas into single dataframe
-  protected_areas = combine_protected_areas(
-    protected_1,
-    protected_2,
-    protected_3,
-    protected_4,
-    protected_5,
-    protected_6,
-    protected_7
-  ),
-  
+  tar_file(protected_areas_zip_file, "data/map17.zip"),
+  protected_areas = load_protected_areas(protected_areas_zip_file),
+
   # Calculate percent protection for grid cells with significantly high biodiversity
   signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
   

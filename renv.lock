@@ -184,20 +184,6 @@
       "Repository": "CRAN",
       "Hash": "58f127ba1d26ddb0435f9959e814dbea"
     },
-    "WikidataR": {
-      "Package": "WikidataR",
-      "Version": "1.4.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "d9873fcb5409bf6b8fa0111dcac89b91"
-    },
-    "WikipediR": {
-      "Package": "WikipediR",
-      "Version": "1.5.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "4a70d7b56df653129d0b0fe34da89801"
-    },
     "XML": {
       "Package": "XML",
       "Version": "3.99-0.3",
@@ -302,13 +288,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "9addc7e2c5954eca5719928131fed98c"
-    },
-    "bold": {
-      "Package": "bold",
-      "Version": "1.0.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "02563604223d76cf643aa1e872e8eeef"
     },
     "bookdown": {
       "Package": "bookdown",
@@ -488,13 +467,6 @@
       "Repository": "CRAN",
       "Hash": "f0acb9dcb71a9cd9d5ae233c5035b1c5"
     },
-    "conditionz": {
-      "Package": "conditionz",
-      "Version": "0.1.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "94d63622fa8251219092b34de47a4136"
-    },
     "conflicted": {
       "Package": "conflicted",
       "Version": "1.0.4",
@@ -536,13 +508,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "76ad515a0acb138c0e93f017c7aefd11"
-    },
-    "crul": {
-      "Package": "crul",
-      "Version": "0.9.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "ca47c792e03fdc1a73cb4cf4a1b0aa86"
     },
     "curl": {
       "Package": "curl",
@@ -1010,13 +975,6 @@
       "Repository": "CRAN",
       "Hash": "41bace23583fbc25089edae324de2dc3"
     },
-    "httpcode": {
-      "Package": "httpcode",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "13641a1c6d2cc98801b76764078e17ea"
-    },
     "httpuv": {
       "Package": "httpuv",
       "Version": "1.5.3.1",
@@ -1315,13 +1273,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b275f9d21e812b6338f4c3e9d70b2209"
-    },
-    "natserv": {
-      "Package": "natserv",
-      "Version": "1.0.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "3537299640bc4dff16d2625e7d44ec11"
     },
     "nlme": {
       "Package": "nlme",
@@ -1680,13 +1631,6 @@
       "Repository": "CRAN",
       "Hash": "a85ebb35721573b196317b49ddd2dfe4"
     },
-    "rentrez": {
-      "Package": "rentrez",
-      "Version": "1.2.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "b359e1885edc81d4becebc4b1cf4bbf4"
-    },
     "renv": {
       "Package": "renv",
       "Version": "0.13.2",
@@ -1708,13 +1652,6 @@
       "Repository": "CRAN",
       "Hash": "7dce2d989b045462f0e45c140e8483aa"
     },
-    "reshape": {
-      "Package": "reshape",
-      "Version": "0.8.8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "0f4d941129e00ed34a7d192b1da7ccef"
-    },
     "reshape2": {
       "Package": "reshape2",
       "Version": "1.4.4",
@@ -1735,13 +1672,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "9bbcf8403b28711a8879874f2bb11666"
-    },
-    "ritis": {
-      "Package": "ritis",
-      "Version": "0.9.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "debd5529ab191dcf4ee7a84c80c533c5"
     },
     "rlang": {
       "Package": "rlang",
@@ -1776,20 +1706,6 @@
       "RemoteSha": "2ed7a937f3cca4f44b157098c472f6b3ae8cd9f3",
       "Hash": "c216e2f26397625c741ef6b6bb1c299c"
     },
-    "rncl": {
-      "Package": "rncl",
-      "Version": "0.8.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "f0fc9aee4b4debc3b8def3014a66c5a1"
-    },
-    "rotl": {
-      "Package": "rotl",
-      "Version": "3.0.10",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "7b7f6b8a86a39b9ce1ad3df3ee5806b3"
-    },
     "rpart": {
       "Package": "rpart",
       "Version": "4.1-15",
@@ -1803,13 +1719,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f6a407ae5dd21f6f80a6708bbb6eb3ae"
-    },
-    "rredlist": {
-      "Package": "rredlist",
-      "Version": "0.6.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a7664f08b62d9254835722514b1c87cb"
     },
     "rstudioapi": {
       "Package": "rstudioapi",
@@ -1915,13 +1824,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "4079070fc210c7901c0832a3aeab894f"
-    },
-    "solrium": {
-      "Package": "solrium",
-      "Version": "1.1.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "20abcfe3f314688d34cf5a345ea3b9cb"
     },
     "sourcetools": {
       "Package": "sourcetools",
@@ -2040,25 +1942,6 @@
       "RemoteSha": "a79291ffb4f18cbd2383e42984e56aee61978f3c",
       "Hash": "0516947b2fe251a5f47751ecf4ac2721"
     },
-    "taxastand": {
-      "Package": "taxastand",
-      "Version": "0.1.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteUsername": "joelnitta",
-      "RemoteRepo": "taxastand",
-      "RemoteRef": "master",
-      "RemoteSha": "1973c323fa212e6088c62a8e55a6cac28e9266b4",
-      "Hash": "1f0c00665791ba89b44908bdc63767e6"
-    },
-    "taxize": {
-      "Package": "taxize",
-      "Version": "0.9.97",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "bb4d094709e246b6d07613a1ce9d8ba9"
-    },
     "testthat": {
       "Package": "testthat",
       "Version": "3.0.2",
@@ -2159,13 +2042,6 @@
       "RemoteSha": "ca7af290571dcb6d6f1a9953265b2a00255ad4b9",
       "Hash": "076c16e7701301b9d28519bbceb68699"
     },
-    "triebeard": {
-      "Package": "triebeard",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "847a9d113b78baca4a9a8639609ea228"
-    },
     "tweenr": {
       "Package": "tweenr",
       "Version": "1.0.2",
@@ -2179,13 +2055,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "687aa5dfc4ec01ad4da86862a7e6a05b"
-    },
-    "urltools": {
-      "Package": "urltools",
-      "Version": "1.7.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "e86a704261a105f4703f653e05defa3e"
     },
     "usethis": {
       "Package": "usethis",
@@ -2264,26 +2133,12 @@
       "Repository": "CRAN",
       "Hash": "ca970b96d894e90397ed20637a0c1bbe"
     },
-    "wikitaxa": {
-      "Package": "wikitaxa",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "3c20136fdbbc5c262973978d888f4eb9"
-    },
     "withr": {
       "Package": "withr",
       "Version": "2.4.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "caf4781c674ffa549a4676d2d77b13cc"
-    },
-    "worrms": {
-      "Package": "worrms",
-      "Version": "0.4.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "c3cb513a418e92d15a55f3e8ac9ddc63"
     },
     "xfun": {
       "Package": "xfun",

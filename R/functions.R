@@ -104,6 +104,118 @@ load_repro_data <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.
   res
 }
 
+#' Write simple features object to file or database
+#'
+#' @param obj object of class sf or sfc
+#' @param dsn data source name (path to write out file)
+#' @param ... Other arguments passed to sf::st_write()
+#'
+#' @return Path to file that was written out
+#' 
+st_write_tar <- function(obj, dsn, ...) {	
+	sf::st_write(obj = obj, dsn = dsn, ...)
+	dsn
+}
+
+#' Write community data frame of to CSV
+#' 
+#' The site names will be included in a column called "grids"
+#'
+#' @param comm Dataframe; community dataframe with species as columns
+#' and sites as rows
+#' @param path Path to write out file
+#'
+#' @return Path to CSV file
+write_comm_to_csv <- function(comm, path) {
+	comm %>%
+		# Convert to tibble to ensure writing of integers in proper format
+		rownames_to_column("grids") %>%
+		as_tibble() %>%
+		mutate(across(where(is.numeric), as.integer)) %>%
+		write_csv(path)
+	# Return path
+	path
+}
+
+#' Write a data frame to a delimited file
+#'
+#' @param x A data frame or tibble to write to disk.
+#' @param file File or connection to write to.
+#' @param ... Other arguments passed to readr::write_csv()
+#'
+#' @return Path to the output file
+#' 
+write_csv_tar <- function(x, file, ...) {
+	readr::write_csv(x = x, file = file, ...)
+	file
+}
+
+#' Load Japan ferns community data
+#'
+#' @param csv_file Path to CSV file: community data matrix, with
+#' species as columns, sites as rows, and one column "grids" with site names
+#'
+#' @return data.frame
+load_jferns_comm <- function(csv_file) {
+	# Load as tibble, specifing column type
+	read_csv(
+		csv_file, 
+		col_types = cols(grids = col_character(), .default = col_integer() )
+	) %>%
+		# Convert to data.frame
+		column_to_rownames("grids")
+}
+
+#' Run iNEXT on fern data
+#'
+#' @param occ_point_data_ferns Dataframe; raw point occurrence data,
+#' with one row per observation. Must include column 'taxon'
+#'
+#' @return Dataframe; results of running iNEXT() to interpolate
+#' sampling completeness
+#' 
+run_inext_on_ferns <- function(occ_point_data_ferns) {
+	# Format fern abundances (no hybrids) as numeric vector
+	occ_point_data_ferns %>%
+		group_by(taxon) %>%
+		count(sort = TRUE) %>%
+		pull(n) %>%
+		# Run iNEXT
+		iNEXT::iNEXT(q = 0, datatype = "abundance") %>%
+		# Extract the "iNextEst" part of the results
+		magrittr::extract2("iNextEst") %>%
+		# Format as tibble
+		as_tibble()
+}
+
+#' Load a shape file from a zipped archive
+#'
+#' @param zip_file Path to zip file containing shape file (must end in ".zip")
+#' @param shp_file Name of shape file
+#' 
+#' @return Spatial dataframe
+#' 
+load_shape_from_zip <- function(zip_file, shp_file) {
+	# Unzip shape files to a temporary folder
+	temp_dir <- fs::path(tempdir(), "shapes")
+  zip_folder <- fs::path_file(zip_file) %>% fs::path_ext_remove()
+  # Make sure it's empty
+	if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
+  fs::dir_create(temp_dir)
+  # Unzip using `unar`, which won't mangle unicode filenames
+  processx::run(
+    command = "unar",
+    args = fs::path_abs(zip_file),
+    wd = temp_dir
+  )
+	# Load shape file
+	shape <- sf::st_read(fs::path(temp_dir, zip_folder, shp_file))
+	# Delete temporary data
+	if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
+	# Return shape
+	shape
+}
+
 #' Tidy taxonomic data of pteridophytes of Japan
 #'
 #' Data is from Japan Green list
@@ -188,6 +300,57 @@ subset_tree <- function(phy, ppgi) {
   
 }
 
+#' Calculate sampling redundancy across different grid cell resolutions
+#'
+#' @param comm_scaled_list List of lists; each element is the output of comm_from_points(),
+#' which includes: A list of two items, "comm_dat" is the community dataframe in
+#' sparse format; poly_shp is the distribution map as a simple features dataframe
+#'
+#' @return Dataframe with following columns: `res` (resolution in degrees), 
+#' `grids` (grid cell names), `abundance` (number of specimens), `richness` (number of species) 
+#' `redundancy` (sampling redundancy)
+#' 
+calc_redundancy_by_res <- function(comm_scaled_list) {
+  list(
+    "0.1" = comm_scaled_list %>% filter(resol == 0.1) %>% pull(poly_shp) %>% pluck(1),
+    "0.2" = comm_scaled_list %>% filter(resol == 0.2) %>% pull(poly_shp) %>% pluck(1),
+    "0.3" = comm_scaled_list %>% filter(resol == 0.3) %>% pull(poly_shp) %>% pluck(1),
+    "0.4" = comm_scaled_list %>% filter(resol == 0.4) %>% pull(poly_shp) %>% pluck(1)
+  ) %>%
+    map_df(~as_tibble(.) %>% select(grids, abundance, richness), .id = "res") %>%
+    # Calculate redundancy
+    mutate(redundancy = 1 - (richness/abundance))
+}
+
+#' Summarize sampling redundancy across different grid cell resolutions
+#'
+#' @param redundancy_by_res Dataframe; Output of calc_redundancy_by_res().
+#' Includes redundancy per grid cell at different resolutions.
+#'
+#' @return Dataframe of summary values across the entire dataset. Columns include:
+#' `res` (resolution in degrees), `n_total` (number of grid cells total),
+#' `n_above_50` (number of grid cells with redundancy > 0.5),
+#' `n_singletons` (number of grid cells with only a single collection),
+#' `percent_above_50` (precent of grid cells with redundancy > 0.5),
+#' `percent_singletons` (percent of grid cells with only a single collection),
+#' 
+sum_redundancy_by_res <- function(redundancy_by_res) {
+  
+  redundancy_by_res %>%
+    mutate(above_50 = ifelse(redundancy > 0.5, 1, 0)) %>%
+    mutate(singleton = ifelse(redundancy == 0, 1, 0)) %>%
+    group_by(res) %>%
+    summarize(
+      n_total = n(),
+      n_above_50 = sum(above_50),
+      n_singletons = sum(singleton),
+      percent_above_50 = n_above_50/n_total,
+      percent_singletons = n_singletons/ n_total,
+      .groups = "drop"
+    )
+  
+}
+
 #' Rename taxa in data by taxon ID code
 #'
 #' The `green_list` has the official taxon names. These
@@ -246,7 +409,6 @@ subset_comm_by_repro <- function (comm, repro_data) {
   comm[,colnames(comm) %in% taxa_with_repro]
   
 }
-
 
 #' Make community matrix from species' occurrences
 #'
@@ -420,7 +582,6 @@ filter_occ_points <- function(occ_point_data, shape_file) {
       .groups = "drop"
     )
   
-  
   # Read in shape file to use for mask
   # (here, the second-degree mesh map of Japan)
   second_degree_mesh <- sf::st_read(shape_file) %>%
@@ -468,6 +629,188 @@ filter_comm_by_redun <- function (comm, shape, cutoff = 0.1) {
   
   comm[rownames(comm) %in% grids_keep,]
   
+}
+
+#' Summarize raw occurrence data
+#'
+#' @param occ_point_data_ferns_unfiltered Unfiltered occurrence point data
+#' (one row per specimen, with columns for latitude and longitude)
+#' @param occ_point_data_ferns Occurrence point data
+#' (one row per specimen, with columns for latitude and longitude) after filtering
+#' to only cells within the 2-degree mesh of Japan and removing duplicate collections
+#'
+#' @return Data frame
+summarize_occ_data <- function(occ_point_data_ferns_unfiltered, occ_point_data_ferns) {
+	tribble(
+		~dataset, ~variable, ~value,
+		"occ_point_data_ferns_unfiltered", "n_taxa", n_distinct(occ_point_data_ferns_unfiltered$taxon),
+		"occ_point_data_ferns_unfiltered", "n_specimens", nrow(occ_point_data_ferns_unfiltered),
+		"occ_point_data_ferns", "n_taxa", n_distinct(occ_point_data_ferns$taxon),
+		"occ_point_data_ferns", "n_specimens", nrow(occ_point_data_ferns)
+	)
+}
+
+#' Summarize maximum latitude of fern families and genera
+#'
+#' @param lat_span_summary Dataframe with three columns: `taxon`, `min_lat`, and `max_lat`
+#' @param ppgi Pteridophyte phylogeny group I taxonomic system
+#'
+#' @return Dataframe with maximum observed latitude in Japan for ferns by genus and family
+summarize_fern_lat_max <- function(lat_span_summary, ppgi) {
+	
+	lat_genera <-
+		lat_span_summary %>%
+		mutate(higher_taxon = str_split(taxon, "_") %>% map_chr(1)) %>%
+		assert(not_na, higher_taxon) %>%
+		group_by(higher_taxon) %>%
+		summarize(
+			max_lat = max(max_lat),
+			.groups = "drop"
+		) %>%
+		mutate(taxon_level = "genus")
+	
+	lat_families <-
+		lat_span_summary %>%
+		mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+		left_join(ppgi, by = "genus") %>%
+		assert(not_na, family) %>%
+		rename(higher_taxon = family) %>%
+		group_by(higher_taxon) %>%
+		summarize(
+			max_lat = max(max_lat),
+			.groups = "drop"
+		) %>%
+		mutate(taxon_level = "family")
+	
+	bind_rows(lat_genera, lat_families)
+	
+}
+
+#' Summarize latitudinal span in specimen occurrences
+#'
+#' @param occ_point_data_ferns Occurrence point data
+#' (one row per specimen, with columns for latitude and longitude) after filtering
+#' to only cells within the 2-degree mesh of Japan and removing duplicate collections
+#'
+#' @return Dataframe with three columns: `taxon`, `min_lat`, and `max_lat`
+#' 
+summarize_fern_lat_span <- function (occ_point_data_ferns) {
+	occ_point_data_ferns %>%
+		assert(not_na, latitude, taxon) %>%
+		group_by(taxon) %>%
+		summarize(
+			min_lat = min(latitude),
+			max_lat = max(latitude),
+			.groups = "drop"
+		)
+}
+
+#' Load protected areas
+#'
+#' Read in protected areas (7 separate shape files corresponding to different kinds of areas),
+#' assign protection levels following Kusamoto et al. 2017
+#' - high: no human activities allowed
+#' - medium: permission required for economic activities
+#' - low: protected area, but none of the above restrictions
+#'
+#' @param protected_areas_zip_file Zip file of protected areas (shape files) downloaded from
+#' https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html
+#'
+#' @return Spatial dataframe with protection classified as "high", "medium", or "low"
+#' 
+load_protected_areas <- function(protected_areas_zip_file) {
+	
+	# 1: wilderness
+	protected_1 <- load_shape_from_zip(protected_areas_zip_file, "原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
+		mutate(
+			status = case_when(
+				ZONE == 1 ~ "high", # 1＝原生自然環境保全地域
+				ZONE == 2 ~ "high", # 2＝特別地区
+				ZONE == 3 ~ "high", # 3＝海中特別地区
+				ZONE == 4 ~ "low" # 4＝普通地区
+			)
+		)
+	
+	# 2: quasi-national parks
+	protected_2 <- load_shape_from_zip(protected_areas_zip_file, "国定公園.shp") %>%
+		mutate(
+			status = case_when(
+				ZONE == 1 ~ "high", # 1＝特別保護地区
+				ZONE == 20 ~ "high", # 20＝特別地域
+				ZONE == 21 ~ "medium", # 21＝第1種特別地域
+				ZONE == 22 ~ "medium", # 22＝第2種特別地域
+				ZONE == 23 ~ "medium", # 23＝第3種特別地域
+				ZONE == 3 ~ "low", # 3＝普通地区
+				ZONE == 5 ~ "marine" #5＝海域公園地区
+			)
+		)
+	
+	# 3: national wildlife protection areas
+	protected_3 <- load_shape_from_zip(protected_areas_zip_file, "国指定鳥獣保護区.shp") %>%
+		mutate(
+			status = case_when(
+				ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
+				ZONE == 2 ~ "medium", # 2＝特別保護地区
+			)
+		)
+	
+	# 4: national parks
+	protected_4 <- load_shape_from_zip(protected_areas_zip_file, "国立公園.shp") %>%
+		mutate(
+			status = case_when(
+				ZONE == 1 ~ "high", # 1＝特別保護地区
+				ZONE == 20 ~ "high", # 20＝特別地域
+				ZONE == 21 ~ "medium", # 21＝第1種特別地域
+				ZONE == 22 ~ "medium", # 22＝第2種特別地域
+				ZONE == 23 ~ "medium", # 23＝第3種特別地域
+				ZONE == 3 ~ "low", # 3＝普通地区
+				ZONE == 5 ~ "marine" #5＝海域公園地区
+			)
+		) %>%
+		# Remove protected area in inland sea (marine)
+		filter(NAME != "瀬戸内海")
+	
+	# 5: prefectural wildlife protection areas
+	protected_5 <- load_shape_from_zip(protected_areas_zip_file, "都道府県指定鳥獣保護区.shp") %>%
+		mutate(
+			status = case_when(
+				ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
+				ZONE == 2 ~ "medium", # 2＝特別保護地区
+				ZONE == 3 ~ "low" # not specified, but assume no other special protection
+			)
+		)
+	
+	# 6: prefectural natural parks
+	protected_6 <- load_shape_from_zip(protected_areas_zip_file, "都道府県立自然公園.shp") %>%
+		mutate(
+			status = case_when(
+				ZONE == 1 ~ "high", # 1＝特別保護地区
+				ZONE == 20 ~ "high", # 20＝特別地域
+				ZONE == 3 ~ "low" # 3＝普通地区
+			)
+		)
+	
+	# 7: prefectural protection areas
+	protected_7 <- load_shape_from_zip(protected_areas_zip_file, "都道府県自然環境保全地域.shp") %>%
+		mutate(
+			status = case_when(
+				ZONE == 0 ~ "high", # 0＝原生自然環境保全地域
+				ZONE == 2 ~ "high", # 2＝特別地区
+				ZONE == 4 ~ "low" # 4＝普通地区
+			)
+		)
+	
+	# Combine protected areas into single dataframe
+	combine_protected_areas(
+		protected_1,
+		protected_2,
+		protected_3,
+		protected_4,
+		protected_5,
+		protected_6,
+		protected_7
+	)
+	
 }
 
 #' Combine shapes of protected areas in Japan
@@ -720,35 +1063,50 @@ transform_traits <- function (traits,
   
 }
 
-#' Format traits for further analysis
+#' Clean up raw lucid traits
 #'
-#' Use raw fern and lycophyte trait data
-#' formatted for lucid.
+#' @param path_to_lucid_traits Path to trait data exported from lucid
+#' (https://www.lucidcentral.org/key-search/)
 #'
-#' @param path_to_lucid_traits Path to raw trait data
-#' @param taxon_id_map Tibble mapping taxon IDs to taxon names
-#' @param taxon_keep_list Vector of taxon names to keep (others will be dropped)
-#'
-#' @return Tibble
-#'
-format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
+#' @return Dataframe with data in Japanese removed
+#' 
+clean_lucid_traits <- function(path_to_lucid_traits) {
   
   # Read in raw trait data for pteridophytes of Japan.
   # These were originally formatted for lucid dichotomous key software.
   # So they are mostly quantitative traits that have been converted to binary format,
   # or numeric traits. There are a lot of traits. One row per taxon.
-  traits_raw <- read_excel(path_to_lucid_traits, skip = 1) %>%
+  read_excel(path_to_lucid_traits, skip = 1) %>% # skip top row, which is in Japanese
     clean_names() %>% 
+    # Drop columns with Japanese names
     select(-x1, -x222) %>%
     rename(taxon = x2) %>%
     mutate(taxon = str_replace_all(taxon, ":", "_")) %>%
     # Check for NA values
     assert(not_na, everything())
   
-  # Separate out into numeric and binary traits
+}
+
+#' Format traits for further analysis
+#'
+#' Use raw fern and lycophyte trait data
+#' formatted for lucid.
+#'
+#' @param traits_lucid_path Path to trait data exported from Lucid
+#' @param taxon_id_map Tibble mapping taxon IDs to taxon names
+#' @param taxon_keep_list Vector of taxon names to keep (others will be dropped)
+#'
+#' @return Tibble
+#'
+format_traits <- function(traits_lucid_path, taxon_id_map, taxon_keep_list) {
+
+  # Read in traits from CSV
+  traits_lucid <- readr::read_csv(traits_lucid_path)
+  
+  # Separate out lucid data into numeric and binary traits
   # (numeric container "number" in name, assume binary otherwise)
-  traits_numeric <- select(traits_raw, taxon, contains("number"))
-  traits_binary <-  select(traits_raw, -contains("number"))
+  traits_numeric <- select(traits_lucid, taxon, contains("number"))
+  traits_binary <-  select(traits_lucid, -contains("number"))
   
   ### Cleanup binary traits ###
   
@@ -780,10 +1138,9 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
   # Reformat presence/absence traits. These have one column each for "presence" (0 or 1),
   # "absence" (also 0 or 1), and sometimes another related state ("caducous" etc).
   # Combine these into a single "present" column.
-  
+  # - pseudo_veinlet
   traits_binary <-
     traits_binary %>%
-    # - pseudo_veinlet
     mutate(
       leaf_lamina_pseudo_veinlet_present = case_when(
         leaf_lamina_pseudo_veinlet_absent == 1 ~ 0,
@@ -816,18 +1173,10 @@ format_traits <- function(path_to_lucid_traits, taxon_id_map, taxon_keep_list) {
         leaf_sorus_indusium_presence_absence_present_caducous == 1 ~ 1,
         leaf_sorus_false_indusium == 1 ~ 1,
         TRUE ~ 0
-      ))
-  
-  # Repair `leaf_lamina_texture_thick_herbaceous`, which is for some reason split across two columns
-  traits_binary <-
-    traits_binary %>%
-    rowwise() %>%
-    # Combine into a single column
-    mutate(leaf_lamina_texture_thick_herbaceous = sum(leaf_lamina_texture_thick_herbaceous_53, leaf_lamina_texture_thick_herbaceous_55, na.rm = TRUE)) %>%
-    ungroup() %>%
-    # Make sure that worked properly
-    assert(in_set(c(0,1)), leaf_lamina_texture_thick_herbaceous) %>%
-    select(-leaf_lamina_texture_thick_herbaceous_53, -leaf_lamina_texture_thick_herbaceous_55)
+      )) %>%
+    assert(in_set(c(0,1)), -taxon) %>%
+    # Make sure no column names were created by de-duplicating raw column names
+    verify(all(str_detect(colnames(.), "[0-9]", negate = TRUE)))
   
   # Select only putatively functional traits: frond shape, frond texture, margin shape, presence or absence of indusium
   
@@ -1758,27 +2107,40 @@ remove_mafft_r <- function (matrix) {
   matrix
 }
 
-#' Load list of aligned genes from the Fern Tree of Life (FTOL) project
+#' Load Fern Tree of Life sequences as a list
 #'
-#' @param ftol_plastid_concat Path to concatenated alignment of all genes
-#' @param ftol_plastid_parts Path to CSV file with start and end position
-#' of each gene within concatenated alignment
+#' @param ftol_zip_file Path to zipped file containing data from the Fern Tree of Life project
 #'
 #' @return List of alignments (one per gene)
 #' 
-load_ftol_alignment <- function (ftol_plastid_concat, ftol_plastid_parts) {
-  
-  # Load concatenated sequences and start/end positions of each gene
-  ftol_plastid_concat_seqs <- ape::read.FASTA(ftol_plastid_concat) %>% as.matrix()
-  ftol_plastid_parts_dat <- readr::read_csv(ftol_plastid_parts)
-  
-  # Split the concatenated sequences into a list of sequences, one per gene
-  ftol_plastid_parts_dat %>%
-    mutate(subseq = map2(start, end, ~ftol_plastid_concat_seqs %>% magrittr::extract(, .x:.y))) %>%
-    pull(subseq) %>%
-    set_names(ftol_plastid_parts_dat$gene) %>%
-    # Remove empty sequences from each gene
-    map(remove_blank_seqs)
+load_ftol_alignment <- function(ftol_zip_file = "data/ftol_data_release_v0.0.1.zip") {
+	# Unzip fasta file and CSV file with gene regions to temporary directory
+	temp_dir <- fs::path(tempdir(), "ftol_data")
+  # Make sure temp dir is empty first
+  if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
+	unzip(ftol_zip_file, files = c("ftol_plastid_concat.fasta", "ftol_plastid_parts.csv"), exdir = temp_dir)
+	
+	# Load each gene separately as a list
+	# Load concatenated sequences and start/end positions of each gene
+	ftol_plastid_concat_path <- fs::path(temp_dir, "ftol_plastid_concat.fasta") 
+	ftol_plastid_parts_path  <- fs::path(temp_dir, "ftol_plastid_parts.csv")
+	ftol_plastid_concat_seqs <- ape::read.FASTA(ftol_plastid_concat_path) %>% as.matrix()
+	ftol_plastid_parts_dat <- readr::read_csv(ftol_plastid_parts_path)
+	
+	# Split the concatenated sequences into a list of sequences, one per gene
+	broad_alignment_list <- 
+		ftol_plastid_parts_dat %>%
+		mutate(subseq = map2(start, end, ~ftol_plastid_concat_seqs %>% magrittr::extract(, .x:.y))) %>%
+		pull(subseq) %>%
+		set_names(ftol_plastid_parts_dat$gene) %>%
+		# Remove empty sequences from each gene
+		map(remove_blank_seqs)
+	
+	# Cleanup
+  if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
+	
+  # Return gene list
+	broad_alignment_list
 }
 
 #' Format Japan rbcL sequence names
@@ -2165,7 +2527,7 @@ sf_add_centroids <- function(sf_data) {
     # Calculate centroid of each geometry feature
     st_centroid() %>% 
     # Convert centroids to character (e.g., "c(140.9, 45.5)")
-    mutate(geom_char = as.character(geometry)) %>% 
+    mutate(geom_char = as.character(geom)) %>% 
     # Drop geometry column
     sf::st_set_geometry(NULL) %>%
     as_tibble() %>%

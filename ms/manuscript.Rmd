@@ -57,41 +57,40 @@ source(here::here("R/ms_functions.R"), local = TRUE)
 ```{r load-data}
 # Load objects from targets workflow
 tar_load(c(
-  "repro_data",
-  "occ_point_data_ferns",
-  "occ_point_data_ferns_unfiltered",
-  "biodiv_ferns_spatial",
-  "k_taxonomy",
-  "k_phylogeny",
-  "signif_cells_protected_area",
-  "protected_areas",
-  "japan_shp",
-  "phy_sig_results",
+  "aic_env_repro",
   "binary_sig_results",
-  "traits_summary",
-  "fern_traits",
-  "japan_pterido_tree",
-  "japan_fern_tree",
-  "ppgi",
-  "occ_point_data_ferns",
-  "comm_ferns_full",
+  "biodiv_ferns_cent",
+  "biodiv_ferns_spatial",
+  "broad_alignment_list",
   "comm_ferns",
+  "comm_ferns_full",
+  "csl_file",
+  "fern_traits",
+  "green_list",
+  "japan_fern_tree",
   "japan_points_raw",
+  "japan_pterido_tree",
+  "japan_rbcL",
+  "japan_shp",
+  "k_phylogeny",
+  "k_taxonomy",
+  "lat_span_summary",
+  "lrt_results",
+  "model_fits",
+  "model_params",
+  "ms_functions",
+  "occ_point_data_summary",
+  "phy_sig_results",
   "plastome_calibration_dates",
   "plastome_tree",
-  "green_list",
-  "model_params",
-  "lrt_results",
-  "aic_env_repro",
-  "model_fits",
-  "biodiv_ferns_cent",
-  "refs_yaml",
+  "ppgi",
+  "protected_areas",
   "refs_other_yaml",
+  "refs_yaml",
+  "repro_data",
+  "signif_cells_protected_area",
   "template_file",
-  "csl_file",
-  "broad_alignment_list",
-  "japan_rbcL",
-  "ms_functions"
+  "traits_summary"
 ))
 ```
 
@@ -119,11 +118,24 @@ Author for correspondence:
 
 ## Acknowledgements
 
-FIXME: add acknowledgements (not including reviewers) JSPS KAKENHI Grant Number 16H06279 
+Members of the Iwasaki Lab at the University of Tokyo provided comments that improved the manuscript.
+Shawn Laffan provided advice about CANAPE.
+This study was supported by JSPS KAKENHI Grant Number 16H06279.
 
 \newpage
 
 ## Abstract
+
+```{r abstract-stats}
+# Convert occ_point_data_summary dataframe to nested list for easier indexing
+occ_sum <- occ_point_data_summary %>%
+  # change dataset name to just "unfiltered" vs. "filtered"
+  mutate(dataset = case_when(
+    str_detect(dataset, "unfiltered") ~ "unfiltered",
+    TRUE ~ "filtered")) %>%
+  split(.$dataset) %>%
+  map(., ~split(., .$variable))
+```
 
 **Aim** To characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
 
@@ -131,7 +143,7 @@ FIXME: add acknowledgements (not including reviewers) JSPS KAKENHI Grant Number 
 
 **Taxon** Ferns
 
-**Methods** We used data from >`r nrow(occ_point_data_ferns) %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
+**Methods** We used data from >`r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
 We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. 
 We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. 
 We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. 
@@ -209,8 +221,8 @@ Map data were downloaded from the Geospatial Information Authority of Japan unde
 We used a list of all non-hybrid fern specimens housed at herbaria in Japan. 
 We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
 Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1 in Supporting Information). 
-The original list comprises `r nrow(occ_point_data_ferns_unfiltered) %>% scales::number(big.mark = ",")` specimens representing `r occ_point_data_ferns_unfiltered %>% pull(taxon) %>% n_distinct()` terminal taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). 
-We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html).
+The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). 
+We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) and removed duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
 
 A necessary step in any analysis of biodiversity is to set the grain size used to accurately define communities. 
 Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. 
@@ -423,19 +435,20 @@ For taxonomic richness, cells ranked in the top >5% were considered highly diver
 
 ```{r dataset-stats}
 ### Taxon list ###
-# Make list of all native ferns in Japan (based off Green List), includes hybrids
+# Make list of all native ferns in Japan (based off Green List), *including* hybrids
 fern_list <-
   green_list %>%
   mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
   left_join(ppgi) %>%
   filter(class == "Polypodiopsida")
 
-### Phylogeny ###
+# Caculate number of native, non-hybrid fern taxa
 total_fern_taxa <- fern_list %>%
   filter(hybrid == FALSE) %>%
   pull(taxon) %>%
   n_distinct()
 
+### Phylogeny ###
 phylogeny_sampled_percent <- ape::Ntip(japan_fern_tree) %>% magrittr::divide_by(total_fern_taxa) %>% scales::percent(accuracy = 0.01)
 
 # Check height (age) of fern phylogeny
@@ -491,9 +504,9 @@ mono_status_class <-
 # Assert all classes (ferns, lycophytes) are monophyletic
 assert_that(mono_status_class %>% filter(is_mono == FALSE) %>% nrow == 0)
 
-### Specimens ###
-n_specimens <- nrow(occ_point_data_ferns) %>% scales::number(big.mark = ",")
-n_specimens_taxa <- occ_point_data_ferns %>% pull(taxon) %>% n_distinct()
+### Specimens (filtered occurrence data) ###
+n_specimens <- occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")
+n_specimens_taxa <- occ_sum$filtered$n_taxa$value
 n_specimens_taxa_percent <- n_specimens_taxa %>% magrittr::divide_by(total_fern_taxa) %>% scales::percent(accuracy = 0.01)
 
 # Calculate mean redundancy
@@ -676,31 +689,21 @@ Cells with significantly high biodiversity generally had a greater percentage of
 ### Distribution and drivers of biodiversity
 
 ```{r distribution-stats}
+# Summarize maximum latitude by genus, family
+max_lat_summary <- summarize_fern_lat_max(lat_span_summary, ppgi)
+
 # Calculate number of genera and families restricted to lat < 30.1
 southern_genera <-
-  occ_point_data_ferns %>%
-  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
-  group_by(genus) %>%
-  summarize(
-    max_lat = max(latitude),
-    .groups = "drop"
-  ) %>%
-  filter(max_lat < 30.1)
+  max_lat_summary %>%
+  filter(max_lat < 30.1, taxon_level == "genus")
 
-n_southern_genera <- southern_genera %>% pull(genus) %>% n_distinct %>% english2
+n_southern_genera <- southern_genera %>% pull(higher_taxon) %>% n_distinct %>% english2
 
 southern_families <-
-  occ_point_data_ferns %>%
-  mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
-  left_join(ppgi, by = "genus") %>%
-  group_by(family) %>%
-  summarize(
-    max_lat = max(latitude),
-    .groups = "drop"
-  ) %>%
-  filter(max_lat < 30.1)
+  max_lat_summary %>%
+  filter(max_lat < 30.1, taxon_level == "family")
 
-n_southern_families <- southern_families %>% pull(family) %>% n_distinct %>% english2
+n_southern_families <- southern_families %>% pull(higher_taxon) %>% n_distinct %>% english2
 ```
 
 The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`a) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015], and niche-modeled distributions of woody plants [@Fukaya2020]. 
@@ -756,28 +759,18 @@ Although various efforts to prevent deer herbivory have been deployed such as cu
 ### Limits of the study and future outlook
 
 ```{r limits-stats}
-# Summarize occurrences by latitude
-occ_data_by_lat <-
-  occ_point_data_ferns %>%
-  group_by(taxon) %>%
-  summarize(
-    min_lat = min(latitude),
-    max_lat = max(latitude)
-  ) %>%
-  mutate(
-    lat_span = max_lat - min_lat
-  )
-
 # Find the species with the widest latitudinal distribution
-taxon_with_widest_lat <- occ_data_by_lat %>%
+taxon_with_widest_lat <- lat_span_summary %>%
+  mutate(lat_span = max_lat - min_lat) %>%
   slice_max(lat_span) %>%
   left_join(green_list, by = "taxon") %>%
-  taxastand::add_parsed_names(sci_name = scientific_name, species, author) %>%
-  mutate(text = glue("*{species}* {author}"))
+  # Parse out species name and author
+  mutate(gn_parse_tidy(.$scientific_name) %>% select(canonicalsimple, authorship)) %>%
+  mutate(text = glue("*{canonicalsimple}* {authorship}"))
 
 # Find number of species occurring across areas defined by straits
 n_widespread_taxa <-
-  occ_data_by_lat %>%
+  lat_span_summary %>%
   # Filter by approx location of Tokara strait (29) and Tsugaru Strait (41.5)
   filter(min_lat < 29, max_lat > 41.5) %>%
   pull(taxon) %>%
