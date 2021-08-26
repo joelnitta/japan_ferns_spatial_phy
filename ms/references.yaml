@@ -1,4 +1,20 @@
 references:
+- id: Barrington1989
+  author:
+  - family: Barrington
+    given: David S
+  - family: Haufler
+    given: Christopher H
+  - family: Werth
+    given: Charles R.
+  container-title: American Fern Journal
+  ISSN: 1938-422X
+  issued:
+  - year: 1989
+  page: 55-64
+  title: Hybridization, reticulation, and species concepts in the ferns
+  type: article-journal
+  volume: '79'
 - id: Barrington1993
   author:
   - family: Barrington
@@ -11,7 +27,6 @@ references:
   page: 275-279
   title: Ecological and historical factors in fern biogeography
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1285
   volume: '20'
 - id: Baselga2012
   accessed:
@@ -36,7 +51,6 @@ references:
   title-short: The relationship between species replacement, dissimilarity derived
     from nestedness, and nestedness
   type: article-journal
-  URL: http://doi.wiley.com/10.1111/j.1466-8238.2011.00756.x
   volume: '21'
 - id: Bengtsson2003
   accessed:
@@ -58,13 +72,11 @@ references:
   source: Wiley Online Library
   title: Genetic variation in organisms with sexual and asexual reproduction
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/abs/10.1046/j.1420-9101.2003.00523.x
   volume: '16'
 - id: Bickford2006
   author:
   - family: Bickford
-    given: Sophia
-    dropping-particle: a.
+    given: Sophia A.
   - family: Laffan
     given: Shawn W.
   container-title: Global Ecology and Biogeography
@@ -73,11 +85,10 @@ references:
   issue: '0'
   issued:
   - year: 2006
-  page: 060811081017003-???
+  page: 588-601
   title: Multi-extent analysis of the relationship between pteridophyte species richness
     and climate
   type: article-journal
-  URL: http://doi.wiley.com/10.1111/j.1466-822X.2006.00250.x
   volume: '0'
 - id: Bivand2013
   author:
@@ -115,7 +126,6 @@ references:
   title: 'Testing for phylogenetic signal in comparative data: Behavioral traits are
     more labile'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1988
   volume: '57'
 - id: Brooks2006
   accessed:
@@ -158,7 +168,6 @@ references:
   source: science.sciencemag.org
   title: Global Biodiversity Conservation Priorities
   type: article-journal
-  URL: https://science.sciencemag.org/content/313/5783/58
   volume: '313'
 - id: Bryant2008
   author:
@@ -183,7 +192,6 @@ references:
   title: 'Microbes on mountainsides: contrasting elevational patterns of bacterial
     and plant diversity'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1946
   volume: '105'
 - id: Colwell2004a
   author:
@@ -202,8 +210,6 @@ references:
   title: 'The mid‐domain effect and species richness patterns: What have we learned
     so far?'
   type: article-journal
-  URL: file:///Users/joelnitta/Documents/Papers/2004/Colwell/2004 Colwell The Mid‐Domain
-    Effect and Species.pdf papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p2066
   volume: '163'
 - id: Courtiol2017
   accessed:
@@ -228,7 +234,6 @@ references:
   source: www.biorxiv.org
   title: Modelling isoscapes using mixed models
   type: article-journal
-  URL: https://www.biorxiv.org/content/10.1101/207662v1
 - id: Creese2011
   author:
   - family: Creese
@@ -247,7 +252,6 @@ references:
   title: 'Drivers of morphological diversity and distribution in the Hawaiian fern
     flora: Trait associations with size, growth form, and environment'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1821
   volume: '98'
 - id: Daru2020
   accessed:
@@ -276,7 +280,6 @@ references:
   source: DOI.org (Crossref)
   title: Endemism patterns are scale dependent
   type: article-journal
-  URL: http://www.nature.com/articles/s41467-020-15921-6
   volume: '11'
 - id: Daru2020a
   accessed:
@@ -307,7 +310,6 @@ references:
   title: 'phyloregion: R package for biogeographical regionalization and macroecology'
   title-short: phyloregion
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/10.1111/2041-210X.13478
   volume: '11'
 - id: Ebihara2013
   author:
@@ -335,7 +337,6 @@ references:
   title: 'A survey of the fern gametophyte flora of Japan: Frequent independent occurrences
     of noncordiform gametophytes'
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/abs/10.3732/ajb.1200555
   volume: '100'
 - id: Ebihara2016b
   author:
@@ -435,7 +436,6 @@ references:
   title: 'Rethinking patch size and isolation effects: the habitat amount hypothesis'
   title-short: Rethinking patch size and isolation effects
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/10.1111/jbi.12130
   volume: '40'
 - id: Faith1992
   author:
@@ -450,7 +450,6 @@ references:
   page: 1-10
   title: Conservation evaluation and phylogenetic diversity
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1899
   volume: '61'
 - id: Fritz2010
   author:
@@ -500,7 +499,6 @@ references:
   title: Integrating multiple sources of ecological data to unveil macroscale species
     abundance
   type: article-journal
-  URL: http://www.nature.com/articles/s41467-020-15407-5
   volume: '11'
 - id: Garcillan2003
   accessed:
@@ -528,7 +526,6 @@ references:
   title: Distribution and species richness of woody dryland legumes in Baja California,
     Mexico
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1654-1103.2003.tb02174.x
   volume: '14'
 - id: Givnish1987
   author:
@@ -542,7 +539,6 @@ references:
   title: 'Comparative studies of leaf form: assessing the relative roles of selective
     pressures and phylogenetic constraints'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1851
 - id: Gonzalez-Orozco2014b
   accessed:
   - year: 2020
@@ -571,7 +567,6 @@ references:
   source: Wiley Online Library
   title: Biogeographical regions and phytogeography of the eucalypts
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/ddi.12129
   volume: '20'
 - id: Gotelli2000
   author:
@@ -587,7 +582,6 @@ references:
   page: 2606-2621
   title: Null model analysis of species co-occurrence patterns
   type: article-journal
-  URL: http://www.jstor.org/stable/177478?origin=crossref
   volume: '81'
 - id: Gower1971
   author:
@@ -603,7 +597,6 @@ references:
   PMID: '25246403'
   title: A general coefficient of similarity and some of its properties
   type: article-journal
-  URL: http://www.jstor.org/stable/2528823?origin=crossref
   volume: '27'
 - id: Grusz2021
   accessed:
@@ -637,7 +630,6 @@ references:
     evidence from pellaeids (Pteridaceae)'
   title-short: A drought-driven model for the evolution of obligate apomixis in ferns
   type: article-journal
-  URL: https://bsapubs.onlinelibrary.wiley.com/doi/abs/10.1002/ajb2.1611
   volume: '108'
 - id: Kembel2010
   accessed:
@@ -676,7 +668,6 @@ references:
   title: 'Picante: R tools for integrating phylogenies and ecology'
   title-short: Picante
   type: article-journal
-  URL: https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/btq166
   volume: '26'
 - id: Kessler2011a
   author:
@@ -698,7 +689,6 @@ references:
   title: A global comparative analysis of elevational species richness patterns of
     ferns
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1683
   volume: '20'
 - id: Kluge2007
   author:
@@ -714,7 +704,6 @@ references:
   title: 'Morphological characteristics of fern assemblages along an elevational gradient:
     Patterns and causes'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1671
   volume: '13'
 - id: Krueger-Hadfield2019
   accessed:
@@ -740,7 +729,6 @@ references:
   source: Wiley Online Library
   title: Incorporating ploidy diversity into ecological and community genetics
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/jpy.12906
   volume: '55'
 - id: Kubota2014
   author:
@@ -797,7 +785,6 @@ references:
     assessment of the geohistorical gradients that shaped endemic flora in Japan
   title-short: How well are biodiversity drivers reflected in protected areas?
   type: article-journal
-  URL: http://doi.wiley.com/10.1007/s11284-017-1451-6
   volume: '32'
 - id: Laffan2016
   author:
@@ -841,7 +828,6 @@ references:
   title: A distance-based framework for measuring functional diversity from multiple
     traits.
   type: article-journal
-  URL: http://www.ncbi.nlm.nih.gov/pubmed/20380219
   volume: '91'
 - id: Landau2021
   accessed:
@@ -866,7 +852,6 @@ references:
     for reproducibility and high-performance computing'
   title-short: The targets R package
   type: article-journal
-  URL: https://joss.theoj.org/papers/10.21105/joss.02959
   volume: '6'
 - id: Lehtonen2011
   author:
@@ -882,7 +867,6 @@ references:
   page: e24851
   title: Towards resolving the complete fern tree of life
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1987
   volume: '6'
 - id: Link-Perez2018a
   author:
@@ -897,7 +881,6 @@ references:
   - year: 2018
   title: 'Fern and lycophyte diversity in the Pacific Northwest: Patterns and predictors'
   type: article-journal
-  URL: http://doi.wiley.com/10.1111/jse.12430
 - id: Liu2012
   author:
   - family: Liu
@@ -922,7 +905,6 @@ references:
   title: 'The evolutionary dynamics of apomixis in ferns: a case study from polystichoid
     ferns'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p2225
   volume: '2012'
 - id: Loiseau2020
   author:
@@ -977,7 +959,6 @@ references:
   source: www.nature.com
   title: Systematic conservation planning
   type: article-journal
-  URL: https://www.nature.com/articles/35012251
   volume: '405'
 - id: Millien-Parra1999
   accessed:
@@ -1003,7 +984,6 @@ references:
     of a relict fauna'
   title-short: Island biogeography of the Japanese terrestrial mammal assemblages
   type: article-journal
-  URL: http://doi.wiley.com/10.1046/j.1365-2699.1999.00346.x
   volume: '26'
 - id: Mishler2014
   author:
@@ -1028,7 +1008,6 @@ references:
   title: Phylogenetic measures of biodiversity and neo- and paleo-endemism in Australian
     Acacia
   type: article-journal
-  URL: http://www.nature.com/doifinder/10.1038/ncomms5473
   volume: '5'
 - id: Mishler2020
   accessed:
@@ -1065,7 +1044,6 @@ references:
   source: DOI.org (Crossref)
   title: Spatial phylogenetics of the North American flora
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/jse.12590
 - id: Moran2001
   author:
   - family: Moran
@@ -1080,7 +1058,6 @@ references:
   title: Phytogeographic relationships between neotropical and African-Madagascan
     pteridophytes
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1255
   volume: '53'
 - id: Myers2000
   author:
@@ -1137,7 +1114,6 @@ references:
   title: Continental scale patterns and predictors of fern richness and phylogenetic
     diversity
   type: article-journal
-  URL: http://journal.frontiersin.org/article/10.3389/fgene.2015.00132/abstract
   volume: '6'
 - id: Nguyen2015
   author:
@@ -1193,7 +1169,6 @@ references:
   source: DOI.org (Crossref)
   title: The evolution and functional significance of leaf shape in the angiosperms
   type: article-journal
-  URL: http://www.publish.csiro.au/?paper=FP11057
   volume: '38'
 - id: Nishizawa2016
   accessed:
@@ -1223,7 +1198,6 @@ references:
   title: Deer herbivory affects the functional diversity of forest floor plants via
     changes in competition-mediated assembly rules
   type: article-journal
-  URL: http://doi.wiley.com/10.1007/s11284-016-1367-6
   volume: '31'
 - id: Nitta2017
   author:
@@ -1247,7 +1221,6 @@ references:
   title: 'Life cycle matters: DNA barcoding reveals contrasting community structure
     between fern sporophytes and gametophytes'
   type: article-journal
-  URL: http://doi.wiley.com/10.1002/ecm.1246
   volume: '87'
 - id: Nitta2021a
   accessed:
@@ -1268,8 +1241,22 @@ references:
   title: canaper
   title-short: joelnitta/canaper
   type: book
-  URL: https://zenodo.org/record/5094033
   version: 0.0.0.9000
+- type: webpage
+  id: Noss2016
+  author:
+  - family: Noss
+    given: Reed
+  issued:
+    year: 2016
+  accessed:
+    year: 2021
+    month: 08
+    day: 26
+  title: 'Announcing the world’s 36th biodiversity hotspot: The North American coastal
+    plain'
+  title-short: 36th biodiversity hotspot
+  URL: https://www.cepf.net/node/4422
 - id: Orme2018
   type: webpage
   author:
@@ -1308,7 +1295,6 @@ references:
   PMID: '10553904'
   title: Inferring the historical patterns of biological evolution
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1989
   volume: '401'
 - id: Pebesma2018
   accessed:
@@ -1331,7 +1317,6 @@ references:
   title: 'Simple features for R: Standardized support for spatial vector data'
   title-short: Simple Features for R
   type: article-journal
-  URL: https://journal.r-project.org/archive/2018/RJ-2018-009/index.html
   volume: '10'
 - id: Petchey2002
   accessed:
@@ -1356,7 +1341,6 @@ references:
   source: DOI.org (Crossref)
   title: Functional diversity (FD), species richness and community composition
   type: article-journal
-  URL: http://doi.wiley.com/10.1046/j.1461-0248.2002.00339.x
   volume: '5'
 - id: Pinson2016a
   author:
@@ -1382,7 +1366,6 @@ references:
   title: 'The separation of generations: Biology and biogeography of long-lived sporophyteless
     fern gametophytes'
   type: article-journal
-  URL: http://www.journals.uchicago.edu/doi/10.1086/688773
   volume: '178'
 - id: Poppinga2015
   author:
@@ -1472,7 +1455,6 @@ references:
   source: DOI.org (Crossref)
   title: Patterns and drivers of phylogenetic structure of pteridophytes in China
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/10.1111/geb.13349
 - id: R-raster
   type: webpage
   author:
@@ -1529,7 +1511,6 @@ references:
   title: 'Phylogenetic endemism: a new approach for identifying geographical concentrations
     of evolutionary history'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1890
   volume: '18'
 - id: Rousset2014
   author:
@@ -1563,8 +1544,6 @@ references:
   title: Fern phylogeny inferred from 400 leptosporangiate species and three plastid
     genes
   type: article-journal
-  URL: http://www.ingentaconnect.com/content/iapt/tax/2007/00000056/00000004/art00007
-    papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p620
   volume: '56'
 - id: Shimizu2014
   accessed:
@@ -1574,21 +1553,19 @@ references:
   author:
   - family: Shimizu
     given: Yoshikazu
-  container-title: 地域学研究
+  container-title: Chiikigaku-kenkyu (In Japanese)
   ISSN: 0915-4094
   issue: '27'
   issued:
   - year: 2014
     month: 3
   page: 19-75
-  publisher: 駒澤大学応用地理研究所
   source: CiNii
   title: 'Process of the formation of Japanese forest and typification of vegetation
     zone : From an East Asian viewpoint'
   title-short: Process of the formation of Japanese forest and typification of vegetation
     zone
   type: article-journal
-  URL: https://ci.nii.ac.jp/naid/120006618020/
 - id: Shiono2015
   author:
   - family: Shiono
@@ -1674,7 +1651,6 @@ references:
   title: 'Effects of sika deer on vegetation in Japan: A review'
   title-short: Effects of sika deer on vegetation in Japan
   type: article-journal
-  URL: https://linkinghub.elsevier.com/retrieve/pii/S0006320709000822
   volume: '142'
 - id: Tanaka2014
   author:
@@ -1697,7 +1673,6 @@ references:
   title: Ecological and phylogenetic approaches for diversification of apogamous ferns
     in Japan
   type: article-journal
-  URL: http://link.springer.com/10.1007/s00606-014-1036-6
   volume: '300'
 - id: Testo2016a
   author:
@@ -1714,7 +1689,6 @@ references:
   PMID: '27621129'
   title: A 4000-species dataset provides new insight into the evolution of ferns
   type: article-journal
-  URL: http://dx.doi.org/10.1016/j.ympev.2016.09.003
   volume: '105'
 - id: Tokita2006
   author:
@@ -1747,7 +1721,6 @@ references:
   page: 76-84
   title: Development and evolution of fern floras of oceanic islands
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p448
   volume: '2'
 - id: Vaida2005
   accessed:
@@ -1772,7 +1745,6 @@ references:
   source: Silverchair
   title: Conditional Akaike information for mixed-effects models
   type: article-journal
-  URL: https://doi.org/10.1093/biomet/92.2.351
   volume: '92'
 - id: WatkinsJr.2010
   author:
@@ -1791,7 +1763,6 @@ references:
   title: 'Hydraulic properties of fern sporophytes: Consequences for ecological and
     evolutionary diversification'
   type: article-journal
-  URL: papers://ebd7d3df-d8f1-4be8-bcf7-4fb07ababf30/Paper/p1527
   volume: '97'
 - id: White2019
   author:
@@ -1815,8 +1786,38 @@ references:
   title: Regional influences on community structure across the tropical-temperate
     divide
   type: article-journal
-  URL: http://www.nature.com/articles/s41467-019-10253-6
   volume: '10'
+- id: Hsieh2016
+  accessed:
+  - year: 2021
+    month: 8
+    day: 20
+  author:
+  - family: Hsieh
+    given: T. C.
+  - family: Ma
+    given: K. H.
+  - family: Chao
+    given: Anne
+  container-title: Methods in Ecology and Evolution
+  container-title-short: Methods Ecol Evol
+  DOI: 10/gdskcx
+  editor:
+  - family: McInerny
+    given: Greg
+  ISSN: 2041-210X, 2041-210X
+  issue: '12'
+  issued:
+  - year: 2016
+    month: 12
+  language: en
+  page: 1451-1456
+  source: DOI.org (Crossref)
+  title: 'iNEXT: an R package for rarefaction and extrapolation of species diversity
+    ( <span style="font-variant:small-caps;" smallcaps="smallcaps">H</span> ill numbers)'
+  title-short: iNEXT
+  type: article-journal
+  volume: '7'
 - id: Yu2017
   accessed:
   - year: 2021
@@ -1853,37 +1854,4 @@ references:
     other associated data'
   title-short: ''
   type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.12628
   volume: '8'
-- id: Hsieh2016
-  accessed:
-  - year: 2021
-    month: 8
-    day: 20
-  author:
-  - family: Hsieh
-    given: T. C.
-  - family: Ma
-    given: K. H.
-  - family: Chao
-    given: Anne
-  container-title: Methods in Ecology and Evolution
-  container-title-short: Methods Ecol Evol
-  DOI: 10/gdskcx
-  editor:
-  - family: McInerny
-    given: Greg
-  ISSN: 2041-210X, 2041-210X
-  issue: '12'
-  issued:
-  - year: 2016
-    month: 12
-  language: en
-  page: 1451-1456
-  source: DOI.org (Crossref)
-  title: 'iNEXT: an R package for rarefaction and extrapolation of species diversity
-    ( <span style="font-variant:small-caps;" smallcaps="smallcaps">H</span> ill numbers)'
-  title-short: iNEXT
-  type: article-journal
-  URL: https://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12613
-  volume: '7'

@@ -78,6 +78,11 @@ cite_keys_other <- map_chr(refs_other$references, "id") %>%
 
 refs_all <- read_yaml("ms/main_library.yaml")
 
+# remove URLs from main library references
+for(i in 1:length(refs_all$references)) {
+  refs_all$references[[i]]$URL <- NULL
+}
+
 cite_keys_all <- map_chr(refs_all$references, "id") %>%
   tibble(key = ., order = 1:length(.))
 
