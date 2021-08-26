@@ -25,7 +25,7 @@ tar_plan(
   # This requires doi_10.5061_dryad.4362p32__v4.zip to be downloaded to data/
   # from https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32 first
   tar_file(ebihara_2019_zip_file, "data/doi_10.5061_dryad.4362p32__v4.zip"),
-
+  
   # - Pteridophyte Phylogeny Group I (PPGI) taxonomy,
   # modified slightly for ferns of Japan
   ppgi = load_ppgi(ebihara_2019_zip_file),
@@ -38,7 +38,7 @@ tar_plan(
   
   # - Japan rbcL alignment
   japan_rbcL_raw = read_ja_rbcL_from_zip(ebihara_2019_zip_file),
-
+  
   # - Summary of occurrence point data
   tar_file(occ_point_data_summary_file, "data/japan_ferns_occ_summary.csv"),
   occ_point_data_summary = read_csv(occ_point_data_summary_file),
@@ -67,7 +67,7 @@ tar_plan(
   
   ## Occurrence data ----
   # Raw occurrence data processing was done in R/process_raw_data.R
-   
+  
   # Load geographic shapes, richness, and number of specimens at 0.2 degree grid scale
   tar_file(japan_ferns_shape_full_file, "data/japan_ferns_shape_full.gpkg"),
   shape_ferns_full = sf::st_read(japan_ferns_shape_full_file),
@@ -75,15 +75,15 @@ tar_plan(
   # Load community matrix at 0.2 degree grid scale (not filtered by redundancy)
   tar_file(japan_ferns_comm_full_file, "data/japan_ferns_comm_full.csv"),
   comm_ferns_full = load_jferns_comm(japan_ferns_comm_full_file),
-
+  
   # Load summaries of testing different grid cell sizes
   tar_file(redundancy_by_res_file, "data/redundancy_by_res.csv"),
   redundancy_by_res = read_csv(redundancy_by_res_file, col_types = cols(res = col_character())),
-
+  
   # Load results of assessing sampling completeness with iNEXT
   tar_file(inext_res_file, "data/inext_results.csv"),
   inext_res = read_csv(inext_res_file),
-
+  
   # Subset geographic shapes to redundancy > 0.1
   shape_ferns = filter(shape_ferns_full, redundancy > 0.1),
   
@@ -163,7 +163,7 @@ tar_plan(
     wd = here::here("treepl"),
     nthreads = 20
   ),
-
+  
   # Run treePL dating analysis
   treepl_dating_results = run_treepl(
     phy = plastome_tree_rooted,
@@ -185,10 +185,10 @@ tar_plan(
   japan_fern_tree = subset_tree(
     phy = japan_pterido_tree, 
     ppgi = ppgi),
-
+  
   # Also make phylogram (not ultrametric tree) of ferns in Japan
   japan_fern_phylogram = ape::keep.tip(plastome_tree_rooted, japan_fern_tree$tip.label),
-
+  
   # Format trait data ----
   
   # Format trait data, subset to ferns in tree
@@ -219,7 +219,7 @@ tar_plan(
   # Load climate data from WorldClim database at 2.5 minute resolution
   tar_file(ja_climate_data_file, "data/japan_climate.gpkg"),
   ja_climate_data = sf::st_read(ja_climate_data_file),
-
+  
   # Calculate mean climate values in each grid cell
   mean_climate = calc_mean_climate(shape_ferns, ja_climate_data),
   
@@ -238,7 +238,7 @@ tar_plan(
       metrics = c("pd", "rpd", "pe", "rpe")),
     deployment = "main"
   ),
-
+  
   # - all ferns, phylogenetic diversity, using phylogram (not ultrametric)
   tar_target(
     rand_test_phy_ferns_not_ult,
@@ -326,10 +326,10 @@ tar_plan(
   traits_summary = make_trait_summary(fern_traits),
   
   # Reproductive mode analysis ----
-
+  
   # Clean up reproductive mode data
   repro_data = process_repro_data(repro_data_raw, green_list),
-
+  
   # Calculate % apomictic species in each fern community
   percent_apo = calc_perc_apo(comm_ferns, repro_data),
   
@@ -370,7 +370,7 @@ tar_plan(
     # Classify endemism and significance of randomization tests
     cpr_classify_endem() %>%
     classify_signif("pe", one_sided = TRUE, upper = TRUE),
-
+  
   # - Phylogram (not ultrametric)
   biodiv_ferns_spatial_not_ult = 
     shape_ferns %>%
@@ -407,7 +407,7 @@ tar_plan(
   biodiv_ferns_not_ult = spatial_to_cent(
     biodiv_ferns_spatial_not_ult,
     c("grids", "lat", "long", resp_vars_repro, indep_vars)),
-    
+  
   ## Correlation analysis ----
   
   # Check for correlation between independent variables in repro data
@@ -506,7 +506,7 @@ tar_plan(
   aic_env_repro = compare_aic_env_repro(spatial_models),
   
   ## Predict model fits ---
-
+  
   # Extract model fits in loop: use temperature for environmental models, and percent_apo for repro models
   # - ultrametric tree (full  analysis)
   tar_target(
@@ -529,7 +529,7 @@ tar_plan(
   # - low: protected area, but none of the above restrictions
   tar_file(protected_areas_zip_file, "data/map17.zip"),
   protected_areas = load_protected_areas(protected_areas_zip_file),
-
+  
   # Calculate percent protection for grid cells with significantly high biodiversity
   signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
   

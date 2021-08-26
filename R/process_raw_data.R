@@ -44,7 +44,7 @@ tar_plan(
   
   # Subset to just ferns (674 taxa)
   occ_point_data_ferns_unfiltered = subset_to_ferns(occ_point_data, ppgi),
-
+  
   # Calculate summary statistics for occurrence data, write out as CSV
   occ_point_data_summary = summarize_occ_data(
     occ_point_data_ferns_unfiltered = occ_point_data_ferns_unfiltered, 
@@ -53,14 +53,14 @@ tar_plan(
     occ_point_data_summary_out,
     write_csv_tar(occ_point_data_summary, "data/japan_ferns_occ_summary.csv")
   ),
-
+  
   # Calculate latitudinal span by taxon, write out as CSV
   lat_span_summary = summarize_fern_lat_span(occ_point_data_ferns),
   tar_file(
     lat_span_summary_out,
     write_csv_tar(lat_span_summary, "data/japan_ferns_lat_span.csv")
   ),
-
+  
   # Filter out duplicates, restrict to only points in second-degree mesh
   # Shape file downloaded from http://gis.biodic.go.jp/
   # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
@@ -82,7 +82,7 @@ tar_plan(
       species = "taxon"),
     pattern = map(scales_to_test)
   ),
-
+  
   # After inspecting results (see SI), select 0.2 degrees as optimal scale.
   
   # Extract geographic shapes, richness, and number of specimens at 0.2 degree grid scale
@@ -98,7 +98,7 @@ tar_plan(
   
   # Extract community matrix from shapes
   comm_ferns_full = comm_from_comm_scaled_list(comm_scaled_list, 0.2),
-
+  
   # Write out community matrix as CSV
   tar_file(
     comm_ferns_full_out,
@@ -114,19 +114,19 @@ tar_plan(
     shape = shape_ferns,
     cutoff = 0.1
   ),
-
+  
   # Calculate redundancy across different grain sizes
   redundancy_by_res = calc_redundancy_by_res(comm_scaled_list),
   tar_file(
     redundancy_by_res_out,
     write_csv_tar(redundancy_by_res, "data/redundancy_by_res.csv")),
-
+  
   # Assess sampling completeness with iNEXT
   inext_res = run_inext_on_ferns(occ_point_data_ferns),
   tar_file(
     inext_res_out,
     write_csv_tar(inext_res, "data/inext_results.csv")),
-
+  
   # Clean raw lucid data (remove data in Japanese)
   tar_target(lucid_data_ja_raw, "data_raw/JpFernLucid_forJoel20200827.xlsx"),
   raw_trait_data = clean_lucid_traits(lucid_data_ja_raw),
@@ -134,7 +134,7 @@ tar_plan(
     raw_trait_data_out,
     write_csv_tar(raw_trait_data, "data/japan_ferns_traits_lucid.csv")
   ),
- 
+  
   # Load climate data downloaded from WorldClim database
   # The WorldClim data first needs to be downloaded with this:
   # raster::getData("worldclim", download = TRUE, var = "bio", res = 2.5, path = "data_raw/world_clim")
@@ -145,5 +145,5 @@ tar_plan(
     ja_climate_data_out,
     st_write_tar(ja_climate_data, "data/japan_climate.gpkg")
   )
-
+  
 )
