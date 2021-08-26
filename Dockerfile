@@ -7,8 +7,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ############################
 
 # gcc through libtool for treePL
-# cmake, libeigen3-dev for IQTREE
 # libmagick for animation->magick->phytools
+# unar for unzipping files with unicode filenames
 # the rest are same dependencies as rocker/geospatial
 # https://hub.docker.com/r/rocker/geospatial/dockerfile
 RUN apt-get update \
@@ -27,8 +27,8 @@ RUN apt-get update \
     autotools-dev \
     automake \
     libtool \
-    cmake \
-    libeigen3-dev \
+    libmagick++-dev \
+    unar \
     lbzip2 \
     libfftw3-dev \
     libgeos-dev \
@@ -53,7 +53,6 @@ RUN apt-get update \
     tk-dev \
     unixodbc-dev \
     libgdal-dev \
-    libmagick++-dev \
     libzmq3-dev \
     libgmp3-dev \
     libpng-dev
