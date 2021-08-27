@@ -193,10 +193,7 @@ tar_plan(
   # Format trait data, subset to ferns in tree
   tar_file(raw_trait_data_file, "data/japan_ferns_traits_lucid.csv"),
   
-  fern_traits = format_traits(
-    traits_lucid_path = raw_trait_data_file,
-    taxon_id_map = green_list,
-    taxon_keep_list = japan_fern_tree$tip.label),
+  fern_traits = format_traits(traits_lucid_path = raw_trait_data_file),
   
   # Transform continuous traits before making distance matrix
   traits_for_dist = transform_traits(

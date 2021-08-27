@@ -1122,15 +1122,38 @@ clean_lucid_traits <- function(path_to_lucid_traits) {
   # These were originally formatted for lucid dichotomous key software.
   # So they are mostly quantitative traits that have been converted to binary format,
   # or numeric traits. There are a lot of traits. One row per taxon.
-  read_excel(path_to_lucid_traits, skip = 1) %>% # skip top row, which is in Japanese
+  raw_lucid_data %>% 
     clean_names() %>% 
     # Drop columns with Japanese names
     select(-x1, -x222) %>%
     rename(taxon = x2) %>%
     mutate(taxon = str_replace_all(taxon, ":", "_")) %>%
+    assert(is_uniq, taxon) %>%
+    # Replace synonyms
+    # - make sure all names in 'correction' file in lucid data
+    verify(all(lucid_name_correction$original_taxon %in% taxon)) %>%
+    left_join(lucid_name_correction, by = c("taxon" = "original_taxon")) %>%
+    mutate(
+      taxon = case_when(
+        !is.na(new_taxon) ~ new_taxon,
+        TRUE ~ taxon
+      )) %>%
+    select(-new_taxon) %>%
+    assert(is_uniq, taxon) %>%
+    # Remove non-native taxa
+    mutate(ja_native_status = replace_na(ja_native_status, "native")) %>%
+    filter(ja_native_status != "non_native") %>%
+    # Filter to only ferns (remove lycophytes)
+    mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
+    left_join(select(ppgi, genus, class) %>% unique, by = "genus") %>%
+    assert(not_na, class) %>%  
+    filter(class == "Polypodiopsida") %>%
+    select(-class) %>%
+    # Check that all names are in green list
+    verify(all(taxon %in% green_list$taxon)) %>%
     # Check for NA values
-    assert(not_na, everything())
-  
+    assert(not_na, everything()) %>%
+    assert(is_uniq, taxon)
 }
 
 #' Format traits for further analysis
@@ -1139,12 +1162,10 @@ clean_lucid_traits <- function(path_to_lucid_traits) {
 #' formatted for lucid.
 #'
 #' @param traits_lucid_path Path to trait data exported from Lucid
-#' @param taxon_id_map Tibble mapping taxon IDs to taxon names
-#' @param taxon_keep_list Vector of taxon names to keep (others will be dropped)
 #'
 #' @return Tibble
 #'
-format_traits <- function(traits_lucid_path, taxon_id_map, taxon_keep_list) {
+format_traits <- function(traits_lucid_path) {
   
   # Read in traits from CSV
   traits_lucid <- readr::read_csv(traits_lucid_path)
@@ -1313,51 +1334,6 @@ format_traits <- function(traits_lucid_path, taxon_id_map, taxon_keep_list) {
   
   # Combine all numeric and categorical traits
   traits_combined <- left_join(traits_numeric_combined, traits_binary, by = "taxon")
-  
-  # Fix some taxon names (synonyms)
-  traits_combined <-
-    traits_combined %>%
-    mutate(taxon = case_when(
-      # taxon == "Athyrium_nudum" ~ missing
-      taxon == "Athyrium_opacum_opacum" ~ "Athyrium_opacum",
-      # taxon == "Azolla_cristata" ~ , missing
-      # taxon == "Dryopteris_intermedia" ~ , missing
-      # taxon == "Pityrogramma_calomelanos" ~ , non-native?
-      # taxon == "Psilotum_nudum" ~ , non-native?
-      # taxon == "Selaginella_uncinata" ~ , missing
-      taxon == "Stegnogramma_griffithii_wilfordii" ~ "Thelypteris_griffithii_wilfordii",
-      taxon == "Stegnogramma_gymnocarpa_amabilis" ~ "Thelypteris_gymnocarpa_amabilis",
-      taxon == "Stegnogramma_pozoi_mollissima" ~ "Thelypteris_pozoi_mollissima",
-      taxon == "Thelypteris_aurita" ~ "Phegopteris_aurita",
-      taxon == "Thelypteris_bukoensis" ~ "Phegopteris_bukoensis",
-      taxon == "Thelypteris_decursivepinnata" ~ "Phegopteris_decursivepinnata",
-      taxon == "Thelypteris_nipponica" ~ "Thelypteris_nipponica_nipponica",
-      taxon == "Thelypteris_ogasawarensis" ~ "Macrothelypteris_ogasawarensis",
-      taxon == "Thelypteris_phegopteris" ~ "Phegopteris_connectilis",
-      taxon == "Thelypteris_subaurita" ~ "Phegopteris_subaurita",
-      taxon == "Thelypteris_torresiana_calvata" ~ "Macrothelypteris_torresiana_calvata",
-      taxon == "Thelypteris_torresiana_torresiana" ~ "Macrothelypteris_torresiana_torresiana",
-      taxon == "Thelypteris_viridifrons" ~ "Macrothelypteris_viridifrons",
-      TRUE ~ taxon
-    ))
-  
-  # Convert species names to taxon id codes
-  missing_taxon_id <-
-    filter(traits_combined, !(taxon %in% taxon_id_map$taxon)) %>%
-    pull(taxon)
-  
-  # Drop any missing names
-  traits_combined <- filter(traits_combined, taxon %in% taxon_id_map$taxon)
-  
-  msg <- assertthat::validate_that(
-    length(missing_taxon_id) == 0,
-    msg = glue::glue("The following taxa in the trait data could not be verified in the taxa list and have been dropped: {paste(missing_taxon_id, collapse = ', ')}")
-  )
-  
-  if(is.character(msg)) message(msg)
-  
-  # Keep only taxa in taxon keep list
-  traits_combined <- filter(traits_combined, taxon %in% taxon_keep_list)
   
   ### Find correlated traits to drop ###
   
