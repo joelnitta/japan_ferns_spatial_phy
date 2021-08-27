@@ -1113,10 +1113,15 @@ transform_traits <- function (traits,
 #'
 #' @param path_to_lucid_traits Path to trait data exported from lucid
 #' (https://www.lucidcentral.org/key-search/)
+#' @param lucid_name_correction Data to correct names in raw lucid data.
+#' Three columns: `original_taxon` (original name in raw lucid data),
+#' `new_taxon` (correct name to use instead, should be in green list),
+#' `ja_native_status` (native status in Japan; `non_native` indicates non-native,
+#' native otherwise)
 #'
-#' @return Dataframe with data in Japanese removed
+#' @return Dataframe with data in Japanese removed, filtered to native ferns in Green List
 #' 
-clean_lucid_traits <- function(path_to_lucid_traits) {
+clean_lucid_traits <- function(raw_lucid_data, lucid_name_correction, green_list, ppgi) {
   
   # Read in raw trait data for pteridophytes of Japan.
   # These were originally formatted for lucid dichotomous key software.
@@ -1979,9 +1984,11 @@ calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japa
   # Set CRS for biodiversity data and protected areas
   japan_crs <- sf::st_crs(japan_shp)
   
-  biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs)
+  biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs) %>% 
+    sf::st_make_valid() # Fix some geometries
   
-  protected_areas <- sf::st_set_crs(protected_areas, japan_crs)
+  protected_areas <- sf::st_transform(protected_areas, japan_crs) %>% 
+    sf::st_make_valid()
   
   # Make dummy variable so sf::as_Spatial() works
   japan_shp <- mutate(japan_shp, admin = "Japan")
@@ -1989,8 +1996,11 @@ calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japa
   # Crop spatial data to only land regions within Japan map
   biodiv_ferns_spatial_cropped <- raster::intersect(sf::as_Spatial(biodiv_ferns_spatial), sf::as_Spatial(japan_shp)) %>% sf::st_as_sf()
   
+  # Turn off s2 geometry or will get error
+  # https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
+  sf::sf_use_s2(FALSE)
   biodiv_ferns_spatial_conserv <- sf::st_join(biodiv_ferns_spatial_cropped, protected_areas, left = TRUE)
-  
+
   # Calculate total area of cells with significantly high biodiversity
   signif_cells_total_area <-
     biodiv_ferns_spatial_cropped %>%
@@ -2006,6 +2016,8 @@ calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japa
       total_area = sum(area),
       .groups = "drop"
     )
+
+    sf::sf_use_s2(TRUE)
   
   # Calculate area of protected zones within cells with significantly high biodiversity
   biodiv_ferns_spatial_conserv %>%
