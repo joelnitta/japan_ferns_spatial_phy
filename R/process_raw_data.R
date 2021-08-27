@@ -52,13 +52,6 @@ tar_plan(
     write_csv_tar(occ_point_data_summary, "data/japan_ferns_occ_summary.csv")
   ),
   
-  # Calculate latitudinal span by taxon, write out as CSV
-  lat_span_summary = summarize_fern_lat_span(occ_point_data_ferns),
-  tar_file(
-    lat_span_summary_out,
-    write_csv_tar(lat_span_summary, "data/japan_ferns_lat_span.csv")
-  ),
-  
   # Filter out duplicates, restrict to only points in second-degree mesh
   # Shape file downloaded from http://gis.biodic.go.jp/
   # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip

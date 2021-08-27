@@ -712,16 +712,35 @@ summarize_fern_lat_max <- function(lat_span_summary, ppgi) {
   
 }
 
-#' Summarize latitudinal span in specimen occurrences
+#' Summarize latitudinal span in taxon occurrences
+#' 
+#' Latitude is taken as centroid of each grid cell (site)
 #'
-#' @param occ_point_data_ferns Occurrence point data
-#' (one row per specimen, with columns for latitude and longitude) after filtering
-#' to only cells within the 2-degree mesh of Japan and removing duplicate collections
+#' @param comm_ferns Dataframe; fern communities with species as columns and sites as rows
+#' @param shape_ferns Simple features data frame; grid of fern richness, abundance, and redundancy
 #'
 #' @return Dataframe with three columns: `taxon`, `min_lat`, and `max_lat`
 #' 
-summarize_fern_lat_span <- function (occ_point_data_ferns) {
-  occ_point_data_ferns %>%
+summarize_fern_lat_span <- function (comm_ferns, shape_ferns) {
+  
+  # Get lat/long of each grid cell centroid
+  centroids <-
+    shape_ferns %>%
+    sf_add_centroids %>%
+    select(grids, longitude = long, latitude = lat) %>%
+    st_drop_geometry() %>%
+    as_tibble()
+  
+  comm_ferns %>%
+    # Add lat/long to community data
+    rownames_to_column("grids") %>%
+    as_tibble %>%
+    left_join(centroids, by = "grids") %>%
+    assert(not_na, latitude, longitude) %>%
+    # Convert to long format
+    select(-grids, -longitude) %>%
+    pivot_longer(names_to = "taxon", -latitude) %>%
+    filter(value > 0) %>%
     assert(not_na, latitude, taxon) %>%
     group_by(taxon) %>%
     summarize(
@@ -729,6 +748,7 @@ summarize_fern_lat_span <- function (occ_point_data_ferns) {
       max_lat = max(latitude),
       .groups = "drop"
     )
+  
 }
 
 #' Load protected areas

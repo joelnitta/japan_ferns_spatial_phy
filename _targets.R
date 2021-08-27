@@ -43,10 +43,6 @@ tar_plan(
   tar_file(occ_point_data_summary_file, "data/japan_ferns_occ_summary.csv"),
   occ_point_data_summary = read_csv(occ_point_data_summary_file),
   
-  # - Summary of latitudinal span by taxon
-  tar_file(lat_span_summary_file, "data/japan_ferns_lat_span.csv"),
-  lat_span_summary = read_csv(lat_span_summary_file),
-  
   ## Map data ----
   # Load shape file of Japan downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
   # on 2020-08-26
@@ -99,7 +95,10 @@ tar_plan(
     comm = comm_ferns,
     green_list = green_list
   ),
-  
+
+  # Summarize latitudinal span by taxon
+  lat_span_summary = summarize_fern_lat_span(comm_ferns, shape_ferns),
+    
   # Phylogenetic analysis ----
   # Summary: combine Japan rbcL sequences with global sampling, infer global tree,
   # estimate divergence times, trim tree to just Japan ferns
