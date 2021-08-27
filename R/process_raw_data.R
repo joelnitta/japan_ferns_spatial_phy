@@ -25,7 +25,7 @@ tar_plan(
   tar_file(ebihara_2019_zip_file, "data_raw/doi_10.5061_dryad.4362p32__v4.zip"),
   green_list = load_green_list(ebihara_2019_zip_file),
   
-  # Load raw occurrence data of pteridophytes in Japan, excluding hybrids (717 taxa)
+  # Load raw occurrence data of pteridophytes in Japan, excluding hybrids
   tar_file(occ_point_data_raw_file, "data_raw/JP_pterid_excl_hyb200620.xlsx"),
   occ_point_data_raw = readxl::read_excel(
     occ_point_data_raw_file,
@@ -33,16 +33,14 @@ tar_plan(
     col_names = c("species", "longitude", "latitude", "date", "tns_barcode", "herbarium_code", "taxon_id"),
     skip = 1),
   
-  # Standardize names to Green List
-  occ_point_data = rename_taxa(occ_point_data_raw, green_list) %>%
-    # check for missing data
-    assert(not_na, longitude, latitude, taxon),
+  # Clean data and standardize names to Green List
+  occ_point_data = clean_occ_point_data(occ_point_data_raw, green_list),
   
   # Load Pteridophyte Phylogeny Group I (PPGI) taxonomy,
   # modified slightly for ferns of Japan
   ppgi = load_ppgi(ebihara_2019_zip_file) %>% modify_ppgi,
   
-  # Subset to just ferns (674 taxa)
+  # Subset occurrence data to just ferns
   occ_point_data_ferns_unfiltered = subset_to_ferns(occ_point_data, ppgi),
   
   # Calculate summary statistics for occurrence data, write out as CSV

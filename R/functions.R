@@ -66,7 +66,15 @@ unzip_ftol <- function (zip_file, exdir) {
 load_green_list <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.4362p32__v4.zip") {
   temp_dir <- tempdir()
   unzip(ebihara_2019_zip_file, "FernGreenListV1.01E.xls", exdir = temp_dir)
-  res <- read_excel(fs::path(temp_dir, "FernGreenListV1.01E.xls")) %>% tidy_japan_names()
+  res <- read_excel(fs::path(temp_dir, "FernGreenListV1.01E.xls")) %>% 
+    tidy_japan_names() %>%
+    # Fix one mistake where a hybrid was entered as non-hybrid
+    mutate(
+      hybrid = case_when(
+        taxon == "Dryopteris_dickinsii_×_Dryopteris_polylepis" ~ TRUE,
+        TRUE ~ hybrid
+      )
+    )
   fs::file_delete(fs::path(temp_dir, "FernGreenListV1.01E.xls"))
   res
 }
@@ -365,25 +373,29 @@ sum_redundancy_by_res <- function(redundancy_by_res) {
   
 }
 
-#' Rename taxa in data by taxon ID code
-#'
-#' The `green_list` has the official taxon names. These
-#' will be mapped by taxon ID code to the input data,
-#' and offical names used in replacement of original species names.
-#'
-#' @param data Dataframe with columns `taxon_id` and `species`
-#' @param green_list Dataframe of standard taxonomy with
-#' columns `taxon_id` and `taxon`
-#'
-#' @return Dataframe
+#' Clean raw point occurrence data
 #' 
-rename_taxa <- function (data, green_list) {
-  
-  data %>%
+#' A single hybrid taxon was mistakenly included in the raw occurrence data.
+#' This removes it.
+#'
+#' @param occ_point_data_raw Raw occurrence data (point data) of ferns in Japan
+#' @param green_list Taxonomic data for ferns of Japan
+#'
+#' @return Dataframe: occurrence data with species renamed to standard taxon name
+#' and hybrids removed
+#' 
+clean_occ_point_data <- function (occ_point_data_raw, green_list) {
+  occ_point_data_raw %>%
     left_join(select(green_list, taxon_id, taxon), by = "taxon_id") %>%
     assert(not_na, taxon) %>%
-    select(-species, -taxon_id)
-  
+    select(-species, -taxon_id) %>%
+    # check for missing data
+    assert(not_na, longitude, latitude, taxon) %>%
+    # exclude hybrid that was mistakenly included in data
+    left_join(select(green_list, taxon, hybrid), by = "taxon") %>%
+    assert(not_na, hybrid) %>%
+    filter(hybrid == FALSE) %>%
+    select(-hybrid)
 }
 
 #' Subset a community to only endemic taxa
