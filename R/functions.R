@@ -782,8 +782,7 @@ load_protected_areas <- function(protected_areas_zip_file) {
     mutate(
       status = case_when(
         ZONE == 1 ~ "high", # 1＝特別保護地区
-        ZONE == 20 ~ "high", # 20＝特別地域
-        ZONE == 21 ~ "medium", # 21＝第1種特別地域
+        ZONE == 21 ~ "high", # 21＝第1種特別地域
         ZONE == 22 ~ "medium", # 22＝第2種特別地域
         ZONE == 23 ~ "medium", # 23＝第3種特別地域
         ZONE == 3 ~ "low", # 3＝普通地区
@@ -795,8 +794,8 @@ load_protected_areas <- function(protected_areas_zip_file) {
   protected_3 <- load_shape_from_zip(protected_areas_zip_file, "国指定鳥獣保護区.shp") %>%
     mutate(
       status = case_when(
-        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
-        ZONE == 2 ~ "medium", # 2＝特別保護地区
+        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外）
+        ZONE == 2 ~ "high", # 2＝特別保護地区
       )
     )
   
@@ -805,8 +804,8 @@ load_protected_areas <- function(protected_areas_zip_file) {
     mutate(
       status = case_when(
         ZONE == 1 ~ "high", # 1＝特別保護地区
-        ZONE == 20 ~ "high", # 20＝特別地域
-        ZONE == 21 ~ "medium", # 21＝第1種特別地域
+        ZONE == 20 ~ "medium", # 20＝特別地域 (should belong to 21, 22, or 23 but not clear which)
+        ZONE == 21 ~ "high", # 21＝第1種特別地域
         ZONE == 22 ~ "medium", # 22＝第2種特別地域
         ZONE == 23 ~ "medium", # 23＝第3種特別地域
         ZONE == 3 ~ "low", # 3＝普通地区
@@ -820,8 +819,8 @@ load_protected_areas <- function(protected_areas_zip_file) {
   protected_5 <- load_shape_from_zip(protected_areas_zip_file, "都道府県指定鳥獣保護区.shp") %>%
     mutate(
       status = case_when(
-        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外
-        ZONE == 2 ~ "medium", # 2＝特別保護地区
+        ZONE == 1 ~ "low", # 1＝鳥獣保護区（特別保護地区以外）
+        ZONE == 2 ~ "high", # 2＝特別保護地区
         ZONE == 3 ~ "low" # not specified, but assume no other special protection
       )
     )
