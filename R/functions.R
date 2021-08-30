@@ -869,7 +869,7 @@ load_protected_areas <- function(protected_areas_zip_file) {
   
 }
 
-#' Load protected areas
+#' Load protected areas in national forests of Japan
 #'
 #' Read in protected areas in national forests,
 #' assign protection levels following Kusumoto et al. 2017
@@ -880,6 +880,7 @@ load_protected_areas <- function(protected_areas_zip_file) {
 #'
 #' @param protected_areas_forest_folder Folder of zip files each containing shape files 
 #' downloaded from https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-A45.html
+#' (47 zip files total, one for each prefecture)
 #'
 #' @return Spatial dataframe with protection classified as "high", "medium", or "low"
 #' 
@@ -899,6 +900,66 @@ load_protected_areas_forest <- function(protected_areas_forest_folder) {
       mutate(status = factor("medium", levels = c("low", "medium", "high"), ordered = TRUE))
     )
 
+}
+
+#' Combine protected areas in Japan
+#' 
+#' If any areas overlap between "medium" and "high" status, they will only be
+#' counted as "high"
+#'
+#' @param protected_areas_other Simple features spatial dataframe: protected
+#' areas in Japan included parks, prefectural protection zones, wildlife protection
+#' zones, etc with protection levels grouped into "high", "medium," or "low"
+#' @param protected_areas_forest Simple features spatial dataframe: protected
+#' areas in Japan including forest areas with protection levels grouped into 
+#' "high", "medium," or "low"
+#'
+#' @return Simple features spatial dataframe with two rows: areas with "high"
+#' protection and areas with "medium" protection
+#' 
+combine_pa <- function(protected_areas_other, protected_areas_forest) {
+	# Match CRS before combining
+	pa_crs <- st_crs(protected_areas_other)
+	protected_areas_forest <- st_transform(protected_areas_forest, pa_crs)
+	
+	# Many areas are overlapping. Combine these into non-overlapping areas within each protection area type
+	# Don't consider low-priority areas
+	
+	# Turn off s2 geometry or will get error
+	# https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
+	sf::sf_use_s2(FALSE)
+	
+	# For some reason, this works best by running ms_dissolve() first, then st_union()
+	pa_high_combined <-
+		protected_areas_other %>%
+		filter(status == "high") %>%
+		select(status) %>%
+		rmapshaper::ms_dissolve(sum_fields = "status") %>%
+		mutate(status = "high") %>% 
+		st_union(by_feature = TRUE)
+	
+	# Combine medium areas: add "other" areas and "forest" areas
+	pa_med_combined <- 
+		protected_areas_other %>%
+		filter(status == "medium") %>%
+		select(status) %>%
+		bind_rows(protected_areas_forest) %>%
+		rmapshaper::ms_dissolve(sum_fields = "status") %>%
+		mutate(status = "medium") %>% 
+		st_union(by_feature = TRUE) %>%
+		# Drop any areas that overlap with 'high' protected status
+		rmapshaper::ms_erase(erase = pa_high_combined)
+	
+	# Combine high and medium protected areas into one dataframe
+	res <- bind_rows(
+		pa_high_combined,
+		pa_med_combined
+	)
+	
+	# Turn off s2 geometry back on
+	sf::sf_use_s2(TRUE)
+	
+	return(res)
 }
 
 #' Modify Pteridophyte Phylogeny Group I taxonomy
@@ -1987,21 +2048,31 @@ cluster_phylo_regions <- function (comm_df, phy, k) {
 
 # Conservation ----
 
-#' Calculate the percent of area within grid cells of high biological diversity
-#' that has protected status
+#' Crop biodiversity data to protected areas in Japan
 #'
-#' @param biodiv_ferns_spatial Spatial dataframe including biodiveristy metrics and grid cells
-#' @param protected_areas Spatial dataframe including status of protected areas and their shapes
-#' @param japan_shp Spatial dataframe including the total land area of Japan
+#' @param protected_areas Spatial dataframe of protected areas (either "high"
+#' or "medium" protection)
+#' @param biodiv_ferns_spatial Spatial dataframe of biodiversity data of ferns in Japan
+#' @param japan_shp Spatial dataframe; map of Japan with coastline
 #'
-#' @return Dataframe with the percent of protected areas in grid cells with significantly high biodiversity
-#' 
-calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japan_shp) {
-  
+#' @return List with three spatial dataframes:
+#' - `biodiv_ferns_spatial_cropped_filtered`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to land area only and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_med`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with high protection and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_high`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with medium protection and filtered to only
+#' areas with significantly high biodiversity
+crop_by_pa <- function(protected_areas, biodiv_ferns_spatial, japan_shp) {
+  ### Manipulate biodiv_ferns_spatial ###
   # Add percent rank for richness
   biodiv_ferns_spatial <- mutate(biodiv_ferns_spatial, richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
-    select(-area) # drop latitudinal area (so we can join with protected area)
+    # drop latitudinal area (so we can join with protected area)
+    select(-area) 
   
+  ### Prepare for crop/join steps ###
   # Crop to Japan to spatial div results area
   japan_shp <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
   
@@ -2014,24 +2085,71 @@ calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japa
   protected_areas <- sf::st_transform(protected_areas, japan_crs) %>% 
     sf::st_make_valid()
   
-  # Make dummy variable so sf::as_Spatial() works
-  japan_shp <- mutate(japan_shp, admin = "Japan")
+  ### Cropping ###
+  # Crop spatial data to only land regions within Japan map,
+  # filter to only cells with significant biodiv
+  biodiv_ferns_spatial_cropped <- rmapshaper::ms_clip(biodiv_ferns_spatial, japan_shp)
   
-  # Crop spatial data to only land regions within Japan map
-  biodiv_ferns_spatial_cropped <- raster::intersect(sf::as_Spatial(biodiv_ferns_spatial), sf::as_Spatial(japan_shp)) %>% sf::st_as_sf()
+  # inspect plot to make sure it worked
+  # plot <- ggplot(biodiv_ferns_spatial_cropped) + geom_sf(aes(fill = richness_obs_p_upper), color = "transparent") + geom_sf(data = japan_shp, fill = "transparent")
+  # ggsave(plot = plot, file ="plot.pdf")
   
-  # Turn off s2 geometry or will get error
-  # https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
-  sf::sf_use_s2(FALSE)
-  biodiv_ferns_spatial_conserv <- sf::st_join(biodiv_ferns_spatial_cropped, protected_areas, left = TRUE)
+  # Filter diverse areas to make joins go faster
+  biodiv_ferns_spatial_cropped_filtered <-
+    biodiv_ferns_spatial_cropped %>%
+    select(grids, richness_obs_p_upper, pd_obs_p_upper, fd_obs_p_upper, pe_obs_p_upper) %>%
+    filter(richness_obs_p_upper > 0.95 | pd_obs_p_upper > 0.95 | fd_obs_p_upper > 0.95 | pe_obs_p_upper > 0.95)
+  
+  # Restrict area to only significant biodiv covered by high status
+  biodiv_ferns_spatial_cropped_filtered_high <-
+    biodiv_ferns_spatial_cropped_filtered %>%
+    st_intersection(filter(protected_areas, status == "high")) %>%
+    mutate(area = st_area(.) %>% units::set_units(km^2))
+  
+  # Restrict area to only significant biodiv covered by medium status
+  biodiv_ferns_spatial_cropped_filtered_med <-
+    biodiv_ferns_spatial_cropped_filtered %>%
+    st_intersection(filter(protected_areas, status == "medium")) %>%
+    mutate(area = st_area(.) %>% units::set_units(km^2))
+  
+  list(
+    biodiv_ferns_spatial_cropped_filtered = biodiv_ferns_spatial_cropped_filtered,
+    biodiv_ferns_spatial_cropped_filtered_med = biodiv_ferns_spatial_cropped_filtered_med,
+    biodiv_ferns_spatial_cropped_filtered_high = biodiv_ferns_spatial_cropped_filtered_high
+  )
+  
+}
 
+#' Calculate percentage of protected area of areas with significantly diverse fern
+#' biodiversity
+#'
+#' @param protected_biodiv List with three spatial dataframes:
+#' - `biodiv_ferns_spatial_cropped_filtered`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to land area only and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_med`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with high protection and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_high`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with medium protection and filtered to only
+#' areas with significantly high biodiversity
+#' 
+#' @return Dataframe with percentage of protected area per biodiversity type by
+#' protection status
+#' 
+calculate_percent_protected <- function(protected_biodiv) {
+  # Extract spatial dataframes from input
+  biodiv_ferns_spatial_cropped_filtered <- protected_biodiv$biodiv_ferns_spatial_cropped_filtered
+  biodiv_ferns_spatial_cropped_filtered_high <- protected_biodiv$biodiv_ferns_spatial_cropped_filtered_high
+  biodiv_ferns_spatial_cropped_filtered_med <- protected_biodiv$biodiv_ferns_spatial_cropped_filtered_med
+  
   # Calculate total area of cells with significantly high biodiversity
   signif_cells_total_area <-
-    biodiv_ferns_spatial_cropped %>%
+    biodiv_ferns_spatial_cropped_filtered %>%
     mutate(area = st_area(.) %>% units::set_units(km^2)) %>%
     select(grids, richness_obs_p_upper, pd_obs_p_upper, fd_obs_p_upper, pe_obs_p_upper, area) %>%
+    st_drop_geometry %>%
     as_tibble() %>%
-    select(-geometry) %>%
     pivot_longer(cols = contains("upper"), values_to = "p_value", names_to = "metric") %>%
     filter(p_value > 0.95) %>%
     mutate(metric = str_remove_all(metric, "_obs_p_upper")) %>%
@@ -2040,16 +2158,15 @@ calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japa
       total_area = sum(area),
       .groups = "drop"
     )
-
-    sf::sf_use_s2(TRUE)
   
   # Calculate area of protected zones within cells with significantly high biodiversity
-  biodiv_ferns_spatial_conserv %>%
-    select(grids, richness_obs_p_upper, pd_obs_p_upper, fd_obs_p_upper, pe_obs_p_upper, status, area) %>%
+  bind_rows(
+    st_drop_geometry(biodiv_ferns_spatial_cropped_filtered_high),
+    st_drop_geometry(biodiv_ferns_spatial_cropped_filtered_med)
+  ) %>%
     as_tibble() %>%
-    select(-geometry) %>%
     pivot_longer(cols = contains("upper"), values_to = "p_value", names_to = "metric") %>%
-    filter(p_value > 0.95, status %in% c("medium", "high")) %>%
+    filter(p_value > 0.95) %>%
     mutate(metric = str_remove_all(metric, "_obs_p_upper")) %>%
     group_by(status, metric) %>%
     summarize(
@@ -2057,9 +2174,8 @@ calculate_protected_area <- function(biodiv_ferns_spatial, protected_areas, japa
       .groups = "drop"
     ) %>%
     left_join(signif_cells_total_area, by = "metric") %>%
-    mutate(percent_protected = protected_area / total_area) %>%
+    mutate(percent_protected = (protected_area / total_area)) %>%
     mutate(percent_protected = as.numeric(percent_protected))
-  
 }
 
 # Plotting ----

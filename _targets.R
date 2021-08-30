@@ -522,12 +522,14 @@ tar_plan(
   ## Read in protected areas, assign protection levels following Kusumoto et al. 2017:
   # - high: no human activities allowed
   # - medium: permission required for economic activities
-  # - low: protected area, but none of the above restrictions
-  tar_file(protected_areas_zip_file, "data/map17.zip"),
-  protected_areas = load_protected_areas(protected_areas_zip_file),
+  tar_file(protected_areas_zip_file, "data/japan_protected_areas.gpkg"),
+  protected_areas = st_read(protected_areas_zip_file),
   
-  # Calculate percent protection for grid cells with significantly high biodiversity
-  signif_cells_protected_area = calculate_protected_area(biodiv_ferns_spatial, protected_areas, japan_shp),
+  # Crop siginficantly diverse grid cells to protected areas
+  protected_biodiv = crop_by_pa(protected_areas, biodiv_ferns_spatial, japan_shp),
+
+  # Calculate percentage of protected areas
+  signif_cells_protected_area = calculate_percent_protected(protected_biodiv),
   
   # Render manuscript ----
   # Track ms files

@@ -156,6 +156,13 @@ tar_plan(
   protected_areas_other = load_protected_areas(protected_areas_zip_file),
 
   tar_file(protected_areas_forest_folder, "data_raw/forest_area_zip_files"),
-  protected_areas_forest = load_protected_areas_forest(protected_areas_forest_folder)
+  protected_areas_forest = load_protected_areas_forest(protected_areas_forest_folder),
+
+  # Combine protected areas (high and medium only), write out
+  protected_areas = combine_pa(protected_areas_other, protected_areas_forest),
+  tar_file(
+    protected_areas_out,
+    st_write_tar(protected_areas, "data/japan_protected_areas.gpkg", time_stamp = as.Date("2021-08-30"))
+  )
   
 )
