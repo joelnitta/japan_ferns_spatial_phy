@@ -680,9 +680,10 @@ area_of_japan <-
 # Calculate baseline protection percentage: percent protected areas across the whole country
 total_percent_protected <-
   protected_areas %>%
+  st_make_valid %>%
   mutate(area = st_area(.) %>% units::set_units(km^2)) %>%
+  st_drop_geometry %>%
   as_tibble() %>%
-  select(-geometry) %>%
   filter(status %in% c("medium", "high")) %>%
   group_by(status) %>%
   summarize(
