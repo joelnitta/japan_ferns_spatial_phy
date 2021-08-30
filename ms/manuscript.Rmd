@@ -1,5 +1,5 @@
 ---
-title: "Exploring dimensions of biodiversity in Japanese ferns"
+title: "Spatial phylogenetics of Japanese ferns: Patterns, processes, and implications for conservation"
 mainfont: Roboto-Regular.ttf
 fontsize: 11pt
 mainfontoptions: 
@@ -100,7 +100,7 @@ tar_load(c(
 <!-- Don't indent -->
 \setlength{\parindent}{0ex}
 
-Short running title: Biodiversity of Japanese ferns
+Short running title: Spatial phylogenetics of Japanese ferns
 
 Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1,3^, and Atsushi Ebihara^4^
 
@@ -1328,10 +1328,16 @@ endemism_plot
 `r pagebreak_pdf()`
 
 ```{r bioregions-make}
+# Lump regions with just a few cells (3 or less)
+biodiv_ferns_spatial_lumped <-
+biodiv_ferns_spatial %>%
+  mutate(taxonomic_cluster = fct_lump_min(taxonomic_cluster, 4))  %>%
+  mutate(phylo_cluster = fct_lump_min(phylo_cluster, 4)) 
+
 # Taxonomic bioregions
 a <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = taxonomic_cluster), color = "transparent") +
+  geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = taxonomic_cluster), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
@@ -1341,7 +1347,7 @@ a <- ggplot() +
 # Phylogenetic bioregions
 b <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
-  geom_sf(data = biodiv_ferns_spatial, aes(fill = phylo_cluster), color = "transparent") +
+  geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = phylo_cluster), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Cluster") +
@@ -1363,7 +1369,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7, hei
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances into *k* = 8 or 7 groups, respectively.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances. Bioregions with three or fewer grid cells are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 
