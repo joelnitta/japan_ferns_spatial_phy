@@ -1177,6 +1177,10 @@ clean_lucid_traits <- function(raw_lucid_data, lucid_name_correction, green_list
     select(-class) %>%
     # Check that all names are in green list
     verify(all(taxon %in% green_list$taxon)) %>%
+    # Remove hybrids
+    left_join(select(green_list, taxon, hybrid), by = "taxon") %>%
+    filter(hybrid == FALSE) %>%
+    select(-hybrid) %>%
     # Check for NA values
     assert(not_na, everything()) %>%
     assert(is_uniq, taxon)
