@@ -146,6 +146,16 @@ tar_plan(
   tar_file(
     ja_climate_data_out,
     st_write_tar(ja_climate_data, "data/japan_climate.gpkg", time_stamp = as.Date("2021-08-26"))
-  )
+  ),
+
+  ## Read in protected areas, assign protection levels following Kusumoto et al. 2017:
+  # - high: no human activities allowed
+  # - medium: permission required for economic activities
+  # - low: protected area, but none of the above restrictions
+  tar_file(protected_areas_zip_file, "data_raw/map17.zip"),
+  protected_areas_other = load_protected_areas(protected_areas_zip_file),
+
+  tar_file(protected_areas_forest_folder, "data_raw/forest_area_zip_files"),
+  protected_areas_forest = load_protected_areas_forest(protected_areas_forest_folder)
   
 )

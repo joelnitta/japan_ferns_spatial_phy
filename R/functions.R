@@ -772,7 +772,7 @@ load_protected_areas <- function(protected_areas_zip_file) {
       status = case_when(
         ZONE == 1 ~ "high", # 1＝原生自然環境保全地域
         ZONE == 2 ~ "high", # 2＝特別地区
-        ZONE == 3 ~ "high", # 3＝海中特別地区
+        ZONE == 3 ~ "marine", # 3＝海中特別地区
         ZONE == 4 ~ "low" # 4＝普通地区
       )
     )
@@ -845,9 +845,13 @@ load_protected_areas <- function(protected_areas_zip_file) {
         ZONE == 4 ~ "low" # 4＝普通地区
       )
     )
+
+  # Turn off s2 geometry or will get error
+  # https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
+  sf::sf_use_s2(FALSE)
   
   # Combine protected areas into single dataframe
-  combine_protected_areas(
+  bind_rows(
     protected_1,
     protected_2,
     protected_3,
@@ -855,29 +859,47 @@ load_protected_areas <- function(protected_areas_zip_file) {
     protected_5,
     protected_6,
     protected_7
-  )
-  
-}
-
-#' Combine shapes of protected areas in Japan
-#'
-#' @param ... Shape files read in with sf::st_read()
-#'
-#' @return Simple feature collection
-#' 
-combine_protected_areas <- function (...) {
-  
-  bind_rows(...) %>%
+  ) %>%
     assert(not_na, status) %>%
     # Remove all marine areas
     filter(status != "marine") %>%
-    # Add area
-    mutate(area = st_area(.) %>% units::set_units(km^2)) %>%
     # Convert status to ordered factor
     mutate(
       status = factor(status, ordered = TRUE, levels = c("low", "medium", "high"))
     )
   
+}
+
+#' Load protected areas
+#'
+#' Read in protected areas in national forests,
+#' assign protection levels following Kusumoto et al. 2017
+#' - high: no human activities allowed
+#' - medium: permission required for economic activities
+#' - low: protected area, but none of the above restrictions
+#' (All protected areas in national forests are considered "medium")
+#'
+#' @param protected_areas_forest_folder Folder of zip files each containing shape files 
+#' downloaded from https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-A45.html
+#'
+#' @return Spatial dataframe with protection classified as "high", "medium", or "low"
+#' 
+load_protected_areas_forest <- function(protected_areas_forest_folder) {
+  
+  # List all zip files in folder
+  zip_files <- list.files(protected_areas_forest_folder, pattern = "zip", full.names = TRUE)
+  
+  # A45_032 shows status as protected area or not (not protected is NA)
+  map_df(
+    zip_files,
+    ~kokudosuuchi::readKSJData(.) %>%  # For reading in shp files from  https://nlftp.mlit.go.jp/
+      pluck(1) %>% # DF is nested one level down
+      select(status = A45_032) %>% 
+      filter(!is.na(status)) %>%
+      # Treat all protected forest areas as "medium"
+      mutate(status = factor("medium", levels = c("low", "medium", "high"), ordered = TRUE))
+    )
+
 }
 
 #' Modify Pteridophyte Phylogeny Group I taxonomy
@@ -919,7 +941,6 @@ modify_ppgi <- function (ppgi) {
     select(genus, family, order, class)
   
 }
-
 
 #' Clean up reproductive mode data for pteridophytes of Japan
 #'
