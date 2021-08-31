@@ -1,0 +1,199 @@
+---
+output: rtf_document
+editor_options:
+  chunk_output_type: console
+---
+
+---
+bibliography: 
+- `r here::here("ms/references.yaml")`
+---
+
+```{r manual, include = FALSE, evaluate = FALSE}
+# Run these lines if rendering outside of targets plan
+library(targets)
+library(tarchetypes)
+source(here::here("R/packages.R"))
+source(here::here("R/functions.R"))
+```
+
+```{r setup, include = FALSE, cache = FALSE}
+# TO CONVERT TO PLAIN TEXT:
+# after rendering to rtf,
+# 1. Copy the contents of the rtf file, paste to txt.
+# 2. Replace all single line breaks with double line breaks
+# (in Atom search-replace with grep: \n for \n\n)
+# 3. Hard-wrap all text at 80 characters (in Atom with autoflow: cmd-alt-q)
+# (optional: add name after first line)
+# 4. Save as "README.txt"
+
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE,
+  warning = FALSE, results = "hide", cache = FALSE)
+
+# Load objects from targets workflow (all paths to data files)
+tar_load(
+  c(
+    "japan_ferns_comm_full_file",
+    "plastome_calibration_dates")
+  )
+```
+
+This README.txt file was generated on `r format(Sys.time(), '%d %B, %Y')`
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- GENERAL INFORMATION \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+Title of Dataset: Data from: Spatial phylogenetics of Japanese ferns: Patterns,
+processes, and implications for conservation
+
+Author Information
+
+Principal Investigator: Joel H. Nitta
+
+Department of Biological Sciences, Graduate School of Science, The University of
+Tokyo, 2-11-16 Yayoi, Bunkyo-ku, Tokyo 113-0032, Japan joelnitta@gmail.com
+
+Associate or Co-investigators: Brent D. Mishler, Wataru Iwasaki, Atsushi Ebihara
+
+Date of data collection: 2012--2014
+
+Geographic location of data collection: Japan
+
+Information about funding sources or sponsorship that supported the collection
+of the data: Funding provided in part by the Japan Society for the Promotion of
+Science (Kakenhi) Grant Number 16H06279
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+SHARING/ACCESS INFORMATION
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+Licenses/restrictions placed on the data, or limitations of reuse: CC0 1.0
+Universal (CC0 1.0)
+
+Recommended citation for the data: Nitta JH, Mishler BD, Iwasaki W, Ebihara A
+(2021) Data from: Spatial phylogenetics of Japanese ferns: Patterns, processes,
+and implications for conservation FIXME: add DOI
+
+Citation for and links to publications that cite or use the data: Nitta JH,
+Mishler BD, Iwasaki W, Ebihara A (2021) Spatial phylogenetics of Japanese ferns:
+Patterns, processes, and implications for conservation <<FIXME: ADD JOURNAL>>
+
+Code for analyzing the data is available on github:
+https://github.com/joelnitta/japan_ferns_biogeo
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+DATA & FILE OVERVIEW
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+File list (filenames, directory structure (for zipped files) and brief
+description of all data files):
+
+- japan_climate.gpkg: Climate data in Japan downloaded from WorldClim database
+- japan_ferns_comm_full.csv: Community matrix (species x sites matrix) of ferns in Japan
+- japan_ferns_inext_results.csv: Results of collection curve analysis on fern specimens in Japan
+- japan_ferns_occ_summary.csv: Summary of specimen data of ferns in Japan
+- japan_ferns_redundancy_by_res: Taxonomic richness, abundance, and redunancy at different spatial resolutions for ferns of Japan
+- japan_ferns_shape_full.gpkg: Location of grid cells (sites) for ferns in Japan
+- japan_ferns_traits_lucid.csv: Morphological trait data of ferns in Japan
+- japan_map_points.csv: Latitude and longitude of points used to produce a map of Japan
+- japan_protected_areas.gpkg: Protected areas in Japan
+- testo_sundue_2016_calibrations.csv: Fossil calibration points used for phylogenetic dating analysis
+- results.zip: Analysis results that may be useful in future studies. Files include:
+  - japan_ferns_tree_dated.tre: Maximim-likelihood, ultrametric (dated) phylogeny of ferns in Japan
+  - japan_ferns_tree.tre: Maximim-likelihood phylogeny of ferns in Japan
+  - japan_ferns_traits.csv: Trait matrix of ferns in Japan used for functional biodiversity analysis
+  - japan_ferns_comm.csv: Community matrix (species x sites matrix) of ferns in Japan used for biodiversity analysis
+  - japan_ferns_biodiv.gpkg: Biodiversity statistics of ferns in Japan
+  
+Checksums are 32-byte MD5 hashes generated with tools::md5sum() in R.
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+METHODOLOGICAL INFORMATION
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+```{r summary-stats}
+# Number of fossils used for dating
+n_fossil_points <- plastome_calibration_dates %>%
+  filter(age_type != "fixed") %>%
+  nrow()
+```
+
+Description of methods used for collection/generation of data:
+
+A list of native, non-hybrid fern specimens housed at the herbarium of the
+Museum of Science and Nature, Japan was converted to a community data matrix at
+four grain sizes (grid cells spanning Japan, each 0.1, 0.2, 0.3, or 0.4 degrees
+per side). The original list with latitude and longitude of each specimen is not
+included here to protect rare and endangered species. The 0.2 degree grain size
+was selected for further analysis based on redundancy (ratio of number of
+specimens to number of taxa per cell).
+
+All taxon names are based on the Green List (http://www.rdplants.org/gl/;
+English version available at
+https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32)
+
+Traits were measured on each species as described in [@Ebihara2019b].
+
+Phylogenetic analysis was conducted with maximum likelihood in IQ-TREE
+[@Nguyen2015] by combining plastid *rbcL* sequences of each taxon with a
+globally sampled data matrix (Nitta et al, in prep). Next, dating analysis was
+carried out using treePL v1.0 [@Smith2012] with `r n_fossil_points` fossil
+calibration points after @Testo2016a. The dated phylogeny was then trimmed to
+include Japanese taxa only.
+
+The community matrix, traits, and phylogeny were used to analyze spatial
+patterns of phylogenetic diversity and endemism.
+
+Data files were generated from raw data (not included here) using scripts
+available at https://github.com/joelnitta/japan_ferns_biogeo.
+
+For full methods, see Nitta JH, Mishler BD, Iwasaki W, Ebihara A (2021) Spatial
+phylogenetics of Japanese ferns: Patterns, processes, and implications for
+conservation <<FIXME: ADD JOURNAL>>
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+DATA-SPECIFIC INFORMATION
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+```{r japan-ferns-comm-full}
+japan_ferns_comm_full <- read_csv(here::here(japan_ferns_comm_full_file))
+# Check that no data are missing
+assert(japan_ferns_comm_full, not_na, everything(), success_fun = success_logical)
+```
+
+japan_ferns_comm_full.csv: Community matrix (species x sites matrix) of ferns in
+Japan. Sites correspond to 0.2 degree x 0.2 degree grid cells covering Japan.
+For location of grid cells, see japan_ferns_shape_full.gpkg. Full dataset
+including all grid cells (none excluded due to low redundancy).
+
+Number of variables: `r ncol(japan_ferns_comm_full)`
+
+Number of cases/rows: `r nrow(japan_ferns_comm_full)`
+
+Variable list:
+
+- grids: Name of grid cell.
+- Other columns: Each column is named for a Japanese fern taxon. 
+  Values indicate number of specimens that were observed in each grid cell for that taxon.
+
+Missing data codes: No missing data.
+
+MD5 checksum: `r tools::md5sum(here::here(japan_ferns_comm_full_file))`
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+CHANGE LOG
+
+\-\-\-
+
+2021-08-31
+
+Generate this README file.
