@@ -31,14 +31,15 @@ canape_cols <-
 
 # - Bioregions (Okabe-Ito CVD safe)
 bioregion_cols <- c( 
-  "6" = "#E69F00", # goldenrod
-  "5" = "#56B4E9", # light blue
   "1" = "#009E73", # green
   "2" = "#F0E442", # yellow
   "3" = "#0072B2", # dark blue
   "4" = "#D55E00", # red
+  "5" = "#56B4E9", # light blue
+  "6" = "#E69F00", # goldenrod
   "7" = "#CC79A7", # magenta
-  "8" ="#000000") # black
+  "8" ="#000000", # black
+  "Other" = "grey80") 
 
 # - Protected areas (Okabe-Ito CVD safe)
 protection_cols <- c(
@@ -256,7 +257,7 @@ map_cluster_to_nodes <- function(dendro, tax_clusters, cluster_select) {
     node_mrca <- ape::getMRCA(dendro, tips)
     nodes <- phytools::getDescendants(dendro, node_mrca)
   } else {
-    stop("Can't find that cluster")
+    stop(glue::glue("Can't find cluster '{cluster_select}'"))
   }
   
   # Return a tibble mapping nodes to the cluster

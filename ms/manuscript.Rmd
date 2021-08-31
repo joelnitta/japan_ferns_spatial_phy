@@ -630,15 +630,15 @@ When we ran CANAPE with a reduced dataset including only taxa absolutely restric
 
 ### Bioregions
 
-Analysis of bioregions grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` clusters (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
-The vast majority of grid-cells fell to a subset of these clusters: using taxonomic distances, they include Cluster 1 (Hokkaido and northern Honshu), Cluster 2 (southern Honshu), Cluster 3 (Ryukyu Islands, excluding Yakushima), and Cluster 4 (Ogasawara Islands) (`r figure("bioregions")`a; `r s_figure("dendrogram")`a). 
-Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single cluster (`r figure("bioregions")`b; `r s_figure("dendrogram")`b). 
-The other much smaller clusters are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
+Clustering analysis grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` bioregions (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
+The vast majority of grid-cells fell to a subset of these bioregions: using taxonomic distances, they include bioregion 1 (Hokkaido and northern Honshu), bioregion 2 (southern Honshu), bioregion 3 (Ryukyu Islands, excluding Yakushima), and bioregion 4 (Ogasawara Islands) (`r figure("bioregions")`a; `r s_figure("dendrogram")`a). 
+Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single bioregion (`r figure("bioregions")`b; `r s_figure("dendrogram")`b). 
+The other much smaller bioregions (each including only three grid cells or less) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
-Taxonomic clusters 3 and 4 have higher SES values of PD, RPD, FD, and RFD than clusters 1 and 2 (`r figure("div-by-tax-region")`). 
-Clusters 3 and 4 also have consistently high PE *p*-scores, whereas clusters 1 and 2 have a much wider variation. 
-Cluster 2 has lower RPD and RFD than cluster 1. 
-Comparison of biodiversity metrics across phylogenetic clusters was similar, except that phylogenetic cluster 3 mostly corresponds to taxonomic clusters 3 and 4 combined.
+Taxonomic bioregions 3 and 4 have higher SES values of PD, RPD, FD, and RFD than bioregions 1 and 2 (`r figure("div-by-tax-region")`). 
+Bioregions 3 and 4 also have consistently high PE *p*-scores, whereas bioregions 1 and 2 have a much wider variation. 
+Bioregion 2 has lower RPD and RFD than bioregion 1. 
+Comparison of biodiversity metrics across phylogenetic bioregions was similar, except that phylogenetic bioregion 3 mostly corresponds to taxonomic bioregions 3 and 4 combined.
 
 ### Conservation status
 
@@ -755,12 +755,12 @@ A similar argument has been made to assert that areas with seasonal monsoons are
 The monsoon hypothesis is also not supported by our results, which show precipitation seasonality did not play a strong role in any model and was not correlated with % apomictic taxa.
 
 The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values (`r figure("div-by-tax-region")`). 
-Interestingly, the bioregions identified here correspond roughly to major forest types previously categorized on an *ad-hoc* basis; Cluster 1 corresponds to the cool or subartic deciduous type, Cluster 2 to the warm evergreen type, and Clusters 3 and 4 to the subtropical rainy type [@Shimizu2014]. 
+Interestingly, the bioregions identified here correspond roughly to major forest types previously categorized on an *ad-hoc* basis; bioregion 1 corresponds to the cool or subartic deciduous type, bioregion 2 to the warm evergreen type, and bioregions 3 and 4 to the subtropical rainy type [@Shimizu2014]. 
 This suggests that ferns are useful as bioindicators in Japan. 
 Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. 
-The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits clusters 2 and 3, there is some overlap between them on the Amami-Oshima Isl. (`r figure("bioregions")`). 
+The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits bioregions 2 and 3, there is some overlap between them on the Amami-Oshima Isl. (`r figure("bioregions")`). 
 The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
-Rather, fern bioregions in Japan broadly separate along gradients of temperature and precipitation; in particular, precipitation splits taxonomic Cluster 3 (mostly the Ryukyu islands; wetter) from Cluster 4 (mostly the Ogasawara islands; drier) (`r s_figure("bioregions-env")`).
+Rather, fern bioregions in Japan broadly separate along gradients of temperature and precipitation; in particular, precipitation splits taxonomic bioregion 3 (mostly the Ryukyu islands; wetter) from bioregion 4 (mostly the Ogasawara islands; drier) (`r s_figure("bioregions-env")`).
 
 ### Conservation status
 
@@ -1340,7 +1340,7 @@ a <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = taxonomic_cluster), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
-  labs(fill = "Cluster") +
+  labs(fill = "Bioregion") +
   scale_fill_manual(values = bioregion_cols) +
   map_theme()
 
@@ -1350,7 +1350,7 @@ b <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = phylo_cluster), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
-  labs(fill = "Cluster") +
+  labs(fill = "Bioregion") +
   scale_fill_manual(values = bioregion_cols) +
   map_theme() +
   theme(axis.text.y = element_blank())
@@ -1369,7 +1369,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7, hei
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances. Bioregions with three or fewer grid cells are lumped into the "Other" category.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid cells. Bioregions with three or fewer grid cells are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 
@@ -1387,7 +1387,7 @@ a <- ggplot(data, aes(x = taxonomic_cluster, y = pd_obs_z)) +
   labs(
     y = "SES PD",
     x = "Cluster",
-    color = "Cluster"
+    color = "Bioregion"
   ) +
   theme_bw() +
   theme(
@@ -1406,7 +1406,7 @@ b <- ggplot(data, aes(x = taxonomic_cluster, y = rpd_obs_z)) +
   labs(
     y = "SES RPD",
     x = "Cluster",
-    color = "Cluster"
+    color = "Bioregion"
   ) +
   theme_bw() +
   theme(
@@ -1425,7 +1425,7 @@ c <- ggplot(data, aes(x = taxonomic_cluster, y = fd_obs_z)) +
   labs(
     y = "SES FD",
     x = "Cluster",
-    color = "Cluster"
+    color = "Bioregion"
   ) +
   theme_bw() +
   theme(
@@ -1444,7 +1444,7 @@ d <- ggplot(data, aes(x = taxonomic_cluster, y = rfd_obs_z)) +
   labs(
     y = "SES RFD",
     x = "Cluster",
-    color = "Cluster"
+    color = "Bioregion"
   ) +
   theme_bw() +
   theme(
@@ -1461,7 +1461,7 @@ e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_p_upper)) +
   labs(
     y = "PE *p*-score",
     x = "Cluster",
-    color = "Cluster"
+    color = "Bioregion"
   ) +
   theme_bw() +
   theme(
