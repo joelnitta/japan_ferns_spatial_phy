@@ -68,7 +68,7 @@ tar_load(c(
   "fern_traits",
   "green_list",
   "japan_fern_tree",
-  "japan_points_raw",
+  "japan_map_points",
   "japan_pterido_tree",
   "japan_rbcL",
   "japan_shp",
@@ -897,7 +897,7 @@ other <- c("Tokyo")
 
 # Modify dataframe to include formatting for printing label on map
 japan_points <- 
-  japan_points_raw %>%
+  japan_map_points %>%
   filter(is.na(lat_end)) %>%
   select(-lat_end, -lon_end) %>%
   mutate(
@@ -930,7 +930,7 @@ japan_points <-
     lat_adj = lat + nudge_lat
   )
 
-japan_lines <- japan_points_raw %>%
+japan_lines <- japan_map_points %>%
   filter(!is.na(lat_end))
 
 # Make map

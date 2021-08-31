@@ -55,8 +55,8 @@ tar_plan(
     summarize(),
   
   # Load manually entered points of interest for drawing a map of Japan
-  tar_file(japan_points_raw_file, "data/japan_points_raw.csv"),
-  japan_points_raw = read_csv(japan_points_raw_file),
+  tar_file(japan_map_points_file, "data/japan_map_points.csv"),
+  japan_map_points = read_csv(japan_map_points_file),
   
   # Calculate area as rolling mean in 1 degree latitudinal windows
   lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
@@ -73,11 +73,11 @@ tar_plan(
   comm_ferns_full = load_jferns_comm(japan_ferns_comm_full_file),
   
   # Load summaries of testing different grid cell sizes
-  tar_file(redundancy_by_res_file, "data/redundancy_by_res.csv"),
+  tar_file(redundancy_by_res_file, "data/japan_ferns_redundancy_by_res.csv"),
   redundancy_by_res = read_csv(redundancy_by_res_file, col_types = cols(res = col_character())),
   
   # Load results of assessing sampling completeness with iNEXT
-  tar_file(inext_res_file, "data/inext_results.csv"),
+  tar_file(inext_res_file, "data/japan_ferns_inext_results.csv"),
   inext_res = read_csv(inext_res_file),
   
   # Subset geographic shapes to redundancy > 0.1

@@ -112,13 +112,13 @@ tar_plan(
   redundancy_by_res = calc_redundancy_by_res(comm_scaled_list),
   tar_file(
     redundancy_by_res_out,
-    write_csv_tar(redundancy_by_res, "data/redundancy_by_res.csv")),
+    write_csv_tar(redundancy_by_res, "data/japan_ferns_redundancy_by_res.csv")),
   
   # Assess sampling completeness with iNEXT
   inext_res = run_inext_on_ferns(occ_point_data_ferns),
   tar_file(
     inext_res_out,
-    write_csv_tar(inext_res, "data/inext_results.csv")),
+    write_csv_tar(inext_res, "data/japan_ferns_inext_results.csv")),
   
   # Clean raw lucid data (remove data in Japanese, correct names)
   tar_target(lucid_data_raw_file, "data_raw/JpFernLucid_forJoel20200827.xlsx"),
