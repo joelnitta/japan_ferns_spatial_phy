@@ -524,12 +524,18 @@ tar_plan(
   # - medium: permission required for economic activities
   tar_file(protected_areas_zip_file, "data/japan_protected_areas.gpkg"),
   protected_areas = st_read(protected_areas_zip_file),
-  
-  # Crop siginficantly diverse grid cells to protected areas
-  protected_biodiv = crop_by_pa(protected_areas, biodiv_ferns_spatial, japan_shp),
 
-  # Calculate percentage of protected areas
+  ## Read in deer distribution map
+  tar_file(deer_range_file, "data/japan_deer_range.gpkg"),
+  deer_range = st_read(deer_range_file),
+  
+  # Crop siginficantly diverse grid cells to protected areas, and to areas with deer
+  protected_biodiv = crop_by_pa(protected_areas, biodiv_ferns_spatial, japan_shp),
+  deer_danger_biodiv = crop_by_deer(deer_range, biodiv_ferns_spatial, japan_shp),
+
+  # Calculate percentage of diverse cells in protected areas, and in danger due to herbivory by deer
   signif_cells_protected_area = calculate_percent_protected(protected_biodiv),
+  signif_cells_deer_danger = calculate_percent_deer_danger(deer_danger_biodiv),
   
   # Render manuscript ----
   # Track ms files

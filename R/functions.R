@@ -902,6 +902,86 @@ load_protected_areas_forest <- function(protected_areas_forest_folder) {
 
 }
 
+#' Load data on range of Japanese deer (Cervus nippon) in Japan
+#' 
+#' For more information, see website of Ministry of the Environment of Japan:
+#' https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html
+#' (in Japanese)
+#'
+#' @param zip_file Path to zip file with deer range data. File downloaded from
+#' https://www.biodic.go.jp/biodiversity/activity/policy/map/files/map14-1.zip
+#'
+#' @return Spatial dataframe with one feature, `range`, with three values:
+#' "1978": range of Japanese deer in 1978
+#' "2003": range of Japanese deer in 2003
+#' "estimated": estimated range of Japanese deer from 2003 data based on a model
+#' included forest type and snowfall
+#' 
+load_deer_range <- function (zip_file) {
+
+  # Unzip shape files to a temporary folder
+  temp_dir <- fs::path(tempdir(), "deer")
+  zip_folder <- fs::path_file(zip_file) %>% fs::path_ext_remove()
+  # Make sure it's empty
+  if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
+  fs::dir_create(temp_dir)
+  # Unzip using `unar`, which won't mangle unicode filenames
+  processx::run(
+    command = "unar",
+    args = fs::path_abs(zip_file),
+    wd = temp_dir
+  )
+  
+  # Load data on estimated deer range
+  deer_estimated <- 
+    fs::path(temp_dir, "map14-1/分布拡大予測.tif") %>%
+    # input is raster, so convert to sf
+    stars::read_stars() %>% 
+    st_as_sf() %>%
+    # filter to only those estimated with 5% confidence cutoff
+    rename(pred_expand = `分布拡大予測.tif`) %>% 
+    filter(pred_expand < 0.05) %>%
+    # simplify raster cells to one shape
+    rmapshaper::ms_dissolve() %>%
+    # fix geometry
+    st_make_valid %>%
+    transmute(range = "estimated")
+  
+  # Load data on known deer range (surveys in 1978 and 2003)
+  known_deer <- 
+    fs::path(temp_dir, "map14-1/ニホンジカ分布.shp") %>%
+    st_read() %>%
+    rename(mesh_code = `五倍mesh`, present_1978 = `第2回基礎`, present_2003 = `第6回基礎`) %>%
+    mutate(
+      present_1978 = as.factor(present_1978),
+      present_2003 = as.factor(present_2003)
+    )
+  
+  # Split into datasets by year
+  deer_2003 <- known_deer %>%
+    filter(present_2003 == 1) %>%
+    # simplify raster cells to one shape
+    rmapshaper::ms_dissolve() %>%
+    # fix geometry
+    st_make_valid() %>%
+    transmute(range = "2003")
+  
+  deer_1978 <- known_deer %>%
+    filter(present_1978 == 1) %>%
+    rmapshaper::ms_dissolve() %>%
+    st_make_valid() %>%
+    transmute(range = "1978")
+  
+  # Combine into single dataframe
+  res <- bind_rows(deer_estimated, deer_1978, deer_2003)
+
+  # Delete temp dir
+  if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
+
+  res
+
+}
+
 #' Combine protected areas in Japan
 #' 
 #' If any areas overlap between "medium" and "high" status, they will only be
@@ -2120,6 +2200,82 @@ crop_by_pa <- function(protected_areas, biodiv_ferns_spatial, japan_shp) {
   
 }
 
+#' Crop biodiversity data to deer distribution in Japan
+#'
+#' @param deer_range Spatial dataframe of deer range over time in Japan
+#' @param biodiv_ferns_spatial Spatial dataframe of biodiversity data of ferns in Japan
+#' @param japan_shp Spatial dataframe; map of Japan with coastline
+#'
+#' @return List with three spatial dataframes:
+#' - `biodiv_ferns_spatial_cropped_filtered`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to land area only and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_estimated`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with deer present as estimated by model, and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_2003`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with deer present in 2003 and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_1978`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with deer present in 1973 and filtered to only
+#' areas with significantly high biodiversity
+crop_by_deer <- function(deer_range, biodiv_ferns_spatial, japan_shp) {
+  
+  ### Manipulate biodiv_ferns_spatial ###
+  # Add percent rank for richness
+  biodiv_ferns_spatial <- mutate(biodiv_ferns_spatial, richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
+    # drop latitudinal area (so we can join with protected area)
+    select(-area) 
+  
+  ### Prepare for crop/join steps ###
+  # Crop to Japan to spatial div results area
+  japan_shp <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
+  
+  # Set CRS for biodiversity data and protected areas
+  japan_crs <- sf::st_crs(japan_shp)
+  
+  biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs) %>% 
+    sf::st_make_valid() # Fix some geometries
+  
+  deer_range <- sf::st_transform(deer_range, japan_crs)
+  
+  ### Cropping ###
+  # Crop spatial data to only land regions within Japan map,
+  # filter to only cells with significant biodiv
+  biodiv_ferns_spatial_cropped <- rmapshaper::ms_clip(biodiv_ferns_spatial, japan_shp)
+  
+  # Filter diverse areas to make joins go faster
+  biodiv_ferns_spatial_cropped_filtered <-
+    biodiv_ferns_spatial_cropped %>%
+    select(grids, richness_obs_p_upper, pd_obs_p_upper, fd_obs_p_upper, pe_obs_p_upper) %>%
+    filter(richness_obs_p_upper > 0.95 | pd_obs_p_upper > 0.95 | fd_obs_p_upper > 0.95 | pe_obs_p_upper > 0.95)
+  
+  # Restrict area to only significant biodiv covered by high status
+  biodiv_ferns_spatial_cropped_filtered_estimated <-
+    biodiv_ferns_spatial_cropped_filtered %>%
+    st_intersection(filter(deer_range, range == "estimated")) %>%
+    mutate(area = st_area(.) %>% units::set_units(km^2))
+  
+  # Restrict area to only significant biodiv covered by medium status
+  biodiv_ferns_spatial_cropped_filtered_2003 <-
+    biodiv_ferns_spatial_cropped_filtered %>%
+    st_intersection(filter(deer_range, range == "2003")) %>%
+    mutate(area = st_area(.) %>% units::set_units(km^2))
+
+  biodiv_ferns_spatial_cropped_filtered_1978 <-
+    biodiv_ferns_spatial_cropped_filtered %>%
+    st_intersection(filter(deer_range, range == "1978")) %>%
+    mutate(area = st_area(.) %>% units::set_units(km^2))
+  
+  list(
+    biodiv_ferns_spatial_cropped_filtered = biodiv_ferns_spatial_cropped_filtered,
+    biodiv_ferns_spatial_cropped_filtered_estimated = biodiv_ferns_spatial_cropped_filtered_estimated,
+    biodiv_ferns_spatial_cropped_filtered_2003 = biodiv_ferns_spatial_cropped_filtered_2003,
+    biodiv_ferns_spatial_cropped_filtered_1978 = biodiv_ferns_spatial_cropped_filtered_1978
+  )
+  
+}
+
 #' Calculate percentage of protected area of areas with significantly diverse fern
 #' biodiversity
 #'
@@ -2176,6 +2332,66 @@ calculate_percent_protected <- function(protected_biodiv) {
     left_join(signif_cells_total_area, by = "metric") %>%
     mutate(percent_protected = (protected_area / total_area)) %>%
     mutate(percent_protected = as.numeric(percent_protected))
+}
+
+#' Calculate percentage of protected area of areas with significantly diverse fern
+#' biodiversity
+#'
+#' @param protected_biodiv List with three spatial dataframes:
+#' - `biodiv_ferns_spatial_cropped_filtered`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to land area only and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_med`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with high protection and filtered to only
+#' areas with significantly high biodiversity
+#' - `biodiv_ferns_spatial_cropped_filtered_high`: Spatial dataframe of biodiversity 
+#' data of ferns in Japan cropped to areas with medium protection and filtered to only
+#' areas with significantly high biodiversity
+#' 
+#' @return Dataframe with percentage of protected area per biodiversity type by
+#' protection status
+#' 
+calculate_percent_deer_danger <- function(deer_danger_biodiv) {
+  # Extract spatial dataframes from input
+  biodiv_ferns_spatial_cropped_filtered = deer_danger_biodiv$biodiv_ferns_spatial_cropped_filtered
+  biodiv_ferns_spatial_cropped_filtered_estimated = deer_danger_biodiv$biodiv_ferns_spatial_cropped_filtered_estimated
+  biodiv_ferns_spatial_cropped_filtered_2003 = deer_danger_biodiv$biodiv_ferns_spatial_cropped_filtered_2003
+  biodiv_ferns_spatial_cropped_filtered_1978 = deer_danger_biodiv$biodiv_ferns_spatial_cropped_filtered_1978
+  
+  # Calculate total area of cells with significantly high biodiversity
+  signif_cells_total_area <-
+    biodiv_ferns_spatial_cropped_filtered %>%
+    mutate(area = st_area(.) %>% units::set_units(km^2)) %>%
+    select(grids, richness_obs_p_upper, pd_obs_p_upper, fd_obs_p_upper, pe_obs_p_upper, area) %>%
+    st_drop_geometry %>%
+    as_tibble() %>%
+    pivot_longer(cols = contains("upper"), values_to = "p_value", names_to = "metric") %>%
+    filter(p_value > 0.95) %>%
+    mutate(metric = str_remove_all(metric, "_obs_p_upper")) %>%
+    group_by(metric) %>%
+    summarize(
+      total_area = sum(area),
+      .groups = "drop"
+    )
+  
+  # Calculate area of protected zones within cells with significantly high biodiversity
+  bind_rows(
+    st_drop_geometry(biodiv_ferns_spatial_cropped_filtered_estimated),
+    st_drop_geometry(biodiv_ferns_spatial_cropped_filtered_2003),
+    st_drop_geometry(biodiv_ferns_spatial_cropped_filtered_1978)
+  ) %>%
+    as_tibble() %>%
+    pivot_longer(cols = contains("upper"), values_to = "p_value", names_to = "metric") %>%
+    filter(p_value > 0.95) %>%
+    mutate(metric = str_remove_all(metric, "_obs_p_upper")) %>%
+    group_by(range, metric) %>%
+    summarize(
+      protected_area = sum(area),
+      .groups = "drop"
+    ) %>%
+    left_join(signif_cells_total_area, by = "metric") %>%
+    mutate(percent_danger = (protected_area / total_area)) %>%
+    mutate(percent_danger = as.numeric(percent_danger))
 }
 
 # Plotting ----

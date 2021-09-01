@@ -163,6 +163,14 @@ tar_plan(
   tar_file(
     protected_areas_out,
     st_write_tar(protected_areas, "data/japan_protected_areas.gpkg", time_stamp = as.Date("2021-08-30"))
+  ),
+
+  ## Read in deer distribution maps, write out
+  tar_file(deer_range_zip_file, "data_raw/map14-1.zip"),
+  japan_deer_range = load_deer_range(deer_range_zip_file),
+  tar_file(
+    deer_areas_out,
+    st_write_tar(japan_deer_range, "data/japan_deer_range.gpkg", time_stamp = as.Date("2021-09-01"))
   )
   
 )
