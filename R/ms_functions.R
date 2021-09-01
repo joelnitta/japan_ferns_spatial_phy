@@ -47,6 +47,14 @@ protection_cols <- c(
   "High" = "#0072B2" # dark blue
 )
 
+# - Deer range colors (Okabe-Ito CVD safe)
+deer_colors <- c( 
+  "1978" = "#0072B2", # dark blue
+  "2003" = "#F0E442", # yellow
+  "Estimated" = "#D55E00", # red
+  "estimated" = "#D55E00"# red
+) 
+
 # Words ----
 # Define formatting for some common custom words that may vary in style between journals
 ie <- "*ie*"

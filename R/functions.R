@@ -2386,11 +2386,11 @@ calculate_percent_deer_danger <- function(deer_danger_biodiv) {
     mutate(metric = str_remove_all(metric, "_obs_p_upper")) %>%
     group_by(range, metric) %>%
     summarize(
-      protected_area = sum(area),
+      danger_area = sum(area),
       .groups = "drop"
     ) %>%
     left_join(signif_cells_total_area, by = "metric") %>%
-    mutate(percent_danger = (protected_area / total_area)) %>%
+    mutate(percent_danger = (danger_area / total_area)) %>%
     mutate(percent_danger = as.numeric(percent_danger))
 }
 

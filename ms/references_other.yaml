@@ -1,6 +1,19 @@
 ---
 references:
 
+- id: kankyosho2021
+  type: webpage
+  author:
+  - literal: Japan Ministry of the Environment
+  issued:
+    year: 2021
+  accessed:
+    year: 2021
+    month: 09
+    day: 01
+  title: 'Yaseichoju ni yoru seitaikei heno eikyo ga kennen sareru chiiki (Areas where effects of wild animals on the environment is a concern; in Japanese)'
+  URL: https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html
+
 - id: RCoreTeam2020
   type: webpage
   author:
