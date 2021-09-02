@@ -43,16 +43,28 @@ bioregion_cols <- c(
 
 # - Protected areas (Okabe-Ito CVD safe)
 protection_cols <- c(
-  "Medium" = "#E69F00", # goldenrod
-  "High" = "#0072B2" # dark blue
+  "Medium" = "#F0E442", # yellow
+  "High" = "#009E73", # green
+  "Total" = "#56B4E9" # light blue
+)
+
+protection_lines <- c(
+  "Medium" = "dashed", 
+  "High" = "dotted",
+  "Total" = "solid"
 )
 
 # - Deer range colors (Okabe-Ito CVD safe)
-deer_colors <- c( 
+deer_cols <- c( 
   "1978" = "#0072B2", # dark blue
   "2003" = "#F0E442", # yellow
-  "Estimated" = "#D55E00", # red
-  "estimated" = "#D55E00"# red
+  "Estimated" = "#D55E00" # red
+) 
+
+deer_lines <- c( 
+  "1978" = "dotted", # dark blue
+  "2003" = "dashed", # yellow
+  "Estimated" = "solid" # red
 ) 
 
 # Words ----

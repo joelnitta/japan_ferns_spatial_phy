@@ -11,3 +11,4 @@ library(tflow)
 library(IRanges) # for fuzzyjoin::interval_inner_join() used in add_roll_area()
 library(ROI.plugin.glpk)
 library(gridGraphics) # for patchwork to plot ggplot and base together
+library(colorBlindness) # for testing images to make sure they are universally accessible

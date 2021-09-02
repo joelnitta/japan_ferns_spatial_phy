@@ -460,6 +460,13 @@
       "Repository": "CRAN",
       "Hash": "89cf4b8207269ccf82fbeb6473fd662b"
     },
+    "colorBlindness": {
+      "Package": "colorBlindness",
+      "Version": "0.1.9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4cd47b0a9519b68ba3cd363dce6a6dbb"
+    },
     "colorspace": {
       "Package": "colorspace",
       "Version": "1.4-1",
@@ -487,6 +494,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "30b72e5faca1f055682ef32a0e252edb"
+    },
+    "cowplot": {
+      "Package": "cowplot",
+      "Version": "1.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b418e8423699d11c7f2087c2bfd07da2"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -2007,10 +2021,10 @@
     },
     "stars": {
       "Package": "stars",
-      "Version": "0.4-3",
+      "Version": "0.5-3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f95567051881abcceb27cf8aec08200c"
+      "Hash": "15a997ae176b92af20b3516ff69f07be"
     },
     "stringdist": {
       "Package": "stringdist",

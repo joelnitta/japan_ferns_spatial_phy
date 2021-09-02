@@ -246,14 +246,14 @@ From the original trait list, we selected only traits with putative ecological f
 ### Reproductive mode data
 
 We used data compiled by @Ebihara2019b, which classifies each fern taxon as sexual, apomictic, mixed (both sexual and apomictic modes known from the same taxon), or unknown. 
-We calculated the percentage of apomictic species in each grid cell as the sum of apomictic and mixed taxa divided by total number of taxa (`r s_figure("envir")`b).
+We calculated the percentage of apomictic species in each grid-cell as the sum of apomictic and mixed taxa divided by total number of taxa (`r s_figure("envir")`b).
 
 ### Environmental data
 
 We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")` [@R-raster], and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15) (`r s_figure("envir")`). 
 We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell.
 We calculated area as rolling mean area (km^2^) across 1 degree latitudinal bands.
-This approach reflects the idea that the amount of area with a given climate regime enclosing each grid cell may influence species richness of that cell [@Fahrig2013], and that using raw island areas would not be appropriate in this context as there are just four very large islands with many much smaller ones located close by.
+This approach reflects the idea that the amount of area with a given climate regime enclosing each grid-cell may influence species richness of that cell [@Fahrig2013], and that using raw island areas would not be appropriate in this context as there are just four very large islands with many much smaller ones located close by.
 The R package `r pack("sf")` was used for GIS analyses [@Pebesma2018].
 
 ### Phylogenetic analysis
@@ -412,7 +412,7 @@ This indicated that temperature seasonality and % apomictic taxa were correlated
 We constructed a linear mixed model for each biodiversity metric dependent on the environmental variables ("environmental models"). 
 Initial inspection of the relationship between each biodiversity metric and temperature showed a hump-shaped pattern, so we also included a quadratic term for temperature only. 
 Richness was fit with the negative binomial response family; others were Gaussian. 
-We fit models including a Matérn correlation matrix based on the geographic centroids of each grid cell as a random effect with the R package `r pack("spaMM")` [@Rousset2014]. 
+We fit models including a Matérn correlation matrix based on the geographic centroids of each grid-cell as a random effect with the R package `r pack("spaMM")` [@Rousset2014]. 
 We verified the significance of each term of the model by conducting likelihood ratio tests (LRTs) between the full model and models each with a single term of interest removed, in sequence. 
 We also verified the significance of the full model relative to the null model (only including the Matérn correlation matrix) using LRTs.
 
@@ -644,7 +644,7 @@ When we ran CANAPE with a reduced dataset including only taxa absolutely restric
 Clustering analysis grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` bioregions (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
 The vast majority of grid-cells fell to a subset of these bioregions: using taxonomic distances, they include bioregion 1 (Hokkaido and northern Honshu), bioregion 2 (southern Honshu), bioregion 3 (Ryukyu Islands, excluding Yakushima), and bioregion 4 (Ogasawara Islands) (`r figure("bioregions")`a; `r s_figure("dendrogram")`a). 
 Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single bioregion (`r figure("bioregions")`b; `r s_figure("dendrogram")`b). 
-The other much smaller bioregions (each including only three grid cells or less) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
+The other much smaller bioregions (each including only three grid-cells or less) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
 Taxonomic bioregions 3 and 4 have higher SES values of PD, RPD, FD, and RFD than bioregions 1 and 2 (`r figure("div-by-tax-region")`). 
 Bioregions 3 and 4 also have consistently high PE *p*-scores, whereas bioregions 1 and 2 have a much wider variation. 
@@ -702,7 +702,15 @@ total_percent_protected <-
     .groups = "drop"
   ) %>%
   mutate(percent_protected = total_area/area_of_japan) %>%
-  mutate(percent_protected = as.numeric(percent_protected))
+  mutate(percent_protected = as.numeric(percent_protected)) %>%
+  # Add sum for high + medium
+  bind_rows(
+    summarize(
+      ., 
+      percent_protected = sum(percent_protected),
+      total_area = sum(total_area)
+    ) %>% mutate(status = "total")
+  )
 
 # Extract values for medium and high protection level
 total_percent_protected_medium <- total_percent_protected %>% filter(status == "medium") %>% pull(percent_protected)
@@ -1434,7 +1442,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7, hei
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid cells. Bioregions with three or fewer grid cells are lumped into the "Other" category.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions with three or fewer grid-cells are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 
@@ -1563,8 +1571,22 @@ div_by_tax_region_plot
 `r pagebreak_pdf()`
 
 ```{r conserv-status-make}
+# Add total protected area (medium + high)
+signif_cells_protected_area_total <-
+  signif_cells_protected_area %>%
+  group_by(metric) %>%
+  summarize(percent_protected = sum(percent_protected), .groups = "drop") %>%
+  mutate(status = "total")
+
+total_percent_protected_for_plot <- 
+  total_percent_protected %>%
+  select(status, percent_protected) %>%
+  mutate(status = str_to_sentence(status))
+
 # Plot protected areas
 a <- signif_cells_protected_area %>%
+  select(metric, status, percent_protected) %>%
+  bind_rows(signif_cells_protected_area_total) %>%
   mutate(
     metric = case_when(
       metric == "pd" ~ "PD",
@@ -1576,8 +1598,18 @@ a <- signif_cells_protected_area %>%
   mutate(metric = factor(metric, levels = c("PE", "FD", "PD", "Richness"))) %>%
   ggplot(aes(x = percent_protected, y = metric, fill = status)) +
   geom_col(position = position_dodge()) +
-  geom_vline(xintercept = total_percent_protected_medium, color = "grey40", linetype = 3) +
-  geom_vline(xintercept = total_percent_protected_high, color = "grey40", linetype = 2) +
+  geom_vline(
+    data = total_percent_protected_for_plot,
+    aes(xintercept = percent_protected, linetype = status),
+    color = "grey30"
+  ) +
+  scale_linetype_manual(
+    values = protection_lines,
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left"
+    )) +
   scale_fill_manual(
     values = protection_cols,
     guide = guide_legend(
@@ -1591,7 +1623,8 @@ a <- signif_cells_protected_area %>%
   labs(
     x = "Percent protected",
     y = "Biodiversity metric",
-    fill = "Protection status"
+    fill = "Protection status",
+    linetype = "Protection status"
   ) +
   theme_bw() +
   theme(
@@ -1613,20 +1646,20 @@ b <- signif_cells_deer_danger %>%
   mutate(metric = factor(metric, levels = c("PE", "FD", "PD", "Richness"))) %>%
   ggplot(aes(x = percent_danger, y = metric, fill = range)) +
   geom_col(position = position_dodge()) +
-  # line for 1978 overall percent
   geom_vline(
-    xintercept = total_percent_deer_danger %>% filter(range == "1978") %>% pull(percent_danger), 
-    color = "grey40", linetype = 3) +
-  # line for 2003 overall percent
-  geom_vline(
-    xintercept = total_percent_deer_danger %>% filter(range == "2003") %>% pull(percent_danger), 
-    color = "grey40", linetype = 2) +
-  # line for estimated overall percent
-  geom_vline(
-    xintercept = total_percent_deer_danger %>% filter(range == "estimated") %>% pull(percent_danger), 
-    color = "grey40", linetype = 1) +
+    data = total_percent_deer_danger %>% mutate(range = str_to_sentence(range)),
+    aes(linetype = range, xintercept = percent_danger),
+    color = "grey30"
+  ) +
+  scale_linetype_manual(
+    values = deer_lines,
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left"
+    )) +
   scale_fill_manual(
-    values = deer_colors,
+    values = deer_cols,
     guide = guide_legend(
       direction = "horizontal",
       title.position = "top",
@@ -1638,7 +1671,8 @@ b <- signif_cells_deer_danger %>%
   labs(
     x = "Percent area with deer",
     y = "Biodiversity metric",
-    fill = "Range data source"
+    fill = "Range data source",
+    linetype = "Range data source"
   ) +
   theme_bw() +
   theme(
@@ -1668,7 +1702,7 @@ ggsave(result_file(figure("conserv-status"), "pdf"), conserv_status_plot, width 
 conserv_status_plot
 ```
 
-**`r figure("conserv-status")`**. Conservation status and threat due to herbivory by deer for ferns of Japan by biodiversity metric. (a) Percent of land area with protected status for grid cells with significantly high biodiversity. (b) Percent of land area occupied by deer for grid cells with significantly high biodiversity. Biodiversity metrics include phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of biodiversity metrics assessed by a one-tailed test comparing observed values to a null distribution of 999 random values (see Materials and Methods). For (a), vertical lines indicate total percent area protected across Japan (baseline protection rate); dashed, high protection level (`r scales::percent(total_percent_protected_high, accuracy = 0.1)`); dotted, medium protection level (`r scales::percent(total_percent_protected_medium, accuracy = 0.1)`). For (b), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate); solid, percentage estimated with a model based on 2003 survey data (`r deer_overall$estimated$percent`); dashed, percentage based on 2003 survey data (`r deer_overall[["2003"]]$percent`); dotted, percentage based on 1978 survey data (`r deer_overall[["1978"]]$percent`).
+**`r figure("conserv-status")`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (a) Percent of land area with medium or high protected status for grid-cells with significantly high biodiversity by protection status. (b) Percent of land area occupied by deer for grid-cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). For (a), vertical lines indicate total percent area protected across Japan (baseline protection rate). For (b), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
 
 ## Data availability statement
 
