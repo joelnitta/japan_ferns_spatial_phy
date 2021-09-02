@@ -1,6 +1,19 @@
 ---
 references:
 
+- id: kankyosho2021b
+  type: webpage
+  author:
+  - literal: Japan Ministry of the Environment
+  issued:
+    year: 2021
+  accessed:
+    year: 2021
+    month: 09
+    day: 01
+  title: 'Kokuritsu, kokuteikouen soutenken jigyou ni tsuite (On the project to overhaul national parks and quasi-national parks; in Japanese)'
+  URL: https://www.env.go.jp/park/topics/review/attach/jigyo/full.pdf
+  
 - id: kankyosho2021
   type: webpage
   author:

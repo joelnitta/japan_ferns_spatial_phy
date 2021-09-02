@@ -74,7 +74,9 @@ tar_load(c(
   "repro_data",
   "japan_pterido_tree",
   "model_fits_not_ult",
-  "biodiv_ferns_cent"
+  "biodiv_ferns_cent",
+  "protected_areas",
+  "deer_range"
 ))
 ```
 
@@ -830,6 +832,77 @@ a + b + plot_annotation(tag_levels = "a",
 ```
 
 **`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.
+
+\clearpage
+
+```{r protected-map, fig.width = 7, fig.height = 9}
+# Define function to make maps showing overlap of protected areas and grid-cells with high biodiversity
+# These depend on various objects being in the current environment!
+# pass the dots to filter data
+make_protected_plot <- function(part, variable, ...) {
+  ggplot() +
+    geom_sf(data = japan, lwd = 0.10, fill = "white") +
+    geom_sf(data = protected_areas %>% mutate(status = str_to_sentence(status)), aes(fill = status), color = "transparent") +
+    geom_sf(
+      data = biodiv_ferns_spatial %>% filter(...) %>% st_set_crs(japan_crs), 
+      fill = "transparent", color = "black", lwd = 0.20) +
+    annotate(
+      geom="richtext", y = Inf, x = -Inf, 
+      label = glue("<span style='color:black'>**({part})** {variable}</span>"), 
+      hjust = "inward", vjust = "inward", color = "white") +
+    scale_fill_manual(values = protection_cols, name = "Protection status") +
+    scale_x_continuous(breaks = c(125, 135, 145)) +
+    scale_y_continuous(breaks = c(25, 35, 45)) +
+    map_theme()
+}
+
+a <- make_protected_plot("a", "Richness", richness_obs_p_upper > 0.95)
+b <- make_protected_plot("b", "PD", pd_obs_p_upper > 0.95)
+c <- make_protected_plot("c", "FD", fd_obs_p_upper > 0.95)
+d <- make_protected_plot("d", "PE", pe_obs_p_upper > 0.95)
+
+a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
+    plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+**`r s_figure("protected-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and protected areas. Grid-cells with black outlines indicate significantly high biodiversity. Biodiversity metrics include (a) taxon richness, (b) phylogenetic diversity (PD), (c) functional diversity (FD), and (d) phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods).
+
+\clearpage
+
+```{r deer-map, fig.width = 7, fig.height = 9}
+# Define function to make maps showing overlap of areas with deer and grid-cells with high biodiversity
+# These depend on various objects being in the current environment!
+make_deer_plot <- function(part, variable, ...) {
+  ggplot() +
+    geom_sf(data = japan, lwd = 0.10, fill = "white") +
+    geom_sf(data = deer_range %>% filter(range == "estimated") %>% mutate(range = str_to_sentence(range)), aes(fill = range), color = "transparent") +
+    geom_sf(data = deer_range %>% filter(range == "2003"), aes(fill = range), color = "transparent") +
+    geom_sf(data = deer_range %>% filter(range == "1978"), aes(fill = range), color = "transparent") +
+    geom_sf(
+      data = biodiv_ferns_spatial %>% filter(...) %>% st_set_crs(japan_crs), 
+      fill = "transparent", color = "black", lwd = 0.20) +
+    annotate(
+      geom="richtext", y = Inf, x = -Inf, 
+      label = glue("<span style='color:black'>**({part})** {variable}</span>"), 
+      hjust = "inward", vjust = "inward", color = "white") +
+    scale_fill_manual(values = deer_cols, name = "Range data source") +
+    scale_x_continuous(breaks = c(125, 135, 145)) +
+    scale_y_continuous(breaks = c(25, 35, 45)) +
+    map_theme()
+}
+
+a <- make_deer_plot("a", "Richness", richness_obs_p_upper > 0.95)
+b <- make_deer_plot("b", "PD", pd_obs_p_upper > 0.95)
+c <- make_deer_plot("c", "FD", fd_obs_p_upper > 0.95)
+d <- make_deer_plot("d", "PE", pe_obs_p_upper > 0.95)
+
+a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
+    plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+**`r s_figure("deer-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and distribution of Japanese deer (*Cervus nippon*). Grid-cells with black outlines indicate significantly high biodiversity. Biodiversity metrics include (a) taxon richness, (b) phylogenetic diversity (PD), (c) functional diversity (FD), and (d) phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). Deer range data sources include 1978 survey, 2003 survey, and range estimated from model based on 2003 survey data. Deer ranges plotted in layers in ascending order (estimated, 2003, 1978) such that upper layers may obscure lower layers; however, deer ranges generally expanded from 1978 to estimated range, so very few sites are obscured.
 
 \clearpage
 

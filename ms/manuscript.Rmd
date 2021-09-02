@@ -162,7 +162,7 @@ Although peak areas of different diversity types are largely non-overlapping, ea
 Despite this, future conservation efforts must recognize that threats can vary by biodiversity metric, and consider threats not directly analyzed here such as climate change.
 
 <!-- may include title words -->
-**Key words:** apomixis, biodiversity, biogeography, conservation, CANAPE, ferns, Japan, phylogenetic diversity. 
+**Key words:** apomixis, biodiversity, biogeography, CANAPE, conservation, ferns, Japan, phylogenetic diversity. 
 
 \newpage
 
@@ -437,6 +437,7 @@ Any areas that overlapped within a protection status were combined, and areas th
 We downloaded distribution maps (SHP and TIF) of native Japanese deer (*Cervus nippon*), an herbivore that has caused extensive damage to native plant communities due to rapid population growth since the 1970s [@Takatsuki2009] and poses a high risk to ferns, from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html).
 To assess change in threat due to herbivory by deer over time, we used three maps available in this dataset: range of Japanese deer surveyed in 1978, range surveyed in 2003, and estimated range inferred from a model including snow cover and forest type based on the 2003 survey data [@kankyosho2021].
 We cropped grid-cells to only include land area, then calculated the percent of protected area of each status type or percent of area occupied by deer for each survey period within grid-cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. 
+These values were compared with the overall percent of protected area or area occupied by deer across Japan (baseline rate).
 For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. 
 For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
 
@@ -578,7 +579,7 @@ percent_traits_missing <-
 
 The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent` of the total number of native, non-hybrid ferns) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families. 
 The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a] (`r s_figure("tree")`). 
-Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* (families follow @PteridophytePhylogenyGroupI2016). 
+Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* [families follow @PteridophytePhylogenyGroupI2016]. 
 The age of the fern clade is estimated to be `r phylogeny_age` ma.
 
 The cleaned list of specimens included `r n_specimens` specimens representing `r n_specimens_taxa` taxa (`r n_specimens_taxa_percent`). 
@@ -762,14 +763,14 @@ deer_highest_danger <- signif_cells_deer_danger %>%
 ```
 
 The percentage of protected area in grid-cells with significantly high biodiversity range from `r min_protected_total` to `r max_protected_total` total, including `r min_protected_high` to `r max_protected_high` with high status and `r min_protected_med` to `r max_protected_med` with medium status (`r figure("conserv-status")`a). 
-Cells with significantly high biodiversity had a greater percentage of area protected than the overall rate for Japan at the medium protection status (`r scales::percent(total_percent_protected_medium, accuracy = 0.1)`) across all biodiversity metrics.
-In contrast, cells with significantly high biodiversity had a lower percentage of area protected than the overall rate for Japan at the high protection status (`r scales::percent(total_percent_protected_medium, accuracy = 0.1)`) for most biodiversity metrics.
-Only cells with significantly high PE had a higher percentage area protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total) than the overall rate at both levels of protection.
+Cells with significantly high biodiversity had a greater percentage of area protected than the baseline rate for Japan at the medium protection status (`r scales::percent(total_percent_protected_medium, accuracy = 0.1)`) across all biodiversity metrics.
+In contrast, cells with significantly high biodiversity had a lower percentage of area protected than the baseline rate for Japan at the high protection status (`r scales::percent(total_percent_protected_high, accuracy = 0.1)`) for most biodiversity metrics.
+Only cells with significantly high PE had a higher percentage area protected (`r best_protected_high` high, `r best_protected_med` medium, `r best_protected_total` total) than the baseline rate at both levels of protection.
 
 The overall range of Japanese deer in Japan has increased from `r deer_overall[["1978"]]$area` (`r deer_overall[["1978"]]$percent`) in 1978 to `r deer_overall[["2003"]]$area` (`r deer_overall[["2003"]]$percent`) in 2003, and may be as high as `r deer_overall$estimated$area` (`r deer_overall$estimated$percent`) according to model estimates.
 The percentage of area occupied by deer in grid-cells with significantly high biodiversity increased from `r deer_in_high_biodiv[["1978"]]$percent` in 1978 to `r deer_in_high_biodiv[["2003"]]$percent` in 2003 when averaged across biodiversity types.
-Cells with high FD, PD, or PE tended to have less deer occupation compared to the overall rate (`r figure("conserv-status")`b).
-However, cells with high species richness consistently exceeded the overall rate of deer presence, with up to `r deer_highest_danger$estimated$percent` occupied by deer in the estimated range dataset.
+Cells with high FD, PD, or PE tended to have less deer occupation compared to the baseline rate (`r figure("conserv-status")`b).
+However, cells with high species richness consistently exceeded the baseline rate of deer presence, with up to `r deer_highest_danger$estimated$percent` occupied by deer in the estimated range dataset.
 
 ## Discussion
 
@@ -824,18 +825,19 @@ The monsoon hypothesis is also not supported by our results, which show precipit
 
 The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values (`r figure("div-by-tax-region")`). 
 Interestingly, the bioregions identified here correspond roughly to major forest types previously categorized on an *ad-hoc* basis; bioregion 1 corresponds to the cool or subartic deciduous type, bioregion 2 to the warm evergreen type, and bioregions 3 and 4 to the subtropical rainy type [@Shimizu2014]. 
+Furthermore, the border between bioregions 1 and 2 corresponds to the "*Gleichenia japonica* Line" proposed by @Nakaike1983, which he proposed based on the distribution of *Diplopterygium glaucum* (Houtt.) Nakai (= *Gleichenia japonica* Spreng.) as an indicator of evergreen broad-leaf forests in Japan.
 This suggests that ferns are useful as bioindicators in Japan. 
 Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. 
-The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits bioregions 2 and 3, there is some overlap between them on the Amami-Oshima Isl. (`r figure("bioregions")`). 
+The Tsugaru Strait had no relation to any of the bioregions, and although the Tokara Strait somewhat splits bioregions 2 and 3, there is some overlap between them on the Amami-Oshima Isl. (`r figure("bioregions")`b). 
 The weak effect of these straits as barriers makes sense given the presumably high dispersal abilities of ferns, which disperse via tiny spores carried on the wind.
 Rather, fern bioregions in Japan broadly separate along gradients of temperature and precipitation; in particular, precipitation splits taxonomic bioregion 3 (mostly the Ryukyu islands; wetter) from bioregion 4 (mostly the Ogasawara islands; drier) (`r s_figure("bioregions-env")`).
 
 ### Conservation status and threats
 
 We found that grid-cells with significantly high amounts of biodiversity are better protected than the baseline protection rate at the medium protection level across all biodiversity metrics, and better than the baseline rate at the high protection level for PE (`r figure("conserv-status")`a). 
-One possible reason for this generally high level of protection is that in the past, some ferns have been included in lists of rare and endemic plants for consideration in designation of conservation areas (A. Ebihara, pers. comm.). 
-In particular, there has been an emphasis on conserving rare and endemic species in Japanese southern islands such as Ogasawara and Amami (FIXME: add ref), which include many grid-cells with high PE.
-Another reason (as suggested previously) is that ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
+The high protection status of grid-cells with high PE may be due to an emphasis on conserving rare, endemic plant and animal species in Japanese southern islands such as Iriomote and Amami [@kankyosho2021b], which include many grid-cells with high PE (`r s_figure("protected-map")`d).
+One possible reason for the generally high level of protection overall is that in the past, some ferns have been included in lists of rare and endemic plants for consideration in designation of conservation areas [A. Ebihara, pers. comm.; @kankyosho2021b]. 
+Also, (as suggested previously) ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
 
 Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change. 
 One other such threat is herbivory by native Japanese deer, *Cervus nippon*. 
@@ -845,7 +847,7 @@ They have caused extensive damage even within national parks [@Tokita2006], whic
 Although various efforts to prevent deer herbivory have been deployed such as culling and exclusion fences [@Takatsuki2009], much work remains to be done to save vulnerable plant populations.
 
 Our analysis shows that the threat to fern biodiversity posed by Japanese deer differs strongly by biodiversity type; although grid-cells with significantly high FD, PD, and PE tend to have lower rates of deer occupancy compared to the baseline rate, grid-cells with high richness experience much greater co-occurrence with deer than the baseline rate (`r figure("conserv-status")`b).
-This pattern is due to the fact that Japanese deer do not occur in the southern islands, which house high amounts of PD and PE; rather, areas with high species richness are primarily located in southern Honshu, where deer expansion has been intense (FIXME: add SI fig).
+This pattern is due to the fact that Japanese deer do not occur in the southern islands, which house high amounts of PD and PE; rather, areas with high species richness are primarily located in southern Honshu, where deer expansion has been intense (`r s_figure("protected-map")`a).
 This result highlights the importance of using multiple metrics of biodiversity for establishing conservation priorities.
 
 ### Limits of the study and future outlook
@@ -854,7 +856,7 @@ This result highlights the importance of using multiple metrics of biodiversity 
 # Find the species with the widest latitudinal distribution
 taxon_with_widest_lat <- lat_span_summary %>%
   mutate(lat_span = max_lat - min_lat) %>%
-  slice_max(lat_span) %>%
+  slice_max(lat_span, with_ties = FALSE) %>%
   left_join(green_list, by = "taxon") %>%
   # Parse out species name and author
   mutate(gn_parse_tidy(.$scientific_name) %>% select(canonicalsimple, authorship)) %>%
@@ -882,11 +884,15 @@ Furthermore, the collections are not evenly collected throughout the country, bu
 Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
 
 The extreme evolutionary distinctiveness of southern islands is both a major feature of the Japanese fern flora and a challenge for analysis. 
-The tropical lineages occurring in these islands are likely responsible for the comparatively low (`r ie`, clustered) values of PD observed on Honshu (`r figure("rand-diversity")`a). 
-If a more restricted null model was used that did not consider all taxa capable of dispersing anywhere within the study area, different results would likely be obtained for the randomization test [@Mishler2020]. 
+The tropical lineages occurring only in these islands are likely responsible for the comparatively low (`r ie`, clustered) values of PD observed on Honshu (`r figure("rand-diversity")`a).
+One way to account for this bimodal distribution pattern would be to use a restricted null model that does not allow all taxa to disperse anywhere within the study area [@Mishler2020]. 
 However, ferns are known to have high dispersal abilities [@Tryon1970; @Barrington1993; @Moran2001]. 
-In our dataset, the taxon with the greatest latitudinal distribution, `r taxon_with_widest_lat$text`, spans nearly the entire region (`r taxon_with_widest_lat$min_lat`°N to `r taxon_with_widest_lat$max_lat`°N), and `r n_widespread_taxa` taxa have latitudinal distributions spanning the Tokara strait in the south (29°N) to the Tsugaru strait in the north (41.5°N). 
+In our dataset, the taxa with the greatest latitudinal distribution (`r eg`, `r taxon_with_widest_lat$text`) span nearly the entire region (`r taxon_with_widest_lat$min_lat`°N to `r taxon_with_widest_lat$max_lat`°N), and `r n_widespread_taxa` taxa have latitudinal distributions spanning the Tokara strait in the south (29°N) to the Tsugaru strait in the north (41.5°N). 
 Therefore, it seems reasonable to assume that ferns are capable of dispersing across the entire study area.
+Furthermore, it should be noted that the southern islands are all low-altitude (not exceeding 1000 m).
+If high elevation habitats were available, the southern islands would be expected to share more species in common with areas further north.
+For example, Taiwan, which is just east of the southernmost Japanese islands and harbors high mountains (>3000 m), shares many fern species with Honshu that are not found in southern Japanese islands.
+This supports that the sharp taxonomic turnover between southern islands and Honshu is more likely due to ecological factors than dispersal limitation.
 
 One element of biodiversity that we did not consider here is hybrids. 
 The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa. 
