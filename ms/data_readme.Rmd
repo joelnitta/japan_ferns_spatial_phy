@@ -15,6 +15,7 @@ library(targets)
 library(tarchetypes)
 source(here::here("R/packages.R"))
 source(here::here("R/functions.R"))
+source(here::here("R/ms_functions.R"))
 ```
 
 ```{r setup, include = FALSE, cache = FALSE}
@@ -34,8 +35,14 @@ knitr::opts_chunk$set(
 # Load objects from targets workflow (all paths to data files)
 tar_load(
   c(
+    "ms_functions",
     "japan_ferns_comm_full_file",
-    "plastome_calibration_dates")
+    "inext_res_file",
+    "occ_point_data_summary_file",
+    "plastome_calibration_dates",
+    "redundancy_by_res_file",
+    "japan_ferns_shape_full_file"
+    )
   )
 ```
 
@@ -74,11 +81,11 @@ Universal (CC0 1.0)
 
 Recommended citation for the data: Nitta JH, Mishler BD, Iwasaki W, Ebihara A
 (2021) Data from: Spatial phylogenetics of Japanese ferns: Patterns, processes,
-and implications for conservation FIXME: add DOI
+and implications for conservation FIXME: add DOI when available
 
 Citation for and links to publications that cite or use the data: Nitta JH,
 Mishler BD, Iwasaki W, Ebihara A (2021) Spatial phylogenetics of Japanese ferns:
-Patterns, processes, and implications for conservation <<FIXME: ADD JOURNAL>>
+Patterns, processes, and implications for conservation FIXME: add journal when published
 
 Code for analyzing the data is available on github:
 https://github.com/joelnitta/japan_ferns_biogeo
@@ -138,7 +145,7 @@ All taxon names are based on the Green List (http://www.rdplants.org/gl/;
 English version available at
 https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32)
 
-Traits were measured on each species as described in [@Ebihara2019b].
+Traits were measured on each species as described in @Ebihara2019b.
 
 Phylogenetic analysis was conducted with maximum likelihood in IQ-TREE
 [@Nguyen2015] by combining plastid *rbcL* sequences of each taxon with a
@@ -155,7 +162,7 @@ available at https://github.com/joelnitta/japan_ferns_biogeo.
 
 For full methods, see Nitta JH, Mishler BD, Iwasaki W, Ebihara A (2021) Spatial
 phylogenetics of Japanese ferns: Patterns, processes, and implications for
-conservation <<FIXME: ADD JOURNAL>>
+conservation FIXME: Add journal when published
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
@@ -169,10 +176,11 @@ japan_ferns_comm_full <- read_csv(here::here(japan_ferns_comm_full_file))
 assert(japan_ferns_comm_full, not_na, everything(), success_fun = success_logical)
 ```
 
-japan_ferns_comm_full.csv: Community matrix (species x sites matrix) of ferns in
-Japan. Sites correspond to 0.2 degree x 0.2 degree grid cells covering Japan.
-For location of grid cells, see japan_ferns_shape_full.gpkg. Full dataset
-including all grid cells (none excluded due to low redundancy).
+`r fs::path_file(japan_ferns_comm_full_file)`: Community matrix (species x sites
+matrix) of ferns in Japan. Sites correspond to 0.2 degree x 0.2 degree grid
+cells covering Japan. For location of grid cells, see
+japan_ferns_shape_full.gpkg. Full dataset including all grid cells (none
+excluded due to low redundancy).
 
 Number of variables: `r ncol(japan_ferns_comm_full)`
 
@@ -187,6 +195,154 @@ Variable list:
 Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_ferns_comm_full_file))`
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+```{r japan_ferns_inext_results}
+inext_res <- read_csv(here::here(inext_res_file))
+# Check that no data are missing
+assert(inext_res, not_na, everything(), success_fun = success_logical)
+```
+
+`r fs::path_file(inext_res_file)`: Output from running iNEXT [@Hsieh2016] on
+specimen data for ferns of Japan. iNEXT estimates diversity (here, species
+richness) and sampling completeness based on interpolation and extrapolation
+from the original data.
+
+Number of variables: `r ncol(inext_res)`
+
+Number of cases/rows: `r nrow(inext_res)`
+
+Variable list:
+
+```{r results = "asis"}
+  inext_res %>%
+  make_data_desc(
+    tribble(
+      ~col, ~desc,
+      "m", "Sample size (number of individuals)",
+      "method", "Method used to estimate diveristy",
+      "order", "Diversity order of Hill number (here 0, equivalent to species richness)",
+      "qD", "Estimated diversity",
+      "qD.LCL", "Lower 95% confidence limit on estimated diversity",
+      "qD.UCL", "Upper 95% confidence limit on estimated diversity",
+      "SC", "Estimated sampling completeness",
+      "SC.LCL", "Lower 95% confidence limit on sampling completeness",
+      "SC.UCL", "Upper 95% confidence limit on sampling completeness")
+  )
+```
+
+Missing data codes: No missing data.
+
+MD5 checksum: `r tools::md5sum(here::here(japan_ferns_comm_full_file))`
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+```{r occ_point_data_summary}
+occ_point_data_summary <- read_csv(here::here(occ_point_data_summary_file))
+# Check that no data are missing
+assert(occ_point_data_summary, not_na, everything(), success_fun = success_logical)
+```
+
+`r fs::path_file(occ_point_data_summary_file)`: Summary of raw specimen data for
+native, non-hybrid ferns of Japan. Raw specimen data consists of one row per
+specimen, with species name, latitude, longitude, and collection date (raw
+specimen data not included here to protect endangered species). Raw data were
+filtered to remove duplicate specimens and specimens that occurred outside of
+the second-degree mesh (approximately 10 km sq grid cell) map of Japan
+(http://www.biodic.go.jp/trialSystem/EN/shpddl.html)
+
+Number of variables: `r ncol(occ_point_data_summary)`
+
+Number of cases/rows: `r nrow(occ_point_data_summary)`
+
+Variable list:
+
+```{r results = "asis"}
+  occ_point_data_summary %>%
+  make_data_desc(
+    tribble(
+      ~col, ~desc,
+      "dataset", "Dataset name. 'occ_point_data_ferns_unfiltered' indicates data includes all specimens; 'occ_point_data_ferns' indicates data only includes specimens after filtering",
+      "variable", "Variable. 'n_taxa' indicates number of taxa, 'n_specimens' indicates number of specimens",
+      "value", "Value corresponding to each variable")
+  )
+```
+
+Missing data codes: No missing data.
+
+MD5 checksum: `r tools::md5sum(here::here(occ_point_data_summary_file))`
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+```{r redundancy_by_res}
+redundancy_by_res <- read_csv(here::here(redundancy_by_res_file))
+# Check that no data are missing
+assert(redundancy_by_res, not_na, everything(), success_fun = success_logical)
+```
+
+`r fs::path_file(redundancy_by_res_file)`: Results of testing binning raw
+specimen data of native, non-hybrid ferns of Japan into grid-cells at different
+resolutions. Sampling redundancy is a metric of sampling completeness,
+calculated as 1 - (richness/abundance).
+
+Number of variables: `r ncol(redundancy_by_res)`
+
+Number of cases/rows: `r nrow(redundancy_by_res)`
+
+Variable list:
+
+```{r results = "asis"}
+  redundancy_by_res %>%
+  make_data_desc(
+    tribble(
+      ~col, ~desc,
+      "res", "Degree of resolution (grid-cell side length), from 0.1 to 0.4 degrees",
+      "grids", "Name of grid-cell",
+      "abundance", "Number of specimens occurring in grid-cell",
+      "richness", "Number of taxa occurring in grid-cell",
+      "redundancy", "Redundancy (measure of sampling completeness)"
+  ))
+```
+
+Missing data codes: No missing data.
+
+MD5 checksum: `r tools::md5sum(here::here(redundancy_by_res_file))`
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+```{r japan_ferns_shape_full}
+japan_ferns_shape_full <- st_read(here::here(japan_ferns_shape_full_file))
+# Check that no data are missing
+assert(japan_ferns_shape_full, not_na, everything(), success_fun = success_logical)
+```
+
+`r fs::path_file(japan_ferns_shape_full_file)`: Spatial data of native,
+non-hybrid ferns in Japan in GeoPackage format. Compiled from raw specimen data
+by binning specimens into 0.2 degree grid cells across Japan.
+
+Number of variables: `r ncol(japan_ferns_shape_full)`
+
+Number of cases/rows: `r nrow(japan_ferns_shape_full)`
+
+Variable list:
+
+```{r results = "asis"}
+  japan_ferns_shape_full %>%
+  make_data_desc(
+    tribble(
+      ~col, ~desc,
+      "grids", "Name of grid-cell",
+      "abundance", "Number of specimens occurring in grid-cell",
+      "richness", "Number of taxa occurring in grid-cell",
+      "redundancy", "Redundancy (measure of sampling completeness)",
+      "geom", "Vector describing shape and position of grid-cell"
+  ))
+```
+
+Missing data codes: No missing data.
+
+MD5 checksum: `r tools::md5sum(here::here(japan_ferns_shape_full_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 

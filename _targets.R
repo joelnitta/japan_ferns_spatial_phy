@@ -587,6 +587,6 @@ tar_plan(
     data_readme,
     knit_root_dir = here::here(),
     path = "ms/data_readme.Rmd",
-    output_file = here::here("results/data_readme.txt")
+    output_file = here::here("results/data_readme.rtf")
   )
 )

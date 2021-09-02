@@ -328,3 +328,25 @@ plot_fits <- function(resp_var, resp_var_print, indep_var, signif_var, fit, mode
   
 }
 
+#' Format text for README description of rectangular data
+#'
+#' @param data Dataframe
+#' @param metadata Tibble with two columns, "col_names" (column names in `data`)
+#' and "desc" (description of each column). "col_names" must match column names
+#' in `data` exactly (including order)
+#'
+#' @return Character string formatted for including in data README
+#' 
+make_data_desc <- function(data, metadata) {
+
+  col_names <- colnames(data)
+  
+  assertthat::assert_that(
+    isTRUE(all.equal(col_names, metadata$col))
+  )
+  
+  metadata %>%
+    mutate(text = glue::glue("- {col}: {desc}\n\n")) %>%
+    pull(text)
+
+}
