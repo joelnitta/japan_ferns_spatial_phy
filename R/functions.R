@@ -2146,11 +2146,6 @@ cluster_phylo_regions <- function (comm_df, phy, k) {
 #' data of ferns in Japan cropped to areas with medium protection and filtered to only
 #' areas with significantly high biodiversity
 crop_by_pa <- function(protected_areas, biodiv_ferns_spatial, japan_shp) {
-  ### Manipulate biodiv_ferns_spatial ###
-  # Add percent rank for richness
-  biodiv_ferns_spatial <- mutate(biodiv_ferns_spatial, richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
-    # drop latitudinal area (so we can join with protected area)
-    select(-area) 
   
   ### Prepare for crop/join steps ###
   # Crop to Japan to spatial div results area
@@ -2220,13 +2215,7 @@ crop_by_pa <- function(protected_areas, biodiv_ferns_spatial, japan_shp) {
 #' data of ferns in Japan cropped to areas with deer present in 1973 and filtered to only
 #' areas with significantly high biodiversity
 crop_by_deer <- function(deer_range, biodiv_ferns_spatial, japan_shp) {
-  
-  ### Manipulate biodiv_ferns_spatial ###
-  # Add percent rank for richness
-  biodiv_ferns_spatial <- mutate(biodiv_ferns_spatial, richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
-    # drop latitudinal area (so we can join with protected area)
-    select(-area) 
-  
+    
   ### Prepare for crop/join steps ###
   # Crop to Japan to spatial div results area
   japan_shp <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
@@ -3078,11 +3067,11 @@ prepare_data_for_spamm <- function(
   bind_rows(
     tibble(
       resp_var = resp_var_env,
-      formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + area + Matern(1|long+lat)")
+      formula = glue("{resp_var_env} ~ temp + I(temp^2) + precip + precip_season + lat_area + Matern(1|long+lat)")
     ),
     tibble(
       resp_var = resp_var_repro,
-      formula = glue("{resp_var_repro} ~ percent_apo + precip + precip_season + area + Matern(1|long+lat)")
+      formula = glue("{resp_var_repro} ~ percent_apo + precip + precip_season + lat_area + Matern(1|long+lat)")
     )
   ) %>%
     mutate(data = list(biodiv_ferns_cent))
@@ -3462,10 +3451,10 @@ calc_area_by_lat <- function(shp, lat_cut = 0.2, lat_window = 1) {
   # Calculate area in 0.2 degree latitudinal bands,
   # then rolling mean in 1 degree bands
   dat %>%
-    mutate(area = pmap_dbl(., area_from_crop)) %>%
-    select(ymin, ymax, area) %>%
+    mutate(lat_area = pmap_dbl(., area_from_crop)) %>%
+    select(ymin, ymax, lat_area) %>%
     # for the missing values on either end, just extend from the first non-missing value
-    mutate(area = zoo::rollmean(x = area, k = width_k, fill = c("extend", NA, "extend")))
+    mutate(lat_area = zoo::rollmean(x = lat_area, k = width_k, fill = c("extend", NA, "extend")))
   
 }
 
@@ -3498,7 +3487,7 @@ add_roll_area <- function(biodiv_ferns_spatial, lat_area_ja) {
   
   left_join(biodiv_ferns_spatial, area_mapped_to_centroids, by = "grids") %>%
     assert(is_uniq, grids) %>%
-    assert(not_na, area)
+    assert(not_na, lat_area)
 }
 
 #' Drop one outlier value from biodiv data:

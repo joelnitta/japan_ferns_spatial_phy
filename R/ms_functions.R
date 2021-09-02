@@ -252,7 +252,7 @@ clean_vars <- function(x) {
     str_replace_all("^temp_season$", "Temperature seasonality") %>%
     str_replace_all("^precip_season$", "Precipitation seasonality") %>%
     str_replace_all("^precip$", "Precipitation") %>%
-    str_replace_all("^area$", "Area") %>%
+    str_replace_all("^lat_area$", "Area") %>%
     str_replace_all("^richness$", "Richness")
 }
 

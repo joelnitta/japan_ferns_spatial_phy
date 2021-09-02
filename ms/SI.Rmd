@@ -428,7 +428,7 @@ plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::w
     )
 }
 
-a <- plot_env("a", "Area", "area", "km^2")
+a <- plot_env("a", "Area", "lat_area", "km^2")
 b <- plot_env("b", "% apomictic taxa", "percent_apo", labels = function(x) scales::percent(x, accuracy = 1))
 c <- plot_env("c", "Precipitation", "precip", "mm")
 d <- plot_env("d", "Precip. season.", "precip_season" , "")

@@ -353,6 +353,8 @@ tar_plan(
     classify_signif("fd") %>%
     classify_signif("rfd") %>%
     classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
+    # Add richness percent rank
+    mutate(richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
     # Format factors
     mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
@@ -392,7 +394,7 @@ tar_plan(
   # - response variables for reproductive model
   resp_vars_repro = c("pd_obs_z", "rpd_obs_z"),
   # - independent variables (both models)
-  indep_vars = c("percent_apo", "temp", "precip", "precip_season", "area"),
+  indep_vars = c("percent_apo", "temp", "precip", "precip_season", "lat_area"),
   
   # Make biodiversity metrics dataframe with centroid of each site for models
   # - ultrametric tree (full  analysis)
@@ -409,7 +411,7 @@ tar_plan(
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
     st_set_geometry(biodiv_ferns_spatial, NULL),
-    vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo", "area")
+    vars_select = c("temp", "temp_season", "precip", "precip_season", "percent_apo", "lat_area")
   ),
   
   ## Analyze Moran's I ----
