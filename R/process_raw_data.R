@@ -56,9 +56,15 @@ tar_plan(
   # Shape file downloaded from http://gis.biodic.go.jp/
   # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
   tar_file(mesh2_file, "data_raw/mesh2.zip"),
+  
+  japan_mesh2 = load_shape_from_zip(mesh2_zip_file, "mesh2.shp") %>% select(id = NAME),
+  
   occ_point_data_ferns = filter_occ_points(
     occ_point_data = occ_point_data_ferns_unfiltered,
-    mesh2_zip_file = mesh2_file),
+    mask = japan_mesh2),
+  
+  # get CRS (JGD2000) from japan_mesh2 for converting point data to community dataframe
+  jgd2000 = st_crs(japan_mesh2),
   
   # Calculate richness, abundance, and redundancy at four scales: 
   # 0.1, 0.2, 0.3, and 0.4 degree grid squares
@@ -70,7 +76,8 @@ tar_plan(
       resol = scales_to_test,
       lon = "longitude",
       lat = "latitude",
-      species = "taxon"),
+      species = "taxon",
+      crs = jgd2000),
     pattern = map(scales_to_test)
   ),
   

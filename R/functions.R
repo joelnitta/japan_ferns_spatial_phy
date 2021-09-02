@@ -506,6 +506,7 @@ comm_from_points <- function(species_coods,
   # raster::cellFromXY needs data to be data.frame, not tibble
   species_coods_nested <- dplyr::mutate(species_coods_nested, data = purrr::map(data, as.data.frame))
   
+  # Get vector of names of cells for each occurrence by species
   cells_occur <- purrr::map(
     species_coods_nested$data,
     ~ raster::cellFromXY(xy = ., object = r)
@@ -524,6 +525,9 @@ comm_from_points <- function(species_coods,
   
   # Convert to spatial polygons dataframe
   p <- as(e, "SpatialPolygons")
+  
+  # Last step dropped the CRS, so add it back
+  sp::proj4string(p) <- crs
   
   # Make polygons grid at same extent as sample points
   m <- sp::SpatialPolygonsDataFrame(p, data.frame(sp = "x"))
@@ -591,10 +595,10 @@ comm_from_comm_scaled_list <- function (comm_scaled_list, resol_select) {
 #'
 #' @param occ_point_data Occurrence points dataframe,
 #' including columns for taxon, longitude, and latitude
-#' @param mesh2_zip_file Path to zip file containing `mesh2.shp` shape file
+#' @param mask Shape file read in from `mesh2.shp` zip file, used for cropping
 #'
 #' @return Filtered data points
-filter_occ_points <- function(occ_point_data, mesh2_zip_file) {
+filter_occ_points <- function(occ_point_data, mask) {
   
   # Remove duplicates (same species collected on same day at same site)
   occ_point_data <-
@@ -608,17 +612,12 @@ filter_occ_points <- function(occ_point_data, mesh2_zip_file) {
       .groups = "drop"
     )
   
-  # Read in shape file to use for mask
-  # (here, the second-degree mesh map of Japan)
-  second_degree_mesh <- load_shape_from_zip(mesh2_zip_file, "mesh2.shp") %>%
-    select(id = NAME)
-  
   # Convert point data to SF object,
   # with same projection as shape file
-  occ_point_data <- sf::st_as_sf(occ_point_data, coords = c("longitude", "latitude"), crs = st_crs(second_degree_mesh))
+  occ_point_data <- sf::st_as_sf(occ_point_data, coords = c("longitude", "latitude"), crs = st_crs(mask))
   
   # Join point data to mesh map
-  sf::st_join(occ_point_data, second_degree_mesh, join = sf::st_within) %>%
+  sf::st_join(occ_point_data, mask, join = sf::st_within) %>%
     # Filter to only those with a grid ID (so, those that are within the mesh map)
     filter(!is.na(id)) %>%
     # Convert to tibble with columns for taxon, longitude, and latitude
