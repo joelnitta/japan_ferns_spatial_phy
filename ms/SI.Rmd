@@ -609,7 +609,6 @@ clusters_tax <-
   biodiv_ferns_spatial %>%
   as_tibble() %>%
   select(grids, cluster = taxonomic_cluster) %>%
-  # mutate(cluster = as.character(cluster)) # %>%
   # Convert cluster to numeric to use max() later
   mutate(cluster = levels(cluster)[cluster])
 
@@ -635,22 +634,24 @@ ggtree(dendro_tax, size = 0.15) %<+%
 # Extract dendrogram from phyloregions analysis, convert to phylogeny
 dendro_phy <- attributes(k_phylogeny$df)$meta$hclust.obj %>% as.phylo() %>% ladderize()
 
-# Map taxonomic clusters to grid cells
+# Map phylogenetic clusters to grid cells
 clusters_phy <-
-  biodiv_ferns_spatial_lumped %>%
+  biodiv_ferns_spatial %>%
   as_tibble() %>%
   select(grids, cluster = phylo_cluster) %>%
   # Convert cluster to numeric to use max() later
-  mutate(cluster = levels(cluster)[cluster] %>% as.numeric)
+  mutate(cluster = levels(cluster)[cluster])
 
-cluster_nodes_phy_tbl <- map_df(1:max(clusters_phy$cluster), ~map_cluster_to_nodes(dendro_phy, clusters_phy, .)) %>%
-  mutate(cluster = as.factor(cluster))
+cluster_nodes_phy_tbl <- map_df(unique(clusters_phy$cluster), ~map_cluster_to_nodes(dendro_phy, clusters_phy, .)) %>%
+  # Lump regions with just a few cells (3 or less)
+  mutate(cluster = as.factor(cluster) %>% fct_lump_min(4))
 
 # Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
 ggtree(dendro_phy, size = 0.15) %<+% 
   cluster_nodes_phy_tbl +
   aes(color = cluster) +
-  scale_color_manual(values = bioregion_cols, na.value = "grey", name = "Cluster") +
+  scale_color_manual(
+    values = bioregion_cols[c(1,2,3,4,"Other")], breaks = c(1,2,3,4,"Other"), name = "Cluster", na.value = "grey10") +
   theme(legend.position = "right") +
   labs(subtitle = "**(b)** Phylogenetic") +
   theme(plot.subtitle = element_markdown())
