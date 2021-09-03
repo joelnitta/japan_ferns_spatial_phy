@@ -172,6 +172,19 @@ write_csv_tar <- function(x, file, ...) {
   file
 }
 
+#' Write a phylogenetic tree in Newick format
+#'
+#' @param x an object of class ‘"phylo"’ or ‘"multiPhylo"’
+#' @param file File or connection to write to.
+#' @param ... Other arguments passed to ape::write.tree()
+#'
+#' @return Path to the output file
+#' 
+write_tree_tar <- function(x, file, ...) {
+  ape::write.tree(phy = x, file = file, ...)
+  file
+}
+
 #' Load Japan ferns community data
 #'
 #' @param csv_file Path to CSV file: community data matrix, with

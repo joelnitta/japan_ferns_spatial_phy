@@ -1712,7 +1712,7 @@ conserv_status_plot
 
 Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_biogeo. 
 A Docker image to run the code is available at https://hub.docker.com/repository/docker/joelnitta/japan_ferns_biogeo.
-Data files, including the DNA alignment, phylogenetic tree, and community data matrix, are openly available from Dryad at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
+Data files needed to run the analysis and selected results files are available from Dryad at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
 
 ## References
 <!-- Insert <div id="refs"></div> to place the refs here instead of at the end -->

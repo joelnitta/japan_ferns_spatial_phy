@@ -532,6 +532,59 @@ tar_plan(
   # Calculate percentage of diverse cells in protected areas, and in danger due to herbivory by deer
   signif_cells_protected_area = calculate_percent_protected(protected_biodiv),
   signif_cells_deer_danger = calculate_percent_deer_danger(deer_danger_biodiv),
+
+  # Write out selected results files for dryad ----
+  
+  # Choose variables to include in biodiv results, convert to centroids
+  biodiv_ferns_spatial_selected = spatial_to_cent(
+    biodiv_ferns_spatial,
+    c("grids", "lat", "long",
+       "abundance", "richness",
+       "fd_obs_z", "pd_obs_z", "pe_obs_z", "rfd_obs_z", "rpd_obs_z",
+       "richness_obs_p_upper", "fd_obs_p_upper", "pd_obs_p_upper", "pe_obs_p_upper", 
+       "pd_signif", "rpd_signif", "fd_signif", "rfd_signif", "pe_signif",
+       "taxonomic_cluster", "phylo_cluster", "endem_type",
+       "lat_area", "temp", "temp_season", "precip", "precip_season", "percent_apo")),
+
+  # japan_ferns_biodiv.csv
+  tar_file(
+    japan_ferns_biodiv_dryad_file,
+    write_csv_tar(biodiv_ferns_spatial_selected, "results/dryad_files/japan_ferns_biodiv.csv")
+  ),
+ 
+  # japan_ferns_comm.csv
+  tar_file(
+    comm_ferns_dryad_file, 
+    write_csv_tar(comm_ferns, "results/dryad_files/japan_ferns_comm.csv")
+  ),
+
+  # japan_ferns_shape.gpkg
+  tar_file(
+    shape_ferns_dryad_file, 
+    st_write_tar(
+      shape_ferns, 
+      "results/dryad_files/japan_ferns_shape.gpkg", 
+      time_stamp = as.Date("2021-09-03")
+    )
+  ),
+
+  # japan_ferns_traits.csv
+  tar_file(
+    fern_traits_dryad_file, 
+    write_csv_tar(fern_traits, "results/dryad_files/japan_ferns_traits.csv")
+  ),
+
+  # japan_ferns_tree.tre
+  tar_file(
+    japan_fern_phylogram_dryad_file,
+    write_tree_tar(japan_fern_phylogram, "results/dryad_files/japan_ferns_tree.tre")
+  ),
+
+  # japan_ferns_tree_dated.tre
+  tar_file(
+    japan_fern_tree_dryad_file,
+    write_tree_tar(japan_fern_tree, "results/dryad_files/japan_ferns_tree_dated.tre")
+  ),
   
   # Render manuscript ----
   # Track ms files
