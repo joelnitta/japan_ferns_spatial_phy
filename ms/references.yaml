@@ -1011,6 +1011,25 @@ references:
   title-short: Island biogeography of the Japanese terrestrial mammal assemblages
   type: article-journal
   volume: '26'
+- id: Minh2013
+  author:
+  - family: Minh
+    given: Bui Quang
+  - family: Nguyen
+    given: Minh Anh Thi
+  - family: Haeseler
+    given: Arndt
+    non-dropping-particle: von
+  container-title: Molecular Biology and Evolution
+  DOI: 10.1093/molbev/mst024
+  ISSN: 07374038
+  issue: '5'
+  issued:
+  - year: 2013
+  page: 1188-1195
+  title: Ultrafast approximation for phylogenetic bootstrap
+  type: article-journal
+  volume: '30'
 - id: Mishler2014
   author:
   - family: Mishler
@@ -1731,6 +1750,21 @@ references:
   title: A 4000-species dataset provides new insight into the evolution of ferns
   type: article-journal
   volume: '105'
+- type: webpage
+  id: Thiers2021
+  author:
+  - family: Thiers
+    given: Barbara
+  issued:
+    year: 2021
+  accessed:
+    year: 2021
+    month: 3
+    day: 1
+  title: 'Index Herbariorum: A global directory of public herbaria and associated
+    staff'
+  title-short: IH
+  URL: http://sweetgum.nybg.org/science/ih/
 - id: Tokita2006
   author:
   - family: Tokita
@@ -1859,6 +1893,25 @@ references:
   title-short: iNEXT
   type: article-journal
   volume: '7'
+- id: Wickham2016
+  author:
+  - family: Wickham
+    given: Hadley
+  call-number: '519.5'
+  collection-title: Use R!
+  DOI: 10.1007/978-3-319-24277-4
+  edition: 2nd ed. 2016
+  event-place: New York, NY
+  ISBN: 978-3-319-24277-4
+  issued:
+  - year: 2016
+  number-of-pages: '1'
+  publisher: Springer
+  publisher-place: New York, NY
+  source: Library of Congress ISBN
+  title: 'ggplot2: Elegant Graphics for Data Analysis'
+  title-short: ggplot2
+  type: book
 - id: Yu2017
   accessed:
   - year: 2021

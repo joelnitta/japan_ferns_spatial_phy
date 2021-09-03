@@ -92,7 +92,8 @@ tar_load(c(
   "signif_cells_protected_area",
   "signif_cells_deer_danger",
   "template_file",
-  "traits_summary"
+  "traits_summary",
+  "biodiv_ferns_spatial_lumped"
 ))
 ```
 
@@ -137,6 +138,20 @@ occ_sum <- occ_point_data_summary %>%
     TRUE ~ "filtered")) %>%
   split(.$dataset) %>%
   map(., ~split(., .$variable))
+
+# Count number of major bioregions after lumping minor regions into "Other"
+maj_cluster_count <-
+biodiv_ferns_spatial_lumped %>% 
+  select(grids, contains("cluster")) %>%
+  st_drop_geometry() %>%
+  as_tibble() %>%
+  pivot_longer(names_to = "type", values_to = "cluster", -grids) %>%
+  group_by(type) %>%
+  count(cluster) %>%
+  filter(cluster != "Other") %>%
+  summarize(n = n_distinct(cluster), .groups = "drop") %>%
+  # Convert to list for easy indexing
+  split(.$type)
 ```
 
 **Aim** To characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
@@ -152,14 +167,14 @@ We used hierarchical clustering of taxonomic and phylogenetic distances to analy
 We compared the overlap of significantly diverse grid-cells with existing conservation zones and range maps of native Japanese deer to assess conservation status and threats.
 
 **Results** We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
-Grid-cells were grouped in to three (phylogenetic) or four (taxonomic) major bioregions. 
+Grid-cells were grouped in to `r maj_cluster_count$phylo_cluster$n %>% english2` (phylogenetic) or `r maj_cluster_count$taxonomic_cluster$n %>% english2` (taxonomic) major bioregions. 
 Temperature and apomixis were identified as likely drivers of patterns of taxonomic and phylogenetic diversity.
-Conservation status (% protected area) was generally high for grid-cells with significantly high biodiversity across all biodiversity metrics, but the threat due to herbivory by native Japanese deer varied by biodiversity metric.
+Conservation status (% protected area) was generally high for grid-cells with significantly high biodiversity across all biodiversity metrics, but the threat due to herbivory by native Japanese deer varied by biodiversity metric, and was particularly severe for taxonomic richness.
 
 **Main conclusions** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
 The different distributions of each diversity type reflect the major bioregions. 
 Although peak areas of different diversity types are largely non-overlapping, each one has relatively high protection coverage at medium protection level. 
-Despite this, future conservation efforts must recognize that threats can vary by biodiversity metric, and consider threats not directly analyzed here such as climate change.
+Future conservation efforts should recognize that threats can vary by biodiversity metric, and consider multiple multiple metrics when establishing conservation priorities.
 
 <!-- may include title words -->
 **Key words:** apomixis, biodiversity, biogeography, CANAPE, conservation, ferns, Japan, phylogenetic diversity. 
@@ -220,7 +235,7 @@ Map data were downloaded from the Geospatial Information Authority of Japan unde
 
 ### Occurrence data
 
-We used a list of all non-hybrid fern specimens deposited at TNS (herbarium codes follow Thiers2021). 
+We used a list of all non-hybrid fern specimens deposited at TNS [herbarium codes follow @Thiers2021]. 
 We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
 Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1 in Supporting Information). 
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). 
@@ -354,7 +369,8 @@ Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the J
 However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. 
 Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. 
 To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b (`r n_japan_fern_taxa` taxa) with a globally sampled plastid dataset including all fern sequences on GenBank for four widely-sequenced plastid genes (*atpA*, *atpB*, *rbcL*, and *rps4*; `r n_ftol_fern_taxa` taxa) and `r n_plastome_genes` other coding, single-copy plastid genes extracted from `r n_plastome_fern_taxa` complete fern plastomes (Nitta et al., in prep.) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total, including outgroup taxa). 
-We conducted phylogenetic analysis with `r software("IQ-TREE")` v1.6.12 [@Nguyen2015] and molecular dating with `r software("treePL")` v1.0 [@Smith2012] using `r n_fossil_points` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020]. 
+We conducted maximum-likelihood phylogenetic analysis with `r software("IQ-TREE")` v1.6.12 [@Nguyen2015] under the GTR+I+G model (all sites concatenated into a single data matrix), and assessed node support with 1000 ultrafast bootstrap replicates [@Minh2013].
+Molecular dating was conducted with `r software("treePL")` v1.0 [@Smith2012] using `r n_fossil_points` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020]. 
 The root of the tree (most recent common ancestor of all land plants) was fixed to 475 mya [@Testo2016a].
 We then trimmed the tree to Japanese taxa only and used this for all further analyses.
 
@@ -612,7 +628,7 @@ All continuous traits showed significant phylogenetic signal, but estimates of s
 
 ### Observed diversity
 
-Taxonomic richness is lowest on the northernmost island of Hokkaido, then increases with decreasing latitude until reaching a maximum in southern Kyushu, then decreases again in smaller islands further south (`r figure("raw-diversity")`a). 
+Taxonomic richness is lowest on the northernmost island of Hokkaido, then increases with decreasing latitude until reaching a maximum in southern Kyushu, then decreases again in smaller islands further south (`r figure("raw-diversity")`a, `r s_figure("raw-lat")`a). 
 Observed values of PD and FD were highly correlated with richness as expected (`r figure("raw-diversity")`b, c), showing an initial steep slope that gradually starts to level off at higher richness (`r s_figure("raw-biplot")`a, c). 
 Observed values of RPD and RFD were not linearly related to richness, however, they showed high variance at low species richness, and low variance at high species richness (`r s_figure("raw-biplot")`b, d).
 
@@ -795,7 +811,7 @@ southern_families <-
 n_southern_families <- southern_families %>% pull(higher_taxon) %>% n_distinct %>% english2
 ```
 
-The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`a) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015], and niche-modeled distributions of woody plants [@Fukaya2020]. 
+The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`a, `r s_figure("raw-lat")`a) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015], and niche-modeled distributions of woody plants [@Fukaya2020]. 
 Our spatial modeling analysis indicates that this is strongly linked to temperature, with maximum richness occurring at intermediate temperatures (`r figure("modelfit")`a).
 Previous studies have identified temperature, water availability [@Bickford2006; @Qian2012], or a combination of these [@Nagalingum2015; @Link-Perez2018a; @Qian2021] to be important drivers of spatial fern diversity.
 A hump-shaped pattern of richness along elevation (maximum richness at intermediate elevations) has been frequently observed in ferns on mountains in tropical or sub-tropical areas [@Kessler2011a]. 
@@ -1405,12 +1421,6 @@ endemism_plot
 `r pagebreak_pdf()`
 
 ```{r bioregions-make}
-# Lump regions with just a few cells (3 or less)
-biodiv_ferns_spatial_lumped <-
-biodiv_ferns_spatial %>%
-  mutate(taxonomic_cluster = fct_lump_min(taxonomic_cluster, 4))  %>%
-  mutate(phylo_cluster = fct_lump_min(phylo_cluster, 4)) 
-
 # Taxonomic bioregions
 a <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +

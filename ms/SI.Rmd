@@ -76,7 +76,8 @@ tar_load(c(
   "model_fits_not_ult",
   "biodiv_ferns_cent",
   "protected_areas",
-  "deer_range"
+  "deer_range",
+  "biodiv_ferns_spatial_lumped"
 ))
 ```
 
@@ -501,6 +502,57 @@ a + b +
 
 \clearpage
 
+```{r raw-lat, fig.width = 7, fig.height = 4}
+# Convert spatial data frame to centroids with raw metrics
+biodiv_ferns_cent_raw <- spatial_to_cent(
+  biodiv_ferns_spatial,
+  c("grids", "lat", "long", "richness", "pd_obs", "fd_obs"))
+
+# Plot each raw metric vs. latitude
+a <- ggplot(biodiv_ferns_cent_raw, aes(y = richness, x = lat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() +
+  scale_x_continuous(
+    name = "Latitude",
+    labels = label_number(accuracy = 1, suffix ="\u00b0 N")) +
+  labs(y = "Richness") +
+  coord_flip() +
+  theme(panel.grid.minor = element_blank())
+
+b <- ggplot(biodiv_ferns_cent_raw, aes(y = pd_obs, x = lat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() +
+  scale_x_continuous(
+    labels = label_number(accuracy = 1, suffix ="\u00b0 N")) +
+  labs(y = "PD") +
+  coord_flip() +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.title.y = element_blank())
+
+c <- ggplot(biodiv_ferns_cent_raw, aes(y = fd_obs, x = lat)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() +
+  scale_x_continuous(
+    labels = label_number(accuracy = 1, suffix ="\u00b0 N")) +
+  labs(y = "FD") +
+  coord_flip() +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.title.y = element_blank())
+
+a + b + c + 
+  plot_layout(nrow = 1) +
+  plot_annotation(tag_levels = "a",
+                  tag_prefix = "(",
+                  tag_suffix = ")") &
+  theme(plot.tag = element_text(face = "bold"))
+```
+
+**`r s_figure("raw-lat")`**. (a) Raw taxonomic diversity (b), phylogenetic diversity, and (c) functional diversity of the ferns of Japan plotted by latitude. For (b) and (c), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths. Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
+
+\clearpage
+
 ```{r raw-biplot, fig.width = 7, fig.height = 7}
 a <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = pd_obs)) +
   geom_point(alpha = 0.5) +
@@ -803,7 +855,7 @@ wrap_plots(modelfit_plot_list) +
 ```{r bioregions-env, fig.width = 7, fig.height = 5}
 # Make pot showing bioregions by temperature and precipitation
 a <-
-  ggplot(biodiv_ferns_spatial, aes(x = precip, y = temp, color = taxonomic_cluster)) +
+  ggplot(biodiv_ferns_spatial_lumped, aes(x = precip, y = temp, color = taxonomic_cluster)) +
   geom_point(size = 1, alpha = 0.7) +
   scale_color_manual(values = bioregion_cols) +
   scale_y_continuous(labels = function(x) x/10) +
@@ -811,7 +863,7 @@ a <-
   theme(legend.position = "bottom")
 
 b <-
-  ggplot(biodiv_ferns_spatial, aes(x = precip, y = temp, color = phylo_cluster)) +
+  ggplot(biodiv_ferns_spatial_lumped, aes(x = precip, y = temp, color = phylo_cluster)) +
   geom_point(size = 1, alpha = 0.7) +
   scale_color_manual(values = bioregion_cols) +
   scale_y_continuous(labels = function(x) x/10) +
@@ -824,7 +876,7 @@ a + b + plot_annotation(tag_levels = "a",
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points.
+**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points. Bioregions with three or fewer grid-cells are lumped into the "Other" category.
 
 \clearpage
 

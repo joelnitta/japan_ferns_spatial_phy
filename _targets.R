@@ -586,6 +586,12 @@ tar_plan(
     write_tree_tar(japan_fern_tree, "results/dryad_files/japan_ferns_tree_dated.tre")
   ),
   
+  # Etc ----
+  # Lump regions with just a few cells (3 or less)
+  biodiv_ferns_spatial_lumped = biodiv_ferns_spatial %>%
+    mutate(taxonomic_cluster = fct_lump_min(taxonomic_cluster, 4))  %>%
+    mutate(phylo_cluster = fct_lump_min(phylo_cluster, 4)),
+  
   # Render manuscript ----
   # Track ms files
   tar_file(refs_yaml, "ms/references.yaml"),
