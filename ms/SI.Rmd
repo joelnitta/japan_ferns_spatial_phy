@@ -886,11 +886,11 @@ a + b + plot_annotation(tag_levels = "a",
 # pass the dots to filter data
 make_protected_plot <- function(part, variable, ...) {
   ggplot() +
-    geom_sf(data = japan, lwd = 0.10, fill = "white") +
+    geom_sf(data = japan, lwd = 0.07, fill = "white") +
     geom_sf(data = protected_areas %>% mutate(status = str_to_sentence(status)), aes(fill = status), color = "transparent") +
     geom_sf(
       data = biodiv_ferns_spatial %>% filter(...), 
-      fill = "transparent", color = "black", lwd = 0.20) +
+      fill = "transparent", color = "black", lwd = 0.12) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
       label = glue("<span style='color:black'>**({part})** {variable}</span>"), 
@@ -920,13 +920,13 @@ a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
 # These depend on various objects being in the current environment!
 make_deer_plot <- function(part, variable, ...) {
   ggplot() +
-    geom_sf(data = japan, lwd = 0.10, fill = "white") +
+    geom_sf(data = japan, lwd = 0.07, fill = "white") +
     geom_sf(data = deer_range %>% filter(range == "estimated") %>% mutate(range = str_to_sentence(range)), aes(fill = range), color = "transparent") +
     geom_sf(data = deer_range %>% filter(range == "2003"), aes(fill = range), color = "transparent") +
     geom_sf(data = deer_range %>% filter(range == "1978"), aes(fill = range), color = "transparent") +
     geom_sf(
       data = biodiv_ferns_spatial %>% filter(...), 
-      fill = "transparent", color = "black", lwd = 0.20) +
+      fill = "transparent", color = "black", lwd = 0.12) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
       label = glue("<span style='color:black'>**({part})** {variable}</span>"), 
