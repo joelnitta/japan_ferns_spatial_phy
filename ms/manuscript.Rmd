@@ -642,6 +642,14 @@ Results of the randomization test for functional diversity were broadly similar 
 
 ### Relationships between biodiversity and climate or reproductive mode
 
+```{r discus-model-stats}
+# Check that conditional AIC was lower in the reproductive model compared to the environmental model for SES of RPD and SES of PD
+# Split aic_env_repro dataframe into nested list for easier indexing
+c_aic <- aic_env_repro %>% split(.$resp_var) %>% map(~split(., .$model_type))
+assert_that(c_aic$pd_obs_z$percent_apo$conditional_aic < c_aic$pd_obs_z$temp$conditional_aic)
+assert_that(c_aic$rpd_obs_z$percent_apo$conditional_aic < c_aic$rpd_obs_z$temp$conditional_aic)
+```
+
 All models were significant relative to null models without any fixed effects (`r s_table("lrt-null")`). 
 The effect of temperature dominated (had the greatest absolute *t*-value) in environmental models (`r figure("coeff")`a--e), and % apomictic taxa dominated in reproductive models (`r figure("coeff")`f--g); temperature and % apomictic taxa were significant in each model where they were included, whereas other predictors (area, precipitation, precipitation seasonality) were not significant in some models. 
 Richness showed a hump-shaped relationship with temperature, reaching maximum richness at intermediate temperatures (`r figure("modelfit")`a). 
