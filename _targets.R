@@ -43,30 +43,15 @@ tar_plan(
   tar_file(occ_point_data_summary_file, "data/japan_ferns_occ_summary.csv"),
   occ_point_data_summary = read_csv(occ_point_data_summary_file),
   
-  ## Map data ----
-  # Load shape file of Japan downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
-  # on 2020-08-26
-  tar_file(japan_pol_zip_file, "data/gm-jpn-all_u_2_2.zip"),
-  jpn_pol = load_shape_from_zip(japan_pol_zip_file, "polbnda_jpn.shp"),
-  
-  # Collapse all the political units down to just one shape for the country
-  japan_shp = jpn_pol %>%
-    select(geometry) %>%
-    summarize(),
-  
-  # Load manually entered points of interest for drawing a map of Japan
-  tar_file(japan_map_points_file, "data/japan_map_points.csv"),
-  japan_map_points = read_csv(japan_map_points_file),
-  
-  # Calculate area as rolling mean in 1 degree latitudinal windows
-  lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
-  
   ## Occurrence data ----
   # Raw occurrence data processing was done in R/process_raw_data.R
   
   # Load geographic shapes, richness, and number of specimens at 0.2 degree grid scale
   tar_file(japan_ferns_shape_full_file, "data/japan_ferns_shape_full.gpkg"),
   shape_ferns_full = sf::st_read(japan_ferns_shape_full_file),
+
+  # Extract JGD2000 CRS for transforming other shape data
+  jgd2000 = sf::st_crs(shape_ferns_full),
   
   # Load community matrix at 0.2 degree grid scale (not filtered by redundancy)
   tar_file(japan_ferns_comm_full_file, "data/japan_ferns_comm_full.csv"),
@@ -98,7 +83,26 @@ tar_plan(
 
   # Summarize latitudinal span by taxon
   lat_span_summary = summarize_fern_lat_span(comm_ferns, shape_ferns),
-    
+
+  ## Map data ----
+  # Load shape file of Japan downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
+  # on 2020-08-26
+  tar_file(japan_pol_zip_file, "data/gm-jpn-all_u_2_2.zip"),
+  japan_shp = japan_pol_zip_file %>%
+    load_shape_from_zip("polbnda_jpn.shp") %>%
+    # Collapse all the political units down to just one shape for the country
+    select(geometry) %>%
+    summarize() %>%
+    # set CRS to JGD2000
+    sf::st_transform(jgd2000),
+  
+  # Load manually entered points of interest for drawing a map of Japan
+  tar_file(japan_map_points_file, "data/japan_map_points.csv"),
+  japan_map_points = read_csv(japan_map_points_file),
+  
+  # Calculate area as rolling mean in 1 degree latitudinal windows
+  lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
+  
   # Phylogenetic analysis ----
   # Summary: combine Japan rbcL sequences with global sampling, infer global tree,
   # estimate divergence times, trim tree to just Japan ferns

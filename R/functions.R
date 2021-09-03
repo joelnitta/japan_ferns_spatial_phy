@@ -1007,9 +1007,6 @@ load_deer_range <- function (zip_file) {
 #' protection and areas with "medium" protection
 #' 
 combine_pa <- function(protected_areas_other, protected_areas_forest) {
-	# Match CRS before combining
-	pa_crs <- st_crs(protected_areas_other)
-	protected_areas_forest <- st_transform(protected_areas_forest, pa_crs)
 	
 	# Many areas are overlapping. Combine these into non-overlapping areas within each protection area type
 	# Don't consider low-priority areas
@@ -1160,10 +1157,11 @@ process_repro_data <- function (repro_data_raw, green_list) {
 #' raster::getData("worldclim", download = TRUE, var = "bio", res = 2.5, path = path)
 #'
 #' @param path Path to data downloaded with raster::getData()
+#' @param crs Coordinate reference system to use for spatial data
 #'
 #' @return Simple features dataframe with four climate variables 
 #' 
-load_ja_worldclim_data <- function(path) {
+load_ja_worldclim_data <- function(path, crs) {
   
   # Load the WorldClim dataset at 2.5 minute resolution, crop it to the area around Japan
   raster::getData("worldclim", download = FALSE, var = "bio", res = 2.5, path = path) %>%
@@ -1177,8 +1175,8 @@ load_ja_worldclim_data <- function(path) {
       precip = bio12, # Annual Precipitation
       precip_season = bio15 # Precipitation Seasonality (Coefficient of Variation)
     ) %>%
-    # Set CRS to NA (like other spatial dataframes in this analysis)
-    st_set_crs(NA)
+    # Set CRS
+    st_set_crs(crs)
   
 }
 
@@ -1213,6 +1211,10 @@ calc_mean_climate <- function(shape_ferns, ja_climate_data) {
 
 #' Get the mean value of a numeric trait from data formatted for lucid
 #'
+#' Take mean between normal minimum and normal maximum
+#'
+#' For more information on formatting of lucid data, see https://help.lucidcentral.org/lucid/scoring-the-key/
+#'
 #' @param x Vector of values with numeric trait data formatted for lucid
 #'
 #' @return Means of each trait value
@@ -1220,6 +1222,9 @@ calc_mean_climate <- function(shape_ferns, ja_climate_data) {
 get_lucid_mean <- function (x) {
   if(isTRUE(is.na(x))) return (NA)
   assertthat::assert_that(is.character(x))
+  # Each numeric trait has 4 values: outside minimum, normal minimum, normal maximum, outside maximum,
+  # separated by colons
+  # Take final mean value as the mean between the normal minimum and normal maximum
   num_colons <- stringr::str_count(x, ":")
   assertthat::assert_that(num_colons == 3)
   vals <- stringr::str_split(x, ":") %>%
@@ -1227,7 +1232,6 @@ get_lucid_mean <- function (x) {
     unlist
   mean(c(vals[[2]], vals[[3]]))
 }
-
 
 #' Transform traits
 #'
@@ -1318,12 +1322,13 @@ clean_lucid_traits <- function(raw_lucid_data, lucid_name_correction, green_list
     # Remove non-native taxa
     mutate(ja_native_status = replace_na(ja_native_status, "native")) %>%
     filter(ja_native_status != "non_native") %>%
+    select(-ja_native_status) %>%
     # Filter to only ferns (remove lycophytes)
     mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
     left_join(select(ppgi, genus, class) %>% unique, by = "genus") %>%
     assert(not_na, class) %>%  
     filter(class == "Polypodiopsida") %>%
-    select(-class) %>%
+    select(-class, -genus) %>%
     # Check that all names are in green list
     verify(all(taxon %in% green_list$taxon)) %>%
     # Remove hybrids
@@ -2155,19 +2160,23 @@ cluster_phylo_regions <- function (comm_df, phy, k) {
 #' data of ferns in Japan cropped to areas with medium protection and filtered to only
 #' areas with significantly high biodiversity
 crop_by_pa <- function(protected_areas, biodiv_ferns_spatial, japan_shp) {
+
+  # Make sure CRS match between shapes
+  assertthat::assert_that(
+    isTRUE(all.equal(
+      st_crs(protected_areas), st_crs(biodiv_ferns_spatial), st_crs(japan_shp)
+    )),
+    msg = "CRS must match between all input shapes"
+  )
   
   ### Prepare for crop/join steps ###
   # Crop to Japan to spatial div results area
   japan_shp <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
   
-  # Set CRS for biodiversity data and protected areas
-  japan_crs <- sf::st_crs(japan_shp)
+  # Fix some geometries
+  biodiv_ferns_spatial <- sf::st_make_valid(biodiv_ferns_spatial)
   
-  biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs) %>% 
-    sf::st_make_valid() # Fix some geometries
-  
-  protected_areas <- sf::st_transform(protected_areas, japan_crs) %>% 
-    sf::st_make_valid()
+  protected_areas <- sf::st_make_valid(protected_areas)
   
   ### Cropping ###
   # Crop spatial data to only land regions within Japan map,
@@ -2224,18 +2233,21 @@ crop_by_pa <- function(protected_areas, biodiv_ferns_spatial, japan_shp) {
 #' data of ferns in Japan cropped to areas with deer present in 1973 and filtered to only
 #' areas with significantly high biodiversity
 crop_by_deer <- function(deer_range, biodiv_ferns_spatial, japan_shp) {
-    
+
+  # Make sure CRS match between shapes
+  assertthat::assert_that(
+    isTRUE(all.equal(
+      st_crs(deer_range), st_crs(biodiv_ferns_spatial), st_crs(japan_shp)
+    )),
+    msg = "CRS must match between all input shapes"
+  )  
+
   ### Prepare for crop/join steps ###
   # Crop to Japan to spatial div results area
   japan_shp <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
-  
-  # Set CRS for biodiversity data and protected areas
-  japan_crs <- sf::st_crs(japan_shp)
-  
-  biodiv_ferns_spatial <- sf::st_set_crs(biodiv_ferns_spatial, japan_crs) %>% 
-    sf::st_make_valid() # Fix some geometries
-  
-  deer_range <- sf::st_transform(deer_range, japan_crs)
+
+  # Fix some geometries
+  biodiv_ferns_spatial <- sf::st_make_valid(biodiv_ferns_spatial) 
   
   ### Cropping ###
   # Crop spatial data to only land regions within Japan map,
@@ -3477,10 +3489,10 @@ calc_area_by_lat <- function(shp, lat_cut = 0.2, lat_window = 1) {
 #' 
 add_roll_area <- function(biodiv_ferns_spatial, lat_area_ja) {
   # interval_inner_join() only works (properly) on integers
-  # lat has max 1 decimal, so multiply by 10 to convert to integer
+  # Round lat to 1 decimal, then multiply by 10 to convert to integer
   area_mapped_to_centroids <-
     biodiv_ferns_spatial %>% 
-    mutate(ymin = lat*10,
+    mutate(ymin = round(lat, 1)*10,
            ymin = as.integer(ymin)) %>%
     mutate(ymax = ymin) %>%
     # fuzzyjoin doesn't like spatial dataframes
@@ -3489,7 +3501,7 @@ add_roll_area <- function(biodiv_ferns_spatial, lat_area_ja) {
     fuzzyjoin::interval_inner_join(
       mutate(lat_area_ja, ymin = as.integer(ymin*10), ymax = as.integer(ymax*10)),
       type = "within",
-      by = c("ymin", "ymax")) %>%
+      by = c("ymin", "ymax")) %>% 
     # make sure the join worked properly
     verify(nrow(.) == nrow(biodiv_ferns_spatial)) %>%
     select(-matches("ymin|ymax"))

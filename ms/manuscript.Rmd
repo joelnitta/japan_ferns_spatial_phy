@@ -224,6 +224,7 @@ We used a list of all non-hybrid fern specimens deposited at TNS (herbarium code
 We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
 Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1 in Supporting Information). 
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). 
+Points were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
 We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) and removed duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
 
 A necessary step in any analysis of biodiversity is to set the grain size used to accurately define communities. 
@@ -233,6 +234,7 @@ At each grain size, species occurrences were converted to a presence-absence com
 We calculated sampling redundancy (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. 
 Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). 
 We filtered out any cells with redundancy < 0.1 and used this size for subsequent analyses.
+The R package `r pack("sf")` was used for GIS analyses [@Pebesma2018].
 
 ### Morphological trait data
 
@@ -254,7 +256,6 @@ We downloaded climate data at the 2.5 minute scale from the WorldClim database u
 We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell.
 We calculated area as rolling mean area (km^2^) across 1 degree latitudinal bands.
 This approach reflects the idea that the amount of area with a given climate regime enclosing each grid-cell may influence species richness of that cell [@Fahrig2013], and that using raw island areas would not be appropriate in this context as there are just four very large islands with many much smaller ones located close by.
-The R package `r pack("sf")` was used for GIS analyses [@Pebesma2018].
 
 ### Phylogenetic analysis
 
@@ -948,13 +949,10 @@ indep_var_lookup <- tribble(
 
 # Crop high-res map of Japan to spatial div results area
 japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
-japan_crs <- sf::st_crs(japan)
 
 # Format biodiv_ferns_spatial data
 biodiv_ferns_spatial <-
   biodiv_ferns_spatial %>% 
-  # Set CRS
-  sf::st_set_crs(japan_crs) %>%
   # Set order of factor levels for plotting
   mutate(
     endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super")),

@@ -151,7 +151,7 @@ tar_plan(
   # The WorldClim data first needs to be downloaded with this:
   # raster::getData("worldclim", download = TRUE, var = "bio", res = 2.5, path = "data_raw/world_clim")
   tar_file(worldclim_dir, "data_raw/world_clim"),
-  ja_climate_data = load_ja_worldclim_data(worldclim_dir),
+  ja_climate_data = load_ja_worldclim_data(worldclim_dir, jgd2000_sf),
   # Write out geographic shapes in GeoPackage format (https://www.geopackage.org/)
   tar_file(
     ja_climate_data_out,
@@ -166,7 +166,8 @@ tar_plan(
   protected_areas_other = load_protected_areas(protected_areas_zip_file),
 
   tar_file(protected_areas_forest_folder, "data_raw/forest_area_zip_files"),
-  protected_areas_forest = load_protected_areas_forest(protected_areas_forest_folder),
+  protected_areas_forest = load_protected_areas_forest(protected_areas_forest_folder) %>%
+    sf::st_transform(jgd2000_sf),
 
   # Combine protected areas (high and medium only), write out
   protected_areas = combine_pa(protected_areas_other, protected_areas_forest),

@@ -275,14 +275,9 @@ aic_table_data %>%
 # Crop high-res map of Japan to spatial div results area
 japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
 
-# Set CRS
-japan_crs <- sf::st_crs(japan)
-
 # Format biodiv_ferns_spatial data
 biodiv_ferns_spatial <-
   biodiv_ferns_spatial %>% 
-  # Set CRS
-  sf::st_set_crs(japan_crs) %>%
   # Set order of factor levels for plotting
   mutate(
     endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super")),
@@ -295,8 +290,6 @@ biodiv_ferns_spatial <-
 
 biodiv_ferns_endemic_spatial <-
   biodiv_ferns_endemic_spatial %>% 
-  # Set CRS
-  sf::st_set_crs(japan_crs) %>%
   # Set order of factor levels for plotting
   mutate(
     endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super"))
@@ -844,7 +837,7 @@ make_protected_plot <- function(part, variable, ...) {
     geom_sf(data = japan, lwd = 0.10, fill = "white") +
     geom_sf(data = protected_areas %>% mutate(status = str_to_sentence(status)), aes(fill = status), color = "transparent") +
     geom_sf(
-      data = biodiv_ferns_spatial %>% filter(...) %>% st_set_crs(japan_crs), 
+      data = biodiv_ferns_spatial %>% filter(...), 
       fill = "transparent", color = "black", lwd = 0.20) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
@@ -880,7 +873,7 @@ make_deer_plot <- function(part, variable, ...) {
     geom_sf(data = deer_range %>% filter(range == "2003"), aes(fill = range), color = "transparent") +
     geom_sf(data = deer_range %>% filter(range == "1978"), aes(fill = range), color = "transparent") +
     geom_sf(
-      data = biodiv_ferns_spatial %>% filter(...) %>% st_set_crs(japan_crs), 
+      data = biodiv_ferns_spatial %>% filter(...), 
       fill = "transparent", color = "black", lwd = 0.20) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
