@@ -49,9 +49,6 @@ tar_plan(
   # Load geographic shapes, richness, and number of specimens at 0.2 degree grid scale
   tar_file(japan_ferns_shape_full_file, "data/japan_ferns_shape_full.gpkg"),
   shape_ferns_full = sf::st_read(japan_ferns_shape_full_file),
-
-  # Extract JGD2000 CRS for transforming other shape data
-  jgd2000 = sf::st_crs(shape_ferns_full),
   
   # Load community matrix at 0.2 degree grid scale (not filtered by redundancy)
   tar_file(japan_ferns_comm_full_file, "data/japan_ferns_comm_full.csv"),
@@ -85,16 +82,9 @@ tar_plan(
   lat_span_summary = summarize_fern_lat_span(comm_ferns, shape_ferns),
 
   ## Map data ----
-  # Load shape file of Japan downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
-  # on 2020-08-26
-  tar_file(japan_pol_zip_file, "data/gm-jpn-all_u_2_2.zip"),
-  japan_shp = japan_pol_zip_file %>%
-    load_shape_from_zip("polbnda_jpn.shp") %>%
-    # Collapse all the political units down to just one shape for the country
-    select(geometry) %>%
-    summarize() %>%
-    # set CRS to JGD2000
-    sf::st_transform(jgd2000),
+  # Load (unlabled) map of Japan
+  tar_file(japan_map_file, "data/japan_map.gpkg"),
+  japan_shp = st_read(japan_map_file),
   
   # Load manually entered points of interest for drawing a map of Japan
   tar_file(japan_map_points_file, "data/japan_map_points.csv"),
@@ -528,8 +518,8 @@ tar_plan(
   ## Read in protected areas, assign protection levels following Kusumoto et al. 2017:
   # - high: no human activities allowed
   # - medium: permission required for economic activities
-  tar_file(protected_areas_zip_file, "data/japan_protected_areas.gpkg"),
-  protected_areas = st_read(protected_areas_zip_file),
+  tar_file(protected_areas_file, "data/japan_protected_areas.gpkg"),
+  protected_areas = st_read(protected_areas_file),
 
   ## Read in deer distribution map
   tar_file(deer_range_file, "data/japan_deer_range.gpkg"),

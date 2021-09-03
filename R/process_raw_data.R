@@ -182,6 +182,23 @@ tar_plan(
   tar_file(
     deer_areas_out,
     st_write_tar(japan_deer_range, "data/japan_deer_range.gpkg", time_stamp = as.Date("2021-09-01"))
+  ),
+
+  ## Read in political map of Japan, set CRS, write out
+  # downloaded from https://www.gsi.go.jp/kankyochiri/gm_japan_e.html
+  tar_file(japan_pol_zip_file, "data_raw/gm-jpn-all_u_2_2.zip"),
+
+  japan_shp = japan_pol_zip_file %>%
+    load_shape_from_zip("polbnda_jpn.shp") %>%
+    # Collapse all the political units down to just one shape for the country
+    select(geometry) %>%
+    summarize() %>%
+    # set CRS to JGD2000
+    sf::st_transform(jgd2000_sf),
+
+  tar_file(
+    japan_shp_out,
+    st_write_tar(japan_shp, "data/japan_map.gpkg", time_stamp = as.Date("2021-09-03"))
   )
   
 )
