@@ -436,6 +436,14 @@ subset_comm_by_repro <- function (comm, repro_data) {
   
 }
 
+# Get CRS from an sf object that can be used with an sp object
+#' @param sf_obj Object of class "SF"
+#' @return CRS string that can be used for sp objects
+get_sp_crs_from_sf <- function(sf_obj) {
+  as(sf_obj, Class = "Spatial") %>%
+  sp::proj4string()
+}
+
 #' Make community matrix from species' occurrences
 #'
 #' @param species_coods Dataframe of species occurrences.
@@ -467,11 +475,13 @@ comm_from_points <- function(species_coods,
                              lon = "longitude",
                              lat = "latitude",
                              crs = sp::CRS("+proj=longlat +datum=WGS84")) {
-  
+    
+  # Subset occurences to species, longitude, latitude
   species_coods <- as.data.frame(species_coods)
   species_coods <- species_coods[, c(species, lon, lat)]
   names(species_coods) <- c("species", "longitude", "latitude")
   
+  # Check that input is valid
   checkr::check_data(
     species_coods,
     values = list(

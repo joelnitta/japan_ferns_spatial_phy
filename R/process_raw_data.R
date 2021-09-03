@@ -55,7 +55,7 @@ tar_plan(
   # Filter out duplicates, restrict to only points in second-degree mesh
   # Shape file downloaded from http://gis.biodic.go.jp/
   # http://gis.biodic.go.jp/BiodicWebGIS/Questionnaires?kind=mesh2&filename=mesh2.zip
-  tar_file(mesh2_file, "data_raw/mesh2.zip"),
+  tar_file(mesh2_zip_file, "data_raw/mesh2.zip"),
   
   japan_mesh2 = load_shape_from_zip(mesh2_zip_file, "mesh2.shp") %>% select(id = NAME),
   
@@ -64,8 +64,9 @@ tar_plan(
     mask = japan_mesh2),
   
   # get CRS (JGD2000) from japan_mesh2 for converting point data to community dataframe
-  jgd2000 = st_crs(japan_mesh2),
-  
+  jgd2000_sp = get_sp_crs_from_sf(japan_mesh2),
+  jgd2000_sf = st_crs(japan_mesh2),
+
   # Calculate richness, abundance, and redundancy at four scales: 
   # 0.1, 0.2, 0.3, and 0.4 degree grid squares
   scales_to_test = c(0.1, 0.2, 0.3, 0.4),
@@ -77,7 +78,7 @@ tar_plan(
       lon = "longitude",
       lat = "latitude",
       species = "taxon",
-      crs = jgd2000),
+      crs = jgd2000_sp),
     pattern = map(scales_to_test)
   ),
   
@@ -86,14 +87,16 @@ tar_plan(
   # Extract geographic shapes, richness, and number of specimens at 0.2 degree grid scale
   shape_ferns_full = shape_from_comm_scaled_list(comm_scaled_list, 0.2) %>%
     # calculate redundancy
-    mutate(redundancy = 1 - (richness/abundance)),
+    mutate(redundancy = 1 - (richness/abundance)) %>%
+    # set CRS to be exactly same as JGD2000 in japan_mesh2
+    st_transform(jgd2000_sf),
   
   # Write out geographic shapes in GeoPackage format (https://www.geopackage.org/)
   tar_file(
     shape_ferns_full_out,
     # Include manual time stamp so that sha is stable
     # https://github.com/r-spatial/rgeopackage
-    st_write_tar(shape_ferns_full, "data/japan_ferns_shape_full.gpkg", time_stamp = as.Date("2021-08-26"))
+    st_write_tar(shape_ferns_full, "data/japan_ferns_shape_full.gpkg", time_stamp = as.Date("2021-09-03"))
   ),
   
   # Extract community matrix from shapes
