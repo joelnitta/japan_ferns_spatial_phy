@@ -174,10 +174,13 @@ tar_plan(
   # Subset to just pteridophytes in Japan
   japan_pterido_tree = ape::keep.tip(treepl_dating_results, rownames(japan_rbcL)),
   
-  # Subset to only ferns
-  japan_fern_tree = subset_tree(
+  # Subset to only ferns, without collapsing any branches
+  japan_fern_tree_uncollapsed = subset_tree(
     phy = japan_pterido_tree, 
     ppgi = ppgi),
+  
+  # Collapse identical tips to zero-length polytomies
+  japan_fern_tree = collapse_identical_tips(japan_fern_tree_uncollapsed, japan_rbcL),
   
   # Also make phylogram (not ultrametric tree) of ferns in Japan
   japan_fern_phylogram = ape::keep.tip(plastome_tree_rooted, japan_fern_tree$tip.label),

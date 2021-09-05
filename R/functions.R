@@ -2581,6 +2581,94 @@ rename_alignment <- function (alignment, taxon_id_map) {
   
 }
 
+#' Collapse a clade to a star phylogeny
+#' 
+#' Modified from phytools::collapse.to.star(), but differs by:
+#' - taking list of taxa as input
+#' - the height of each tip in the collapsed clade is set to zero
+#' - the height of the root in the collapsed clade is set to be equal to the maximum branch length of the original clade
+#' 
+#' @param tree Phylogenetic tree (list of class "phylo")
+#' @param taxa Character vector: names of tips in the tree that form the clade to
+#' be collapsed
+#'
+#' @return Phylogeny with the clade collapsed to a star
+#' 
+collapse_to_star_zero <- function(tree, taxa){
+  
+  node <- ape::getMRCA(tree, taxa)
+  
+  if(!inherits(tree,"phylo")) stop("tree should be an object of class \"phylo\".")
+  if(node==(Ntip(tree)+1)){
+    object<-list(edge=cbind(rep(Ntip(tree)+1,Ntip(tree)),1:Ntip(tree)),
+                 tip.label=tree$tip.label,Nnode=1)
+    if(!is.null(tree$edge.length)) object$edge.length<-sapply(1:Ntip(tree),nodeheight,tree=tree)
+    class(object)<-"phylo"
+    tree<-object
+  } else {
+    nel<-if(is.null(tree$edge.length)) TRUE else FALSE
+    if(nel) tree$edge.length<-rep(1,nrow(tree$edge))
+    tt<-phytools::splitTree(tree,split=list(node=node,
+                                            bp=tree$edge.length[which(tree$edge[,2]==node)]))
+    ss<-phytools::starTree(species=tt[[2]]$tip.label,
+                           branch.lengths=rep(0, length(tt[[2]]$tip.label)))
+    ss$root.edge <- max(diag(vcv(tt[[2]])))
+    tree<-phytools::paste.tree(tt[[1]],ss)
+    if(nel) tree$edge.length<-NULL
+  }
+  tree
+}
+
+#' Collapse tips in a tree with identical sequences to polytomies
+#' 
+#' The height of each tip in the polytomy is zero
+#'
+#' @param tree Phylogenetic tree (list of class "phylo")
+#' @param alignment DNA alignment in matrix format of class "DNAbin"
+#' @param check_ultra Logical; should the resulting tree be ultrametric?
+#'
+#' @return Phylogenetic tree (list of class "phylo")
+collapse_identical_tips <- function(tree, alignment, check_ultra = TRUE) {
+  
+  # Find groups of identical sequences in alignment
+  identical_seq_groups <-
+    # convert alignment to tibble
+    alignment %>%
+    as.character() %>%
+    as.data.frame() %>%
+    rownames_to_column("taxon") %>%
+    as_tibble() %>%
+    # one column for taxon, one for sequence
+    unite("seq", contains("V"), sep ="") %>%
+    # convert sequence to anonymous factor, one level per unique sequence ('seq_id')
+    mutate(seq_id = factor(seq) %>% fct_anon(prefix = "seq") %>% as.character) %>%
+    # filter to only those with mult taxa per seq, in fern tree
+    add_count(seq_id) %>%
+    select(-seq) %>%
+    filter(n > 1, taxon %in% tree$tip.label) %>%
+    arrange(desc(n))
+  
+  # Collapse list of identical sequences to one row per group
+  identical_seq_groups <-
+    tibble(
+      taxon_vec = split(identical_seq_groups$taxon, identical_seq_groups$seq_id)
+    ) %>%
+    mutate(seq_id = names(taxon_vec))
+  
+  # Use list of identical sequences to collapse nodes in tree
+  collapsed_tree <- tree
+  
+  for(i in 1:length(identical_seq_groups$taxon_vec)) {
+    collapsed_tree <- collapse_to_star_zero(collapsed_tree, identical_seq_groups$taxon_vec[[i]])
+  }
+  
+  # Make sure resulting tree is ultrametric
+  if(isTRUE(check_ultra)) assertthat::assert_that(is.ultrametric(collapsed_tree), msg = "Collapsed tree not ultrametric")
+  
+  collapsed_tree
+  
+}
+
 # Dating with treePL ----
 
 #' Read in calibration and configure dates for treepl
