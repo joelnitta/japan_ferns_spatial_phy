@@ -166,15 +166,14 @@ We conducted categorical analysis of neo- and paleo-endemism to identify areas o
 We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. 
 We compared the overlap of significantly diverse grid-cells with existing conservation zones and range maps of native Japanese deer to assess conservation status and threats.
 
-**Results** We observe three major patterns in the spatial distribution of biodiversity: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
+**Results** Three major patterns in the spatial distribution of biodiversity were observed: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
 Grid-cells were grouped in to `r maj_cluster_count$phylo_cluster$n %>% english2` (phylogenetic) or `r maj_cluster_count$taxonomic_cluster$n %>% english2` (taxonomic) major bioregions. 
-Temperature and apomixis were identified as likely drivers of patterns of taxonomic and phylogenetic diversity.
-Conservation status (% protected area) was generally high for grid-cells with significantly high biodiversity across all biodiversity metrics, but the threat due to herbivory by native Japanese deer varied by biodiversity metric, and was particularly severe for taxonomic richness.
+Temperature and apomixis were identified as drivers of patterns of taxonomic and phylogenetic diversity.
+Conservation status (% protected area) was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory by deer varied by biodiversity metric, and was particularly severe for taxonomic richness.
 
 **Main conclusions** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
 The different distributions of each diversity type reflect the major bioregions. 
-Although peak areas of different diversity types are largely non-overlapping, each one has relatively high protection coverage at medium protection level. 
-Future conservation efforts should recognize that threats can vary by biodiversity metric, and consider multiple multiple metrics when establishing conservation priorities.
+Future conservation efforts should recognize that threats can vary by biodiversity metric and consider multiple multiple metrics when establishing conservation priorities.
 
 <!-- may include title words -->
 **Key words:** apomixis, biodiversity, biogeography, CANAPE, conservation, ferns, Japan, phylogenetic diversity. 
@@ -204,9 +203,9 @@ Hotspots, or areas of exceptionally high richness, have received particular atte
 However, richness alone cannot provide a complete picture of biodiversity. 
 All organisms are related to a greater or lesser degree by descent from a common ancestor, and these evolutionary relationships must be taken into account to obtain a full understanding of the biodiversity present in an area.
 
-Presumably, the main reason phylogeny has not been taken into account more prominently in biodiversity studies is because data (DNA sequences), extensive spatial data, and analytic tools have only become available relatively recently. 
-These tools and datasets now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity and phylogenetic endemism. 
-Better ways to characterize biological regions ("bioregions") are also available, rather than relying on ad-hoc characterizations [e.g., @Laffan2016; @White2019; @Daru2020a].
+Presumably, the main reason phylogeny has not been taken into account more prominently in biodiversity studies is because the necessary data (DNA sequences and georeferenced occurrence records) and analytic tools have only become available relatively recently. 
+These datasets and tools now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity and phylogenetic endemism. 
+Better ways to characterize biological regions ("bioregions") are also available [e.g., @Laffan2016; @White2019; @Daru2020a], rather than relying on ad-hoc characterizations.
 Furthermore, incorporating these two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide particularly powerful insights into the processes structuring biodiversity and suggest conservation priorities.
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale. 
@@ -223,24 +222,25 @@ We ask the following questions in our study system, the ferns of Japan: 1. How i
 
 ## Materials and Methods
 
-All computational analyses were carried out in R v`r getRversion()` [@RCoreTeam2020] unless otherwise stated. The `r pack("targets")` R package was used to maintain analysis workflow [@Landau2021].
+All computational analyses were carried out in R v`r getRversion()` [@RCoreTeam2020] unless otherwise stated. The `r pack("targets")` R package was used to control analysis workflow [@Landau2021].
 
 ### Study Site
 
-Our data include all ferns known to occur within the boundaries of Japan (20°N to 45°N, 122°E to 153°E). 
+Our data include all ferns known to natively occur within the boundaries of Japan (20°N to 45°N, 122°E to 153°E). 
 Japan consists of four main islands and thousands of smaller ones (`r figure("japan-map")`). 
 Most of the main islands have been in contact with the continent at various points in the past during periods of lower sea level, but the Ogasawara archipelago consists of oceanic islands that have never been connected to the mainland. 
 The climate is subtropical in the south and temperate in other parts of the country. 
-Map data were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
+Map data for Japan were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
 
 ### Occurrence data
 
-We used a list of all non-hybrid fern specimens deposited at TNS [herbarium codes follow @Thiers2021]. 
+We used a list of all native, non-hybrid fern specimens deposited at TNS [herbarium codes follow @Thiers2021]. 
 We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
 Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1 in Supporting Information). 
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). 
-Points were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
+Points (latitude and longitude of each occurrence record) were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
 We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) and removed duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
+The R package `r pack("sf")` was used for all GIS analyses [@Pebesma2018].
 
 A necessary step in any analysis of biodiversity is to set the grain size used to accurately define communities. 
 Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. 
@@ -249,7 +249,6 @@ At each grain size, species occurrences were converted to a presence-absence com
 We calculated sampling redundancy (1 - richness/number of specimens) [@Garcillan2003] to quantify adequacy of sampling. 
 Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). 
 We filtered out any cells with redundancy < 0.1 and used this size for subsequent analyses.
-The R package `r pack("sf")` was used for GIS analyses [@Pebesma2018].
 
 ### Morphological trait data
 
@@ -369,7 +368,7 @@ Sequences for the plastid, coding *rbcL* gene are available for ca. 97% of the J
 However, using this dataset alone for phylogeny suffers two drawbacks: it is not densely sampled enough to resolve many internal nodes, and it lacks many lineages that have fossils available for molecular dating. 
 Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree. 
 To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* data of @Ebihara2019b (`r n_japan_fern_taxa` taxa) with a globally sampled plastid dataset including all fern sequences on GenBank for four widely-sequenced plastid genes (*atpA*, *atpB*, *rbcL*, and *rps4*; `r n_ftol_fern_taxa` taxa) and `r n_plastome_genes` other coding, single-copy plastid genes extracted from `r n_plastome_fern_taxa` complete fern plastomes (Nitta et al., in prep.) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total, including outgroup taxa). 
-We conducted maximum-likelihood phylogenetic analysis with `r software("IQ-TREE")` v1.6.12 [@Nguyen2015] under the GTR+I+G model (all sites concatenated into a single data matrix), and assessed node support with 1000 ultrafast bootstrap replicates [@Minh2013].
+We conducted maximum-likelihood phylogenetic analysis with `r software("IQ-TREE")` v1.6.12 [@Nguyen2015] under the GTR+I+G model (all sites concatenated into a single data matrix), and assessed node support with 1,000 ultrafast bootstrap replicates [@Minh2013].
 Molecular dating was conducted with `r software("treePL")` v1.0 [@Smith2012] using `r n_fossil_points` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020]. 
 The root of the tree (most recent common ancestor of all land plants) was fixed to 475 mya [@Testo2016a].
 We then trimmed the tree to Japanese taxa only and used this for all further analyses.
@@ -448,11 +447,15 @@ As the optimal number of bioregions cannot be known *a-priori*, we tested values
 
 ### Assessment of conservation status and threats
 
-We downloaded SHP files of protected areas in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html) and Ministry of Land, Infrastructure, Transport and Tourism (https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-A45.html). 
-We only considered areas that include protection of plants, and categorized protected areas as either "high" (no human activities allowed at all) or "medium" status (some economic activities allowed by permit) [@Kusumoto2017]. 
-Any areas that overlapped within a protection status were combined, and areas that overlapped between medium and high status were considered only high status.
+We downloaded SHP files of conservation zones in Japan from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html) and Ministry of Land, Infrastructure, Transport and Tourism (https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-A45.html). 
+We excluded marine zones and those that do not protect plants.
+We categorized protected areas as either "high" (no human activities allowed at all) or "medium" status (some economic activities allowed by permit) [@Kusumoto2017]; areas not afforded at least medium level of protection were not considered.
+Conservation status in Japan is administered by multiple laws, and protected areas frequently overlap [@Natori2012].
+To prevent double-counting, all protected areas within a protection status were merged, and protected areas that overlapped between medium and high status were considered only high status.
+
 We downloaded distribution maps (SHP and TIF) of native Japanese deer (*Cervus nippon*), an herbivore that has caused extensive damage to native plant communities due to rapid population growth since the 1970s [@Takatsuki2009] and poses a high risk to ferns, from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html).
 To assess change in threat due to herbivory by deer over time, we used three maps available in this dataset: range of Japanese deer surveyed in 1978, range surveyed in 2003, and estimated range inferred from a model including snow cover and forest type based on the 2003 survey data [@kankyosho2021].
+
 We cropped grid-cells to only include land area, then calculated the percent of protected area of each status type or percent of area occupied by deer for each survey period within grid-cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. 
 These values were compared with the overall percent of protected area or area occupied by deer across Japan (baseline rate).
 For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. 
@@ -630,7 +633,7 @@ All continuous traits showed significant phylogenetic signal, but estimates of s
 
 Taxonomic richness is lowest on the northernmost island of Hokkaido, then increases with decreasing latitude until reaching a maximum in southern Kyushu, then decreases again in smaller islands further south (`r figure("raw-diversity")`a, `r s_figure("raw-lat")`a). 
 Observed values of PD and FD were highly correlated with richness as expected (`r figure("raw-diversity")`b, c), showing an initial steep slope that gradually starts to level off at higher richness (`r s_figure("raw-biplot")`a, c). 
-Observed values of RPD and RFD were not linearly related to richness, however, they showed high variance at low species richness, and low variance at high species richness (`r s_figure("raw-biplot")`b, d).
+Observed values of RPD and RFD were not linearly related to richness; however, they showed high variance at low species richness, and low variance at high species richness (`r s_figure("raw-biplot")`b, d).
 
 ### Randomization tests for phylogenetic and functional diversity
 
@@ -860,7 +863,7 @@ Rather, fern bioregions in Japan broadly separate along gradients of temperature
 ### Conservation status and threats
 
 We found that grid-cells with significantly high amounts of biodiversity are better protected than the baseline protection rate at the medium protection level across all biodiversity metrics, and better than the baseline rate at the high protection level for PE (`r figure("conserv-status")`a). 
-The high protection status of grid-cells with high PE may be due to an emphasis on conserving rare, endemic plant and animal species in Japanese southern islands such as Iriomote and Amami [@kankyosho2021b], which include many grid-cells with high PE (`r s_figure("protected-map")`d).
+The high protection status of grid-cells with high PE may be due to an emphasis on conserving endemic plant and animal species in Japanese southern islands such as Iriomote and Amami [@kankyosho2021b], which include many grid-cells with high PE (`r s_figure("protected-map")`d).
 One possible reason for the generally high level of protection overall is that in the past, some ferns have been included in lists of rare and endemic plants for consideration in designation of conservation areas [A. Ebihara, pers. comm.; @kankyosho2021b]. 
 Also, (as suggested previously) ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups. 
 

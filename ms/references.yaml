@@ -1175,6 +1175,34 @@ references:
     the distribution of the warm temperate species in Japan  \[in Japanese]
   type: article-journal
   volume: '16'
+- id: Natori2012
+  accessed:
+  - year: 2021
+    month: 9
+    day: 2
+  author:
+  - family: Natori
+    given: Yoji
+  - family: Kohri
+    given: Mari
+  - family: Hayama
+    given: Seiji
+  - family: De Silva
+    given: Naamal
+  container-title: Journal of Threatened Taxa
+  container-title-short: J. Threat. Taxa
+  DOI: 10/gmnz8p
+  ISSN: 09747893, 09747907
+  issue: 08
+  issued:
+  - year: 2012
+    month: 8
+    day: 6
+  page: 2797-2805
+  source: DOI.org (Crossref)
+  title: Key biodiversity areas identification in Japan hotspot
+  type: article-journal
+  volume: '04'
 - id: Nguyen2015
   author:
   - family: Nguyen
