@@ -372,7 +372,11 @@ To obtain a maximally sampled, robust phylogenetic tree, we combined the *rbcL* 
 We conducted maximum-likelihood phylogenetic analysis with `r software("IQ-TREE")` v1.6.12 [@Nguyen2015] under the GTR+I+G model (all sites concatenated into a single data matrix), and assessed node support with 1,000 ultrafast bootstrap replicates [@Minh2013].
 Molecular dating was conducted with `r software("treePL")` v1.0 [@Smith2012] using `r n_fossil_points` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020]. 
 The root of the tree (most recent common ancestor of all land plants) was fixed to 475 mya [@Testo2016a].
-We then trimmed the tree to Japanese taxa only and used this for all further analyses.
+We trimmed the resulting ultrametric tree to only Japanese taxa.
+treePL requires branch lengths to be > 0, and it resets extremely small branches an arbitrary minimum positive length.
+This may artificially add branch length between taxa with identical DNA sequences, which occur multiple times in the Japanese fern *rbcL* dataset.
+We converted any clades in the original dated tree consisting of identical sequences to polytomies with zero branch length between OTUs.
+This tree was used for all subsequent analysis unless indicated otherwise.
 
 ### Phylogenetic signal
 
@@ -380,7 +384,8 @@ We tested for phylogenetic signal in continuous traits using two alternative met
 *K* describes the ratio between the observed variance in a trait vs. the amount of variance expected under Brownian Motion (BM); lambda is a scaling parameter that transforms the phylogeny such that trait values fit those most closely expected under BM. 
 Both lambda and *K* = 1 under BM; lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). 
 We measured *K* and lambda using the `r func("phylosig")` function in the R package `r pack("phytools")` [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. 
-We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the `r func("phylo.d")` function in the R package `r pack("caper")` [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM. 
+We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the `r func("phylo.d")` function in the R package `r pack("caper")` [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM.
+These methods for phylogenetic signal cannot use a tree with zero-length polytomies, so we used the original dated tree from treePL.
 
 ### Analysis of biodiversity
 
@@ -417,11 +422,13 @@ To partially account for this, we also calculated all endemism-related metrics u
 
 ### Spatial models
 
-We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the R package `r pack("spdep")` [@Bivand2013]. 
+Initial inspection of the biodiversity and environmental data showed a single outlier in % apomictic taxa due to extremely low species richness (Appendix S2), so that grid-cell and one grid-cell lacking environmental data were excluded from modeling analyses.
+
+We tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the R package `r pack("spdep")` [@Bivand2013]. 
 In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05) (`r s_table("moran")`). 
 Therefore, we used spatially explicit methods for modeling.
 
-We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the `r pack("SpatialPack")` R package [@SpatialPack2020]. 
+We checked for correlation between independent variables while taking into account spatial autocorrelation using a modified *t*-test with the `r func("modified.ttest")` function in the R package `r pack("SpatialPack")` [@SpatialPack2020]. 
 This indicated that temperature seasonality and % apomictic taxa were correlated with mean annual temperature (`r s_table("corr")`), so for the main modeling analysis we only included the following environmental variables: mean annual temperature, precipitation, and precipitation seasonality.
 
 We constructed a linear mixed model for each biodiversity metric dependent on the environmental variables ("environmental models"). 
@@ -442,7 +449,8 @@ Briefly, this involves first calculating beta diversity (change in composition b
 For taxonomic bioregions, we calculated the turnover in species between sites due to species replacement [@Baselga2012] with the Sørensen index. 
 For phylogenetic bioregions, we calculated phylogenetic dissimilarities based on the PhyloSor index [@Bryant2008]. 
 The distances are used to construct a dendrogram, which is then split into into *k* bioregions. 
-As the optimal number of bioregions cannot be known *a-priori*, we tested values of *k* from 1 to 20.
+The optimal value of *k* cannot be known *a-priori*.
+Previous vegetation zone schemes in Japan have typically included 5--6 zones [@Shimizu2014]; to enable approximate comparison with these, we tested values of *k* from 1 to 10, and selected the optimal value using the `optimal_phyloregion` function in the R package `r pack("phyloregion")`.
 
 ### Assessment of conservation status and threats
 
@@ -459,7 +467,7 @@ We limited estimated range to areas considered "highly likely" to be occupied by
 We cropped grid-cells to only include land area, then calculated the percent of protected area of each status type or percent of area occupied by deer for each survey period within grid-cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. 
 These values were compared with the overall percent of protected area or area occupied by deer across Japan (baseline rate).
 For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. 
-For taxonomic richness, cells ranked in the top >5% were considered highly diverse.
+For taxonomic richness, cells ranked in the top > 5% were considered highly diverse.
 
 ## Results
 
@@ -828,7 +836,7 @@ n_southern_families <- southern_families %>% pull(higher_taxon) %>% n_distinct %
 
 The latitudinal hump-shaped pattern of species richness observed in ferns here (`r figure("raw-diversity")`a, `r s_figure("raw-lat")`a) is well-documented [@Kusumoto2017; @Ebihara2019b], and similar patterns have been observed in deciduous broadleaved trees and conifers [@Shiono2015], and niche-modeled distributions of woody plants [@Fukaya2020]. 
 Our spatial modeling analysis indicates that this is strongly linked to temperature, with maximum richness occurring at intermediate temperatures (`r figure("modelfit")`a).
-Previous studies have identified temperature, water availability [@Bickford2006; @Qian2012], or a combination of these [@Nagalingum2015; @Link-Perez2018a; @Qian2021] to be important drivers of spatial fern diversity.
+Previous studies have identified temperature, water availability [@Bickford2006; @Qian2012], or a combination of these [@Nagalingum2015; @Link-Perez2018; @Qian2021] to be important drivers of spatial fern diversity.
 A hump-shaped pattern of richness along elevation (maximum richness at intermediate elevations) has been frequently observed in ferns on mountains in tropical or sub-tropical areas [@Kessler2011a]. 
 Hypotheses to explain such a pattern include purely geometrical constraints as well as biological hypothesis positing maximally favorable environmental conditions at mid-elevations [@Colwell2004a]. 
 Another reason for the greater richness in southern Honshu compared to smaller southern islands is that southern Honshu harbors high elevational variation that may support a wider range of taxa than is present in the southern islands.
@@ -856,7 +864,7 @@ A similar argument has been made to assert that areas with seasonal monsoons are
 The monsoon hypothesis is also not supported by our results, which show precipitation seasonality did not play a strong role in any model and was not correlated with % apomictic taxa.
 
 The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values (`r figure("div-by-tax-region")`). 
-Interestingly, the bioregions identified here correspond roughly to major forest types previously categorized on an *ad-hoc* basis; bioregion 1 corresponds to the cool or subartic deciduous type, bioregion 2 to the warm evergreen type, and bioregions 3 and 4 to the subtropical rainy type [@Shimizu2014]. 
+Interestingly, the bioregions identified here correspond roughly to major vegetation zones previously categorized on an *ad-hoc* basis; bioregion 1 corresponds to the cool or subartic deciduous type, bioregion 2 to the warm evergreen type, and bioregions 3 and 4 to the subtropical rainy type [@Shimizu2014]. 
 Furthermore, the border between bioregions 1 and 2 corresponds to the "*Gleichenia japonica* Line" proposed by @Nakaike1983, which he proposed based on the distribution of *Diplopterygium glaucum* (Houtt.) Nakai (= *Gleichenia japonica* Spreng.) as an indicator of evergreen broad-leaf forests in Japan.
 This suggests that ferns are useful as bioindicators in Japan. 
 Although some studies have emphasized the importance of deep-sea straits (the Tsugaru Strait separating Hokkaido from the rest of Honshu and the Tokara Strait separating the southern islands from Kyushu) in structuring biological communities in Japan [@Millien-Parra1999; @Kubota2014], these did not play a major role in structuring fern bioregions. 
@@ -893,7 +901,7 @@ taxon_with_widest_lat <- lat_span_summary %>%
   left_join(
     tibble(
       taxon = "Pteridium_aquilinum_japonicum",
-      text = "*Pteridium aquilinum* (L.) Kuhn subsp. *japonicum* (Nakai) A. et S.Löve"
+      text = "*Pteridium aquilinum* (L.) Kuhn subsp. *japonicum* (Nakai) A. et S. Löve"
     ),
     by = "taxon"
   ) %>%
@@ -930,11 +938,11 @@ The extreme evolutionary distinctiveness of southern islands is both a major fea
 The tropical lineages occurring only in these islands are likely responsible for the comparatively low (`r ie`, clustered) values of PD observed on Honshu (`r figure("rand-diversity")`a).
 One way to account for this bimodal distribution pattern would be to use a restricted null model that does not allow all taxa to disperse anywhere within the study area [@Mishler2020]. 
 However, ferns are known to have high dispersal abilities [@Tryon1970; @Barrington1993; @Moran2001]. 
-In our dataset, the taxa with the greatest latitudinal distribution (`r eg`, `r taxon_with_widest_lat$text`) span nearly the entire region (`r taxon_with_widest_lat$min_lat`°N to `r taxon_with_widest_lat$max_lat`°N), and `r n_widespread_taxa` taxa have latitudinal distributions spanning the Tokara strait in the south (29°N) to the Tsugaru strait in the north (41.5°N). 
+In our dataset, the taxon with the greatest latitudinal distribution (`r taxon_with_widest_lat$text`) spans nearly the entire region (`r taxon_with_widest_lat$min_lat`°N to `r taxon_with_widest_lat$max_lat`°N), and `r n_widespread_taxa` taxa have latitudinal distributions spanning the Tokara strait in the south (29°N) to the Tsugaru strait in the north (41.5°N). 
 Therefore, it seems reasonable to assume that ferns are capable of dispersing across the entire study area.
 Furthermore, it should be noted that the southern islands are all low-altitude (not exceeding 1000 m).
 If high elevation habitats were available, the southern islands would be expected to share more species in common with areas further north.
-For example, Taiwan, which is just east of the southernmost Japanese islands and harbors high mountains (>3000 m), shares many fern species with Honshu that are not found in southern Japanese islands.
+For example, Taiwan, which is just east of the southernmost Japanese islands and harbors high mountains (> 3000 m), shares many fern species with Honshu that are not found in southern Japanese islands.
 This supports that the sharp taxonomic turnover between southern islands and Honshu is more likely due to ecological factors than dispersal limitation.
 
 One element of biodiversity that we did not consider here is hybrids. 
@@ -1482,7 +1490,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7, hei
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions each consisting of fewer than `r english2(bioregion_cutoff)` grid-cells are lumped into the "Other" category.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of > 1 grid-cell each are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 

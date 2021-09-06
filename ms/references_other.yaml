@@ -33,7 +33,11 @@ references:
   - literal: R Core Team
   issued:
   - year: 2020
-  title: 'R: A language and environment for statistical computing. Version 4.0.2. R Foundation for Statistical Computing, Vienna, Austria'
+  accessed:
+    year: 2021
+    month: 09
+    day: 01
+  title: 'R: A language and environment for statistical computing. Version 4.0.0. R Foundation for Statistical Computing, Vienna, Austria'
   URL: https://www.R-project.org/
 
 - id: Nitta2021
@@ -69,6 +73,10 @@ references:
     given: Will
   issued:
   - year: 2018
+  accessed:
+    year: 2021
+    month: 09
+    day: 01
   title: 'Caper: Comparative analyses of phylogenetics and evolution in r. Version 1.0.1'
   title-short: Caper
   note: R package version 1.0.1
@@ -129,7 +137,11 @@ references:
   - family: Hijmans
     given: Robert J.
   issued:
-  - year: 2020
+  - year: 2021
+  accessed:
+    year: 2021
+    month: 08
+    day: 26
   title: 'Raster: Geographic data analysis and modeling'
   title-short: Raster
   note: R package version 3.1-5
@@ -146,8 +158,7 @@ references:
     given: M.
   issued:
   - year: 2020
-  title: 'Spatial relationships between two georeferenced variables: With applications
-    in r'
+  title: 'Spatial relationships between two georeferenced variables: With applications in R'
   title-short: Spatial relationships between two georeferenced variables
   publisher: Springer
   publisher-place: New York
@@ -170,8 +181,5 @@ references:
     month: 3
   page: 19-75
   source: CiNii
-  title: 'Process of the formation of Japanese forest and typification of vegetation
-    zone : From an East Asian viewpoint'
-  title-short: Process of the formation of Japanese forest and typification of vegetation
-    zone
+  title: 'Process of the formation of Japanese forest and typification of vegetation zone: From an East Asian viewpoint'
   type: article-journal

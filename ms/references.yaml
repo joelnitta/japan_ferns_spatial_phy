@@ -8,7 +8,9 @@ references:
   - family: Werth
     given: Charles R.
   container-title: American Fern Journal
+  DOI: 10.2307/1547160
   ISSN: 1938-422X
+  issue: '2'
   issued:
   - year: 1989
   page: 55-64
@@ -20,6 +22,7 @@ references:
   - family: Barrington
     given: David S
   container-title: Journal of Biogeography
+  DOI: 10.2307/2845635
   ISSN: 1365-2699
   issue: '3'
   issued:
@@ -37,7 +40,7 @@ references:
   - family: Baselga
     given: Andrés
   container-title: Global Ecology and Biogeography
-  DOI: 10/gddc72
+  DOI: 10.1111/j.1466-8238.2011.00756.x
   ISSN: 1466822X
   issue: '12'
   issued:
@@ -61,7 +64,7 @@ references:
   - family: Bengtsson
     given: B. O.
   container-title: Journal of Evolutionary Biology
-  DOI: 10/bf52w9
+  DOI: 10.1046/j.1420-9101.2003.00523.x
   ISSN: 1420-9101
   issue: '2'
   issued:
@@ -82,14 +85,14 @@ references:
   container-title: Global Ecology and Biogeography
   DOI: 10.1111/j.1466-822X.2006.00250.x
   ISSN: 1466-822X
-  issue: '0'
+  issue: '6'
   issued:
   - year: 2006
   page: 588-601
   title: Multi-extent analysis of the relationship between pteridophyte species richness
     and climate
   type: article-journal
-  volume: '0'
+  volume: '15'
 - id: Bivand2013
   author:
   - family: Bivand
@@ -98,7 +101,6 @@ references:
     given: Edzer
   - family: Gómez-Rubio
     given: Virgilio
-  container-title: 'Applied spatial data analysis with r: Second edition'
   DOI: 10.1007/978-1-4614-7618-4
   event-place: New York
   ISBN: 978-1-4614-7618-4
@@ -107,7 +109,7 @@ references:
   publisher: Springer
   publisher-place: New York
   title: 'Applied spatial data analysis with R: Second edition'
-  type: chapter
+  type: book
 - id: Blomberg2003
   author:
   - family: Blomberg
@@ -153,7 +155,7 @@ references:
   - family: Rodrigues
     given: A. S. L.
   container-title: Science
-  DOI: 10/b84nbv
+  DOI: 10.1126/science.1127609
   ISSN: 0036-8075, 1095-9203
   issue: '5783'
   issued:
@@ -166,7 +168,7 @@ references:
   publisher: American Association for the Advancement of Science
   section: Review
   source: science.sciencemag.org
-  title: Global Biodiversity Conservation Priorities
+  title: Global biodiversity conservation priorities
   type: article-journal
   volume: '313'
 - id: Bryant2008
@@ -184,12 +186,13 @@ references:
   - family: Green
     given: J
   container-title: Proceedings of the National Academy of Sciences
+  DOI: 10.1073/pnas.0801920105
   ISSN: 1091-6490
   issue: Supplement 1
   issued:
   - year: 2008
   page: 11505-11511
-  title: 'Microbes on mountainsides: contrasting elevational patterns of bacterial
+  title: 'Microbes on mountainsides: Contrasting elevational patterns of bacterial
     and plant diversity'
   type: article-journal
   volume: '105'
@@ -202,6 +205,7 @@ references:
   - family: Gotelli
     given: Nicholas J
   container-title: The American Naturalist
+  DOI: 10.1086/382056
   ISSN: 1537-5323
   issue: '3'
   issued:
@@ -222,13 +226,12 @@ references:
   - family: Rousset
     given: François
   container-title: bioRxiv
-  DOI: 10/gj769c
+  DOI: 10.1101/207662
   issued:
   - year: 2017
     month: 10
     day: 23
   language: en
-  page: '207662'
   publisher: Cold Spring Harbor Laboratory
   section: New Results
   source: www.biorxiv.org
@@ -243,6 +246,7 @@ references:
   - family: Sack
     given: Lawren
   container-title: American Journal of Botany
+  DOI: 10.3732/ajb.1000237
   ISSN: 1537-2197
   issue: '6'
   issued:
@@ -269,7 +273,7 @@ references:
     given: Søren
   container-title: Nature Communications
   container-title-short: Nat Commun
-  DOI: 10/ggvnhf
+  DOI: 10.1038/s41467-020-15921-6
   ISSN: 2041-1723
   issue: '1'
   issued:
@@ -421,7 +425,7 @@ references:
     given: Lenore
   container-title: Journal of Biogeography
   container-title-short: J. Biogeogr.
-  DOI: 10/ggk3qt
+  DOI: 10.1111/jbi.12130
   editor:
   - family: Triantis
     given: Kostas
@@ -433,7 +437,7 @@ references:
   language: en
   page: 1649-1663
   source: DOI.org (Crossref)
-  title: 'Rethinking patch size and isolation effects: the habitat amount hypothesis'
+  title: 'Rethinking patch size and isolation effects: The habitat amount hypothesis'
   title-short: Rethinking patch size and isolation effects
   type: article-journal
   volume: '40'
@@ -487,7 +491,7 @@ references:
     given: Yasuhiro
   container-title: Nature Communications
   container-title-short: Nat Commun
-  DOI: 10/ggztv3
+  DOI: 10.1038/s41467-020-15407-5
   ISSN: 2041-1723
   issue: '1'
   issued:
@@ -514,7 +518,7 @@ references:
     given: Hugo
   container-title: Journal of Vegetation Science
   container-title-short: Journal of Vegetation Science
-  DOI: 10/bgh9z9
+  DOI: 10.1111/j.1654-1103.2003.tb02174.x
   ISSN: 1100-9233, 1654-1103
   issue: '4'
   issued:
@@ -532,11 +536,13 @@ references:
   - family: Givnish
     given: Thomas J
   container-title: New Phytologist
+  DOI: 10.1111/j.1469-8137.1987.tb04687.x
   ISSN: 0028646X
+  issue: s1
   issued:
   - year: 1987
   page: 131-160
-  title: 'Comparative studies of leaf form: assessing the relative roles of selective
+  title: 'Comparative studies of leaf form: Assessing the relative roles of selective
     pressures and phylogenetic constraints'
   type: article-journal
 - id: Gonzalez-Orozco2014b
@@ -556,7 +562,7 @@ references:
   - family: Miller
     given: Joseph T.
   container-title: Diversity and Distributions
-  DOI: 10/f5mddz
+  DOI: 10.1111/ddi.12129
   ISSN: 1472-4642
   issue: '1'
   issued:
@@ -617,7 +623,7 @@ references:
   - family: Haufler
     given: Christopher H.
   container-title: American Journal of Botany
-  DOI: 10/gjc84t
+  DOI: 10.1002/ajb2.1611
   ISSN: 1537-2197
   issue: '2'
   issued:
@@ -627,7 +633,7 @@ references:
   page: 263-283
   source: Wiley Online Library
   title: 'A drought-driven model for the evolution of obligate apomixis in ferns:
-    evidence from pellaeids (Pteridaceae)'
+    Evidence from pellaeids (Pteridaceae)'
   title-short: A drought-driven model for the evolution of obligate apomixis in ferns
   type: article-journal
   volume: '108'
@@ -657,44 +663,6 @@ references:
   title: Kokuritsu, kokuteikouen soutenken jigyou ni tsuite (On the project to overhaul
     national parks and quasi-national parks; in Japanese)
   URL: https://www.env.go.jp/park/topics/review/attach/jigyo/full.pdf
-- id: Kembel2010
-  accessed:
-  - year: 2021
-    month: 7
-    day: 12
-  author:
-  - family: Kembel
-    given: S. W.
-  - family: Cowan
-    given: P. D.
-  - family: Helmus
-    given: M. R.
-  - family: Cornwell
-    given: W. K.
-  - family: Morlon
-    given: H.
-  - family: Ackerly
-    given: D. D.
-  - family: Blomberg
-    given: S. P.
-  - family: Webb
-    given: C. O.
-  container-title: Bioinformatics
-  container-title-short: Bioinformatics
-  DOI: 10.1093/bioinformatics/btq166
-  ISSN: 1367-4803, 1460-2059
-  issue: '11'
-  issued:
-  - year: 2010
-    month: 6
-    day: 1
-  language: en
-  page: 1463-1464
-  source: DOI.org (Crossref)
-  title: 'Picante: R tools for integrating phylogenies and ecology'
-  title-short: Picante
-  type: article-journal
-  volume: '26'
 - id: Kessler2011a
   author:
   - family: Kessler
@@ -722,7 +690,7 @@ references:
     given: J
   - family: Kessler
     given: Michael
-  container-title: Ecotropica.
+  container-title: Ecotropica
   issue: '1'
   issued:
   - year: 2007
@@ -744,7 +712,7 @@ references:
   - family: Fowler
     given: Amy E.
   container-title: Journal of Phycology
-  DOI: 10/gjppkc
+  DOI: 10.1111/jpy.12906
   ISSN: 1529-8817
   issue: '6'
   issued:
@@ -798,7 +766,7 @@ references:
     given: Yasuhiro
   container-title: Ecological Research
   container-title-short: Ecol Res
-  DOI: 10/f96h8f
+  DOI: 10.1007/s11284-017-1451-6
   ISSN: 0912-3814, 1440-1703
   issue: '3'
   issued:
@@ -813,30 +781,45 @@ references:
   type: article-journal
   volume: '32'
 - id: Laffan2016
+  accessed:
+  - year: 2021
+    month: 9
+    day: 6
   author:
   - family: Laffan
-    given: Shawn W
+    given: Shawn W.
   - family: Rosauer
-    given: Dan F
-  - family: Virgilio
-    given: Giovanni Di
+    given: Dan F.
+  - family: Di Virgilio
+    given: Giovanni
   - family: Miller
-    given: Joseph T
+    given: Joseph T.
+  - family: González‐Orozco
+    given: Carlos E.
   - family: Knerr
     given: Nunzio
   - family: Thornhill
-    given: Andrew H
+    given: Andrew H.
   - family: Mishler
-    given: Brent D
-  - family: Gonz
-    given: Carlos E
-  DOI: 10.1111/2041-210X.12513
+    given: Brent D.
+  container-title: Methods in Ecology and Evolution
+  container-title-short: Methods Ecol Evol
+  DOI: 10/f8tbrk
+  editor:
+  - family: Jones
+    given: Kate
+  ISSN: 2041-210X, 2041-210X
+  issue: '5'
   issued:
   - year: 2016
+    month: 5
+  language: en
   page: 580-588
-  title: Range-weighted metrics of species and phylogenetic turnover can better resolve
+  source: DOI.org (Crossref)
+  title: Range‐weighted metrics of species and phylogenetic turnover can better resolve
     biogeographic transition zones
   type: article-journal
+  volume: '7'
 - id: Laliberte2010
   author:
   - family: Laliberté
@@ -884,7 +867,7 @@ references:
   - family: Lehtonen
     given: Samuli
   container-title: PLoS ONE
-  DOI: https://doi.org/10.1371/journal.pone.0024851
+  DOI: 10.1371/journal.pone.0024851
   ISSN: 1932-6203
   issue: '10'
   issued:
@@ -894,19 +877,32 @@ references:
   title: Towards resolving the complete fern tree of life
   type: article-journal
   volume: '6'
-- id: Link-Perez2018a
+- id: Link-Perez2018
+  accessed:
+  - year: 2021
+    month: 9
+    day: 6
   author:
   - family: Link-Pérez
     given: Melanie A.
   - family: Laffan
     given: Shawn W.
   container-title: Journal of Systematics and Evolution
-  DOI: 10.1111/jse.12430
+  container-title-short: Jnl of Sytematics Evolution
+  DOI: 10/gfb462
   ISSN: '16744918'
+  issue: '5'
   issued:
   - year: 2018
-  title: 'Fern and lycophyte diversity in the Pacific Northwest: Patterns and predictors'
+    month: 9
+  language: en
+  page: 498-522
+  source: DOI.org (Crossref)
+  title: 'Fern and lycophyte diversity in the Pacific Northwest: Patterns and predictors:
+    Fern and lycophyte diversity in Pacific Northwest'
+  title-short: Fern and lycophyte diversity in the Pacific Northwest
   type: article-journal
+  volume: '56'
 - id: Liu2012
   author:
   - family: Liu
@@ -928,7 +924,7 @@ references:
   - year: 2012
     month: 1
   page: 1-11
-  title: 'The evolutionary dynamics of apomixis in ferns: a case study from polystichoid
+  title: 'The evolutionary dynamics of apomixis in ferns: A case study from polystichoid
     ferns'
   type: article-journal
   volume: '2012'
@@ -972,7 +968,7 @@ references:
   - family: Pressey
     given: R. L.
   container-title: Nature
-  DOI: 10/dn4xdx
+  DOI: 10.1038/35012251
   ISSN: 1476-4687
   issue: '6783'
   issued:
@@ -997,7 +993,7 @@ references:
   - family: Jaeger
     given: Jean-Jacques
   container-title: Journal of Biogeography
-  DOI: 10/dqc4qp
+  DOI: 10.1046/j.1365-2699.1999.00346.x
   ISSN: 03050270, 13652699
   issue: '5'
   issued:
@@ -1006,7 +1002,7 @@ references:
   language: en
   page: 959-972
   source: DOI.org (Crossref)
-  title: 'Island biogeography of the Japanese terrestrial mammal assemblages: an example
+  title: 'Island biogeography of the Japanese terrestrial mammal assemblages: An example
     of a relict fauna'
   title-short: Island biogeography of the Japanese terrestrial mammal assemblages
   type: article-journal
@@ -1056,9 +1052,9 @@ references:
   volume: '5'
 - id: Mishler2020
   accessed:
-  - year: 2020
-    month: 6
-    day: 30
+  - year: 2021
+    month: 9
+    day: 6
   author:
   - family: Mishler
     given: Brent D.
@@ -1080,15 +1076,16 @@ references:
   container-title-short: J. Syst. Evol.
   DOI: 10/gg3h86
   ISSN: 1674-4918, 1759-6831
+  issue: '4'
   issued:
   - year: 2020
-    month: 5
-    day: 12
+    month: 7
   language: en
-  page: jse.12590
+  page: 393-405
   source: DOI.org (Crossref)
   title: Spatial phylogenetics of the North American flora
   type: article-journal
+  volume: '58'
 - id: Moran2001
   author:
   - family: Moran
@@ -1096,6 +1093,7 @@ references:
   - family: Smith
     given: Alan R.
   container-title: Brittonia
+  DOI: 10.1007/BF02812704
   issue: '2'
   issued:
   - year: 2001
@@ -1191,9 +1189,9 @@ references:
     given: Naamal
   container-title: Journal of Threatened Taxa
   container-title-short: J. Threat. Taxa
-  DOI: 10/gmnz8p
+  DOI: 10.11609/jott.o2999.2797-805
   ISSN: 09747893, 09747907
-  issue: 08
+  issue: '8'
   issued:
   - year: 2012
     month: 8
@@ -1202,7 +1200,7 @@ references:
   source: DOI.org (Crossref)
   title: Key biodiversity areas identification in Japan hotspot
   type: article-journal
-  volume: '04'
+  volume: '4'
 - id: Nguyen2015
   author:
   - family: Nguyen
@@ -1247,7 +1245,7 @@ references:
     given: Hirokazu
   container-title: Functional Plant Biology
   container-title-short: Functional Plant Biol.
-  DOI: 10/dt32jd
+  DOI: 10.1071/fp11057
   ISSN: 1445-4408
   issue: '7'
   issued:
@@ -1274,7 +1272,7 @@ references:
     given: Akira S.
   container-title: Ecological Research
   container-title-short: Ecol Res
-  DOI: 10/f8t3zh
+  DOI: 10.1007/s11284-016-1367-6
   ISSN: 0912-3814, 1440-1703
   issue: '4'
   issued:
@@ -1324,7 +1322,6 @@ references:
     month: 7
     day: 13
   language: en
-  publisher: Zenodo
   source: DOI.org (Datacite)
   title: canaper
   title-short: joelnitta/canaper
@@ -1364,6 +1361,10 @@ references:
     given: Will
   issued:
   - year: 2018
+  accessed:
+    year: 2021
+    month: 09
+    day: 1
   title: 'Caper: Comparative analyses of phylogenetics and evolution in r. Version
     1.0.1'
   title-short: Caper
@@ -1376,7 +1377,6 @@ references:
   container-title: Nature
   DOI: 10.1038/44766
   ISSN: 00280836
-  issue: '6756'
   issued:
   - year: 1999
   page: 877-884
@@ -1394,7 +1394,7 @@ references:
     given: Edzer
   container-title: The R Journal
   container-title-short: The R Journal
-  DOI: 10/gf2ztt
+  DOI: 10.32614/rj-2018-009
   ISSN: 2073-4859
   issue: '1'
   issued:
@@ -1418,7 +1418,7 @@ references:
     given: Kevin J.
   container-title: Ecology Letters
   container-title-short: Ecol Letters
-  DOI: 10/frgvzn
+  DOI: 10.1046/j.1461-0248.2002.00339.x
   ISSN: 1461-023X, 1461-0248
   issue: '3'
   issued:
@@ -1474,8 +1474,8 @@ references:
   issued:
   - year: 2015
   page: 1-20
-  title: Sporangium exposure and spore release in the peruvian maidenhair fern (Adiantum
-    peruvianum, Pteridaceae)
+  title: Sporangium exposure and spore release in the Peruvian maidenhair fern (*Adiantum
+    peruvianum*, Pteridaceae)
   type: article-journal
   volume: '10'
 - id: PteridophytePhylogenyGroupI2016
@@ -1503,7 +1503,7 @@ references:
   - family: Wang
     given: X L
   container-title: Plant Ecology
-  DOI: DOI 10.1007/s11258-012-0038-0
+  DOI: 10.1007/s11258-012-0038-0
   ISSN: 1385-0237
   issue: '5'
   issued:
@@ -1530,26 +1530,32 @@ references:
     given: Yi
   container-title: Global Ecology and Biogeography
   container-title-short: Global Ecol Biogeogr
-  DOI: 10/gk6mzf
+  DOI: 10.1111/geb.13349
   editor:
   - family: Baselga
     given: Andres
   ISSN: 1466-822X, 1466-8238
+  issue: '9'
   issued:
   - year: 2021
-    month: 7
+    month: 9
   language: en
-  page: geb.13349
+  page: 1835-1846
   source: DOI.org (Crossref)
   title: Patterns and drivers of phylogenetic structure of pteridophytes in China
   type: article-journal
+  volume: '30'
 - id: R-raster
   type: webpage
   author:
   - family: Hijmans
     given: Robert J.
   issued:
-  - year: 2020
+  - year: 2021
+  accessed:
+    year: 2021
+    month: 08
+    day: 26
   title: 'Raster: Geographic data analysis and modeling'
   title-short: Raster
   note: R package version 3.1-5
@@ -1560,7 +1566,11 @@ references:
   - literal: R Core Team
   issued:
   - year: 2020
-  title: 'R: A language and environment for statistical computing. Version 4.0.2.
+  accessed:
+    year: 2021
+    month: 09
+    day: 1
+  title: 'R: A language and environment for statistical computing. Version 4.0.0.
     R Foundation for Statistical Computing, Vienna, Austria'
   URL: https://www.R-project.org/
 - id: Revell2012
@@ -1590,6 +1600,7 @@ references:
   - family: Cook
     given: L
   container-title: Molecular Ecology
+  DOI: 10.1111/j.1365-294X.2009.04311.x
   ISSN: 1365294X
   issue: '19'
   issued:
@@ -1650,9 +1661,7 @@ references:
   page: 19-75
   source: CiNii
   title: 'Process of the formation of Japanese forest and typification of vegetation
-    zone : From an East Asian viewpoint'
-  title-short: Process of the formation of Japanese forest and typification of vegetation
-    zone
+    zone: From an East Asian viewpoint'
   type: article-journal
 - id: Shiono2015
   author:
@@ -1711,7 +1720,7 @@ references:
   issued:
   - year: 2020
   title: 'Spatial relationships between two georeferenced variables: With applications
-    in r'
+    in R'
   title-short: Spatial relationships between two georeferenced variables
   publisher: Springer
   publisher-place: New York
@@ -1727,7 +1736,7 @@ references:
     given: Seiki
   container-title: Biological Conservation
   container-title-short: Biological Conservation
-  DOI: 10/dh3bxn
+  DOI: 10.1016/j.biocon.2009.02.011
   ISSN: '00063207'
   issue: '9'
   issued:
@@ -1818,6 +1827,7 @@ references:
   - family: Tryon
     given: Rolla
   container-title: Biotropica
+  DOI: 10.2307/2989765
   issue: '2'
   issued:
   - year: 1970
@@ -1837,7 +1847,7 @@ references:
     given: Suzette
   container-title: Biometrika
   container-title-short: Biometrika
-  DOI: 10/cstbq8
+  DOI: 10.1093/biomet/92.2.351
   ISSN: 0006-3444
   issue: '2'
   issued:
@@ -1858,6 +1868,7 @@ references:
   - family: Zwieniecki
     given: M
   container-title: American Journal of Botany
+  DOI: 10.3732/ajb.1000124
   ISSN: 1537-2197
   issue: '12'
   issued:
