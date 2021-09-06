@@ -883,11 +883,22 @@ This result highlights the importance of using multiple metrics of biodiversity 
 # Find the species with the widest latitudinal distribution
 taxon_with_widest_lat <- lat_span_summary %>%
   mutate(lat_span = max_lat - min_lat) %>%
-  slice_max(lat_span, with_ties = FALSE) %>%
-  left_join(green_list, by = "taxon") %>%
-  # Parse out species name and author
-  mutate(gn_parse_tidy(.$scientific_name) %>% select(canonicalsimple, authorship)) %>%
-  mutate(text = glue("*{canonicalsimple}* {authorship}"))
+  slice_max(lat_span) %>%
+  # Add formatted scientific name
+  left_join(
+    tibble(
+      taxon = "Pteridium_aquilinum_japonicum",
+      text = "*Pteridium aquilinum* (L.) Kuhn subsp. *japonicum* (Nakai) A. et S.Löve"
+    ),
+    by = "taxon"
+  ) %>%
+  # Round off latitude
+  mutate(across(c(min_lat, max_lat), ~round(., 2)))
+
+# Make sure the taxon_with_widest_lat is what we expect
+assert_that(
+  taxon_with_widest_lat$taxon == "Pteridium_aquilinum_japonicum",
+  msg = "Taxon with widest latitude wasn't Pteridium_aquilinum_japonicum")
 
 # Find number of species occurring across areas defined by straits
 n_widespread_taxa <-
