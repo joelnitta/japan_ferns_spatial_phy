@@ -670,10 +670,14 @@ When we ran CANAPE with a reduced dataset including only taxa absolutely restric
 
 ### Bioregions
 
+```{r verify-cutoff}
+assert_that(bioregion_cutoff == 2, msg = "Bioregions cutoff for lumping not 2!")
+```
+
 Clustering analysis grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` bioregions (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
 The vast majority of grid-cells fell to a subset of these bioregions: using taxonomic distances, they include bioregion 1 (Hokkaido and northern Honshu), bioregion 2 (southern Honshu), bioregion 3 (Ryukyu Islands, excluding Yakushima), and bioregion 4 (Ogasawara Islands) (`r figure("bioregions")`a; `r s_figure("dendrogram")`a). 
-Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single bioregion (`r figure("bioregions")`b; `r s_figure("dendrogram")`b). 
-The other much smaller bioregions (each including only three grid-cells or less) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
+Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single bioregion, and bioregion 1 extended slightly further south (`r figure("bioregions")`b; `r s_figure("dendrogram")`b). 
+The other much smaller bioregions ("singletons" including only a single grid-cell each) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
 Taxonomic bioregions 3 and 4 have higher SES values of PD, RPD, FD, and RFD than bioregions 1 and 2 (`r figure("div-by-tax-region")`). 
 Bioregions 3 and 4 also have consistently high PE *p*-scores, whereas bioregions 1 and 2 have a much wider variation. 
