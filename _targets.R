@@ -302,7 +302,8 @@ tar_plan(
   # - original (default) IDs for bioregions
   bioregions_raw = combine_bioregions(regions_taxonomy, regions_phylogeny),
   # - bioregions relabeled in order of mean latitude
-  bioregions = relabel_bioregions_by_lat(bioregions_raw, shape_ferns),
+  bioregion_cutoff = 2, # later, lump bioregions into "other" if they have fewer than this number of grid-cells
+  bioregions = relabel_bioregions_by_lat(bioregions_raw, shape_ferns, cutoff = bioregion_cutoff),
   
   # Traits analysis ----
   
@@ -595,10 +596,10 @@ tar_plan(
   ),
   
   # Etc ----
-  # Lump regions with just a few cells (3 or less)
+  # Lump regions with a small number of grid-cells (fewer than `bioregion_cutoff`)
   biodiv_ferns_spatial_lumped = biodiv_ferns_spatial %>%
-    mutate(taxonomic_cluster = fct_lump_min(taxonomic_cluster, 4))  %>%
-    mutate(phylo_cluster = fct_lump_min(phylo_cluster, 4)),
+    mutate(taxonomic_cluster = fct_lump_min(taxonomic_cluster, bioregion_cutoff))  %>%
+    mutate(phylo_cluster = fct_lump_min(phylo_cluster, bioregion_cutoff)),
   
   # Render manuscript ----
   # Track ms files

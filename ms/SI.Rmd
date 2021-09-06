@@ -77,7 +77,8 @@ tar_load(c(
   "biodiv_ferns_cent",
   "protected_areas",
   "deer_range",
-  "biodiv_ferns_spatial_lumped"
+  "biodiv_ferns_spatial_lumped",
+  "bioregion_cutoff"
 ))
 ```
 
@@ -503,8 +504,8 @@ a + b +
 \clearpage
 
 ```{r raw-lat, fig.width = 7, fig.height = 4}
-# Convert spatial data frame to centroids with raw metrics
-biodiv_ferns_cent_raw <- spatial_to_cent(
+# Convert spatial data frame to centroids with raw metrics, drop single high apomixis outlier
+biodiv_ferns_cent_raw <- spatial_to_cent_for_model(
   biodiv_ferns_spatial,
   c("grids", "lat", "long", "richness", "pd_obs", "fd_obs"))
 
@@ -556,6 +557,7 @@ a + b + c +
 ```{r raw-biplot, fig.width = 7, fig.height = 7}
 a <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = pd_obs)) +
   geom_point(alpha = 0.5) +
+  geom_smooth() +
   labs(x = "Richness", y = "PD")
 
 b <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rpd_obs)) +
@@ -564,6 +566,7 @@ b <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rpd_obs)) +
 
 c <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = fd_obs)) +
   geom_point(alpha = 0.5) +
+  geom_smooth() +
   labs(x = "Richness", y = "FD")
 
 d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
@@ -578,7 +581,7 @@ a + b + c + d +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. (a), Phylogenetic diversity (PD). (b), Relative phylogenetic diversity (RPD). (c), Functional diversity (FD). (d), Relative functional diversity (RFD).
+**`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. (a), Phylogenetic diversity (PD). (b), Relative phylogenetic diversity (RPD). (c), Functional diversity (FD). (d), Relative functional diversity (RFD). Trendlines in (a, c) fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
 \clearpage
 
@@ -655,13 +658,11 @@ dendro_tax <- attributes(k_taxonomy$df)$meta$hclust.obj %>% as.phylo() %>% ladde
 clusters_tax <-
   biodiv_ferns_spatial %>%
   as_tibble() %>%
-  select(grids, cluster = taxonomic_cluster) %>%
-  # Convert cluster to numeric to use max() later
-  mutate(cluster = levels(cluster)[cluster])
+  select(grids, cluster = taxonomic_cluster)
 
 cluster_nodes_tax_tbl <- map_df(unique(clusters_tax$cluster), ~map_cluster_to_nodes(dendro_tax, clusters_tax, .)) %>%
-  # Lump regions with just a few cells (3 or less)
-  mutate(cluster = as.factor(cluster) %>% fct_lump_min(4))
+  # Lump regions with fewer grid-cells than cutoff
+  mutate(cluster = as.factor(cluster) %>% fct_lump_min(bioregion_cutoff))
 
 # Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
 ggtree(dendro_tax, size = 0.15) %<+% 
@@ -685,13 +686,11 @@ dendro_phy <- attributes(k_phylogeny$df)$meta$hclust.obj %>% as.phylo() %>% ladd
 clusters_phy <-
   biodiv_ferns_spatial %>%
   as_tibble() %>%
-  select(grids, cluster = phylo_cluster) %>%
-  # Convert cluster to numeric to use max() later
-  mutate(cluster = levels(cluster)[cluster])
+  select(grids, cluster = phylo_cluster)
 
 cluster_nodes_phy_tbl <- map_df(unique(clusters_phy$cluster), ~map_cluster_to_nodes(dendro_phy, clusters_phy, .)) %>%
-  # Lump regions with just a few cells (3 or less)
-  mutate(cluster = as.factor(cluster) %>% fct_lump_min(4))
+  # Lump regions with fewer grid-cells than cutoff
+  mutate(cluster = as.factor(cluster) %>% fct_lump_min(bioregion_cutoff))
 
 # Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
 ggtree(dendro_phy, size = 0.15) %<+% 

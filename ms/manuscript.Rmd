@@ -93,7 +93,8 @@ tar_load(c(
   "signif_cells_deer_danger",
   "template_file",
   "traits_summary",
-  "biodiv_ferns_spatial_lumped"
+  "biodiv_ferns_spatial_lumped",
+  "bioregion_cutoff"
 ))
 ```
 
@@ -1477,7 +1478,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7, hei
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions with three or fewer grid-cells are lumped into the "Other" category.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions each consisting of fewer than `r english2(bioregion_cutoff)` grid-cells are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 
