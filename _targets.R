@@ -174,10 +174,13 @@ tar_plan(
   # Subset to just pteridophytes in Japan
   japan_pterido_tree = ape::keep.tip(treepl_dating_results, rownames(japan_rbcL)),
   
-  # Subset to only ferns
-  japan_fern_tree = subset_tree(
+  # Subset to only ferns, without collapsing any branches
+  japan_fern_tree_uncollapsed = subset_tree(
     phy = japan_pterido_tree, 
     ppgi = ppgi),
+  
+  # Collapse identical tips to zero-length polytomies
+  japan_fern_tree = collapse_identical_tips(japan_fern_tree_uncollapsed, japan_rbcL),
   
   # Also make phylogram (not ultrametric tree) of ferns in Japan
   japan_fern_phylogram = ape::keep.tip(plastome_tree_rooted, japan_fern_tree$tip.label),
@@ -273,12 +276,13 @@ tar_plan(
   # Bioregions analysis ----
   
   # Assess optimal K-value for clustering by taxonomy
-  k_taxonomy = find_k_taxonomy(comm_ferns),
+  k_taxonomy = find_k_taxonomy(comm_ferns, k_max = 10),
   
   # Assess optimal K-value for clustering by phylogeny
   k_phylogeny = find_k_phylogeny(
     comm_df = comm_ferns,
     phy = japan_fern_tree,
+    k_max = 10
   ),
   
   # Cluster by taxonomy
@@ -304,13 +308,13 @@ tar_plan(
   # Analyze phy signal in continuous traits with K and lambda
   phy_sig_results = map_df(
     cont_traits,
-    ~analyze_cont_phylosig(selected_trait = ., traits = fern_traits, phy = japan_fern_tree)
+    ~analyze_cont_phylosig(selected_trait = ., traits = fern_traits, phy = japan_fern_tree_uncollapsed)
   ),
   
   # Analyze phy signal in binary traits with D
   fern_traits_binary = select(fern_traits, -any_of(cont_traits)),
   
-  binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree),
+  binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree_uncollapsed),
   
   # Summarize traits
   traits_summary = make_trait_summary(fern_traits),
