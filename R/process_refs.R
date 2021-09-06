@@ -7,6 +7,25 @@ library(tidyverse)
 library(yaml)
 library(assertr)
 
+#' Extract citations (formatted like `[@key]`) from an Rmd file
+#'
+#' @param rmd_file Character vector; path to Rmd file
+#'
+#' @return Data frame with one column 'key'
+#' 
+extract_citations <- function(rmd_file) {
+  read_lines(rmd_file) %>%
+    stringr::str_split(" |;") %>% 
+    unlist %>% 
+    magrittr::extract(., stringr::str_detect(., "@")) %>% 
+    stringr::str_remove_all("\\[|\\]|\\)|\\(|\\.$|,|\\{|\\}") %>% 
+    magrittr::extract(., stringr::str_detect(., "^@|^-@")) %>% 
+    stringr::str_remove_all("^@|^-@") %>% 
+    unique %>% 
+    sort %>%
+    tibble(key = .)
+}
+
 #' Filter a list of references in YAML format to those occurring in an Rmd file
 #'
 #' @param rmd_file Character vector; Path to Rmd file(s)
@@ -17,20 +36,6 @@ library(assertr)
 #' @return NULL; externally, the filtered YAML will be written to `yaml_out`
 #' 
 filter_refs_yaml <- function(rmd_file, yaml_in = "ms/main_library.yaml", yaml_out = "ms/references.yaml") {
-  
-  # Helper function to extract citations (formatted like `[@key]`) from an Rmd file
-  extract_citations <- function(rmd_file) {
-      read_lines(rmd_file) %>%
-      stringr::str_split(" |;") %>% 
-      unlist %>% 
-      magrittr::extract(., stringr::str_detect(., "@")) %>% 
-      stringr::str_remove_all("\\[|\\]|\\)|\\(|\\.$|,|\\{|\\}") %>% 
-      magrittr::extract(., stringr::str_detect(., "^@|^-@")) %>% 
-      stringr::str_remove_all("^@|^-@") %>% 
-      unique %>% 
-      sort %>%
-      tibble(key = .)
-  }
   
   # Parse RMD file and extract citation keys
   citations <- map_df(rmd_file, extract_citations)
@@ -97,3 +102,15 @@ refs_combined <- list(
 
 # Filter YAML references ----
 filter_refs_yaml(c("ms/manuscript.Rmd", "ms/SI.Rmd"), refs_combined, "ms/references.yaml")
+
+# Write out 'aux' file with citation keys to make collection in Zotero
+# so reference data are easier to work with.
+# The collection can be made with the betterbibtex for Zotero plugin:
+# https://retorque.re/zotero-better-bibtex/citing/aux-scanner/
+# For our purposes, the aux file just consists of lines formatted like
+# \citation{KEY}
+# where KEY is the citation key
+extract_citations("ms/manuscript.Rmd") %>%
+  mutate(latex = glue::glue("\\citation{[key]}", .open = "[", .close = "]")) %>%
+  pull(latex) %>%
+  write_lines("working/ms_keys.aux")
