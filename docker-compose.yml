@@ -1,11 +1,11 @@
 version: "3"
 services:
   analysis:
-    image: joelnitta/japan_ferns_biogeo:latest
+    image: joelnitta/japan_ferns_spatial_phy:latest
     ports:
       - "8787:8787"
     volumes:
-      - "~/:/home/rstudio/japan_ferns_biogeo"
+      - "~/:/home/rstudio/japan_ferns"
     environment:
       DISABLE_AUTH: "true"
-    working_dir: /home/rstudio/japan_ferns_biogeo
+    working_dir: /home/rstudio/japan_ferns
