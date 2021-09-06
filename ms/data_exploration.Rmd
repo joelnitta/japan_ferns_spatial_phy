@@ -30,7 +30,7 @@ Here we perform initial data exploration to determine the appropriate models to 
 
 All code is in R, and workflow managed with the `targets` package (https://github.com/ropensci/targets). 
 
-The code here is included in the repo at https://github.com/joelnitta/japan_ferns_biogeo.
+The code here is included in the repo at https://github.com/joelnitta/japan_ferns_spatial_phy.
 
 Let's get started by loading packages and tidying our namespace.
 

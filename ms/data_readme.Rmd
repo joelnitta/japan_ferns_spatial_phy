@@ -100,7 +100,7 @@ Mishler BD, Iwasaki W, Ebihara A (2021) Spatial phylogenetics of Japanese ferns:
 Patterns, processes, and implications for conservation FIXME: add journal when published
 
 Code for analyzing the data is available on github:
-https://github.com/joelnitta/japan_ferns_biogeo
+https://github.com/joelnitta/japan_ferns_spatial_phy
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
@@ -133,6 +133,11 @@ description of all data files):
   - japan_ferns_tree_uncollapsed.tre: Maximim-likelihood, ultrametric (dated) phylogeny of native, non-hybrid ferns in Japan with clades consisting of identical OTUs not collapsed
   - japan_ferns_tree.tre: Maximim-likelihood phylogeny of native, non-hybrid ferns in Japan
 
+Additional data used in analysis not included in current data package: Data 
+including DNA sequences, taxonomy, and breeding system data for native Japanese 
+ferns included in the Dryad data package of @Ebihara2019b (https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32)
+were used in the analysis.
+
 Checksums are 32-byte MD5 hashes generated with tools::md5sum() in R.
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
@@ -153,10 +158,8 @@ Description of methods used for collection/generation of data:
 A list of native, non-hybrid fern specimens housed at the herbarium of the
 Museum of Science and Nature, Japan was converted to a community data matrix at
 four grain sizes (grid-cells spanning Japan, each 0.1, 0.2, 0.3, or 0.4 degrees
-per side). The original list with latitude and longitude of each specimen is not
-included here to protect rare and endangered species. The 0.2 degree grain size
-was selected for further analysis based on redundancy (ratio of number of
-specimens to number of taxa per cell).
+per side). The 0.2 degree grain size was selected for further analysis based on 
+redundancy (ratio of number of specimens to number of taxa per cell).
 
 All taxon names are based on the Green List (http://www.rdplants.org/gl/;
 English version available at
@@ -175,8 +178,8 @@ The community matrix, traits, and phylogeny were used to analyze spatial
 patterns of phylogenetic diversity and endemism.
 
 Data files were generated from raw data (not included here) using scripts
-available at https://github.com/joelnitta/japan_ferns_biogeo, in particular
-https://github.com/joelnitta/japan_ferns_biogeo/blob/main/R/process_raw_data.R.
+available at https://github.com/joelnitta/japan_ferns_spatial_phy, in particular
+https://github.com/joelnitta/japan_ferns_spatial_phy/blob/main/R/process_raw_data.R.
 
 For full methods, see Nitta JH, Mishler BD, Iwasaki W, Ebihara A (2021) Spatial
 phylogenetics of Japanese ferns: Patterns, processes, and implications for
@@ -499,7 +502,7 @@ japan_map_points <- read_csv(here::here(japan_map_points_file))
 
 `r fs::path_file(japan_map_points_file)`: Latitude and longitude of points used
 to produce a labeled map of Japan. Some points were originally generated using
-script at https://github.com/joelnitta/japan_ferns_biogeo/blob/main/R/geocode.R
+script at https://github.com/joelnitta/japan_ferns_spatial_phy/blob/main/R/geocode.R
 
 Number of variables: `r ncol(japan_map_points)`
 
@@ -576,7 +579,7 @@ by permit); other areas not meeting these criteria or not including plants were
 not considered. Any overlapping areas within the same protection level were
 combined, and any areas overlapping between "medium" and "high" were considered
 only "high". Code used to categorize areas available at
-https://github.com/joelnitta/japan_ferns_biogeo/blob/main/R/process_raw_data.R
+https://github.com/joelnitta/japan_ferns_spatial_phy/blob/main/R/process_raw_data.R
 
 Number of variables: `r ncol(protected_areas)`
 
@@ -851,4 +854,6 @@ CHANGE LOG
 
 Generate this README file.
 
-## References
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+References

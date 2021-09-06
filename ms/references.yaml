@@ -1726,6 +1726,33 @@ references:
   publisher-place: New York
   note: ISBN 978-3-030-56680-7
   URL: http://srb2gv.mat.utfsm.cl/
+- id: Suissa2021
+  accessed:
+  - year: 2021
+    month: 9
+    day: 6
+  author:
+  - family: Suissa
+    given: Jacob S.
+  - family: Sundue
+    given: Michael A.
+  - family: Testo
+    given: Weston L.
+  container-title: Journal of Biogeography
+  container-title-short: J Biogeogr
+  DOI: 10.1111/jbi.14076
+  ISSN: 0305-0270, 1365-2699
+  issue: '6'
+  issued:
+  - year: 2021
+    month: 6
+  language: en
+  page: 1296-1308
+  source: DOI.org (Crossref)
+  title: Mountains, climate and niche heterogeneity explain global patterns of fern
+    diversity
+  type: article-journal
+  volume: '48'
 - id: Takatsuki2009
   accessed:
   - year: 2021
