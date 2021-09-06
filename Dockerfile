@@ -124,8 +124,10 @@ environ\n\
 etexcmds\n\
 etoolbox\n\
 euenc\n\
+fancyvrb\n\
 float\n\
 fontspec\n\
+framed\n\
 geometry\n\
 gettitlestring\n\
 grffile\n\
