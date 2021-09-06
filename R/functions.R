@@ -3763,3 +3763,24 @@ add_selected_pred_to_model <- function(spatial_models) {
     assert(not_na, indep_var_select)
   
 }
+
+#' Convert spatial biodiversity data to centroids for Dryad
+#'
+#' @param biodiv_ferns_spatial Spatial dataframe including biodiveristy metrics and grid-cells
+#'
+#' @return Dataframe with centroids of each grid-cell
+biodiv_ferns_spatial_to_cent <- function(biodiv_ferns_spatial) {
+  biodiv_ferns_spatial %>%
+    # Drop geometry
+    sf::st_drop_geometry() %>%
+    as_tibble() %>%
+    # keep only a subset of variables
+    select(
+      grids, lat, long,
+      abundance, richness,
+      fd_obs_z, pd_obs_z, pe_obs_z, rfd_obs_z, rpd_obs_z,
+      richness_obs_p_upper, fd_obs_p_upper, pd_obs_p_upper, pe_obs_p_upper, 
+      pd_signif, rpd_signif, fd_signif, rfd_signif, pe_signif,
+      taxonomic_cluster, phylo_cluster, endem_type,
+      lat_area, temp, temp_season, precip, precip_season, percent_apo)
+}

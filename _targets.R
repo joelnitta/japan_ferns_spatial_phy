@@ -399,7 +399,8 @@ tar_plan(
   indep_vars = c("percent_apo", "temp", "precip", "precip_season", "lat_area"),
   
   # Make biodiversity metrics dataframe with centroid of each site for models
-  # (also drops single outlier site with extremely high % apomictic taxa and low richness)
+  # Drops single outlier site with extremely high % apomictic taxa and low richness
+  # and one site missing environmental data.
   # - ultrametric tree (full  analysis)
   biodiv_ferns_cent = spatial_to_cent_for_model(
     biodiv_ferns_spatial,
@@ -545,20 +546,12 @@ tar_plan(
   # Write out selected results files for dryad ----
   
   # Choose variables to include in biodiv results, convert to centroids
-  biodiv_ferns_spatial_selected = spatial_to_cent_for_model(
-    biodiv_ferns_spatial,
-    c("grids", "lat", "long",
-       "abundance", "richness",
-       "fd_obs_z", "pd_obs_z", "pe_obs_z", "rfd_obs_z", "rpd_obs_z",
-       "richness_obs_p_upper", "fd_obs_p_upper", "pd_obs_p_upper", "pe_obs_p_upper", 
-       "pd_signif", "rpd_signif", "fd_signif", "rfd_signif", "pe_signif",
-       "taxonomic_cluster", "phylo_cluster", "endem_type",
-       "lat_area", "temp", "temp_season", "precip", "precip_season", "percent_apo")),
+  biodiv_ferns_cent_dryad = biodiv_ferns_spatial_to_cent(biodiv_ferns_spatial),
 
   # japan_ferns_biodiv.csv
   tar_file(
     japan_ferns_biodiv_dryad_file,
-    write_csv_tar(biodiv_ferns_spatial_selected, "results/dryad_files/japan_ferns_biodiv.csv")
+    write_csv_tar(biodiv_ferns_cent_dryad, "results/dryad_files/japan_ferns_biodiv.csv")
   ),
  
   # japan_ferns_comm.csv
@@ -595,6 +588,12 @@ tar_plan(
     write_tree_tar(japan_fern_tree, "results/dryad_files/japan_ferns_tree_dated.tre")
   ),
   
+  # japan_ferns_tree_dated_uncollapsed.tre
+  tar_file(
+    japan_fern_tree_uncollapsed_dryad_file,
+    write_tree_tar(japan_fern_tree_uncollapsed, "results/dryad_files/japan_ferns_tree_dated_uncollapsed.tre")
+  ),
+  
   # Etc ----
   # Lump regions with a small number of grid-cells (fewer than `bioregion_cutoff`)
   biodiv_ferns_spatial_lumped = biodiv_ferns_spatial %>%
@@ -627,22 +626,22 @@ tar_plan(
     output_file = here::here("results/manuscript.pdf"),
     params = list(doc_type = "pdf")
   ),
-  # SI
+  # SI appendix 1
   tar_render(
     si_pdf,
     knit_root_dir = here::here(),
     path = "ms/SI.Rmd",
     output_format = "bookdown::pdf_document2",
-    output_file = here::here("results/supp_info.pdf"),
+    output_file = here::here("results/appendix_s1.pdf"),
     params = list(doc_type = "pdf")
   ),
-  # SI appendix on data exploration for models
+  # SI appendix 2 on data exploration for models
   tar_render(
     si_data_exploration,
     knit_root_dir = here::here(),
     path = "ms/data_exploration.Rmd",
-    output_format = "rmarkdown::html_document",
-    output_file = here::here("results/data_exploration.html"),
+    output_format = "bookdown::pdf_document2",
+    output_file = here::here("results/appendix_s2.pdf"),
     params = list(knit_type = "targets")
   ),
   tar_render(

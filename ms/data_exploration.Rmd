@@ -1,57 +1,88 @@
 ---
-title: "Data exploration"
-output: html_document
+title: "Appendix S2: Data Exploration"
+mainfont: Roboto-Regular.ttf
+fontsize: 11pt
+mainfontoptions: 
+  - BoldFont=Roboto-Bold.ttf
+  - ItalicFont=Roboto-Italic.ttf
+  - BoldItalicFont=Roboto-BoldItalic.ttf
+output: 
+  bookdown::pdf_document2:
+    citation_package: default
+    toc: no
+    number_sections: no
+    fig_caption: yes
+    keep_tex: no
+    latex_engine: xelatex
+    pandoc_args: [ "--csl", "apa-6th-edition.csl"]
 editor_options: 
   chunk_output_type: console
-params:
-  knit_type: manual
+header-includes: 
+  - \usepackage{float}
+  - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Here we perform initial data exploration to determine the appropriate models to fit to the data.
+Here we perform initial data exploration to determine the appropriate models to fit to the data. 
 
-```{r load-packages, include = params$knit_type == "manual"}
+All code is in R, and workflow managed with the `targets` package (https://github.com/ropensci/targets). 
+
+The code here is included in the repo at https://github.com/joelnitta/japan_ferns_biogeo.
+
+Let's get started by loading packages and tidying our namespace.
+
+```{r load-packages, message = FALSE}
 # Load packages
 library(tidyverse)
 library(targets)
 library(outliers)
 library(ggforce)
 library(assertr)
+library(conflicted)
 
-# Load custom functions
-source(here::here("R/functions.R"))
+# Resolve possible namespace conflicts
+conflict_prefer("map", "purrr")
+conflict_prefer("select", "dplyr")
+conflict_prefer("filter", "dplyr")
+conflict_prefer("gather", "tidyr")
+conflict_prefer("extract", "magrittr")
 ```
 
-The dataset includes biodiversity metrics and environmental data.
+The dataset includes biodiversity metrics and environmental data measured on native, non-hybrid ferns of Japan.
 
-All biodiversity metrics were calculated during the `targets` workflow (`_targets.R`).
+All biodiversity metrics were calculated during the `targets` workflow (`_targets.R`), and are contained in the `biodiv_ferns_cent_dryad` object in the `targets` cache. 
 
-The `cent` part of the name indicates that they include geographic locations as centroids of each grid cell.
+The next step uses `tar_load()` to load the dataset from the targets cache. Alternatively, this can be loaded from the dryad data file as shown in the commented-out code below.
 
 ```{r load-data}
 # Load the data from the targets workflow
-tar_load(biodiv_ferns_spatial)
-tar_load(resp_vars_env)
-tar_load(indep_vars)
+tar_load(biodiv_ferns_cent_dryad)
 
-# Make biodiversity metrics dataframe with centroid of each site for models
-  biodiv_ferns_cent <- 
-    biodiv_ferns_spatial %>%
-    # drop geometry (only need centroids for modeling)
-    st_set_geometry(NULL) %>%
-    # keep only variables needed for model and only rows with zero missing data
-    select(all_of(c("grids", "lat", "long", resp_vars_env, indep_vars))) %>%
-    ggplot2::remove_missing() %>%
-    as_tibble()
+# Alternatively, unzip `results.zip` in the Dryad data
+# (FIXME: add DOI when available)
+# and read in the data from there
+# biodiv_ferns_cent_dryad <- read_csv("japan_ferns_biodiv.csv")
+```
+
+This dataframe actually has more variables than are needed for modeling, so we will subset it to only the relevant variables.
+
+```{r subset-vars}
+biodiv_ferns_cent_raw <- 
+  biodiv_ferns_cent_dryad %>%
+  select(
+    grids, lat, long, # grid-cell ID, latitude, longitude
+    richness, pd_obs_z, fd_obs_z, rpd_obs_z, rfd_obs_z, # response vars
+    percent_apo, temp, precip, precip_season, lat_area  # independent vars
+  )
 ```
 
 ### Structure of the data
 
 ```{r struc-full-data}
-biodiv_ferns_cent
+biodiv_ferns_cent_raw
 ```
 
 The columns are as follows:
@@ -68,25 +99,50 @@ The columns are as follows:
 * `temp`: mean annual temperature (10 x °C)
 * `precip`: total annual precipitation (mm)
 * `precip_season`: seasonality in precipitation
-* `area`: rolling mean of area in 0.2 degree latitudinal bands
+* `lat_area`: rolling mean of area in 0.2 degree latitudinal bands
 
 ### Check for missing data
 
+Next, check for missing data. If any rows are missing data, exclude them.
+
 ```{r check-missing}
-# These will return TRUE if all data are non-missing, 
-# or an error if any data are missing (NA)
-biodiv_ferns_cent %>%
-  assert(not_na, everything(), success_fun = success_logical)
+# Run a logical check to see if any rows have missing data 
+# Returns TRUE if there is no missing data, FALSE if there is missing data
+biodiv_ferns_cent_raw %>%
+  assert(
+    not_na, everything(), 
+    error_fun = error_logical, 
+    success_fun = success_logical)
+
+# At least one row has missing data. 
+# Check which.
+error_rows <-
+biodiv_ferns_cent_raw %>%
+  assert(not_na, everything(), error_fun = error_df_return) %>%
+  pull(index) %>%
+  unique()
+
+biodiv_ferns_cent_raw %>% slice(error_rows)
+
+# The missing data was due to one grid-cell that lacks environmental data.
+# Assume this must have been missing from WorldClim dataset.
+# Remove the row with missing data, then continue
+biodiv_ferns_cent_no_missing <-
+  biodiv_ferns_cent_raw %>%
+  slice(-error_rows)
+
+# Make sure the resulting dataframe has no missing data
+assert(biodiv_ferns_cent_no_missing, 
+       not_na, everything(), 
+       success_fun = success_logical)
 ```
- 
-No missing data.
- 
+
 ### Check for outliers
 
 We will first check for outliers in the data by visualizing box plots. Dots at the extremes may be outliers.
 
 ```{r box-plots-full}
-biodiv_ferns_cent %>%
+biodiv_ferns_cent_no_missing %>%
   select(-lat, -long) %>%
   pivot_longer(-grids, names_to = "variable") %>%
   ggplot(aes(x = variable, y = value)) +
@@ -98,12 +154,12 @@ biodiv_ferns_cent %>%
   )
 ```
 
-There are a few points beyond the whiskers that may be outliers.
+There are a few points beyond the whiskers that may be outliers. In particular, there is one value of `percent_apo` > 60% that seems quite outside the normal range.
 
-Next, check for outliers using Grubb's test. Significant p-values indicate that the most extreme value is an outlier.
+Next, check for outliers using Grubb's test. Significant *p*-values indicate that the most extreme value is an outlier.
 
 ```{r grubbs-env}
-biodiv_ferns_cent %>%
+biodiv_ferns_cent_no_missing %>%
   select(-lat, -long) %>%
   pivot_longer(-grids, names_to = "variable") %>%
   group_by(variable) %>%
@@ -115,20 +171,48 @@ biodiv_ferns_cent %>%
   mutate(signif = p_value < 0.05)
 ```
 
-So the one percent apomictic > 60% appears to be an outlier. Perhaps this has a very small number of species, most of which happen to be apogamous?
+Grubb's test confirms that the percent apomictic value > 60% is an outlier. It also indicates that the highest values of the variables `fd_obs_z`, `pd_obs_z`, `rfd_obs_z`, and `rpd_obs_z` may be outliers. 
 
-```{r check-apo-outlier}
-biodiv_ferns_cent %>%
+One reason for artificially extreme values could be undersampling of species. Let's check richness of these possible outlier grid-cells.
+
+```{r check-richness-apo}
+biodiv_ferns_cent_no_missing %>%
   slice_max(1, order_by = percent_apo) %>%
-  left_join(select(biodiv_ferns_cent, grids, richness)) %>%
   select(grids:long, percent_apo, richness)
 ```
 
-Looks like that is the case---just three species in this grid cell! This data point should be excluded. Let's do that and check for outliers again.
+There are just three species in the grid-cell with > 60% apomictic taxa. This data point should be excluded. 
+
+What about the other possible outliers?
+
+```{r check-richness-other}
+biodiv_ferns_cent_no_missing %>% 
+  slice_max(n = 2, order_by = fd_obs_z) %>%
+  select(grids:long, fd_obs_z, richness)
+
+biodiv_ferns_cent_no_missing %>% 
+  slice_max(n = 2, order_by = pd_obs_z) %>%
+  select(grids:long, pd_obs_z, richness)
+
+biodiv_ferns_cent_no_missing %>% 
+  slice_max(n = 2, order_by = rfd_obs_z) %>%
+  select(grids:long, rfd_obs_z, richness)
+
+biodiv_ferns_cent_no_missing %>% 
+  slice_max(n = 2, order_by = rpd_obs_z) %>%
+  select(grids:long, rpd_obs_z, richness)
+```
+
+They all come from the same two grid-cells, but don't have an extremely low number of species. 
+
+So we will conservatively only remove the grid-cell with unusually high % apomictic taxa, then run Grubb's test again.
 
 ```{r remove-apo-outlier-check-grubbs}
-biodiv_ferns_cent %>% 
-  filter(percent_apo != max(percent_apo)) %>%
+biodiv_ferns_cent_no_outliers <-
+  biodiv_ferns_cent_no_missing %>% 
+  filter(percent_apo != max(percent_apo))
+
+biodiv_ferns_cent_no_outliers %>%
   pull(percent_apo) %>%
   grubbs_tidy()
 ```
@@ -137,12 +221,12 @@ OK, no more outliers in `percent_apo`.
 
 ### Normality
 
-Check for normality with histograms and QQ-plots.
+Check for normality with histograms and QQ-plots after removing missing data and outliers.
 
-Inspect histograms.
+First inspect histograms:
 
 ```{r hist-env}
-biodiv_ferns_cent %>%
+biodiv_ferns_cent_no_outliers %>%
   select(-lat, -long) %>%
   pivot_longer(-grids, names_to = "variable") %>%
   ggplot(aes(x = value)) +
@@ -150,17 +234,16 @@ biodiv_ferns_cent %>%
   facet_wrap(vars(variable), scales = "free")
 ```
 
-Inspect qq-plots.
+Next inspect qq-plots:
 
 ```{r qqplot-env}
-biodiv_ferns_cent %>%
+biodiv_ferns_cent_no_outliers %>%
   select(-lat, -long) %>%
   pivot_longer(-grids, names_to = "variable") %>%
   ggplot(aes(sample = value)) +
   stat_qq() +
   stat_qq_line() +
-  facet_wrap(~variable, scales = "free") +
-  labs(title = "Full dataset")
+  facet_wrap(~variable, scales = "free")
 ```
 
 The response variables `fd_obs_z`, `pd_obs_z`, `rfd_obs_z`, `rpd_obs_z` all look decent. `richness` is skewed, but it is count data and we aren't using a Gaussian model for that anyways (poisson or negative binomial), so that's OK.
@@ -170,7 +253,7 @@ The response variables `fd_obs_z`, `pd_obs_z`, `rfd_obs_z`, `rpd_obs_z` all look
 Zero-inflated data can be a problem for linear models.
 
 ```{r check-for-zeros}
-biodiv_ferns_cent %>%
+biodiv_ferns_cent_no_outliers %>%
   mutate(rich_zero = richness == 0) %>%
   arrange(richness) %>%
   summarize(
@@ -182,10 +265,10 @@ No zeros in our count data (richness).
 
 ### Plot raw data
 
-Here we plot response variables (row labels) vs. indep variables (column labels) for each dataset, and add a trend line.
+Here we plot response variables (row labels) vs. indep variables (column labels) and add a trend line for each to get an idea of the possible model fits.
 
 ```{r plot-raw-data, fig.height = 8}
-ggplot(biodiv_ferns_cent, aes(x = .panel_x, y = .panel_y)) + 
+ggplot(biodiv_ferns_cent_no_outliers, aes(x = .panel_x, y = .panel_y)) + 
   geom_point(alpha = 0.5, shape = 16, size = 0.5) + 
   geom_smooth() +
   facet_matrix(
@@ -193,21 +276,7 @@ ggplot(biodiv_ferns_cent, aes(x = .panel_x, y = .panel_y)) +
     rows = vars(richness, pd_obs_z, fd_obs_z, rpd_obs_z, rfd_obs_z))
 ```
 
-`richness` vs. `temp` definitely shows a hump-shaped trend line, and the other response variables vs. `temp` also show one if not quite as strongly. The other relationships appear to be linear or uncorrelated.
-
-```{r plot-raw-data-repro}
-# Remove the outlier first
-biodiv_ferns_cent %>% 
-  filter(percent_apo != max(percent_apo)) %>%
-ggplot(aes(x = .panel_x, y = .panel_y)) + 
-  geom_point(alpha = 0.5, shape = 16, size = 0.5) + 
-  geom_smooth() +
-  facet_matrix(
-    cols = vars(percent_apo, temp, precip, precip_season),
-    rows = vars(pd_obs_z, rpd_obs_z))
-```
-
-As one would expect from the last plot, `temp` shows a (negative) hump shape. However, there aren't many points on the right.. `percent_apo` seems more linear, especially for `rpd_obs_z`, but it's subtle. Anyways, we will probably keep the quadratic term for temperature but use a linear model for `percent_apo`.
+`richness` vs. `temp` definitely shows a hump-shaped trend line, and the other response variables vs. `temp` also show one if not quite as strongly. The other relationships appear to be linear or uncorrelated (the bend in the line for `percent_apo` vs. `richness` seems to be due to a relatively few number of points with > 30% apomictic taxa, but otherwise it looks linear).
 
 ### Check for overdispersion in richness
 
@@ -217,10 +286,17 @@ Since richness is count data (only takes positive values), we will use either a 
 # Create general linear model with poisson distribution
 richness_poisson_mod <- glm(
   richness ~ temp + I(temp^2) + precip + precip_season, 
-  data = biodiv_ferns_cent, family = poisson)
+  data = biodiv_ferns_cent_no_outliers, family = poisson)
 
-# Check ratio of residual variance to df (should be near 1 to meet poisson assumptions)
+# Check ratio of residual variance to df 
+# (should be near 1 to meet poisson assumptions)
 richness_poisson_mod$deviance / richness_poisson_mod$df.residual
 ```
 
-That's very overdispersed. So we won't use poisson, but negative binomial instead.
+That's very overdispersed. So we won't use poisson for `richness`, but negative binomial instead.
+
+### Session information
+
+```{r sesh}
+sessionInfo()
+```
