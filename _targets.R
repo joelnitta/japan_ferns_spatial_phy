@@ -308,13 +308,13 @@ tar_plan(
   # Analyze phy signal in continuous traits with K and lambda
   phy_sig_results = map_df(
     cont_traits,
-    ~analyze_cont_phylosig(selected_trait = ., traits = fern_traits, phy = japan_fern_tree)
+    ~analyze_cont_phylosig(selected_trait = ., traits = fern_traits, phy = japan_fern_tree_uncollapsed)
   ),
   
   # Analyze phy signal in binary traits with D
   fern_traits_binary = select(fern_traits, -any_of(cont_traits)),
   
-  binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree),
+  binary_sig_results = analyze_binary_phylosig(fern_traits_binary, japan_fern_tree_uncollapsed),
   
   # Summarize traits
   traits_summary = make_trait_summary(fern_traits),
