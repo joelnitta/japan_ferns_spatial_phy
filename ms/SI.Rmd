@@ -611,11 +611,14 @@ a <- k_taxonomy$df %>%
   geom_point(aes(color = optimal_auto), size = 2.5) +
   geom_text(aes(label = label), vjust = 0, nudge_y = 0.02, size = 4) +
   scale_color_manual(values = c("TRUE" = "#E31A1C", "FALSE" = "black")) +
+  scale_y_continuous(expand = expansion(add = c(0.025,0.05))) +
+  scale_x_continuous(breaks = c(2,4,6,8,10)) +
   labs(
     y = "Explained variance",
     x = "Number of clusters") +
   theme(
-    legend.position = "none"
+    legend.position = "none",
+    panel.grid.minor = element_blank()
   )
 
 k_phylogeny_select <- 8
@@ -631,11 +634,14 @@ b <- k_phylogeny$df %>%
   geom_point(aes(color = optimal_auto), size = 2.5) +
   geom_text(aes(label = label), vjust = 0, nudge_y = 0.02, size = 4) +
   scale_color_manual(values = c("TRUE" = "#E31A1C", "FALSE" = "black")) +
+  scale_y_continuous(expand = expansion(add = c(0.025,0.05))) +
+  scale_x_continuous(breaks = c(2,4,6,8,10)) +
   labs(
     y = "Explained variance",
     x = "Number of clusters") +
   theme(
-    legend.position = "none"
+    legend.position = "none",
+    panel.grid.minor = element_blank()
   )
 
 a + b +
@@ -646,7 +652,7 @@ a + b +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("k-plot")`**. Selection of *k* for bioregions. (a), taxonomic bioregions. (b), phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal; see Methods).
+**`r s_figure("k-plot")`**. Selection of *k* for bioregions. (a), taxonomic bioregions. (b), phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal).
 
 \clearpage
 
@@ -859,17 +865,28 @@ wrap_plots(modelfit_plot_list) +
 a <-
   ggplot(biodiv_ferns_spatial_lumped, aes(x = precip, y = temp, color = taxonomic_cluster)) +
   geom_point(size = 1, alpha = 0.7) +
-  scale_color_manual(values = bioregion_cols) +
+  scale_color_manual(
+    values = bioregion_cols,
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left")
+  ) +
   scale_y_continuous(labels = function(x) x/10) +
-  labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Cluster", subtitle = "Taxonomic bioregions") +
+  labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Bioregion", subtitle = "Taxonomic bioregions") +
   theme(legend.position = "bottom")
 
 b <-
   ggplot(biodiv_ferns_spatial_lumped, aes(x = precip, y = temp, color = phylo_cluster)) +
   geom_point(size = 1, alpha = 0.7) +
-  scale_color_manual(values = bioregion_cols) +
+  scale_color_manual(
+    values = bioregion_cols,
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left")) +
   scale_y_continuous(labels = function(x) x/10) +
-  labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Cluster", subtitle = "Phylogenetic bioregions") +
+  labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Bioregion", subtitle = "Phylogenetic bioregions") +
   theme(legend.position = "bottom")
 
 a + b + plot_annotation(tag_levels = "a",
@@ -878,7 +895,7 @@ a + b + plot_annotation(tag_levels = "a",
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points. Bioregions with three or fewer grid-cells are lumped into the "Other" category.
+**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (a) taxonomic or (b) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points. Bioregions not consisting of > 1 grid-cell each are lumped into the "Other" category.
 
 \clearpage
 
