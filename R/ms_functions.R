@@ -80,7 +80,7 @@ eg <- "*eg*"
 #'
 #' @return Name of R package formatted according to journal requirements
 #' 
-pack <- function(x) {glue::glue("'{x}'")}
+pack <- function(x) {glue::glue("'{x}' v.{packageVersion(x)}")}
 
 #' Format other software names
 #' 

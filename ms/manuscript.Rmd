@@ -222,7 +222,7 @@ We ask the following questions in our study system, the ferns of Japan: 1. How i
 
 ## Materials and Methods
 
-All computational analyses were carried out in R v`r getRversion()` [@RCoreTeam2020] unless otherwise stated. The `r pack("targets")` R package was used to control analysis workflow [@Landau2021].
+All computational analyses were carried out in R v`r getRversion()` [@RCoreTeam2020] unless otherwise stated. The R package `r pack("targets")` was used to control analysis workflow [@Landau2021].
 
 ### Study Site
 
@@ -392,7 +392,7 @@ We measured functional diversity (FD) following the method of @Petchey2002.
 We first calculated functional distances using Gower's method [@Gower1971] on the trait data with the `r func("gowdis")` function in the R package `r pack("FD")` [@Laliberte2010]. 
 We weighted continuous and qualitative traits equally, weighted each binary component trait of each qualitative trait equally, and log-transformed and scaled continuous traits prior to calculating distances.
 We also tested alternative weighting schemes, but these produced very similar results (data not shown).
-We then used the distances to build a trait dendrogram using the `r func("hclust")` function in the `r pack("stats")` R package [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. 
+We then used the distances to build a trait dendrogram using the `r func("hclust")` function in the R package `r pack("stats")` [@RCoreTeam2020], and used the dendogram in place of a phylogenetic tree to calculate PD and RPD as described above. 
 These functional analogs of PD and RPD are hereafter referred to as FD (functional diversity) and RFD (relative functional diversity).
 
 We measured phylogenetic endemism (PE) as the sum of all branches at a site inversely weighted by their range size [@Rosauer2009].
@@ -408,9 +408,7 @@ $SES = \frac{obs - mean(null)}{sd(null)}$
 
 We tested whether centers of endemism have an over-representation of old (paleoendemic) or new (neoendemic) lineages using categorical analysis of neo- and paleo-endemism (CANAPE), which involves measuring PE with an alternate tree where all branch lengths are equal, then comparing the ratio between raw PE and alternative PE (RPE) [@Mishler2014]. 
 Low RPE indicates short range-restricted branches (neoendemism) and high RPE indicates long range-restricted branches (paleoendemism). 
-Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. 
-
-All measures of biodiversity and CANAPE were carried out using the `r pack("canaper")` package [@Nitta2021a], which calculates raw biodiversity metrics using functions in the `r pack("phyloregion")` package [@Daru2020a] and randomizations using the `r pack("picante")` package [@Kembel2010].
+Since all of these measures are affected by species richness, categorization of endemism is done using the rank of each observed variable relative to those calculated for the null distribution. All measures of biodiversity and CANAPE were carried out using the R package `r pack("canaper")` [@Nitta2021a].
 
 It is possible that endemism may be affected by species that are actually wide-ranging, but only have a small range in Japan (a "border effect"). 
 This is especially expected for southern, sub-tropical islands, which harbor many tropical species with small ranges in Japan but wider ranges outside of the country. 
@@ -418,7 +416,7 @@ To partially account for this, we also calculated all endemism-related metrics u
 
 ### Spatial models
 
-We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the `r pack("spdep")` package [@Bivand2013]. 
+We first tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the R package `r pack("spdep")` [@Bivand2013]. 
 In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05) (`r s_table("moran")`). 
 Therefore, we used spatially explicit methods for modeling.
 
@@ -455,6 +453,7 @@ To prevent double-counting, all protected areas within a protection status were 
 
 We downloaded distribution maps (SHP and TIF) of native Japanese deer (*Cervus nippon*), an herbivore that has caused extensive damage to native plant communities due to rapid population growth since the 1970s [@Takatsuki2009] and poses a high risk to ferns, from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html).
 To assess change in threat due to herbivory by deer over time, we used three maps available in this dataset: range of Japanese deer surveyed in 1978, range surveyed in 2003, and estimated range inferred from a model including snow cover and forest type based on the 2003 survey data [@kankyosho2021].
+We limited estimated range to areas considered "highly likely" to be occupied by deer [movement cost < 0.10; @kankyosho2021].
 
 We cropped grid-cells to only include land area, then calculated the percent of protected area of each status type or percent of area occupied by deer for each survey period within grid-cells with high levels of biodiversity as measured with PD, FD, PE, or taxonomic richness. 
 These values were compared with the overall percent of protected area or area occupied by deer across Japan (baseline rate).

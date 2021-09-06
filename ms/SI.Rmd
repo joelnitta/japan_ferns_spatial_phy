@@ -16,8 +16,8 @@ output:
     latex_engine: xelatex
     pandoc_args: [ "--csl", "apa-6th-edition.csl"]
 header-includes: 
-  \usepackage{float}
-  \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
+  - \usepackage{float}
+  - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
 editor_options: 
   chunk_output_type: console
 params:
