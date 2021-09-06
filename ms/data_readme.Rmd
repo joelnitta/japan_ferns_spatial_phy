@@ -207,7 +207,7 @@ Environment
 The data include range maps based on three types of data: range of Japanese deer
 surveyed in 1978, range surveyed in 2003, and estimated range inferred from a
 model including snow cover and forest type based on the 2003 survey data. Only
-estimated range with <0.05 movement cost was included.
+estimated range with < 0.10 movement cost was included.
 
 Number of variables: `r ncol(deer_range)`
 

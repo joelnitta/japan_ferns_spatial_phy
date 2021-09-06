@@ -960,9 +960,10 @@ load_deer_range <- function (zip_file) {
     # input is raster, so convert to sf
     stars::read_stars() %>% 
     st_as_sf() %>%
-    # filter to only those estimated with 5% confidence cutoff
+    # filter to only those estimated < 0.10 movement cost
+    # ('highly likely' areas as per https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html)
     rename(pred_expand = `分布拡大予測.tif`) %>% 
-    filter(pred_expand < 0.05) %>%
+    filter(pred_expand < 0.10) %>%
     # simplify raster cells to one shape
     rmapshaper::ms_dissolve() %>%
     # fix geometry
