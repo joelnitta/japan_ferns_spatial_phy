@@ -1,5 +1,19 @@
 # Manuscript rendering functions and variables
 
+# Themes ----
+
+map_theme <- function() {
+  theme(
+    panel.grid.major = element_line(color = "grey60", size = 0.1),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "transparent"),
+    axis.ticks = element_blank(),
+    axis.text = element_text(color = "grey60"),
+    axis.title = element_blank(),
+    legend.position = "bottom"
+  )
+}
+
 # Color palettes ----
 
 # - Coastline width across all plots
@@ -54,7 +68,7 @@ protection_lines <- c(
   "Total" = "solid"
 )
 
-# - Deer range colors (Okabe-Ito CVD safe)
+# - Deer range (Okabe-Ito CVD safe)
 deer_cols <- c( 
   "1978" = "#0072B2", # dark blue
   "2003" = "#F0E442", # yellow
