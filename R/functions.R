@@ -2179,7 +2179,7 @@ combine_bioregions <- function(regions_taxonomy, regions_phylogeny) {
 #'
 #' @return Dataframe; bioregions relabeled in descending order by mean latitude
 #' 
-relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
+relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 2) {
   
   # Summarize bioregions data: cells per cluster, mean latitude of each bioregion
   bioregions_summary_all <-
@@ -2198,7 +2198,7 @@ relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
     bioregions_summary_all %>%
     # New labels are in descending order by latitude starting with major regions
     # (n grid-cells above cutoff)
-    mutate(major_region = n > cutoff) %>%
+    mutate(major_region = n >= cutoff) %>%
     arrange(cluster_type, desc(major_region), desc(mean_lat)) %>%
     group_by(cluster_type) %>%
     mutate(new_cluster = sort(cluster)) %>%
@@ -2231,6 +2231,8 @@ relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
     ),
     msg = "Cluster mapping failed for phylogenetic clusters"
   )
+
+  res
   
 }
 
