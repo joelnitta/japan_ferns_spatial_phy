@@ -395,12 +395,13 @@ tar_plan(
   indep_vars = c("percent_apo", "temp", "precip", "precip_season", "lat_area"),
   
   # Make biodiversity metrics dataframe with centroid of each site for models
+  # (also drops single outlier site with extremely high % apomictic taxa and low richness)
   # - ultrametric tree (full  analysis)
-  biodiv_ferns_cent = spatial_to_cent(
+  biodiv_ferns_cent = spatial_to_cent_for_model(
     biodiv_ferns_spatial,
     c("grids", "lat", "long", resp_vars_env, indep_vars)),
   # - non ultrametric tree (% apo only)
-  biodiv_ferns_not_ult = spatial_to_cent(
+  biodiv_ferns_not_ult = spatial_to_cent_for_model(
     biodiv_ferns_spatial_not_ult,
     c("grids", "lat", "long", resp_vars_repro, indep_vars)),
   
@@ -540,7 +541,7 @@ tar_plan(
   # Write out selected results files for dryad ----
   
   # Choose variables to include in biodiv results, convert to centroids
-  biodiv_ferns_spatial_selected = spatial_to_cent(
+  biodiv_ferns_spatial_selected = spatial_to_cent_for_model(
     biodiv_ferns_spatial,
     c("grids", "lat", "long",
        "abundance", "richness",

@@ -3002,7 +3002,7 @@ run_treepl <- function (
 #' @param vars_keep Character vector of column names to keep
 #'
 #' @return Tibble
-spatial_to_cent <- function(data, vars_keep) {
+spatial_to_cent_for_model <- function(data, vars_keep) {
   data %>%
     # drop geometry (only need centroids for modeling)
     st_set_geometry(NULL) %>%
@@ -3031,7 +3031,7 @@ sf_add_centroids <- function(sf_data) {
     # Convert centroids to character (e.g., "c(140.9, 45.5)")
     mutate(geom_char = as.character(geom)) %>% 
     # Drop geometry column
-    sf::st_set_geometry(NULL) %>%
+    sf::st_drop_geometry() %>%
     as_tibble() %>%
     # Parse centroids to numeric
     separate(geom_char, c("long", "lat"), sep = ", ") %>%
