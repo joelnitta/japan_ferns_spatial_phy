@@ -298,6 +298,12 @@ tar_plan(
     k = k_phylogeny[["optimal"]][["k"]]
   ),
   
+  # Combine results
+  # - original (default) IDs for bioregions
+  bioregions_raw = combine_bioregions(regions_taxonomy, regions_phylogeny),
+  # - bioregions relabeled in order of mean latitude
+  bioregions = relabel_bioregions_by_lat(bioregions_raw, shape_ferns),
+  
   # Traits analysis ----
   
   # Analyze phylogenetic signal
@@ -333,11 +339,11 @@ tar_plan(
   
   # - All ferns
   biodiv_ferns_spatial =
+    # Combine phylodiversity and bioregions
     shape_ferns %>%
     left_join(format_cpr_res(rand_test_phy_ferns), by = "grids") %>%
     left_join(format_cpr_res(rand_test_traits_ferns), by = "grids") %>%
-    left_join(regions_taxonomy %>% rename(taxonomic_cluster = cluster), by = "grids") %>%
-    left_join(regions_phylogeny %>% rename(phylo_cluster = cluster), by = "grids") %>%
+    left_join(bioregions, by = "grids") %>%
     # Add environmental data
     sf_add_centroids %>%
     add_roll_area(lat_area_ja) %>%
@@ -353,9 +359,6 @@ tar_plan(
     classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
     # Add richness percent rank
     mutate(richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
-    # Format factors
-    mutate(taxonomic_cluster = as.factor(taxonomic_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
-    mutate(phylo_cluster = as.factor(phylo_cluster) %>% fct_infreq %>% as.numeric %>% as.factor) %>%
     # Add redundancy
     mutate(redundancy = 1 - (richness/abundance)),
   
