@@ -17,6 +17,8 @@ output:
     pandoc_args: [ "--csl", "apa-6th-edition.csl"]
 header-includes: 
   - \usepackage{float}
+  - \usepackage{booktabs}
+  - \usepackage{colortbl}
   - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
 editor_options: 
   chunk_output_type: console
