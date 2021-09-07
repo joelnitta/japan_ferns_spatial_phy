@@ -46,6 +46,7 @@ library(ftExtra)
 library(scales)
 library(patchwork)
 library(RColorBrewer)
+library(ggspatial) # for scalebars on maps
 
 # Set knitr options
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
@@ -155,29 +156,29 @@ biodiv_ferns_spatial_lumped %>%
   split(.$type)
 ```
 
-**Aim** To characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
+**Aim:** To characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
 
-**Location** Japan
+**Location:** Japan
 
-**Taxon** Ferns
+**Taxon:** Ferns
 
-**Methods** We used data from >`r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
+**Methods:** We used data from >`r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
 We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. 
 We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. 
 We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. 
 We compared the overlap of significantly diverse grid-cells with existing conservation zones and range maps of native Japanese deer to assess conservation status and threats.
 
-**Results** Three major patterns in the spatial distribution of biodiversity were observed: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
+**Results:** Three major patterns in the spatial distribution of biodiversity were observed: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
 Grid-cells were grouped in to `r maj_cluster_count$phylo_cluster$n %>% english2` (phylogenetic) or `r maj_cluster_count$taxonomic_cluster$n %>% english2` (taxonomic) major bioregions. 
 Temperature and apomixis were identified as drivers of patterns of taxonomic and phylogenetic diversity.
 Conservation status (% protected area) was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory by deer varied by biodiversity metric, and was particularly severe for taxonomic richness.
 
-**Main conclusions** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
+**Main conclusions:** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
 The different distributions of each diversity type reflect the major bioregions. 
 Future conservation efforts should recognize that threats can vary by biodiversity metric and consider multiple multiple metrics when establishing conservation priorities.
 
 <!-- may include title words -->
-**Key words:** apomixis, biodiversity, biogeography, CANAPE, conservation, ferns, Japan, phylogenetic diversity. 
+**Keywords:** apomixis, biodiversity, biogeography, CANAPE, conservation, ferns, Japan, phylogenetic diversity. 
 
 \newpage
 
@@ -385,6 +386,7 @@ We tested for phylogenetic signal in continuous traits using two alternative met
 Both lambda and *K* = 1 under BM; relatively lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). 
 We measured *K* and lambda using the `r func("phylosig")` function in the R package `r pack("phytools")` [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. 
 We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the `r func("phylo.d")` function in the R package `r pack("caper")` [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM.
+Values of *D* range from 0 under Brownian motion to 1 under random evolution, but can exceed this range in cases of extreme clumping or overdispersion, respectively.
 These methods for phylogenetic signal cannot use a tree with zero-length polytomies, so we used the original dated tree from treePL.
 
 ### Analysis of biodiversity
@@ -626,16 +628,16 @@ assert_that(phy_sig_results %>% pull(lambda) %>% min > 0.95)
 # Verify that max K < 0.6
 assert_that(phy_sig_results %>% pull(kval) %>% max < 0.10)
 
-# Sum the number of traits with D < 0
-n_negative_d <-
+# Sum the number of traits with D <= 0.5 and not random
+n_d_signif <-
   binary_sig_results %>%
-  mutate(negative_d = ifelse(D <= 0, TRUE, FALSE)) %>%
-  pull(negative_d) %>%
-  sum
+  filter(prob_random < 0.05, D <= 0.5) %>%
+  pull(trait) %>%
+  n_distinct()
 ```
 
 All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.1, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). 
-`r n_negative_d` out of `r nrow(binary_sig_results)` of continuous traits (coded as binary) showed as much or more phylogenetic signal as expected under BM (*D* =< 0); others had *D* > 0 (`r s_table("phy-sig-binary")`).
+`r n_d_signif` out of `r nrow(binary_sig_results)` of qualitative traits (coded as binary) showed evidence of phylogenetic signal (*D* ≤ 0.5, significantly different from random) (`r s_table("phy-sig-binary")`).
 
 ### Observed diversity
 
@@ -1076,6 +1078,7 @@ japan_map_plot <- ggplot(japan) +
     data = filter(japan_points, query == "Tokyo"),
     aes(x = lon, y = lat)
   ) +
+  annotation_scale(location = "br", width_hint = 0.2) +
   map_theme() +
   theme(legend.position = "none")
 ```
@@ -1095,11 +1098,6 @@ japan_map_plot
 `r pagebreak_pdf()`
 
 ```{r raw-diversity-make}
-# Use thinner coast lines for this plot
-# it's smaller, so the grey lines appear relatively thicker
-coast_lwd_old <- coast_lwd
-coast_lwd <- 0.05
-
 # Richness
 a <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
@@ -1135,14 +1133,12 @@ c <- ggplot() +
   scale_fill_scico(palette = "lajolla") + 
   scale_x_continuous(breaks = c(125, 135, 145)) +
   scale_y_continuous(breaks = c(25, 35, 45)) +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm")) +
   map_theme() +
   theme(axis.text.y = element_blank())
 
 raw_diversity_plot <- a + b + c +
   plot_layout(nrow = 1)
-
-# Reset coastline width
-coast_lwd <- coast_lwd_old
 ```
 
 ```{r raw-diversity-save, eval = params$doc_type == "doc"}
@@ -1212,6 +1208,7 @@ d <- ggplot() +
   labs(fill = "") +
   scale_fill_manual(values = signif_cols) +
   scale_x_continuous(guide = guide_axis(check.overlap = TRUE)) +
+  annotation_scale(location = "br", width_hint = 0.2) +
   map_theme() +
   theme(
     axis.text.y = element_blank(),
@@ -1436,6 +1433,7 @@ endemism_plot <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = endem_type), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_manual(values = canape_cols) +
+  annotation_scale(location = "br", width_hint = 0.2) +
   map_theme() +
   theme(legend.title = element_blank())
 ```
@@ -1473,6 +1471,7 @@ b <- ggplot() +
   annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Bioregion") +
   scale_fill_manual(values = bioregion_cols) +
+  annotation_scale(location = "br", width_hint = 0.2) +
   map_theme() +
   theme(axis.text.y = element_blank())
 

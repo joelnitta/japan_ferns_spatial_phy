@@ -1,5 +1,5 @@
 ---
-title: "Appendix S1: Supporting Information"
+title: "Appendix S1: Supporting Tables and Figures"
 mainfont: Roboto-Regular.ttf
 fontsize: 11pt
 mainfontoptions: 
@@ -45,6 +45,8 @@ library(kableExtra)
 library(scales)
 library(ggtree)
 library(RColorBrewer)
+library(ggspatial) # for scalebars on maps
+
 # Load functions and variables only used when rendering Rmds
 source(here::here("R/ms_functions.R"), local = TRUE)
 # Set knitr options
@@ -205,7 +207,9 @@ binary_sig_results %>%
   select(trait, D, num_present, num_absent, prob_random, prob_brownian) %>%
   arrange(trait) %>%
   # format for kable/latex
-  mutate(trait = str_replace_all(trait, "_", "\\\\_")) %>%
+  mutate(
+    trait = str_replace_all(trait, "_", "\\\\_"),
+    D = round(D, 3)) %>%
   rename(
     "Trait" = trait,
     `\\textit{N} present` = num_present,
@@ -218,7 +222,7 @@ binary_sig_results %>%
   kable_styling(latex_options = c("striped", "scale_down", "HOLD_position", "repeat_header"))
 ```
 
-**`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
+**`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format. Values of *D* rounded to three decimal places.
 
 \clearpage
 
@@ -436,7 +440,8 @@ b <- plot_env("b", "% apomictic taxa", "percent_apo", labels = function(x) scale
 c <- plot_env("c", "Precipitation", "precip", "mm")
 d <- plot_env("d", "Precip. season.", "precip_season" , "")
 e <- plot_env("e", "Temperature", "temp", "°C", function(x) x/10)
-f <- plot_env("f", "Temp. season.", "temp_season")
+f <- plot_env("f", "Temp. season.", "temp_season") +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
@@ -495,7 +500,8 @@ b <- ggplot() +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_scico(palette = "lajolla") +
   labs(fill = "Redundancy") +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)**</span>", hjust = "inward", vjust = "inward", color = "white") +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm")) +
   map_theme() +
   theme(
     axis.text.y = element_blank()
@@ -597,6 +603,7 @@ ggplot() +
   geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_manual(values = canape_cols) +
+  annotation_scale(location = "tl", width_hint = 0.2) +
   map_theme() +
   theme(legend.title = element_blank())
 ```
@@ -766,7 +773,8 @@ b <- plot_genus("b", "Deparia")
 c <- plot_genus("c", "Cyrtomium")
 d <- plot_genus("d", "Dryopteris")
 e <- plot_genus("e", "Pteris")
-f <- plot_genus("f", "Diplazium")
+f <- plot_genus("f", "Diplazium") +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm")) +
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
@@ -929,7 +937,8 @@ make_protected_plot <- function(part, variable, ...) {
 a <- make_protected_plot("a", "Richness", richness_obs_p_upper > 0.95)
 b <- make_protected_plot("b", "PD", pd_obs_p_upper > 0.95)
 c <- make_protected_plot("c", "FD", fd_obs_p_upper > 0.95)
-d <- make_protected_plot("d", "PE", pe_obs_p_upper > 0.95)
+d <- make_protected_plot("d", "PE", pe_obs_p_upper > 0.95) +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
     plot_layout(guides = "collect") &
@@ -965,7 +974,8 @@ make_deer_plot <- function(part, variable, ...) {
 a <- make_deer_plot("a", "Richness", richness_obs_p_upper > 0.95)
 b <- make_deer_plot("b", "PD", pd_obs_p_upper > 0.95)
 c <- make_deer_plot("c", "FD", fd_obs_p_upper > 0.95)
-d <- make_deer_plot("d", "PE", pe_obs_p_upper > 0.95)
+d <- make_deer_plot("d", "PE", pe_obs_p_upper > 0.95) +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
     plot_layout(guides = "collect") &

@@ -460,6 +460,13 @@
       "Repository": "CRAN",
       "Hash": "89cf4b8207269ccf82fbeb6473fd662b"
     },
+    "colorBlindness": {
+      "Package": "colorBlindness",
+      "Version": "0.1.9",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4cd47b0a9519b68ba3cd363dce6a6dbb"
+    },
     "colorspace": {
       "Package": "colorspace",
       "Version": "1.4-1",
@@ -487,6 +494,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "30b72e5faca1f055682ef32a0e252edb"
+    },
+    "cowplot": {
+      "Package": "cowplot",
+      "Version": "1.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "b418e8423699d11c7f2087c2bfd07da2"
     },
     "cpp11": {
       "Package": "cpp11",
@@ -863,6 +877,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "b5c4e55a3856dff3c05595630a40edfc"
+    },
+    "ggspatial": {
+      "Package": "ggspatial",
+      "Version": "1.1.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a04dadf9f113eaa67c179ec7011034e7"
     },
     "ggtext": {
       "Package": "ggtext",
@@ -1547,6 +1568,13 @@
       "Repository": "CRAN",
       "Hash": "a555924add98c99d2f411e37e7d25e9f"
     },
+    "prettymapr": {
+      "Package": "prettymapr",
+      "Version": "0.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "670de2201dfef54ca3d43ae91d3f8df5"
+    },
     "prettyunits": {
       "Package": "prettyunits",
       "Version": "1.1.1",
@@ -1757,6 +1785,13 @@
       "Repository": "CRAN",
       "Hash": "bb5996d0bd962d214a11140d77589917"
     },
+    "rgdal": {
+      "Package": "rgdal",
+      "Version": "1.5-23",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bb6f643247d35c947e9f113567e2bf7a"
+    },
     "rgeopackage": {
       "Package": "rgeopackage",
       "Version": "0.0.0.900",
@@ -1782,6 +1817,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "9bbcf8403b28711a8879874f2bb11666"
+    },
+    "rjson": {
+      "Package": "rjson",
+      "Version": "0.2.20",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7d597f982ee6263716b6a2f28efd29fa"
     },
     "rlang": {
       "Package": "rlang",
@@ -1822,6 +1864,13 @@
       "RemoteRef": "master",
       "RemoteSha": "2ed7a937f3cca4f44b157098c472f6b3ae8cd9f3",
       "Hash": "c216e2f26397625c741ef6b6bb1c299c"
+    },
+    "rosm": {
+      "Package": "rosm",
+      "Version": "0.2.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2d44e9bbfe7aff5acb7583482be4096d"
     },
     "rpart": {
       "Package": "rpart",
