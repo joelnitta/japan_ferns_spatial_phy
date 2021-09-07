@@ -1803,7 +1803,7 @@ analyze_binary_phylosig <- function (traits, phy) {
     gather(trait, value, -taxon) %>%
     nest(data = -trait) %>%
     # Remove NAs for individual trait observations
-    mutate(data = map(data, ~remove_missing(., na.rm = TRUE))) %>%
+    mutate(data = map(data, ~remove_missing(., na.rm = TRUE))) %>% 
     mutate(
       # Construct a comparative data object for each
       # binary trait
@@ -1824,11 +1824,11 @@ analyze_binary_phylosig <- function (traits, phy) {
       phylo_d_summary = map(
         phylo_d_out,
         ~tibble(
-          num_present = pluck(., "StatesTable", 1), 
-          num_absent = pluck(., "StatesTable", 2), 
-          D = pluck(., "DEstimate"),
-          prob_random = pluck(., "Pval1"), 
-          prob_brownian = pluck(., "Pval0")
+          num_present = pluck(., "StatesTable", 2), # second col of table = count of times trait is present
+          num_absent = pluck(., "StatesTable", 1),  # first col of table = count of times trait is absent
+          D = pluck(., "DEstimate"), # Estimated D
+          prob_random = pluck(., "Pval1"),  # Probability of E(D) resulting from no (random) phylogenetic structure
+          prob_brownian = pluck(., "Pval0") # Probability of E(D) resulting from Brownian phylogenetic structure
         )
       )
     ) %>%
