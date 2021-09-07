@@ -206,7 +206,7 @@ However, richness alone cannot provide a complete picture of biodiversity.
 All organisms are related to a greater or lesser degree by descent from a common ancestor, and these evolutionary relationships must be taken into account to obtain a full understanding of the biodiversity present in an area.
 
 Presumably, the main reason phylogeny has not been taken into account more prominently in biodiversity studies is because the necessary data (DNA sequences and georeferenced occurrence records) and analytic tools have only become available relatively recently. 
-These datasets and tools now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity and phylogenetic endemism. 
+These datasets and tools now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity [@Faith1992] and phylogenetic endemism [@Rosauer2009]. 
 Better ways to characterize biological regions ("bioregions") are also available [e.g., @Laffan2016; @White2019; @Daru2020a], rather than relying on ad-hoc characterizations.
 Furthermore, incorporating these two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide powerful insights into the processes structuring biodiversity and suggest conservation priorities.
 
@@ -259,7 +259,7 @@ Continuous traits were measured on 10 randomly selected specimens per species.
 Fertile (`r ie`, spore-bearing) and sterile fronds were measured separately, then averaged. 
 Qualitative traits were scored by observing voucher specimens. 
 All qualitative traits were scored in binary format; `r eg`, a single trait with three states was formatted as three binary traits. 
-From the original trait list, we selected only traits with putative ecological function (`r table("traits-used")`), and removed any that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
+From the original trait list, we selected only traits with putative ecological function (`r table("traits-used")`), calculated mean values for continuous traits, and removed any traits that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
 
 ### Reproductive mode data
 
@@ -376,7 +376,7 @@ The root of the tree (most recent common ancestor of all land plants) was fixed 
 We trimmed the resulting ultrametric tree to only Japanese taxa.
 treePL requires branch lengths to be > 0, and it sets extremely small branches to an arbitrary minimum positive length.
 This may artificially add branch length between taxa with identical DNA sequences, which occur multiple times in the Japanese fern *rbcL* dataset.
-We converted any clades in the dated tree consisting of identical sequences to polytomies with zero branch length between OTUs.
+We converted any clades in the dated tree consisting of identical sequences to polytomies with the node at 0 mya (`r ie`, the present).
 This tree was used for all subsequent analysis unless indicated otherwise.
 
 ### Phylogenetic signal
@@ -386,7 +386,7 @@ We tested for phylogenetic signal in continuous traits using two alternative met
 Both lambda and *K* = 1 under BM; relatively lower values indicate less signal (overdispersion) and higher values indicate more signal (clustering). 
 We measured *K* and lambda using the `r func("phylosig")` function in the R package `r pack("phytools")` [@Revell2012], which also calculates significance based on a randomization test for *K* and a likelihood ratio test for lambda. 
 We tested for phylogenetic signal in qualitative (coded as binary) traits using Fritz and Purvis' *D* [@Fritz2010] with the `r func("phylo.d")` function in the R package `r pack("caper")` [@Orme2018], which also assesses significance by comparing the observed value to a null distribution of random values and a simulated distribution of values expected under BM.
-Values of *D* range from 0 under Brownian motion to 1 under random evolution, but can exceed this range in cases of extreme clumping or overdispersion, respectively.
+Values of *D* range from 0 under BM to 1 under random evolution, but can exceed this range in cases of extreme clumping or overdispersion, respectively.
 These methods for phylogenetic signal cannot use a tree with zero-length polytomies, so we used the original dated tree from treePL.
 
 ### Analysis of biodiversity
@@ -637,7 +637,7 @@ n_d_signif <-
 ```
 
 All continuous traits showed significant phylogenetic signal, but estimates of signal strength differed between *K* and lambda: all lambda values were > 0.95, indicating evolution by BM; however, values of *K* were < 0.1, indicating less phylogenetic signal than expected under BM (`r s_table("phy-sig")`). 
-`r n_d_signif` out of `r nrow(binary_sig_results)` of qualitative traits (coded as binary) showed evidence of phylogenetic signal (*D* ≤ 0.5, significantly different from random) (`r s_table("phy-sig-binary")`).
+`r n_d_signif` out of `r nrow(binary_sig_results)` of binary traits (including qualitative traits coded as binary) showed evidence of phylogenetic signal (*D* ≤ 0.5, significantly different from random) (`r s_table("phy-sig-binary")`).
 
 ### Observed diversity
 
