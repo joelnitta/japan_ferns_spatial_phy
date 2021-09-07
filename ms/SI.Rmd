@@ -139,7 +139,7 @@ morans_i %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-**`r s_table("moran")`**. Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*. Significant *I* > 0 indicates autocorrelation.
+**`r s_table("moran")`**. Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of RPD, SES of FD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*. Significant *I* > 0 indicates autocorrelation.
 
 \clearpage
 

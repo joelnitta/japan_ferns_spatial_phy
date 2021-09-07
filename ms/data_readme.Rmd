@@ -111,6 +111,7 @@ DATA & FILE OVERVIEW
 File list (filenames, directory structure (for zipped files) and brief
 description of all data files):
 
+- _targets.tar.gz: Tarball (compressed folder) including all workflow results produced by R targets package
 - ftol_data_release_v0.0.1.zip: Fern Tree of Life project global DNA alignment and phylogenetic tree 
 - japan_climate.gpkg: Climate data in Japan downloaded from WorldClim database
 - japan_deer_range.gpkg: Distribution maps of Japanese deer (Cervus nippon) in Japan
@@ -188,6 +189,20 @@ conservation FIXME: Add journal when published
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
 DATA-SPECIFIC INFORMATION
+
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+
+_targets.tar.gz: Tarball (compressed folder) including all workflow results
+produced by R targets package. This is provided to enable inspection of workflow
+steps without running the entire workflow from the beginning. To use it, unpack
+the tar achive with the command "tar -xzf _targets.tar.gz". Then, in R, the
+"tar_load()" function in the R package "targets" can be used to load any
+workflow step (target) defined in _targets.R
+(https://github.com/joelnitta/japan_ferns_spatial_phy/blob/main/_targets.R). For
+more information on the structure of the _targets folder and how to use it, see
+https://github.com/ropensci/targets.
+
+MD5 checksum: FIXME (add manually, since this can't be calculated from inside the targets workflow)
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
@@ -850,7 +865,7 @@ CHANGE LOG
 
 \-\-\-
 
-2021-09-06
+2021-09-07
 
 Generate this README file.
 
