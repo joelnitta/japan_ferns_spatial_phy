@@ -124,6 +124,7 @@ environ\n\
 etexcmds\n\
 etoolbox\n\
 euenc\n\
+fancyhdr\n\
 fancyvrb\n\
 float\n\
 fontspec\n\

@@ -3517,27 +3517,6 @@ compare_aic_env_repro <- function(spatial_models) {
     select(-model) 
 }
 
-#' Run Grubb's test for outliers
-#'
-#' Returns the results in a tidy dataframe
-#'
-#' @param x a numeric vector for data values. 
-#' @param type Integer value indicating test variant. See `?outliers::grubbs.test`
-#' @param ... Other arguments passed to `outliers::grubbs.test()`
-#'
-#' @return Tibble
-grubbs_tidy <- function(x, type = 10, ...) {
-  
-  outliers::grubbs.test(x = x, type = type, ...) %>%
-    broom::tidy() %>%
-    dplyr::mutate(stat_name = c("g", "u")) %>%
-    tidyr::pivot_wider(values_from = "statistic", names_from = "stat_name") %>%
-    janitor::clean_names() %>%
-    dplyr::select(g, u, p_value, method, alternative)
-  
-}
-
-
 #' Crops an area then calculate its area in sq km
 #' 
 #' Helper function for calc_area_by_lat()

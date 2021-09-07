@@ -16,10 +16,17 @@ output:
     latex_engine: xelatex
     pandoc_args: [ "--csl", "apa-6th-edition.csl"]
 header-includes: 
-  - \usepackage{float}
-  - \usepackage{booktabs}
-  - \usepackage{colortbl}
-  - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
+  - \usepackage{float} # keep figures from floating away
+  - \usepackage{booktabs} # need for kable tables
+  - \usepackage{colortbl} # need for kable tables
+  - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother # keep figures from floating away
+  - \usepackage{fancyhdr} # enable header
+  - \pagestyle{fancy}  # enable header
+  - \fancypagestyle{plain}{\pagestyle{fancy}} # show header on first page
+  - \renewcommand{\headrulewidth}{0pt} # delete line beneath header
+  - \fancyhead[RE,RO]{Nitta \textit{et al}. Spatial phy. of Japanese ferns Appendix S1} # add header on right side
+  - \fancyhead[LO,LE]{} # suppress automatic section header on left side
+  - \cfoot{\thepage} # footer
 editor_options: 
   chunk_output_type: console
 params:
@@ -112,9 +119,6 @@ source(temp_file, local = TRUE)
 # Delete the temporary file
 fs::file_delete(temp_file)
 ```
-
-<!-- Remove page numbers -->
-\pagenumbering{gobble}
 
 <!-- Set left justification -->
 \raggedright
