@@ -214,8 +214,8 @@ binary_sig_results %>%
     `\\textit{P}(random)` = prob_random, 
     `\\textit{P}(Brownian)` = prob_brownian
   ) %>%
-  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
-  kable_styling(latex_options = c("striped", "scale_down", "HOLD_position"))
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex", longtable = TRUE) %>%
+  kable_styling(latex_options = c("striped", "scale_down", "HOLD_position", "repeat_header"))
 ```
 
 **`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format.
