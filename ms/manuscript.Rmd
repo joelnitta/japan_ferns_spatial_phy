@@ -16,7 +16,7 @@ output:
     citation_package: default
     toc: no
     number_sections: no
-    fig_caption: yes
+    fig_caption: no
     latex_engine: xelatex
     pandoc_args: [ "--csl", "apa-6th-edition.csl"]
 params:
@@ -1750,6 +1750,72 @@ conserv_status_plot
 ```
 
 **`r figure("conserv-status")`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (a) Percent of land area with medium or high protected status for grid-cells with significantly high biodiversity by protection status. (b) Percent of land area occupied by deer for grid-cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). For (a), vertical lines indicate total percent area protected across Japan (baseline protection rate). For (b), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
+
+`r pagebreak_doc()`
+
+```{r japan-map-doc, fig.cap = "", fig.width = 5, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
+# Print plot if rendering to doc on initial submission
+japan_map_plot
+cat("\n\n", figure("japan-map"))
+```
+
+`r pagebreak_doc()`
+
+```{r raw-diversity-doc, fig.cap = "", fig.width = 7, fig.height = 4, eval = params$doc_type == "doc", results = "asis"}
+raw_diversity_plot
+cat("\n\n", figure("raw-diversity"))
+```
+
+`r pagebreak_doc()`
+
+```{r rand-diversity-doc, fig.cap = "", fig.width = 7, fig.height = 9, eval = params$doc_type == "doc", results = "asis"}
+rand_diversity_plot
+cat("\n\n", figure("rand-diversity"))
+```
+
+`r pagebreak_doc()`
+
+```{r coeff-doc, fig.cap = "", fig.width = 7, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
+coeff_plot
+cat("\n\n", figure("coeff"))
+```
+
+`r pagebreak_doc()`
+
+```{r modelfit-doc, fig.cap = "", fig.width = 7, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
+modelfit_plot
+cat("\n\n", figure("modelfit"))
+```
+
+`r pagebreak_doc()`
+
+```{r endemism-doc, fig.cap = "", fig.width = 5, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
+endemism_plot
+cat("\n\n", figure("endemism"))
+```
+
+`r pagebreak_doc()`
+
+```{r bioregions-doc, fig.cap = "", fig.width = 7, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
+bioregions_plot
+cat("\n\n", figure("bioregions"))
+```
+
+`r pagebreak_doc()`
+
+```{r div-by-tax-region-doc, fig.cap = "", fig.width = 7, fig.height = 7, eval = params$doc_type == "doc", results = "asis"}
+div_by_tax_region_plot
+cat("\n\n", figure("div-by-tax-region"))
+```
+
+`r pagebreak_doc()`
+
+```{r conserv-status-doc, fig.cap = "", fig.width = 7, fig.height = 4, eval = params$doc_type == "doc", results = "asis"}
+conserv_status_plot
+cat("\n\n", figure("conserv-status"))
+```
+
+`r pagebreak_doc()`
 
 ## Data availability statement
 

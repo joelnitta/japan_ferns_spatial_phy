@@ -124,7 +124,7 @@ func <- function(x) {glue::glue("'{x}'")}
 #' @param rmd_params Parameters set in YAML header or rmarkdown::render(). 
 #' Must include `doc_type` (either 'doc' for MS Word or 'pdf' for PDF output)
 #' 
-pagebreak_doc <- function(rmd_params = params) {ifelse(rmd_params$doc_type == "doc", run_pagebreak(), return(""))}
+pagebreak_doc <- function(rmd_params = params) {ifelse(rmd_params$doc_type == "doc", return("\\clearpage"), return(""))}
 
 #' Pagebreak for PDF only
 #' 
