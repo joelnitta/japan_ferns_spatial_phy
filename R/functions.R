@@ -1301,15 +1301,12 @@ transform_traits <- function (traits,
 #'
 #' @param path_to_lucid_traits Path to trait data exported from lucid
 #' (https://www.lucidcentral.org/key-search/)
-#' @param lucid_name_correction Data to correct names in raw lucid data.
-#' Three columns: `original_taxon` (original name in raw lucid data),
-#' `new_taxon` (correct name to use instead, should be in green list),
-#' `ja_native_status` (native status in Japan; `non_native` indicates non-native,
-#' native otherwise)
+#' @param green_list Taxonomic data for Japanese ferns
+#' @param ppgi Taxonomic data for pteridophytes at genus and above
 #'
 #' @return Dataframe with data in Japanese removed, filtered to native ferns in Green List
 #' 
-clean_lucid_traits <- function(raw_lucid_data, lucid_name_correction, green_list, ppgi) {
+clean_lucid_traits <- function(raw_lucid_data, green_list, ppgi) {
   
   # Read in raw trait data for pteridophytes of Japan.
   # These were originally formatted for lucid dichotomous key software.
@@ -1317,38 +1314,26 @@ clean_lucid_traits <- function(raw_lucid_data, lucid_name_correction, green_list
   # or numeric traits. There are a lot of traits. One row per taxon.
   raw_lucid_data %>% 
     clean_names() %>% 
-    # Drop columns with Japanese names
-    select(-x1, -x222) %>%
-    rename(taxon = x2) %>%
-    mutate(taxon = str_replace_all(taxon, ":", "_")) %>%
-    assert(is_uniq, taxon) %>%
-    # Replace synonyms
-    # - make sure all names in 'correction' file in lucid data
-    verify(all(lucid_name_correction$original_taxon %in% taxon)) %>%
-    left_join(lucid_name_correction, by = c("taxon" = "original_taxon")) %>%
-    mutate(
-      taxon = case_when(
-        !is.na(new_taxon) ~ new_taxon,
-        TRUE ~ taxon
-      )) %>%
-    select(-new_taxon) %>%
-    assert(is_uniq, taxon) %>%
-    # Remove non-native taxa
-    mutate(ja_native_status = replace_na(ja_native_status, "native")) %>%
-    filter(ja_native_status != "non_native") %>%
-    select(-ja_native_status) %>%
+    # Drop column with genus
+    select(-x1) %>%
+    rename(taxon_id = x2) %>%
+    mutate(taxon_id = as.character(taxon_id)) %>%
+    filter(!is.na(taxon_id)) %>%
+    # Convert name code to taxon name
+    left_join(select(green_list, taxon_id, taxon, hybrid), by = "taxon_id") %>%
+    assert(not_na, taxon) %>%
+    select(-taxon_id) %>%
     # Filter to only ferns (remove lycophytes)
     mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
     left_join(select(ppgi, genus, class) %>% unique, by = "genus") %>%
     assert(not_na, class) %>%  
     filter(class == "Polypodiopsida") %>%
     select(-class, -genus) %>%
-    # Check that all names are in green list
-    verify(all(taxon %in% green_list$taxon)) %>%
     # Remove hybrids
-    left_join(select(green_list, taxon, hybrid), by = "taxon") %>%
     filter(hybrid == FALSE) %>%
     select(-hybrid) %>%
+    # Rearrange columns
+    select(taxon, everything()) %>%
     # Check for NA values
     assert(not_na, everything()) %>%
     assert(is_uniq, taxon)
@@ -1400,38 +1385,11 @@ format_traits <- function(traits_lucid_path) {
     )) %>%
     assert(in_set(c(0,1)), -taxon)
   
-  # Reformat presence/absence traits. These have one column each for "presence" (0 or 1),
-  # "absence" (also 0 or 1), and sometimes another related state ("caducous" etc).
-  # Combine these into a single "present" column.
-  # - pseudo_veinlet
+  # Reformat presence/absence of indusium. This has one column each for "presence" (0 or 1),
+  # "absence" (also 0 or 1), and also another related state ("caducous").
+  # Combine this into a single "present" column, treat as present if either true or false indusium is present
   traits_binary <-
     traits_binary %>%
-    mutate(
-      leaf_lamina_pseudo_veinlet_present = case_when(
-        leaf_lamina_pseudo_veinlet_absent == 1 ~ 0,
-        TRUE ~ leaf_lamina_pseudo_veinlet_present
-      )) %>%
-    select(-leaf_lamina_pseudo_veinlet_absent) %>%
-    # - rhachis_adaxial_side_grooved
-    mutate(
-      leaf_lamina_rhachis_adaxial_side_grooved_present = case_when(
-        leaf_lamina_rhachis_adaxial_side_grooved_absent == 1 ~ 0,
-        leaf_lamina_rhachis_adaxial_side_grooved_present_continuous_to_costa_groove == 1 ~ 1,
-        leaf_lamina_rhachis_adaxial_side_grooved_present_not_continuous_to_costa_groove == 1 ~ 1,
-        TRUE ~ 0
-      )) %>%
-    select(-leaf_lamina_rhachis_adaxial_side_grooved_absent,
-           -leaf_lamina_rhachis_adaxial_side_grooved_present_continuous_to_costa_groove,
-           -leaf_lamina_rhachis_adaxial_side_grooved_present_not_continuous_to_costa_groove) %>%
-    # - terminal_pinna
-    mutate(
-      leaf_lamina_terminal_pinna_present = case_when(
-        leaf_lamina_terminal_pinna_absent == 1 ~ 0,
-        leaf_lamina_terminal_pinna_absent == 0 ~ 1
-      )
-    ) %>%
-    select(-leaf_lamina_terminal_pinna_absent) %>%
-    # - indusium: treat as present if either true or false indusium is present
     mutate(
       indusium_present = case_when(
         leaf_sorus_indusium_presence_absence_present == 1 ~ 1,
@@ -1439,9 +1397,7 @@ format_traits <- function(traits_lucid_path) {
         leaf_sorus_false_indusium == 1 ~ 1,
         TRUE ~ 0
       )) %>%
-    assert(in_set(c(0,1)), -taxon) %>%
-    # Make sure no column names were created by de-duplicating raw column names
-    verify(all(str_detect(colnames(.), "[0-9]", negate = TRUE)))
+    assert(in_set(c(0,1)), -taxon)
   
   # Select only putatively functional traits: frond shape, frond texture, margin shape, presence or absence of indusium
   
@@ -1469,11 +1425,11 @@ format_traits <- function(traits_lucid_path) {
     select(
       taxon,
       indusium_present,
-      contains("leaf_lamina_shape_sterile_frond"),
+      contains("leaf_lamina_shape_fertile_frond"),
       contains("leaf_lamina_texture"),
       contains("leaf_lamina_margin")
     ) %>%
-    rename_with(~str_replace_all(.x, "leaf_lamina_shape_sterile_frond", "shape")) %>%
+    rename_with(~str_replace_all(.x, "leaf_lamina_shape_fertile_frond", "shape")) %>%
     rename_with(~str_replace_all(.x, "leaf_lamina_texture", "texture")) %>%
     rename_with(~str_replace_all(.x, "leaf_lamina_margin", "margin"))
   

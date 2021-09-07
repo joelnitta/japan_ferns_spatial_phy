@@ -130,16 +130,12 @@ tar_plan(
     inext_res_out,
     write_csv_tar(inext_res, "data/japan_ferns_inext_results.csv")),
   
-  # Clean raw lucid data (remove data in Japanese, correct names)
-  tar_target(lucid_data_raw_file, "data_raw/JpFernLucid_forJoel20200827.xlsx"),
+  # Clean raw lucid data (format names, etc)
+  tar_target(lucid_data_raw_file, "data_raw/Lucid20210807.xlsx"),
   raw_lucid_data = read_excel(lucid_data_raw_file, skip = 1), # skip top row, which is in Japanese
   
-  # - raw data has some faulty names (synonyms, non-native taxa). Load data to clean these.
-  tar_target(lucid_name_correction_file, "data_raw/lucid_taxa_name_correction.csv"),
-  lucid_name_correction = read_csv(lucid_name_correction_file),
-  
   lucid_data_ferns = clean_lucid_traits(
-    raw_lucid_data = raw_lucid_data, lucid_name_correction = lucid_name_correction, 
+    raw_lucid_data = raw_lucid_data,
     green_list = green_list, ppgi = ppgi),
   
   tar_file(
