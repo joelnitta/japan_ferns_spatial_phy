@@ -1821,8 +1821,8 @@ cat("\n\n", figure("conserv-status"))
 ## Data availability statement
 
 Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_spatial_phy. 
-A Docker image to run the code is available at https://hub.docker.com/repository/docker/joelnitta/japan_ferns_spatial_phy.
-Data files needed to run the analysis and selected results files are available from Dryad at http://doi.org/ADD_DOI_HERE_WHEN_ASSIGNED.
+A Docker image to run the code is available at https://hub.docker.com/r/joelnitta/japan_ferns_spatial_phy.
+Data files needed to run the analysis and selected results files are available from Dryad at http://doi.org/FIXME:ADD_DOI_HERE_WHEN_ASSIGNED.
 
 ## References
 <!-- Insert <div id="refs"></div> to place the refs here instead of at the end -->
