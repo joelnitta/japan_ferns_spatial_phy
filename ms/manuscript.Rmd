@@ -1246,7 +1246,7 @@ resp_var_lookup <-
 
 indep_var_lookup <-
   tibble(
-    term = c("area", "I(temp^2)", "null_model", "percent_apo", "precip", "precip_season", "temp"),
+    term = c("lat_area", "I(temp^2)", "null_model", "percent_apo", "precip", "precip_season", "temp"),
     term_print = c("Area", "Temp^2", "Null model", "% apomictic", "Precip.", "Precip.\nseasonality", "Temp.")
   ) %>%
   # Include "plain" version of term for arranging alphabetically
@@ -1301,7 +1301,8 @@ model_params_for_plot <-
     ),
     term_print = factor(term_print)
   ) %>%
-  ungroup()
+  ungroup() %>%
+  assert(not_na, matches("print|plain"))
 
 # Define helper function to make a subplot showing coefficients
 plot_coeff <- function (df) {  
