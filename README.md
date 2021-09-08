@@ -48,5 +48,6 @@ docker-compose down
 
 - Code: [MIT license](LICENSE.md)
 - Data: [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/)
+- [Manuscript](https://doi.org/10.1101/2021.08.26.457744): [CC BY-NC-ND 4.0 license](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 - [Roboto font](https://github.com/google/roboto/): [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0)
 
