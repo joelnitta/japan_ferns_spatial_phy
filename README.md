@@ -8,7 +8,7 @@ All code is in [R](https://cran.r-project.org/). The [targets package](https://d
 
 FIXME: Add a description of how to download data
 
-For more information about data files, see the READMEs for [raw data](doc/README_data_raw.md) and [processed data](README_data.txt).
+For more information about data files, see the READMEs for [raw data](doc/README_data_raw.md) and [processed data](doc/README_data.txt).
 
 ## Reproducible analysis with Docker
 
