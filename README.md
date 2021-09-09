@@ -8,6 +8,8 @@ All code is in [R](https://cran.r-project.org/). The [targets package](https://d
 
 FIXME: Add a description of how to download data
 
+For more information about data files, see the READMEs for [raw data](doc/README_data_raw.md) and [processed data](README_data.txt).
+
 ## Reproducible analysis with Docker
 
 This project requires various packages to be installed, and may not work properly if package versions have changed. Therefore, a [Docker image is provided](https://hub.docker.com/r/joelnitta/japan_ferns_spatial_phy) to run the code reproducibly.
@@ -44,10 +46,20 @@ When you're done, take down the container:
 docker-compose down
 ```
 
+## Using the `targets` cache
+
+The analysis includes some steps that take a long time to run, especially maximum-likelihood phylogenetic analysis (ca. 1 week with 10 cores in parallel). To avoid running the entire workflow from scratch, untar the `_targets.tar.gz` file in the Dryad dataset and place it in the root of this repo as `_targets`:
+
+```
+tar -xzf _targets.tar.gz
+```
+
+Then, when you open the project in R [as described above](#interacting-with-the-code), you can use `targets::tar_load()` to load any target (intermediate workflow step) listed in [`_targets.R`](_targets.R). For more information on how to use the `targets` package, see https://github.com/ropensci/targets.
+
 ## Licenses
 
 - Code: [MIT license](LICENSE.md)
 - Data: [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/)
-- [Manuscript](https://doi.org/10.1101/2021.08.26.457744): [CC BY-NC-ND 4.0 license](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+- [Manuscript (preprint)](https://doi.org/10.1101/2021.08.26.457744): [CC BY-NC-ND 4.0 license](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 - [Roboto font](https://github.com/google/roboto/): [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0)
 
