@@ -36,6 +36,8 @@ knitr::opts_chunk$set(
 tar_load(
   c(
     "ms_functions",
+    "ebihara_2019_zip_file",
+    "ftol_zip_file",
     "ja_climate_data_file",
     "japan_map_file",
     "deer_range_file",
@@ -55,12 +57,13 @@ tar_load(
     "fern_traits_dryad_file",
     "japan_fern_phylogram_dryad_file",
     "japan_fern_tree_dryad_file",
-    "japan_fern_tree_uncollapsed_dryad_file"
+    "japan_fern_tree_uncollapsed_dryad_file",
+    "refs_yaml"
     )
   )
 ```
 
-This README.txt file was generated on `r format(Sys.time(), '%d %B, %Y')`
+This README.txt file was generated on `r format(Sys.time(), '%d %B, %Y')` by Joel Nitta
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- GENERAL INFORMATION \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
@@ -112,7 +115,6 @@ File list (filenames, directory structure (for zipped files) and brief
 description of all data files):
 
 - _targets.tar.gz: Tarball (compressed folder) including all workflow results produced by R targets package
-- ftol_data_release_v0.0.1.zip: Fern Tree of Life project global DNA alignment and phylogenetic tree 
 - japan_climate.gpkg: Climate data in Japan downloaded from WorldClim database
 - japan_deer_range.gpkg: Distribution maps of Japanese deer (Cervus nippon) in Japan
 - japan_ferns_comm_full.csv: Community matrix (species x sites matrix) of native, non-hybrid ferns in Japan, full (unfiltered) dataset
@@ -134,10 +136,17 @@ description of all data files):
   - japan_ferns_tree_uncollapsed.tre: Maximim-likelihood, ultrametric (dated) phylogeny of native, non-hybrid ferns in Japan with clades consisting of identical OTUs not collapsed
   - japan_ferns_tree.tre: Maximim-likelihood phylogeny of native, non-hybrid ferns in Japan
 
-Additional data used in analysis not included in current data package: Data 
-including DNA sequences, taxonomy, and breeding system data for native Japanese 
-ferns included in the Dryad data package of @Ebihara2019b (https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32)
-were used in the analysis.
+Additional data used in analysis not included in current data package: 
+
+- doi_10.5061_dryad.4362p32__v4.zip: Data including DNA sequences, taxonomy, and 
+breeding system data for native Japanese ferns [@Ebihara2019b] downloaded from 
+https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32. 
+MD5 checksum `r tools::md5sum(here::here(ebihara_2019_zip_file))`
+- ftol_data_release_v0.0.1.zip: Fern Tree of Life project global DNA alignment 
+and phylogenetic tree (Nitta et al., in prep.) downloaded from 
+https://figshare.com/s/87b8ec102303bf9f3212.
+MD5 checksum `r tools::md5sum(here::here(ftol_zip_file))`
+FIXME: replace with DOI when available
 
 Checksums are 32-byte MD5 hashes generated with tools::md5sum() in R.
 
@@ -203,14 +212,6 @@ more information on the structure of the _targets folder and how to use it, see
 https://github.com/ropensci/targets.
 
 MD5 checksum: FIXME (add manually, since this can't be calculated from inside the targets workflow)
-
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
-
-ftol_data_release_v0.0.1.zip: Fern Tree of Life project global DNA alignment and
-phylogenetic tree (Nitta et al., in prep.). For more information, see README
-file contained in zipped archive.
-
-MD5 checksum: `r tools::md5sum(here::here("data/ftol_data_release_v0.0.1.zip"))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
@@ -385,7 +386,7 @@ Variable list:
   make_data_desc(
     tribble(
       ~col, ~desc,
-      "dataset", "Dataset name. 'occ_point_data_ferns_unfiltered' indicates data includes all specimens; 'occ_point_data_ferns' indicates data only includes specimens after filtering",
+      "dataset", "Dataset name. 'occ_point_data_ferns_unfiltered' indicates data includes all specimens, 'occ_point_data_ferns' indicates data only includes specimens after filtering",
       "variable", "Variable. 'n_taxa' indicates number of taxa, 'n_specimens' indicates number of specimens",
       "value", "Value corresponding to each variable")
   )
@@ -490,6 +491,7 @@ Variable list: 'taxon' indicates taxon name. Other columns correspond to traits.
 If the column name includes 'number' it is numeric, otherwise categorical.
 
 Categorical trait codes as follows:
+
 - 0 = absent
 - 1 = common
 - 2 = rare
@@ -553,7 +555,8 @@ assert(japan_map, not_na, everything(), success_fun = success_logical)
 `r fs::path_file(japan_map_file)`: Map of land area of Japan. Raw data downloaded from
 Geospatial Information Authority of Japan under the Creative Commons Attribution
 License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html). All polygons
-were combined into a single polygon and CRS set to JGD2000.
+were combined into a single polygon and CRS set to JGD2000 using code available at
+https://github.com/joelnitta/japan_ferns_spatial_phy/blob/main/R/process_raw_data.R.
 
 Number of variables: `r ncol(japan_map)`
 
@@ -865,7 +868,7 @@ CHANGE LOG
 
 \-\-\-
 
-2021-09-07
+2021-09-09
 
 Generate this README file.
 
