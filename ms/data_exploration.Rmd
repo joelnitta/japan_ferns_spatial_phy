@@ -96,12 +96,12 @@ The next step uses `tar_load()` to load the dataset from the targets cache. Alte
 
 ```{r load-data, message = FALSE}
 # Load the data from the targets workflow
-# tar_load(biodiv_ferns_cent_dryad)
+tar_load(biodiv_ferns_cent_dryad)
 
 # Alternatively, unzip `results.zip` in the Dryad data
 # (FIXME: add DOI when available)
 # and read in the data from there
-biodiv_ferns_cent_dryad <- read_csv(here::here("results/dryad_files/japan_ferns_biodiv.csv"))
+# biodiv_ferns_cent_dryad <- read_csv(here::here("japan_ferns_biodiv.csv"))
 ```
 
 This dataframe actually has more variables than are needed for modeling, so we will subset it to only the relevant variables.
