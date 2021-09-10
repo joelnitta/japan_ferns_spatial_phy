@@ -6,7 +6,11 @@ All code is in [R](https://cran.r-project.org/). The [targets package](https://d
 
 ## Data
 
-FIXME: Add a description of how to download data
+Data files need to be downloaded from three locations.
+
+1. Dataset on Dryad for this project: https://doi.org/doi:10.5061/dryad.w0vt4b8s2 (LINK NOT LIVE YET). Cick on the "download dataset" icon, download the zipped dataset, then unzip it and put the contents in the `data/` folder in this repo.
+2. Dataset on Dryad for Ebihara and Nitta 2019: https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32. Download the zipped dataset and put in the `data/` folder directly (without unzipping).
+3. Dataset on FigShare for FTOL v0.0.1 (Nitta et al, in prep): https://doi.org/doi:10.6084/m9.figshare.13256801 (LINK NOT LIVE YET). Download the zipped dataset and put in the `data/` folder directly (without unzipping).
 
 For more information about data files, see the READMEs for [raw data](doc/README_data_raw.md) and [processed data](doc/README_data.txt).
 
