@@ -557,7 +557,7 @@ tar_plan(
   # japan_ferns_comm.csv
   tar_file(
     comm_ferns_dryad_file, 
-    write_csv_tar(comm_ferns, "results/dryad_files/japan_ferns_comm.csv")
+    comm_ferns %>% rownames_to_column("grids") %>% write_csv_tar("results/dryad_files/japan_ferns_comm.csv")
   ),
 
   # japan_ferns_shape.gpkg
