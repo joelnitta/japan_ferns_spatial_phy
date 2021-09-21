@@ -1141,7 +1141,7 @@ a <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = richness), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** Richness</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(A)** Richness</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "No. taxa") +
   scale_fill_scico(palette = "lajolla") + 
   scale_x_continuous(breaks = c(125, 135, 145)) +
@@ -1153,7 +1153,7 @@ b <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_obs), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** PD</span>", hjust = "inward", vjust = "inward", color = "white") +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(B)** PD</span>", hjust = "inward", vjust = "inward", color = "white") +
   labs(fill = "Relative\nbranch\nlength") +
   scale_fill_scico(palette = "lajolla") + 
   scale_x_continuous(breaks = c(125, 135, 145)) +
@@ -1166,7 +1166,7 @@ c <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_obs), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(c)** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(C)** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Relative\nbranch\nlength") +
   scale_fill_scico(palette = "lajolla") + 
   scale_x_continuous(breaks = c(125, 135, 145)) +
@@ -1189,7 +1189,7 @@ ggsave(result_file(figure("raw-diversity"), "pdf"), width = 7, height = 4, units
 raw_diversity_plot
 ```
 
-**`r figure("raw-diversity")`**. (A) Raw taxonomic diversity (B), phylogenetic diversity, and (C) functional diversity of the ferns of Japan. For (b) and (c), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths.
+**`r figure("raw-diversity")`**. (A) Raw taxonomic diversity (B), phylogenetic diversity, and (C) functional diversity of the ferns of Japan. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths.
 
 `r pagebreak_pdf()`
 
@@ -1202,7 +1202,7 @@ a <- ggplot() +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_signif), color = "transparent") +
   # light grey coastline
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** PD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(A)** PD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   scale_fill_manual(values = signif_cols) +
   map_theme() +
   theme(
@@ -1215,7 +1215,7 @@ b <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = rpd_signif), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** RPD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(B)** RPD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "") +
   scale_fill_manual(values = signif_cols) +
   map_theme() +
@@ -1230,7 +1230,7 @@ c <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_signif), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(c)** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(C)** FD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "") +
   scale_fill_manual(values = signif_cols) +
   scale_x_continuous(guide = guide_axis(check.overlap = TRUE)) +
@@ -1242,7 +1242,7 @@ d <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial, aes(fill = rfd_signif), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(d)** RFD</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(D)** RFD</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "") +
   scale_fill_manual(values = signif_cols) +
   scale_x_continuous(guide = guide_axis(check.overlap = TRUE)) +
@@ -1268,7 +1268,7 @@ ggsave(result_file(figure("rand-diversity"), "pdf"), rand_diversity_plot, width 
 rand_diversity_plot
 ```
 
-**`r figure("rand-diversity")`**. Results of randomization test for phylogenetic and functional diversity of the ferns of Japan. (a), Phylogenetic diversity (PD). (b), Relative phylogenetic diversity (RPD). (c), Functional diversity (FD). (d), relative functional diversity (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Materials and Methods.
+**`r figure("rand-diversity")`**. Results of randomization test for phylogenetic and functional diversity of the ferns of Japan. (A), Phylogenetic diversity (PD). (B), Relative phylogenetic diversity (RPD). (C), Functional diversity (FD). (D), relative functional diversity (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Materials and Methods.
 
 `r pagebreak_pdf()`
 
@@ -1387,7 +1387,7 @@ coeff_plot <- wrap_plots(coeff_subplots) +
   guide_area() +
   plot_layout(guides = "collect") +
   plot_annotation(
-    tag_levels = "a",
+    tag_levels = "A",
     tag_prefix = "(",
     tag_suffix = ")") &
   theme(plot.tag = element_text(face = "bold"))
@@ -1403,7 +1403,7 @@ ggsave(result_file(figure("coeff"), "pdf"), coeff_plot, width = 7, height = 5, u
 coeff_plot
 ```
 
-**`r figure("coeff")`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models for the effect of environment and reproductive mode on biodiversity metrics in the ferns of Japan. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *P*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
+**`r figure("coeff")`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models for the effect of environment and reproductive mode on biodiversity metrics in the ferns of Japan. (A)--(E), environmental models (models including temperature); (F) and (G), reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *P*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
 
 ```{r modelfit-make}
 # Make plot showing model fits
@@ -1446,7 +1446,7 @@ modelfit_plot <-
   guide_area() +
   plot_layout(guides = "collect") +
   plot_annotation(
-    tag_levels = "a",
+    tag_levels = "A",
     tag_prefix = "(",
     tag_suffix = ")")  &
   theme(plot.tag = element_text(face = "bold"))
@@ -1462,7 +1462,7 @@ ggsave(result_file(figure("modelfit"), "pdf"), modelfit_plot, width = 7, height 
 modelfit_plot
 ```
 
-**`r figure("modelfit")`**. Relationship between biodiversity metrics and selected predictor variables in the ferns of Japan. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For phylogenetic diversity (PD), relative PD (RPD), functional diversity (FD), and relative FD (RFD), the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
+**`r figure("modelfit")`**. Relationship between biodiversity metrics and selected predictor variables in the ferns of Japan. (A)--(E), environmental models (models including temperature); (F) and (G), reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For phylogenetic diversity (PD), relative PD (RPD), functional diversity (FD), and relative FD (RFD), the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 `r pagebreak_pdf()`
 
@@ -1497,7 +1497,7 @@ a <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = taxonomic_cluster), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(A)** Taxonomic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Bioregion") +
   scale_fill_manual(values = bioregion_cols) +
   map_theme()
@@ -1507,7 +1507,7 @@ b <- ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = phylo_cluster), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(B)** Phylogenetic</span>", hjust = "inward", vjust = "inward", color = "white") + 
   labs(fill = "Bioregion") +
   scale_fill_manual(values = bioregion_cols) +
   annotation_scale(location = "br", width_hint = 0.2) +
@@ -1528,7 +1528,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7, hei
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (a), taxonomic bioregions. (b), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of > 1 grid-cell each are lumped into the "Other" category.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (A), taxonomic bioregions. (B), phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of > 1 grid-cell each are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 
@@ -1633,7 +1633,7 @@ e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_p_upper)) +
 div_by_tax_region_plot <- a + b + c + d + e +
   plot_layout(ncol = 2) +
   plot_annotation(
-    tag_levels = "a",
+    tag_levels = "A",
     tag_prefix = "(",
     tag_suffix = ")"
   ) &
@@ -1652,7 +1652,7 @@ ggsave(result_file(figure("div-by-tax-region"), "pdf"), div_by_tax_region_plot, 
 div_by_tax_region_plot
 ```
 
-**`r figure("div-by-tax-region")`**. Phylogenetic and morphological diversity of the ferns of Japan by taxonomic bioregion. (a), Standard effect size (SES) of phylogenetic diversity (PD). (b), SES of relative PD (RPD). (c), SES of functional diversity (FD). (d), SES of relative FD (RFD). (e), *P*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
+**`r figure("div-by-tax-region")`**. Phylogenetic and morphological diversity of the ferns of Japan by taxonomic bioregion. (A), Standard effect size (SES) of phylogenetic diversity (PD). (B), SES of relative PD (RPD). (C), SES of functional diversity (FD). (D), SES of relative FD (RFD). (E), *P*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
 
 `r pagebreak_pdf()`
 
@@ -1771,7 +1771,7 @@ b <- signif_cells_deer_danger %>%
 conserv_status_plot <- a + b +
   plot_layout(ncol = 2) +
   plot_annotation(
-    tag_levels = "a",
+    tag_levels = "A",
     tag_prefix = "(",
     tag_suffix = ")"
   ) &
@@ -1788,4 +1788,4 @@ ggsave(result_file(figure("conserv-status"), "pdf"), conserv_status_plot, width 
 conserv_status_plot
 ```
 
-**`r figure("conserv-status")`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (a) Percent of land area with medium or high protected status for grid-cells with significantly high biodiversity by protection status. (b) Percent of land area occupied by deer for grid-cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). For (a), vertical lines indicate total percent area protected across Japan (baseline protection rate). For (b), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
+**`r figure("conserv-status")`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (A) Percent of land area with medium or high protected status for grid-cells with significantly high biodiversity by protection status. (B) Percent of land area occupied by deer for grid-cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). For (A), vertical lines indicate total percent area protected across Japan (baseline protection rate). For (B), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
