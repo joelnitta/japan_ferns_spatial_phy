@@ -774,7 +774,7 @@ c <- plot_genus("c", "Cyrtomium")
 d <- plot_genus("d", "Dryopteris")
 e <- plot_genus("e", "Pteris")
 f <- plot_genus("f", "Diplazium") +
-  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm")) +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
