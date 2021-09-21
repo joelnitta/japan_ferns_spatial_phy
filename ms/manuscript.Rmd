@@ -152,7 +152,7 @@ biodiv_ferns_spatial_lumped %>%
 
 **Premise:** Biodiversity is often measured with a single metric, species richness. However, this ignores evolutionary history and is not sufficient for making conservation decisions. Here, we use a densely sampled dataset to characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
 
-**Methods:** We used data from >`r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
+**Methods:** We used data from >`r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` taxa. 
 We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. 
 We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. 
 We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. 
@@ -200,7 +200,7 @@ Furthermore, incorporating these two frameworks---the categorization of areas in
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale. 
 The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled [reviewed in @Ebihara2019b]. 
-One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa excluding hybrids [`r repro_count$known$percent`]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
+One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa (excluding nothotaxa) [`r repro_count$known$percent`]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
 
 Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south. 
 Furthermore, it is a mountainous country with great variation in elevation on the larger islands. 
@@ -224,10 +224,10 @@ Map data for Japan were downloaded from the Geospatial Information Authority of 
 
 ## Occurrence data
 
-We used a list of all native, non-hybrid fern specimens deposited at TNS [herbarium codes follow @Thiers2021]. 
+We used a list of fern specimens deposited at TNS [herbarium codes follow @Thiers2021]. 
 We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
 Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1 in Supporting Information). 
-The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa (hereafter defined as species, subspecies, forms, and varieties unless otherwise indicated). 
+The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa at the rank of species, subspecies, form, or variety (hereafter referred to as "taxa" unless otherwise indicated), excluding non-native taxa and nothotaxa.
 Points (latitude and longitude of each occurrence record) were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
 We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) and removed duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
 The R package `r pack("sf")` was used for all GIS analyses [@Pebesma2018].
@@ -595,7 +595,7 @@ percent_traits_missing <-
   scales::percent(accuracy = 0.01)
 ```
 
-The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent` of the total number of native, non-hybrid ferns [`r total_fern_taxa` taxa]) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families. 
+The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent` of the total number of native ferns excluding nothotaxa [`r total_fern_taxa` taxa]) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families. 
 The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a] (`r s_figure("tree")`). 
 Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* [families follow @PteridophytePhylogenyGroupI2016]. 
 The age of the fern clade is estimated to be `r phylogeny_age` ma.
@@ -936,8 +936,8 @@ If high elevation habitats were available, the southern islands would be expecte
 For example, Taiwan, which is just east of the southernmost Japanese islands and harbors high mountains (> 3,000 m), shares many fern species with the main Japanese islands that are not found in southern Japanese islands.
 This supports that the sharp taxonomic turnover between southern and main islands is more likely due to ecological factors than dispersal limitation.
 
-One element of biodiversity that we did not consider here is hybrids. 
-The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa. 
+One element of biodiversity that we did not consider here is nothotaxa (hybrids). 
+The Japanese fern flora includes `r n_hybrid_fern_taxa` nothotaxa. 
 Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification [@Barrington1989]. 
 Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
 Methods for calculating PD would need to be modified to take into account multiple lineages contributing to one terminal taxon.
@@ -980,7 +980,7 @@ Additional supporting information may be found online in the Supporting Informat
 **`r s_figure("sampling-curve")`**. Species collection curve for the ferns of Japan.  
 **`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy.    
 **`r s_figure("envir")`**. Reproductive mode and environmental data in 0.2 degree grid cells across Japan.  
-**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding hybrids.  
+**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding nothotaxa.  
 **`r s_figure("abundance")`**. Observed number of specimens and sampling redundancy per 0.2° grid cell in the ferns of Japan.  
 **`r s_figure("raw-lat")`**. Raw taxonomic diversity, phylogenetic diversity, and functional diversity of the ferns of Japan plotted by latitude.  
 **`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan.  
@@ -988,7 +988,7 @@ Additional supporting information may be found online in the Supporting Informat
 **`r s_figure("k-plot")`**. Selection of *k* for bioregions.  
 **`r s_figure("dendrogram")`**. Bioregion dendrograms.  
 **`r s_figure("genus-map")`**. Map of species richness for selected genera of ferns of Japan.  
-**`r s_figure("apo-genus")`**. Rate of apomixis in genera of native, non-hybrid Japanese ferns with > 1 apomictic taxon.  
+**`r s_figure("apo-genus")`**. Rate of apomixis in genera of Japanese ferns with > 1 apomictic taxon.  
 **`r s_figure("modelfit-not-ult")`**. Relationship between phylogenetic diversity (PD) and relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree).  
 **`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in taxonomic or phylogenetic bioregions arranged by mean annual temperature and annual precipitation.  
 **`r s_figure("protected-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and protected areas.  

@@ -477,7 +477,7 @@ p <- ggtree(phy, layout = "fan", size = 0.25, open.angle = 3) %<+%
 rotate_tree(p, 3)
 ```
 
-**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding hybrids. Points at nodes indicate bootstrap support. Scalebar 100 my. Tree visualized with the `r pack("ggtree")` R package [@Yu2017].
+**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding nothotaxa. Points at nodes indicate bootstrap support. Scalebar 100 my. Tree visualized with the `r pack("ggtree")` R package [@Yu2017].
 
 \clearpage
 
@@ -823,7 +823,7 @@ percent_apo_genus %>%
   )
 ```
 
-**`r s_figure("apo-genus")`**. Rate of apomixis in genera of native, non-hybrid Japanese ferns with > 1 apomictic taxon. Numbers next to each bar show number of apomictic taxa out of total richness per genus.
+**`r s_figure("apo-genus")`**. Rate of apomixis in genera Japanese ferns with > 1 apomictic taxon. Numbers next to each bar show number of apomictic taxa out of total richness per genus. Excludes non-native taxa and nothotaxa.
 
 \clearpage
 
