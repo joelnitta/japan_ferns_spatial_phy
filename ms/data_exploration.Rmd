@@ -1,5 +1,5 @@
 ---
-title: "Appendix S2: Exploratory Data Analysis"
+title: "Appendix S2: Data Exploration"
 mainfont: Roboto-Regular.ttf
 fontsize: 11pt
 mainfontoptions: 
@@ -24,7 +24,7 @@ header-includes:
   - \pagestyle{fancy}  # enable header
   - \fancypagestyle{plain}{\pagestyle{fancy}} # show header on first page
   - \renewcommand{\headrulewidth}{0pt} # delete line beneath header
-  - \fancyhead[RE,RO]{Nitta et al.---\textit{American Journal of Botany} 2021 -- Appendix S2} # add header on right side
+  - \fancyhead[RE,RO]{Nitta \textit{et al}. Spatial phy. of Japanese ferns Appendix S2} # add header on right side
   - \fancyhead[LO,LE]{} # suppress automatic section header on left side
   - \cfoot{\thepage} # footer
 ---
@@ -33,7 +33,7 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Here we perform exploratory data analysis to determine the appropriate models to fit to the data. 
+Here we perform initial data exploration to determine the appropriate models to fit to the data. 
 
 All code is in R, and workflow managed with the `targets` package (https://github.com/ropensci/targets). 
 
