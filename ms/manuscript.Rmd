@@ -228,7 +228,7 @@ We used a list of fern specimens deposited at TNS [herbarium codes follow @Thier
 We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
 Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1 in Supporting Information). 
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa at the rank of species, subspecies, form, or variety (hereafter referred to as "taxa" unless otherwise indicated), excluding non-native taxa and nothotaxa.
-Points (latitude and longitude of each occurrence record) were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
+Latitude and longitude of each occurrence record were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
 We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) and removed duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
 The R package `r pack("sf")` was used for all GIS analyses [@Pebesma2018].
 
@@ -1403,7 +1403,7 @@ ggsave(result_file(figure("coeff"), "pdf"), coeff_plot, width = 7, height = 5, u
 coeff_plot
 ```
 
-**`r figure("coeff")`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *P*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
+**`r figure("coeff")`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models for the effect of environment and reproductive mode on biodiversity metrics in the ferns of Japan. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *P*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
 
 ```{r modelfit-make}
 # Make plot showing model fits
@@ -1462,7 +1462,7 @@ ggsave(result_file(figure("modelfit"), "pdf"), modelfit_plot, width = 7, height 
 modelfit_plot
 ```
 
-**`r figure("modelfit")`**. Relationship between biodiversity metrics and selected predictor variables. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For phylogenetic diversity (PD), relative PD (RPD), functional diversity (FD), and relative FD (RFD), the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
+**`r figure("modelfit")`**. Relationship between biodiversity metrics and selected predictor variables in the ferns of Japan. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For phylogenetic diversity (PD), relative PD (RPD), functional diversity (FD), and relative FD (RFD), the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 `r pagebreak_pdf()`
 
