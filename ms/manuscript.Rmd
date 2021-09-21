@@ -1181,10 +1181,10 @@ raw_diversity_plot <- a + b + c +
 
 ```{r raw-diversity-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
-ggsave(result_file(figure("raw-diversity"), "pdf"), width = 7, height = 4, units = "in", raw_diversity_plot)
+ggsave(result_file(figure("raw-diversity"), "pdf"), width = 7.25, height = 4, units = "in", raw_diversity_plot)
 ```
 
-```{r raw-diversity-print, fig.width = 7, fig.height = 4, eval = params$doc_type == "pdf"}
+```{r raw-diversity-print, fig.width = 7.25, fig.height = 4, eval = params$doc_type == "pdf"}
 # Print plot if rendering to PDF
 raw_diversity_plot
 ```
@@ -1260,10 +1260,10 @@ rand_diversity_plot <- a + b + c + d +
 
 ```{r rand-diversity-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
-ggsave(result_file(figure("rand-diversity"), "pdf"), rand_diversity_plot, width = 7, height = 8, units = "in")
+ggsave(result_file(figure("rand-diversity"), "pdf"), rand_diversity_plot, width = 7.25, height = 8, units = "in")
 ```
 
-```{r rand-diversity-print, fig.width = 7, fig.height = 9, eval = params$doc_type == "pdf"}
+```{r rand-diversity-print, fig.width = 7.25, fig.height = 9, eval = params$doc_type == "pdf"}
 # Print plot if rendering to PDF
 rand_diversity_plot
 ```
@@ -1395,10 +1395,10 @@ coeff_plot <- wrap_plots(coeff_subplots) +
 
 ```{r coeff-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
-ggsave(result_file(figure("coeff"), "pdf"), coeff_plot, width = 7, height = 5, units = "in")
+ggsave(result_file(figure("coeff"), "pdf"), coeff_plot, width = 7.25, height = 5, units = "in")
 ```
 
-```{r coeff-print, fig.width = 7, fig.height = 5, eval = params$doc_type == "pdf"}
+```{r coeff-print, fig.width = 7.25, fig.height = 5, eval = params$doc_type == "pdf"}
 # Print plot if rendering to PDF
 coeff_plot
 ```
@@ -1454,10 +1454,10 @@ modelfit_plot <-
 
 ```{r modelfit-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
-ggsave(result_file(figure("modelfit"), "pdf"), modelfit_plot, width = 7, height = 5, units = "in")
+ggsave(result_file(figure("modelfit"), "pdf"), modelfit_plot, width = 7.25, height = 5, units = "in")
 ```
 
-```{r modelfit-print, fig.width = 7, fig.height = 5, eval = params$doc_type == "pdf"}
+```{r modelfit-print, fig.width = 7.25, fig.height = 5, eval = params$doc_type == "pdf"}
 # Print plot if rendering to PDF
 modelfit_plot
 ```
@@ -1520,10 +1520,10 @@ bioregions_plot <- a + b +
 
 ```{r bioregions-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
-ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7, height = 5, units = "in")
+ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7.25, height = 5, units = "in")
 ```
 
-```{r bioregions-print, fig.width = 7, fig.height = 5, eval = params$doc_type == "pdf"}
+```{r bioregions-print, fig.width = 7.25, fig.height = 5, eval = params$doc_type == "pdf"}
 # Print plot if rendering to PDF
 bioregions_plot
 ```
@@ -1644,10 +1644,10 @@ div_by_tax_region_plot <- a + b + c + d + e +
 
 ```{r div-by-tax-region-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
-ggsave(result_file(figure("div-by-tax-region"), "pdf"), div_by_tax_region_plot, width = 7, height = 7, units = "in")
+ggsave(result_file(figure("div-by-tax-region"), "pdf"), div_by_tax_region_plot, width = 7.25, height = 7, units = "in")
 ```
 
-```{r div-by-tax-region-print, fig.width = 7, fig.height = 7, eval = params$doc_type == "pdf"}
+```{r div-by-tax-region-print, fig.width = 7.25, fig.height = 7, eval = params$doc_type == "pdf"}
 # Print plot if rendering to PDF
 div_by_tax_region_plot
 ```
@@ -1780,10 +1780,10 @@ conserv_status_plot <- a + b +
 
 ```{r conserv-status-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
-ggsave(result_file(figure("conserv-status"), "pdf"), conserv_status_plot, width = 7, height = 4, units = "in")
+ggsave(result_file(figure("conserv-status"), "pdf"), conserv_status_plot, width = 7.25, height = 4, units = "in")
 ```
 
-```{r conserv-status-print, fig.width = 7, fig.height = 4, eval = params$doc_type == "pdf"}
+```{r conserv-status-print, fig.width = 7.25, fig.height = 4, eval = params$doc_type == "pdf"}
 # Print plot if rendering to PDF
 conserv_status_plot
 ```
