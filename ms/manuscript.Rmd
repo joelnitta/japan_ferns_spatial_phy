@@ -11,7 +11,7 @@ output:
     pandoc_args: [ "--csl", "apa-6th-edition.csl"]
     toc: no
     number_sections: no
-    reference_docx: template.docx
+    reference_docx: ajb_template.docx
   bookdown::pdf_document2:
     citation_package: default
     toc: no
@@ -105,9 +105,7 @@ tar_load(c(
 <!-- Don't indent -->
 \setlength{\parindent}{0ex}
 
-Short running title: Spatial phylogenetics of Japanese ferns
-
-Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1,3^, and Atsushi Ebihara^4^
+Joel H. Nitta^1,5^, Brent D. Mishler^2^, Wataru Iwasaki^1,3^, and Atsushi Ebihara^4^
 
 ^1^Department of Biological Sciences, Graduate School of Science, The University of Tokyo, Tokyo, Japan
 
@@ -117,15 +115,11 @@ Joel H. Nitta^1^, Brent D. Mishler^2^, Wataru Iwasaki^1,3^, and Atsushi Ebihara^
 
 ^4^Department of Botany, National Museum of Nature and Science, Tsukuba, Japan  
 
-Author for correspondence:  
-*Joel H. Nitta*  
-*Email: joelnitta@gmail.com*
+^5^Author for correspondence: joelnitta@gmail.com
 
-## Acknowledgements
+Manuscript received _______; revision accepted _______.
 
-Members of the Iwasaki Lab at the University of Tokyo provided comments that improved the manuscript.
-Shawn Laffan provided advice about CANAPE.
-This study was supported by JSPS KAKENHI Grant Number 16H06279.
+Short running title: Spatial phylogenetics of Japanese ferns
 
 \newpage
 
@@ -156,11 +150,7 @@ biodiv_ferns_spatial_lumped %>%
   split(.$type)
 ```
 
-**Aim:** To characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
-
-**Location:** Japan
-
-**Taxon:** Ferns
+**Premise:** Biodiversity is often measured with a single metric, species richness. However, this ignores evolutionary history and is not sufficient for making conservation decisions. Here, we use a densely sampled dataset to characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
 
 **Methods:** We used data from >`r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` native, non-hybrid taxa. 
 We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. 
@@ -173,7 +163,7 @@ Grid-cells were grouped in to `r maj_cluster_count$phylo_cluster$n %>% english2`
 Temperature and apomixis were identified as drivers of patterns of taxonomic and phylogenetic diversity.
 Conservation status (% protected area) was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory by deer varied by biodiversity metric, and was particularly severe for taxonomic richness.
 
-**Main conclusions:** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
+**Conclusions:** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
 The different distributions of each diversity type reflect the major bioregions. 
 Future conservation efforts should recognize that threats can vary by biodiversity metric and consider multiple multiple metrics when establishing conservation priorities.
 
@@ -181,8 +171,6 @@ Future conservation efforts should recognize that threats can vary by biodiversi
 **Keywords:** apomixis, biodiversity, biogeography, CANAPE, conservation, ferns, Japan, phylogenetic diversity. 
 
 \newpage
-
-## Introduction
 
 ```{r intro-stats}
 # tally number of non-hybrid pteridophytes with known repro. mode
@@ -222,7 +210,7 @@ Therefore, we expect the spatial distribution of biodiversity to be determined b
 Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail. 
 We ask the following questions in our study system, the ferns of Japan: 1. How is biodiversity distributed? 2. How is biodiversity structured? 3. What environmental and biological factors influence biodiversity? 4. How well is biodiversity protected?
 
-## Materials and Methods
+## MATERIALS AND METHODS
 
 All computational analyses were carried out in R v`r getRversion()` [@RCoreTeam2020] unless otherwise stated. The R package `r pack("targets")` was used to control analysis workflow [@Landau2021].
 
@@ -471,7 +459,7 @@ These values were compared with the overall percent of protected area or area oc
 For PD, FD, and PE, significance was assessed with a one-tailed test at alpha = 0.05 against the 999 null communities described above. 
 For taxonomic richness, cells ranked in the top > 5% were considered highly diverse.
 
-## Results
+## RESULTS
 
 ### Datasets
 
@@ -690,7 +678,7 @@ Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Is
 The other much smaller bioregions ("singletons" including only a single grid-cell each) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
 Taxonomic bioregions 3 and 4 have higher SES values of PD, RPD, FD, and RFD than bioregions 1 and 2 (`r figure("div-by-tax-region")`). 
-Bioregions 3 and 4 also have consistently high PE *p*-scores, whereas bioregions 1 and 2 have a much wider variation. 
+Bioregions 3 and 4 also have consistently high PE *P*-scores, whereas bioregions 1 and 2 have a much wider variation. 
 Bioregion 2 has lower RPD and RFD than bioregion 1. 
 Comparison of biodiversity metrics across phylogenetic bioregions was similar, except that phylogenetic bioregion 3 mostly corresponds to taxonomic bioregions 3 and 4 combined.
 
@@ -814,7 +802,7 @@ The percentage of area occupied by deer in grid-cells with significantly high bi
 Cells with high FD, PD, or PE tended to have less deer occupation compared to the baseline rate (`r figure("conserv-status")`b).
 However, cells with high species richness consistently exceeded the baseline rate of deer presence, with up to `r deer_highest_danger$estimated$percent` occupied by deer in the estimated range dataset.
 
-## Discussion
+## DISCUSSION
 
 ### Distribution and drivers of biodiversity
 
@@ -892,7 +880,7 @@ Our analysis shows that the threat to fern biodiversity posed by Japanese deer d
 This pattern is due to the fact that Japanese deer do not occur in the southern islands, which house high amounts of PD and PE; rather, areas with high species richness are primarily located in southern Honshu, Shikoku, and Kyushu, where deer expansion has been intense (`r s_figure("protected-map")`a).
 This result highlights the importance of using multiple metrics of biodiversity for establishing conservation priorities.
 
-### Limits of the study and future outlook
+### CONCLUSIONS
 
 ```{r limits-stats}
 # Find the species with the widest latitudinal distribution
@@ -931,7 +919,8 @@ n_hybrid_fern_taxa <- fern_list %>%
   n_distinct()
 ```
 
-There are a number of caveats that must be kept in mind when interpreting these results, but these also suggest avenues for future research. 
+Our study integrates diverse, thoroughly collected datasets to characterize the spatial biodiversity of Japanese ferns and gain insight into the processes generating these patterns. We end by summarizing some caveats that must be kept in mind when interpreting our results, while also suggesting avenues for future research.
+
 First, the data include specimens collected over a wide time period, so they do not necessarily represent the current distribution of ferns in Japan. 
 Furthermore, the collections are not evenly collected throughout the country, but rather some areas have many more specimens than others (`r s_figure("abundance")`). 
 Indeed, one promising avenue of research may be to take advantage of the most densely sampled areas to investigate changes in abundance over time.
@@ -960,6 +949,26 @@ Here, as in the vast majority of fern ecology studies, we consider only the spor
 However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes. 
 The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA sequencing analyses to compare patterns of biodiversity between life stages in ferns across large spatial scales.
 
+## Acknowledgements
+
+Members of the Iwasaki Lab at the University of Tokyo provided comments that improved the manuscript.
+Shawn Laffan provided advice about CANAPE.
+This study was supported by JSPS KAKENHI Grant Number 16H06279.
+
+## Author contributions
+
+J.H.N., B.M., and A.E. conceived the ideas; A.E. provided the data; J.H.N. analyzed the data; W.I provided resources; J.H.N. wrote the manuscript with input from all co-authors.
+
+## Data availability
+
+Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_spatial_phy. 
+A Docker image to run the code is available at https://hub.docker.com/r/joelnitta/japan_ferns_spatial_phy.
+Data files needed to run the analysis and selected results files are available from Figshare at http://doi.org/FIXME:ADD_DOI_HERE_WHEN_ASSIGNED.
+
+## Literature cited
+<!-- Insert <div id="refs"></div> to place the refs here instead of at the end -->
+<div id="refs"></div>
+
 \newpage
 
 | Trait               | Significance                                               | Reference       | 
@@ -984,7 +993,7 @@ resp_var_lookup <- tribble(
   ~resp_var, ~resp_var_pretty,
   "fd_obs_z", "SES of FD",
   "pd_obs_z", "SES of PD",
-  "pe_obs_p_upper", "PE *p*-value",
+  "pe_obs_p_upper", "PE *P*-value",
   "rfd_obs_z", "SES of RFD",
   "richness", "Richness",
   "rpd_obs_z", "SES of RPD",
@@ -1317,7 +1326,7 @@ plot_coeff <- function (df) {
     scale_x_continuous() +
     scale_fill_manual(
       values = c("TRUE" = "grey20", "FALSE" = "grey70"),
-      labels = c("TRUE" = "*p* < 0.05", "FALSE" = "*p* > 0.05")) +
+      labels = c("TRUE" = "*P* < 0.05", "FALSE" = "*P* > 0.05")) +
     labs(
       subtitle = glue("{unique(plot_data$resp_var_print)},\n{unique(plot_data$model_type_print)}"),
       fill = "Significance") +
@@ -1365,7 +1374,7 @@ ggsave(result_file(figure("coeff"), "pdf"), coeff_plot, width = 7, height = 5, u
 coeff_plot
 ```
 
-**`r figure("coeff")`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *p*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
+**`r figure("coeff")`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models. (a)--(e), environmental models (models including temperature); (f) and (g), reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *P*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
 
 ```{r modelfit-make}
 # Make plot showing model fits
@@ -1580,7 +1589,7 @@ e <- ggplot(data, aes(x = taxonomic_cluster, y = pe_obs_p_upper)) +
   scale_color_manual(values = bioregion_cols, breaks = 1:4) +
   geom_boxplot(color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
   labs(
-    y = "PE *p*-score",
+    y = "PE *P*-score",
     x = "Cluster",
     color = "Bioregion"
   ) +
@@ -1614,7 +1623,7 @@ ggsave(result_file(figure("div-by-tax-region"), "pdf"), div_by_tax_region_plot, 
 div_by_tax_region_plot
 ```
 
-**`r figure("div-by-tax-region")`**. Phylogenetic and morphological diversity of the ferns of Japan by taxonomic bioregion. (a), Standard effect size (SES) of phylogenetic diversity (PD). (b), SES of relative PD (RPD). (c), SES of functional diversity (FD). (d), SES of relative FD (RFD). (e), *p*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
+**`r figure("div-by-tax-region")`**. Phylogenetic and morphological diversity of the ferns of Japan by taxonomic bioregion. (a), Standard effect size (SES) of phylogenetic diversity (PD). (b), SES of relative PD (RPD). (c), SES of functional diversity (FD). (d), SES of relative FD (RFD). (e), *P*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
 
 `r pagebreak_pdf()`
 
@@ -1751,85 +1760,3 @@ conserv_status_plot
 ```
 
 **`r figure("conserv-status")`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (a) Percent of land area with medium or high protected status for grid-cells with significantly high biodiversity by protection status. (b) Percent of land area occupied by deer for grid-cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). For (a), vertical lines indicate total percent area protected across Japan (baseline protection rate). For (b), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
-
-`r pagebreak_doc()`
-
-```{r japan-map-doc, fig.cap = "", fig.width = 5, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
-# Print plot if rendering to doc on initial submission
-japan_map_plot
-cat("\n\n", figure("japan-map"))
-```
-
-`r pagebreak_doc()`
-
-```{r raw-diversity-doc, fig.cap = "", fig.width = 7, fig.height = 4, eval = params$doc_type == "doc", results = "asis"}
-raw_diversity_plot
-cat("\n\n", figure("raw-diversity"))
-```
-
-`r pagebreak_doc()`
-
-```{r rand-diversity-doc, fig.cap = "", fig.width = 7, fig.height = 9, eval = params$doc_type == "doc", results = "asis"}
-rand_diversity_plot
-cat("\n\n", figure("rand-diversity"))
-```
-
-`r pagebreak_doc()`
-
-```{r coeff-doc, fig.cap = "", fig.width = 7, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
-coeff_plot
-cat("\n\n", figure("coeff"))
-```
-
-`r pagebreak_doc()`
-
-```{r modelfit-doc, fig.cap = "", fig.width = 7, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
-modelfit_plot
-cat("\n\n", figure("modelfit"))
-```
-
-`r pagebreak_doc()`
-
-```{r endemism-doc, fig.cap = "", fig.width = 5, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
-endemism_plot
-cat("\n\n", figure("endemism"))
-```
-
-`r pagebreak_doc()`
-
-```{r bioregions-doc, fig.cap = "", fig.width = 7, fig.height = 5, eval = params$doc_type == "doc", results = "asis"}
-bioregions_plot
-cat("\n\n", figure("bioregions"))
-```
-
-`r pagebreak_doc()`
-
-```{r div-by-tax-region-doc, fig.cap = "", fig.width = 7, fig.height = 7, eval = params$doc_type == "doc", results = "asis"}
-div_by_tax_region_plot
-cat("\n\n", figure("div-by-tax-region"))
-```
-
-`r pagebreak_doc()`
-
-```{r conserv-status-doc, fig.cap = "", fig.width = 7, fig.height = 4, eval = params$doc_type == "doc", results = "asis"}
-conserv_status_plot
-cat("\n\n", figure("conserv-status"))
-```
-
-`r pagebreak_doc()`
-
-## Data availability statement
-
-Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_spatial_phy. 
-A Docker image to run the code is available at https://hub.docker.com/r/joelnitta/japan_ferns_spatial_phy.
-Data files needed to run the analysis and selected results files are available from Dryad at http://doi.org/FIXME:ADD_DOI_HERE_WHEN_ASSIGNED.
-
-## References
-<!-- Insert <div id="refs"></div> to place the refs here instead of at the end -->
-<div id="refs"></div>
-
-## Biosketch
-
-Joel H. Nitta's research focuses on patterns and processes of diversification in ferns. For more information, see https://joelnitta.com.
-
-Author contributions: J.H.N., B.M., and A.E. conceived the ideas; A.E. provided the data; J.H.N. analyzed the data; W.I provided resources; J.H.N. wrote the manuscript with input from all co-authors.
