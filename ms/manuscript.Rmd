@@ -363,7 +363,7 @@ We conducted maximum-likelihood phylogenetic analysis with `r software("IQ-TREE"
 Molecular dating was conducted with `r software("treePL")` v1.0 [@Smith2012] using `r n_fossil_points` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020]. 
 The root of the tree (most recent common ancestor of all land plants) was fixed to 475 mya [@Testo2016a].
 We trimmed the resulting ultrametric tree to only Japanese taxa.
-treePL requires branch lengths to be > 0, and it sets extremely small branches to an arbitrary minimum positive length.
+`r software("treePL")` requires branch lengths to be > 0, and it sets extremely small branches to an arbitrary minimum positive length.
 This may artificially add branch length between taxa with identical DNA sequences, which occur multiple times in the Japanese fern *rbcL* dataset.
 We converted any clades in the dated tree consisting of identical sequences to polytomies with the node at 0 mya (`r ie`, the present).
 This tree was used for all subsequent analysis unless indicated otherwise.
