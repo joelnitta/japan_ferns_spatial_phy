@@ -402,6 +402,7 @@ references:
   - family: Nitta
     given: Joel H.
   container-title: Journal of Plant Research
+  container-title-short: J. Plant Res.
   DOI: 10.1007/s10265-019-01137-3
   ISSN: '16180860'
   issue: '6'
@@ -1213,6 +1214,7 @@ references:
   - family: Minh
     given: Bui Quang
   container-title: Molecular Biology and Evolution
+  container-title-short: Mol. Biol. Evol.
   DOI: 10.1093/molbev/msu300
   ISSN: '15371719'
   issue: '1'
@@ -1309,6 +1311,7 @@ references:
   type: article-journal
   volume: '87'
 - id: Nitta2021a
+  type: webpage
   accessed:
   - year: 2021
     month: 8
@@ -1316,17 +1319,11 @@ references:
   author:
   - family: Nitta
     given: Joel H.
-  DOI: 10.5281/ZENODO.5094033
   issued:
   - year: 2021
-    month: 7
-    day: 13
-  language: en
-  source: DOI.org (Datacite)
-  title: canaper
-  title-short: joelnitta/canaper
-  type: book
-  version: 0.0.0.9000
+  title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R. R Package
+    Version 0.0.0.9000'
+  URL: https://doi.org/10.5281/zenodo.5094033
 - type: webpage
   id: Noss2016
   author:
