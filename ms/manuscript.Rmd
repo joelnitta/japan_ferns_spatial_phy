@@ -218,17 +218,16 @@ All computational analyses were carried out in R v`r getRversion()` [@RCoreTeam2
 
 ## Study Site
 
-Our data include all ferns known to natively occur within the boundaries of Japan . 
 Japan (20°N to 45°N, 122°E to 153°E) consists of four main islands and thousands of smaller ones (`r figure("japan-map")`). 
 Most of the main islands have been in contact with the continent at various points in the past during periods of lower sea level, but the Ogasawara archipelago consists of oceanic islands that have never been connected to the mainland. 
-The climate is subtropical in the south and temperate in other parts of the country. 
+The climate is subtropical in the southern islands and temperate in other parts of the country. 
 Map data for Japan were downloaded from the Geospatial Information Authority of Japan under the Creative Commons Attribution License v4.0 (https://www.gsi.go.jp/kankyochiri/gm_japan_e.html).
 
 ## Occurrence data
 
 We used a list of fern specimens deposited at TNS [herbarium codes follow @Thiers2021]. 
 We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
-Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1 in Supporting Information). 
+Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1; see Supplemental Data with this article). 
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa at the rank of species, subspecies, form, or variety (hereafter referred to as "taxa" unless otherwise indicated), excluding non-native taxa and nothotaxa.
 Latitude and longitude of each occurrence record were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
 We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) and removed duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
@@ -414,7 +413,7 @@ To partially account for this, we also calculated all endemism-related metrics u
 
 ## Spatial models
 
-Initial inspection of the biodiversity and environmental data showed a single outlier in % apomictic taxa due to extremely low species richness (Appendix S2), so that grid-cell and one grid-cell lacking environmental data were excluded from modeling analyses.
+Initial inspection of the biodiversity and environmental data showed a single outlier in % apomictic taxa due to extremely low species richness (Appendix S2; see Supplemental Data with this article), so that grid-cell and one grid-cell lacking environmental data were excluded from modeling analyses.
 
 We tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the R package `r pack("spdep")` [@Bivand2013]. 
 In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05) (`r s_table("moran")`). 
@@ -965,7 +964,8 @@ J.H.N., B.M., and A.E. conceived the ideas; A.E. provided the data; J.H.N. analy
 
 Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_spatial_phy. 
 A Docker image to run the code is available at https://hub.docker.com/r/joelnitta/japan_ferns_spatial_phy.
-Data files needed to run the analysis and selected results files are available from Figshare at http://doi.org/FIXME:ADD_DOI_HERE_WHEN_ASSIGNED.
+Data files needed to run the analysis and selected results files are available from Figshare at http://doi.org/10.6084/m9.figshare.16655263.
+**Note to reviewers**: the Figshare DOI will not be accessible until the paper is accepted. During review, the data can be accessed from this link: https://figshare.com/s/de3d5a70e118208e56c5.
 
 # Online supporting information
 
@@ -994,9 +994,11 @@ Additional supporting information may be found online in the Supporting Informat
 **`r s_figure("modelfit-not-ult")`**. Relationship between phylogenetic diversity (PD) and relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree).  
 **`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in taxonomic or phylogenetic bioregions arranged by mean annual temperature and annual precipitation.  
 **`r s_figure("protected-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and protected areas.  
-**`r s_figure("deer-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and distribution of Japanese deer (*Cervus nippon*).  
+**`r s_figure("deer-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and distribution of Japanese deer (*Cervus nippon*).
 
-# References
+**Appendix S2**. Exploratory data analysis for spatial modeling. 
+
+# Literature cited
 <!-- Insert <div id="refs"></div> to place the refs here instead of at the end -->
 <div id="refs"></div>
 

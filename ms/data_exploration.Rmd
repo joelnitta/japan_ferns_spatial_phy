@@ -92,13 +92,13 @@ The dataset includes biodiversity metrics and environmental data measured on nat
 
 All biodiversity metrics were calculated during the `targets` workflow (`_targets.R`), and are contained in the `biodiv_ferns_cent_dryad` object in the `targets` cache. 
 
-The next step uses `tar_load()` to load the dataset from the targets cache. Alternatively, this can be loaded from the dryad data file as shown in the commented-out code below.
+The next step uses `tar_load()` to load the dataset from the targets cache. Alternatively, this can be loaded from the data file as shown in the commented-out code below.
 
 ```{r load-data, message = FALSE}
 # Load the data from the targets workflow
 tar_load(biodiv_ferns_cent_dryad)
 
-# Alternatively, unzip `results.zip` in the Dryad data
+# Alternatively, unzip `results.zip`
 # (FIXME: add DOI when available)
 # and read in the data from there
 # biodiv_ferns_cent_dryad <- read_csv(here::here("japan_ferns_biodiv.csv"))
