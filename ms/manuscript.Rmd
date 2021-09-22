@@ -150,21 +150,23 @@ biodiv_ferns_spatial_lumped %>%
   split(.$type)
 ```
 
-**Premise:** Biodiversity is often measured with a single metric, species richness. However, this ignores evolutionary history and is not sufficient for making conservation decisions. Here, we use a densely sampled dataset to characterize multiple facets and drivers of biodiversity and understand how these relate to bioregions and conservation status.
+**Premise:** Biodiversity is often only measured with species richness.
+However, this ignores evolutionary history and is not sufficient for making conservation decisions.
+Here, we characterize multiple facets and drivers of biodiversity to understand how these relate to bioregions and conservation status in the ferns of Japan.
 
-**Methods:** We used data from >`r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` fern specimens in Japan to compile a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` taxa. 
-We combined this with a phylogenetic tree and functional trait data to analyze taxonomic, phylogenetic, and functional diversity, and modeled the distribution of biodiversity in response to environmental factors and reproductive mode. 
-We conducted categorical analysis of neo- and paleo-endemism to identify areas of significant phylogenetic endemism. 
-We used hierarchical clustering of taxonomic and phylogenetic distances to analyze bioregions. 
-We compared the overlap of significantly diverse grid-cells with existing conservation zones and range maps of native Japanese deer to assess conservation status and threats.
+**Methods:** We compiled a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` taxa based on > `r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` specimen records.
+We combined this with a phylogeny and functional traits to analyze taxonomic, phylogenetic, and functional diversity, and modeled biodiversity metrics in response to environmental factors and reproductive mode.
+We used hierarchical clustering to analyze bioregions.
+We compared the overlap of significantly diverse grid-cells with conservation zones and range maps of native Japanese deer to assess conservation status and threats.
 
-**Results:** Three major patterns in the spatial distribution of biodiversity were observed: that of taxonomic richness, which is highest at mid-latitudes, that of phylogenetic and functional diversity and phylogenetic endemism, which are highest in small southern islands, and that of relative phylogenetic and functional diversity, which are high at both high and low latitudes, and low at mid-latitudes. 
+**Results:** Taxonomic richness was highest at mid-latitudes.
+Phylogenetic and functional diversity and phylogenetic endemism were highest in small southern islands.
+Relative phylogenetic and functional diversity were high at both high and low latitudes, and low at mid-latitudes.
 Grid-cells were grouped in to `r maj_cluster_count$phylo_cluster$n %>% english2` (phylogenetic) or `r maj_cluster_count$taxonomic_cluster$n %>% english2` (taxonomic) major bioregions. 
-Temperature and apomixis were identified as drivers of patterns of taxonomic and phylogenetic diversity.
-Conservation status (% protected area) was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory by deer varied by biodiversity metric, and was particularly severe for taxonomic richness.
+Temperature and apomixis were identified as drivers of taxonomic and phylogenetic diversity.
+Conservation status was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory was greater for taxonomic richness than other metrics.
 
-**Conclusions:** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan. 
-The different distributions of each diversity type reflect the major bioregions. 
+**Conclusions:** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan.
 Future conservation efforts should recognize that threats can vary by biodiversity metric and consider multiple multiple metrics when establishing conservation priorities.
 
 <!-- may include title words -->
