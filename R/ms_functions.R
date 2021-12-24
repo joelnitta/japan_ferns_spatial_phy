@@ -104,7 +104,8 @@ pack <- function(x) {glue::glue("'{x}' v.{packageVersion(x)}")}
 #'
 #' @return Name of software formatted according to journal requirements
 #' 
-software <- function(x) {glue::glue('<span style="font-variant:small-caps;">{x}</span>')}
+# software <- function(x) {glue::glue('<span style="font-variant:small-caps;">{x}</span>')}
+software <- function(x) {x}
 
 #' Format R function names
 #'

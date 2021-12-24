@@ -398,9 +398,9 @@ c <- ggplot(redundancy_by_res, aes(x = redundancy, y = res)) +
   )
 
 a + b + c +
-  plot_annotation(tag_levels = "a",
-                  tag_prefix = "(",
-                  tag_suffix = ")") &
+  plot_annotation(tag_levels = "A",
+                  tag_prefix = "",
+                  tag_suffix = "") &
   theme(plot.tag = element_text(face = "bold"))
 ```
 
@@ -417,7 +417,7 @@ plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::w
     geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
-      label = glue("<span style='color:black'>**({part})** {label}</span>"), 
+      label = glue("<span style='color:black'>**{part}** {label}</span>"), 
       hjust = "inward", vjust = "inward", color = "white") + 
     labs(fill = fill_lab) +
     scale_fill_scico(palette = "lajolla", labels = labels) +
@@ -490,7 +490,7 @@ a <- ggplot() +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_scico(palette = "lajolla", label = k) +
   labs(fill = "No. specimens") +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(a)**</span>", hjust = "inward", vjust = "inward", color = "white") + 
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**A**</span>", hjust = "inward", vjust = "inward", color = "white") + 
   map_theme()
 
 
@@ -500,7 +500,7 @@ b <- ggplot() +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_scico(palette = "lajolla") +
   labs(fill = "Redundancy") +
-  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**(b)**</span>", hjust = "inward", vjust = "inward", color = "white") +
+  annotate(geom="richtext", y = Inf, x = -Inf, label = "<span style='color:black'>**B**</span>", hjust = "inward", vjust = "inward", color = "white") +
   annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm")) +
   map_theme() +
   theme(
@@ -556,9 +556,9 @@ c <- ggplot(biodiv_ferns_cent_raw, aes(y = fd_obs, x = lat)) +
 
 a + b + c + 
   plot_layout(nrow = 1) +
-  plot_annotation(tag_levels = "a",
-                  tag_prefix = "(",
-                  tag_suffix = ")") &
+  plot_annotation(tag_levels = "A",
+                  tag_prefix = "",
+                  tag_suffix = "") &
   theme(plot.tag = element_text(face = "bold"))
 ```
 
@@ -587,9 +587,9 @@ d <- ggplot(biodiv_ferns_spatial, aes(x = richness, y = rfd_obs)) +
 
 a + b + c + d +
   plot_layout(ncol = 2, nrow = 2) +
-  plot_annotation(tag_levels = "a",
-                  tag_prefix = "(",
-                  tag_suffix = ")") &
+  plot_annotation(tag_levels = "A",
+                  tag_prefix = "",
+                  tag_suffix = "") &
   theme(plot.tag = element_text(face = "bold"))
 ```
 
@@ -659,9 +659,9 @@ b <- k_phylogeny$df %>%
 
 a + b +
   plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = "a",
-                  tag_prefix = "(",
-                  tag_suffix = ")") &
+  plot_annotation(tag_levels = "A",
+                  tag_prefix = "",
+                  tag_suffix = "") &
   theme(plot.tag = element_text(face = "bold"))
 ```
 
@@ -693,7 +693,7 @@ ggtree(dendro_tax, size = 0.15) %<+%
   scale_color_manual(
     values = bioregion_cols[c(1,2,3,4,"Other")], breaks = c(1,2,3,4,"Other"), name = "Cluster", na.value = "grey10") +
   theme(legend.position = "right") +
-  labs(subtitle = "**(a)** Taxonomic") +
+  labs(subtitle = "**A** Taxonomic") +
   theme(plot.subtitle = element_markdown())
 ```
 
@@ -721,7 +721,7 @@ ggtree(dendro_phy, size = 0.15) %<+%
   scale_color_manual(
     values = bioregion_cols[c(1,2,3,4,"Other")], breaks = c(1,2,3,4,"Other"), name = "Cluster", na.value = "grey10") +
   theme(legend.position = "right") +
-  labs(subtitle = "**(b)** Phylogenetic") +
+  labs(subtitle = "**B** Phylogenetic") +
   theme(plot.subtitle = element_markdown())
 ```
 
@@ -750,7 +750,7 @@ plot_genus <- function(part, genus_select) {
     geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
-      label = glue("<span style='color:black'>**({part})** *{genus_select}*</span>"), 
+      label = glue("<span style='color:black'>**{part}** *{genus_select}*</span>"), 
       hjust = "inward", vjust = "inward", color = "white") + 
     labs(fill = "Richness") +
     scale_fill_scico(palette = "lajolla") +
@@ -774,7 +774,7 @@ c <- plot_genus("c", "Cyrtomium")
 d <- plot_genus("d", "Dryopteris")
 e <- plot_genus("e", "Pteris")
 f <- plot_genus("f", "Diplazium") +
-  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm")) +
+  annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
@@ -864,9 +864,9 @@ modelfit_plot_list[[2]] <- modelfit_plot_list[[2]] +
 wrap_plots(modelfit_plot_list) +
   guide_area() +
   plot_layout(guides = "collect") +
-  plot_annotation(tag_levels = "a",
-                  tag_prefix = "(",
-                  tag_suffix = ")") &
+  plot_annotation(tag_levels = "A",
+                  tag_prefix = "",
+                  tag_suffix = "") &
   theme(plot.tag = element_text(face = "bold"))
 ```
 
@@ -903,9 +903,9 @@ b <-
   labs(y = "Temperature (°C)", x = "Precipitation (mm)", color = "Bioregion", subtitle = "Phylogenetic bioregions") +
   theme(legend.position = "bottom")
 
-a + b + plot_annotation(tag_levels = "a",
-                        tag_prefix = "(",
-                        tag_suffix = ")") &
+a + b + plot_annotation(tag_levels = "A",
+                        tag_prefix = "",
+                        tag_suffix = "") &
   theme(plot.tag = element_text(face = "bold"))
 ```
 
@@ -926,7 +926,7 @@ make_protected_plot <- function(part, variable, ...) {
       fill = "transparent", color = "black", lwd = 0.12) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
-      label = glue("<span style='color:black'>**({part})** {variable}</span>"), 
+      label = glue("<span style='color:black'>**{part}** {variable}</span>"), 
       hjust = "inward", vjust = "inward", color = "white") +
     scale_fill_manual(values = protection_cols, name = "Protection status") +
     scale_x_continuous(breaks = c(125, 135, 145)) +
@@ -963,7 +963,7 @@ make_deer_plot <- function(part, variable, ...) {
       fill = "transparent", color = "black", lwd = 0.12) +
     annotate(
       geom="richtext", y = Inf, x = -Inf, 
-      label = glue("<span style='color:black'>**({part})** {variable}</span>"), 
+      label = glue("<span style='color:black'>**{part}** {variable}</span>"), 
       hjust = "inward", vjust = "inward", color = "white") +
     scale_fill_manual(values = deer_cols, name = "Range data source") +
     scale_x_continuous(breaks = c(125, 135, 145)) +

@@ -1,6 +1,20 @@
 ---
 references:
 
+- id: Nitta2021a
+  type: webpage
+  accessed:
+  - year: 2021
+    month: 8
+    day: 19
+  author:
+  - family: Nitta
+    given: Joel H.
+  issued:
+  - year: 2021
+  title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R. R Package Version 0.0.0.9000'
+  URL: https://doi.org/10.5281/zenodo.5094033
+
 - id: kankyosho2021b
   type: webpage
   author:
@@ -39,20 +53,6 @@ references:
     day: 01
   title: 'R: A language and environment for statistical computing. Version 4.0.0. R Foundation for Statistical Computing, Vienna, Austria'
   URL: https://www.R-project.org/
-
-- id: Nitta2021
-  type: webpage
-  author:
-  - family: Nitta
-    given: Joel H.
-  - family: Iwasaki
-    given: Wataru
-  issued:
-  - year: 2021
-  title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R. R Package Version 0.0.0.9000'
-  title-short: canaper
-  note: R package version 0.0.0.9000
-  URL: https://doi.org/10.5281/zenodo.5094033
 
 - id: Orme2018
   type: webpage

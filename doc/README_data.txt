@@ -1,4 +1,4 @@
-This README.txt file was generated on 09 September, 2021 by Joel Nitta
+This README.txt file was generated on 22 September, 2021 by Joel Nitta
 
 ------------------- GENERAL INFORMATION -----------------
 
@@ -544,10 +544,10 @@ MD5 checksum: 60a5bf932a5b9039b5caf61567d172d0
 
 japan_ferns_biodiv.csv (contained in “results.zip”): Biodiversity statistics of
 native, non-hybrid ferns and environmental variables in Japan. Biodiversity
-metrics calculated as described in Nitta et al. 2021. Climatic (temperature and
+metrics calculated as described in Nitta et al. 2021. Climatic (temperature and
 preciptation) variables calculated as described for japan_climate.gpkg. Includes
 one row with missing environmental data and one outlier for % apomixis that were
-removed prior to spatial modeling analysis in Nitta et al. 2021.
+removed prior to spatial modeling analysis in Nitta et al. 2021.
 
 Number of variables: 28
 
@@ -627,7 +627,7 @@ sites matrix) of native, non-hybrid ferns in Japan used for biodiversity
 analysis. Same as japan_ferns_comm_full.csv, but grid-cells with redundancy <0.1
 (indicating under-sampling) excluded.
 
-Number of variables: 673
+Number of variables: 674
 
 Number of cases/rows: 1241
 
@@ -640,7 +640,7 @@ number of specimens that were observed in each grid-cell for that taxon.
 
 Missing data codes: No missing data.
 
-MD5 checksum: 7e3320123ddb5edd4c7b7e7ad83ee578
+MD5 checksum: 7a2700622e6954faf81012da5ed18579
 
 --------------------------
 
@@ -740,7 +740,7 @@ CHANGE LOG
 
 ---
 
-2021-09-09
+2021-09-22
 
 Generate this README file.
 
@@ -773,4 +773,4 @@ Estimation Using Penalized Likelihood for Large Phylogenies.” Bioinformatics 2
 
 Testo, Weston L., and Michael A Sundue. 2016. “A 4000-Species Dataset Provides
 New Insight into the Evolution of Ferns.” Molecular Phylogenetics and Evolution
-105: 200–211. https://doi.org/10.1016/j.ympev.2016.09.003. 
+105: 200–211. https://doi.org/10.1016/j.ympev.2016.09.003.
