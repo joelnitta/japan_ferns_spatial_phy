@@ -346,15 +346,10 @@ subset_tree <- function(phy, ppgi) {
 #' `redundancy` (sampling redundancy)
 #' 
 calc_redundancy_by_res <- function(comm_scaled_list) {
-  list(
-    "0.1" = comm_scaled_list %>% filter(resol == 0.1) %>% pull(poly_shp) %>% pluck(1),
-    "0.2" = comm_scaled_list %>% filter(resol == 0.2) %>% pull(poly_shp) %>% pluck(1),
-    "0.3" = comm_scaled_list %>% filter(resol == 0.3) %>% pull(poly_shp) %>% pluck(1),
-    "0.4" = comm_scaled_list %>% filter(resol == 0.4) %>% pull(poly_shp) %>% pluck(1)
-  ) %>%
-    map_df(~as_tibble(.) %>% select(grids, abundance, richness), .id = "res") %>%
-    # Calculate redundancy
-    mutate(redundancy = 1 - (richness/abundance))
+  comm_scaled_list %>%
+    mutate(dat = map(poly_shp, ~st_drop_geometry(.))) %>%
+    select(res, dat) %>%
+    unnest(dat)
 }
 
 #' Summarize sampling redundancy across different grid cell resolutions
@@ -449,158 +444,151 @@ subset_comm_by_repro <- function (comm, repro_data) {
   
 }
 
-# Get CRS from an sf object that can be used with an sp object
-#' @param sf_obj Object of class "SF"
-#' @return CRS string that can be used for sp objects
-get_sp_crs_from_sf <- function(sf_obj) {
-  as(sf_obj, Class = "Spatial") %>%
-  sp::proj4string()
-}
-
 #' Make community matrix from species' occurrences
 #'
-#' @param species_coods Dataframe of species occurrences.
-#' No missing values allowed.
-#' @param resol Degree of spatial resolution used to construct the presence-absence grid.
-#' @param species Name of column to use for species
-#' @param lat Name of column to use for latitude
-#' @param long Name of column to use for longitude
-#' @param crs Character or object of class CRS. PROJ.4 type description of a
-#' Coordinate Reference System (map projection) used to construct the
-#' presence-absence grid.
+#' @param points  Dataframe of point data (typically species occurrences).
+#' Should be one row per occurrence. Must include columns for longitude
+#'   and latitude.
+#' @param long_col Name of column with longitude in `points`
+#' @param lat_col Name of column with latitude in `points`
+#' @param bounding_map Optional; bounding map containing the points. Used for
+#' cropping the grid to speed up calculations.
+#' @param res Resolution of grid-cell size, in meters; the length of one side
+#' of each square grid cell.
+#' @param crs Projection to use.
 #'
-#' @return List of two items, "comm_dat" is the community dataframe in
-#' sparse format; poly_shp is the distribution map as a simple features dataframe
+#' @return Tibble; column `res` includes the resolution used, `comm_dat`
+#' includes the community data matrix in sparse format; `poly_shp` is a sf
+#' object including the grid cells and summary statistics for each:
+#' - richness = number of species
+#' - abundance = number of occurrence points
+#' - redundancy = 1 - richness/abundance
 #'
-#' @examples
-#' # Make test data set of 10 species with 100 occurrences total.
-#' test_data <- data.frame(taxon = letters[1:10],
-#'   longitude = runif(100, -2, 2),
-#'   decimallatitude = runif(100, -2, 2),
-#'   latitude = FALSE)
-#' # Presence/absence
-#' comm_from_points(test_data)
-#' # Abundance
-#' comm_from_points(test_data, abun = TRUE)
-comm_from_points <- function(species_coods,
-                             resol = 1,
-                             species = "taxon",
-                             lon = "longitude",
-                             lat = "latitude",
-                             crs = sp::CRS("+proj=longlat +datum=WGS84")) {
-    
-  # Subset occurences to species, longitude, latitude
-  species_coods <- as.data.frame(species_coods)
-  species_coods <- species_coods[, c(species, lon, lat)]
-  names(species_coods) <- c("species", "longitude", "latitude")
-  
-  # Check that input is valid
-  checkr::check_data(
-    species_coods,
-    values = list(
-      species = "a",
-      longitude = 1,
-      latitude = 1
-    )
+comm_from_points <- function(
+  points,
+  long_col = "longitude",
+  lat_col = "latitude",
+  bounding_map = NULL,
+  res = 10000,
+  crs) {
+
+  # Load occurrence points as sf object, set projection
+  occ <-
+    points %>%
+    # need initial crs string when converting to sf object... not sure why
+    st_as_sf(
+      coords = c(long_col, lat_col),
+      crs = 4326) %>% # read in with WGS84 by using the EPSG code 4236
+    st_transform(crs)
+
+  # Set or convert projection of bounding map
+  if (!is.null(bounding_map)) {
+    if (is.na(st_crs(bounding_map))) {
+      bounding_map <- st_set_crs(bounding_map, crs)
+    } else {
+      bounding_map <- st_transform(bounding_map, crs)
+    }
+  }
+
+  # Make full grid covering occurrence points
+  grid_full <- st_make_grid(x = occ, what = "polygons", cellsize = res) %>%
+    st_sf(idcell = seq_along(.), geom = .) %>%
+    st_cast("POLYGON")
+
+  # Make a mask to eliminate blank portions of the grid: convex hull
+  # around all points plus a buffer equal to grid size.
+  if (!is.null(bounding_map)) {
+    mask <-
+      bounding_map %>%
+      st_union() %>%
+      st_buffer(dist = res)
+  } else {
+    mask <-
+      st_intersection(
+        grid_full,
+        st_convex_hull(st_union(occ))
+      ) %>%
+      st_union() %>%
+      st_buffer(dist = res)
+  }
+
+  # Crop grid to area intersecting with mask
+  grid <-
+    st_intersection(grid_full, mask) %>%
+    st_drop_geometry() %>%
+    as_tibble() %>%
+    inner_join(grid_full, ., by = "idcell")
+
+  # Get intersection of points with cropped grid
+  occ_in_cell <- st_intersection(grid, occ) %>%
+    # Make sure no occurrence points got dropped
+    verify(nrow(.) == nrow(occ))
+
+  # Convert occurrences to sparse community df
+  comm <-
+    occ_in_cell %>%
+    sf::st_drop_geometry() %>%
+    phyloregion::long2sparse(grids = "idcell", species = "taxon")
+
+  # Make spatial dataframe of all grid cells including occ points,
+  # with basic biodiv stats for each
+  occ_in_cell_tbl <-
+    occ_in_cell %>%
+    st_drop_geometry() %>%
+    as_tibble()
+
+  grid_with_biodiv_stats <-
+    inner_join(
+      # richness
+      occ_in_cell_tbl %>%
+        group_by(idcell) %>%
+        summarize(richness = n_distinct(taxon), .groups = "drop"),
+      # abundance
+      occ_in_cell_tbl %>%
+        group_by(idcell) %>%
+        summarize(abundance = n(), .groups = "drop"),
+      by = "idcell") %>%
+    # redundancy
+    mutate(redundancy = 1 - (richness / abundance)) %>%
+    # join back into grid cells
+    assert(not_na, idcell) %>%
+    assert(is_uniq, idcell) %>%
+    inner_join(grid, ., by = "idcell") %>%
+    # make sure no cells got dropped
+    verify(nrow(.) == occ_in_cell %>% pull(idcell) %>% n_distinct()) %>%
+    rename(grids = idcell)
+
+  # Return as tibble including resolution, comm, and shape
+  tibble(
+    res = res,
+    comm_dat = list(comm),
+    poly_shp = list(grid_with_biodiv_stats)
   )
-  
-  assertr::verify(species_coods, longitude <= 180, success_logical)
-  
-  assertr::verify(species_coods, latitude <= 90, success_logical)
-  
-  assertthat::assert_that(!is.factor(species_coods$species))
-  
-  # Create empty raster
-  r <- raster::raster(
-    resolution = resol,
-    xmn = -180,
-    xmx = 180,
-    ymn = -90,
-    ymx = 90,
-    crs = crs)
-  
-  ### Extract cell IDs from points by species
-  # Coordinates must be long, lat for raster
-  # (which assumes x, y position in that order)
-  
-  # Extract cell IDs from points by species
-  species_coods_nested <- tidyr::nest(species_coods, data = c(longitude, latitude))
-  
-  # raster::cellFromXY needs data to be data.frame, not tibble
-  species_coods_nested <- dplyr::mutate(species_coods_nested, data = purrr::map(data, as.data.frame))
-  
-  # Get vector of names of cells for each occurrence by species
-  cells_occur <- purrr::map(
-    species_coods_nested$data,
-    ~ raster::cellFromXY(xy = ., object = r)
-  )
-  
-  names(cells_occur) <- species_coods_nested$species
-  
-  # Get vector of non-empty cells
-  non_empty_cells <- sort(unique(unlist(cells_occur)))
-  
-  # Subset raster to non-empty cells
-  r_sub <- raster::rasterFromCells(r, non_empty_cells)
-  
-  # Get its extent
-  e <- raster::extent(r_sub)
-  
-  # Convert to spatial polygons dataframe
-  p <- as(e, "SpatialPolygons")
-  
-  # Last step dropped the CRS, so add it back
-  sp::proj4string(p) <- crs
-  
-  # Make polygons grid at same extent as sample points
-  m <- sp::SpatialPolygonsDataFrame(p, data.frame(sp = "x"))
-  m <- fishnet(mask = m, res = resol)
-  
-  # Overlay points onto grid
-  dat <- as.data.frame(species_coods)
-  dat <- dat[complete.cases(dat), ]
-  sp::coordinates(dat) <- ~longitude + latitude
-  
-  sp::proj4string(dat) <- sp::proj4string(m)
-  x <- sp::over(dat, m)
-  y <- cbind(as.data.frame(dat), x)
-  y <- y[complete.cases(y), ]
-  Y <- phyloregion::long2sparse(y)
-  tmp <- data.frame(grids = row.names(Y), abundance = rowSums(as.matrix(Y)), 
-                    richness = rowSums(as.matrix(Y > 0)))
-  z <- sp::merge(m, tmp, by = "grids")
-  z <- z[!is.na(z@data$richness), ] %>% sf::st_as_sf()
-  
-  # Return results as a tibble including the resolution so this
-  # can be looped by tar_make() and the results can be selected
-  # by resolution
-  return(tibble(resol = resol, comm_dat = list(Y), poly_shp = list(z)))
-  
 }
 
 #' Extract shape dataframe from comm_scaled_list
 #'
 #' @param data Output of comm_from_points()
-#' @param resol_select Target resolution size to use
+#' @param res_select Target resolution size to use
 #'
 #' @return Dataframe (sf object)
 #' 
-shape_from_comm_scaled_list <- function (comm_scaled_list, resol_select) {
+shape_from_comm_scaled_list <- function (comm_scaled_list, res_select) {
   
-  comm_scaled_list %>% filter(resol == resol_select) %>% pull(poly_shp) %>% magrittr::extract2(1) %>% sf::st_as_sf()
+  comm_scaled_list %>% filter(res == res_select) %>% pull(poly_shp) %>% magrittr::extract2(1) %>% sf::st_as_sf()
   
 }
 
 #' Extract community dataframe from comm_scaled_list
 #'
 #' @param data Output of comm_from_points()
-#' @param resol_select Target resolution size to use
+#' @param res_select Target resolution size to use
 #'
 #' @return Dataframe (sf object)
 #' 
-comm_from_comm_scaled_list <- function (comm_scaled_list, resol_select) {
+comm_from_comm_scaled_list <- function (comm_scaled_list, res_select) {
   
-  comm_scaled_list %>% filter(resol == resol_select) %>% pull(comm_dat) %>% magrittr::extract2(1) %>%
+  comm_scaled_list %>% filter(res == res_select) %>% pull(comm_dat) %>% magrittr::extract2(1) %>%
     phyloregion::sparse2dense() %>% 
     as.data.frame() %>%
     # Temporarily store rownames in "site" column so tidyverse doesn't obliterate them
@@ -783,10 +771,11 @@ summarize_fern_lat_span <- function (comm_ferns, shape_ferns) {
 #'
 #' @param protected_areas_zip_file Zip file of protected areas (shape files) downloaded from
 #' https://www.biodic.go.jp/biodiversity/activity/policy/map/map17/index.html
+#' @param crs Coordinate reference system to use
 #'
 #' @return Spatial dataframe with protection classified as "high", "medium", or "low"
 #' 
-load_protected_areas <- function(protected_areas_zip_file) {
+load_protected_areas <- function(protected_areas_zip_file, crs) {
   
   # 1: wilderness
   protected_1 <- load_shape_from_zip(protected_areas_zip_file, "原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
@@ -870,9 +859,9 @@ load_protected_areas <- function(protected_areas_zip_file) {
   # Turn off s2 geometry or will get error
   # https://stackoverflow.com/questions/68478179/how-to-resolve-spherical-geometry-failures-when-joining-spatial-data
   sf::sf_use_s2(FALSE)
-  
+
   # Combine protected areas into single dataframe
-  bind_rows(
+  res <- bind_rows(
     protected_1,
     protected_2,
     protected_3,
@@ -887,8 +876,14 @@ load_protected_areas <- function(protected_areas_zip_file) {
     # Convert status to ordered factor
     mutate(
       status = factor(status, ordered = TRUE, levels = c("low", "medium", "high"))
-    )
-  
+    ) %>%
+    # set CRS
+    sf::st_transform(crs)
+
+  sf::sf_use_s2(TRUE)
+
+  res
+
 }
 
 #' Load protected areas in national forests of Japan
@@ -903,10 +898,11 @@ load_protected_areas <- function(protected_areas_zip_file) {
 #' @param protected_areas_forest_folder Folder of zip files each containing shape files 
 #' downloaded from https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-A45.html
 #' (47 zip files total, one for each prefecture)
+#' @param crs Coordinate reference system to use
 #'
 #' @return Spatial dataframe with protection classified as "high", "medium", or "low"
 #' 
-load_protected_areas_forest <- function(protected_areas_forest_folder) {
+load_protected_areas_forest <- function(protected_areas_forest_folder, crs) {
   
   # List all zip files in folder
   zip_files <- list.files(protected_areas_forest_folder, pattern = "zip", full.names = TRUE)
@@ -920,7 +916,8 @@ load_protected_areas_forest <- function(protected_areas_forest_folder) {
       filter(!is.na(status)) %>%
       # Treat all protected forest areas as "medium"
       mutate(status = factor("medium", levels = c("low", "medium", "high"), ordered = TRUE))
-    )
+    ) %>%
+    st_set_crs(crs)
 
 }
 
@@ -932,6 +929,7 @@ load_protected_areas_forest <- function(protected_areas_forest_folder) {
 #'
 #' @param zip_file Path to zip file with deer range data. File downloaded from
 #' https://www.biodic.go.jp/biodiversity/activity/policy/map/files/map14-1.zip
+#' @param crs Coordinate reference system to use for spatial data
 #'
 #' @return Spatial dataframe with one feature, `range`, with three values:
 #' "1978": range of Japanese deer in 1978
@@ -939,7 +937,7 @@ load_protected_areas_forest <- function(protected_areas_forest_folder) {
 #' "estimated": estimated range of Japanese deer from 2003 data based on a model
 #' included forest type and snowfall
 #' 
-load_deer_range <- function (zip_file) {
+load_deer_range <- function (zip_file, crs) {
 
   # Unzip shape files to a temporary folder
   temp_dir <- fs::path(tempdir(), "deer")
@@ -996,7 +994,9 @@ load_deer_range <- function (zip_file) {
     transmute(range = "1978")
   
   # Combine into single dataframe
-  res <- bind_rows(deer_estimated, deer_1978, deer_2003)
+  res <- bind_rows(deer_estimated, deer_1978, deer_2003) %>%
+    # Set CRS
+    st_transform(crs)
 
   # Delete temp dir
   if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
@@ -1190,7 +1190,7 @@ load_ja_worldclim_data <- function(path, crs) {
       precip_season = bio15 # Precipitation Seasonality (Coefficient of Variation)
     ) %>%
     # Set CRS
-    st_set_crs(crs)
+    st_transform(crs)
   
 }
 

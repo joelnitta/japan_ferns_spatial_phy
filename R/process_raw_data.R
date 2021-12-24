@@ -67,48 +67,42 @@ tar_plan(
     occ_point_data = occ_point_data_ferns_unfiltered,
     mask = japan_mesh2),
 
-  # get CRS (JGD2000) from japan_mesh2 for converting point data to community
-  # dataframe
-  jgd2000_sp = get_sp_crs_from_sf(japan_mesh2),
-  jgd2000_sf = st_crs(japan_mesh2),
-
   # Calculate richness, abundance, and redundancy at four scales:
-  # 0.1, 0.2, 0.3, and 0.4 degree grid squares
-  scales_to_test = c(0.1, 0.2, 0.3, 0.4),
+  # 10km x 10km, 20km x 20km, 30km x 30km, 40km x 40km
+  scales_to_test = c(10000, 20000, 30000, 40000), # units in m
+  # Use Mollweide equal-area projection with longitude centered on Japan
+  mollweide = "+proj=moll +lon_0=135",
   tar_target(
     comm_scaled_list,
     comm_from_points(
-      species_coods = occ_point_data_ferns,
-      resol = scales_to_test,
-      lon = "longitude",
-      lat = "latitude",
-      species = "taxon",
-      crs = jgd2000_sp),
+      points = occ_point_data_ferns,
+      res = scales_to_test,
+      long_col = "longitude",
+      lat_col = "latitude",
+      crs = mollweide),
     pattern = map(scales_to_test)
   ),
 
-  # After inspecting results (see SI), select 0.2 degrees as optimal scale.
+  # After inspecting results (see SI), select 20 km x 20 km as optimal scale
 
-  # Extract geographic shapes, richness, and number of specimens at 0.2 degree
-  # grid scale
-  shape_ferns_full = shape_from_comm_scaled_list(comm_scaled_list, 0.2) %>%
-    # calculate redundancy
-    mutate(redundancy = 1 - (richness/abundance)) %>%
-    # set CRS to be exactly same as JGD2000 in japan_mesh2
-    st_transform(jgd2000_sf),
+  # Extract geographic shapes, richness, and number of specimens at selected
+  # scale
+  scale_select = 20000,
+  shape_ferns_full = shape_from_comm_scaled_list(
+    comm_scaled_list, scale_select),
 
   # Write out geographic shapes in GeoPackage format
   # (https://www.geopackage.org/)
   tar_file(
     shape_ferns_full_out,
-    # Include manual time stamp so that sha is stable
+    # Include time stamp with date only (not time), so that sha is stable
     # https://github.com/r-spatial/rgeopackage
     st_write_tar(shape_ferns_full, "data/japan_ferns_shape_full.gpkg",
-      time_stamp = as.Date("2021-09-03"))
+      time_stamp = Sys.Date())
   ),
 
   # Extract community matrix from shapes
-  comm_ferns_full = comm_from_comm_scaled_list(comm_scaled_list, 0.2),
+  comm_ferns_full = comm_from_comm_scaled_list(comm_scaled_list, scale_select),
 
   # Write out community matrix as CSV
   tar_file(
@@ -155,13 +149,13 @@ tar_plan(
   # The WorldClim data first needs to be downloaded with this:
   # raster::getData("worldclim", download = TRUE, var = "bio", res = 2.5, path = "data_raw/world_clim") # nolint
   tar_file(worldclim_dir, "data_raw/world_clim"),
-  ja_climate_data = load_ja_worldclim_data(worldclim_dir, jgd2000_sf),
+  ja_climate_data = load_ja_worldclim_data(worldclim_dir, crs = mollweide),
   # Write out geographic shapes in GeoPackage format
   # (https://www.geopackage.org/)
   tar_file(
     ja_climate_data_out,
     st_write_tar(ja_climate_data, "data/japan_climate.gpkg",
-    time_stamp = as.Date("2021-08-26"))
+    time_stamp = Sys.Date())
   ),
 
   ## Read in protected areas, assign protection levels following 
@@ -170,12 +164,14 @@ tar_plan(
   # - medium: permission required for economic activities
   # - low: protected area, but none of the above restrictions
   tar_file(protected_areas_zip_file, "data_raw/map17.zip"),
-  protected_areas_other = load_protected_areas(protected_areas_zip_file),
+  protected_areas_other = load_protected_areas(
+    protected_areas_zip_file,
+    crs = mollweide),
 
   tar_file(protected_areas_forest_folder, "data_raw/forest_area_zip_files"),
   protected_areas_forest = load_protected_areas_forest(
-    protected_areas_forest_folder) %>%
-    sf::st_transform(jgd2000_sf),
+    protected_areas_forest_folder,
+    crs = mollweide),
 
   # Combine protected areas (high and medium only), write out
   protected_areas = combine_pa(protected_areas_other, protected_areas_forest),
@@ -183,16 +179,16 @@ tar_plan(
     protected_areas_out,
     st_write_tar(
       protected_areas, "data/japan_protected_areas.gpkg",
-      time_stamp = as.Date("2021-08-30"))
+      time_stamp = Sys.Date())
   ),
 
   ## Read in deer distribution maps, write out
   tar_file(deer_range_zip_file, "data_raw/map14-1.zip"),
-  japan_deer_range = load_deer_range(deer_range_zip_file),
+  japan_deer_range = load_deer_range(deer_range_zip_file, crs = mollweide),
   tar_file(
     deer_areas_out,
     st_write_tar(japan_deer_range, "data/japan_deer_range.gpkg",
-    time_stamp = as.Date("2021-09-01"))
+    time_stamp = Sys.Date())
   ),
 
   ## Read in political map of Japan, set CRS, write out
@@ -204,13 +200,13 @@ tar_plan(
     # Collapse all the political units down to just one shape for the country
     select(geometry) %>%
     summarize() %>%
-    # set CRS to JGD2000
-    sf::st_transform(jgd2000_sf),
+    # set CRS
+    sf::st_transform(mollweide),
 
   tar_file(
     japan_shp_out,
     st_write_tar(japan_shp, "data/japan_map.gpkg",
-    time_stamp = as.Date("2021-09-03"))
+    time_stamp = Sys.Date())
   )
 
 )

@@ -358,9 +358,9 @@ inext_res %>%
 
 ```{r grain-size, fig.width = 7, fig.height = 3}
 # Helper function to format resolution labels
-degree_lab <- function (x) {
+km_lab <- function (x) {
   as.numeric(x) %>% 
-    scales::number(suffix = "\u00b0", accuracy = 0.1)
+    scales::number(suffix = "km", scale = 1e-3)
 }
 
 # Summarize redundancy statistics by grain size
@@ -370,7 +370,7 @@ redundancy_summary <- sum_redundancy_by_res(redundancy_by_res)
 a <- ggplot(redundancy_summary, aes(x = res, y = percent_above_50)) +
   geom_col() +
   scale_y_continuous(labels = scales::percent) +
-  scale_x_discrete(labels = degree_lab) +
+  scale_x_discrete(labels = km_lab) +
   labs(
     x = "Resolution",
     y = "Redundancy > 0.5"
@@ -380,7 +380,7 @@ a <- ggplot(redundancy_summary, aes(x = res, y = percent_above_50)) +
 b <- ggplot(redundancy_summary, aes(x = res, y = percent_singletons)) +
   geom_col() +
   scale_y_continuous(labels = scales::percent) +
-  scale_x_discrete(labels = degree_lab) +
+  scale_x_discrete(labels = km_lab) +
   labs(
     x = "Resolution",
     y = "Redundancy = 0"
@@ -389,7 +389,7 @@ b <- ggplot(redundancy_summary, aes(x = res, y = percent_singletons)) +
 # Distribution of redundancy by grain size
 c <- ggplot(redundancy_by_res, aes(x = redundancy, y = res)) +
   geom_density_ridges(scale = 1.5) + 
-  scale_y_discrete(expand = c(0, 0), labels = degree_lab) +     # will generally have to set the `expand` option
+  scale_y_discrete(expand = c(0, 0), labels = km_lab) + # will generally have to set the `expand` option
   scale_x_continuous(expand = c(0, 0)) +   # for both axes to remove unneeded padding
   coord_cartesian(clip = "off") + # to avoid clipping of the very top of the top ridgeline
   labs(
@@ -404,7 +404,7 @@ a + b + c +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. (a), Percent of grid cells with redundancy > 0.5 by grain size (0.1, 0.2, 0.3, or 0.4 degree grid-cells). (b), Percent of grid cells with redundancy = 0 by grain size. (c), Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 0.1 to 0.2 degree grid-cells, but less improvement as grain size is increased beyond 0.2 degrees.
+**`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. (a), Percent of grid cells with redundancy > 0.5 by grain size (side length of square grid cells set to 10 km, 20 km, 30 km, or 40 km). (b), Percent of grid cells with redundancy = 0 by grain size. (c), Distribution of redundancy values by grain size. There is a sudden improvement in redundancy values from 10 km to 20 km, but less improvement as grain size is increased beyond 20 km.
 
 \clearpage
 
