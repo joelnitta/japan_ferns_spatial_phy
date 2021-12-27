@@ -540,7 +540,7 @@
       "RemoteRef": "main",
       "RemoteSha": "acb40172c2d5ffb04e13519c6cad7c6d00fa451a",
       "Remotes": "anthonynorth/roxyglobals",
-      "Hash": "89667bce63b131118beb7bf480a7316d",
+      "Hash": "5171a25451569f4c3bf70c4801c3e095",
       "Requirements": [
         "Matrix",
         "ape",
@@ -1550,12 +1550,13 @@
       "Package": "ggtree",
       "Version": "3.2.1",
       "Source": "Bioconductor",
+      "RemoteType": "bioconductor",
       "Remotes": "GuangchuangYu/treeio",
       "git_url": "https://git.bioconductor.org/packages/ggtree",
       "git_branch": "RELEASE_3_14",
       "git_last_commit": "d3747e6",
       "git_last_commit_date": "2021-11-14",
-      "Hash": "f156c85173024c88e2fdfd63ccca3fd7",
+      "Hash": "5711c057a04e53ed1c70909939dd9ad9",
       "Requirements": [
         "ape",
         "aplot",
@@ -3674,7 +3675,7 @@
       "RemoteRef": "master",
       "RemoteSha": "73ff0dc7a1601325132069618227110121ba7121",
       "Remotes": "milesmcbain/fnmate, milesmcbain/capsule, milesmcbain/atcursor",
-      "Hash": "4f2fb7645203f8e179b835695187a5de",
+      "Hash": "c07858b319408a56484b9509b9eb32d6",
       "Requirements": [
         "atcursor",
         "cli",
