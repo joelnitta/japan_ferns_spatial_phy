@@ -404,7 +404,7 @@ We measured phylogenetic endemism (PE) as the sum of all branches at a site inve
 
 Observed values of PD, RPD, FD, RFD, and PE are known to be related to species richness: as more taxa are drawn at random without replacement from a given set, it becomes increasingly unlikely to draw a taxon that is distantly related (or functionally dissimilar) to the others. 
 Therefore, we determined whether the observed metrics are more or less diverse than random for a given number of taxa by conducting a randomization test. 
-We generated 999 random communities using the "independent swap" algorithm of @Gotelli2000, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. 
+We generated 999 random communities using the "curveball" algorithm of @Strona2014, which conserves richness per site and species occurrence frequencies while randomizing species identities, then compared the observed value to the distribution of random values. 
 Statistical significance was assessed using a one-tailed test for PE or a two-tailed test for other metrics with alpha = 0.5; observed values in the extreme 5% of the null distribution were considered significant. 
 We also calculated the standard effect size (SES) of each biodiversity metric. 
 SES measures how extreme the observed value (*obs*) is relative to the null distribution (*null*): 

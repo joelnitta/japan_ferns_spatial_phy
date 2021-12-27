@@ -232,7 +232,7 @@ tar_plan(
     cpr_rand_test(
       comm = comm_ferns,
       phy = japan_fern_tree,
-      null_model = "independentswap",
+      null_model = "curveball",
       n_reps = 999,
       n_iterations = 100000,
       metrics = c("pd", "rpd", "pe", "rpe")),
@@ -245,7 +245,7 @@ tar_plan(
     cpr_rand_test(
       comm = comm_ferns,
       phy = japan_fern_phylogram,
-      null_model = "independentswap",
+      null_model = "curveball",
       n_reps = 999,
       n_iterations = 100000,
       metrics = c("pd", "rpd")),
@@ -258,7 +258,7 @@ tar_plan(
     cpr_rand_test(
       comm = comm_ferns_endemic,
       phy = japan_fern_tree,
-      null_model = "independentswap",
+      null_model = "curveball",
       n_reps = 999,
       n_iterations = 100000,
       metrics = c("pe", "rpe")),
@@ -271,7 +271,7 @@ tar_plan(
     cpr_rand_test(
       comm = comm_ferns,
       phy = japan_fern_trait_tree,
-      null_model = "independentswap",
+      null_model = "curveball",
       n_reps = 999,
       n_iterations = 100000,
       metrics = c("pd", "rpd")) %>%
