@@ -110,16 +110,6 @@ tar_plan(
     write_comm_to_csv(comm_ferns_full, "data/japan_ferns_comm_full.csv")
   ),
 
-  # Subset geographic shapes to redundancy > 0.1
-  shape_ferns = filter(shape_ferns_full, redundancy > 0.1),
-
-  # Subset community matrix to communities with redundancy > 0.1
-  comm_ferns = filter_comm_by_redun(
-    comm = comm_ferns_full,
-    shape = shape_ferns,
-    cutoff = 0.1
-  ),
-
   # Calculate redundancy across different grain sizes
   redundancy_by_res = calc_redundancy_by_res(comm_scaled_list),
   tar_file(
@@ -148,8 +138,12 @@ tar_plan(
   # Load climate data downloaded from WorldClim database
   # The WorldClim data first needs to be downloaded with this:
   # raster::getData("worldclim", download = TRUE, var = "bio", res = 2.5, path = "data_raw/world_clim") # nolint
+  #
+  # Use CRS 4612 (JDG2000) for all shapes besides grid cells
+  # (since data written wwith mollweide projection shows up as CRS 'unknown'
+  # when reading in)
   tar_file(worldclim_dir, "data_raw/world_clim"),
-  ja_climate_data = load_ja_worldclim_data(worldclim_dir, crs = mollweide),
+  ja_climate_data = load_ja_worldclim_data(worldclim_dir, crs = 4612),
   # Write out geographic shapes in GeoPackage format
   # (https://www.geopackage.org/)
   tar_file(
@@ -158,7 +152,7 @@ tar_plan(
     time_stamp = Sys.Date())
   ),
 
-  ## Read in protected areas, assign protection levels following 
+  ## Read in protected areas, assign protection levels following
   # Kusumoto et al. 2017:
   # - high: no human activities allowed
   # - medium: permission required for economic activities
@@ -166,12 +160,12 @@ tar_plan(
   tar_file(protected_areas_zip_file, "data_raw/map17.zip"),
   protected_areas_other = load_protected_areas(
     protected_areas_zip_file,
-    crs = mollweide),
+    crs = 4612),
 
   tar_file(protected_areas_forest_folder, "data_raw/forest_area_zip_files"),
   protected_areas_forest = load_protected_areas_forest(
     protected_areas_forest_folder,
-    crs = mollweide),
+    crs = 4612),
 
   # Combine protected areas (high and medium only), write out
   protected_areas = combine_pa(protected_areas_other, protected_areas_forest),
@@ -184,7 +178,7 @@ tar_plan(
 
   ## Read in deer distribution maps, write out
   tar_file(deer_range_zip_file, "data_raw/map14-1.zip"),
-  japan_deer_range = load_deer_range(deer_range_zip_file, crs = mollweide),
+  japan_deer_range = load_deer_range(deer_range_zip_file, crs = 4612),
   tar_file(
     deer_areas_out,
     st_write_tar(japan_deer_range, "data/japan_deer_range.gpkg",
@@ -200,8 +194,7 @@ tar_plan(
     # Collapse all the political units down to just one shape for the country
     select(geometry) %>%
     summarize() %>%
-    # set CRS
-    sf::st_transform(mollweide),
+    sf::st_transform(4612),
 
   tar_file(
     japan_shp_out,
