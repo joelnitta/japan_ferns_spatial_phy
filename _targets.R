@@ -47,9 +47,13 @@ tar_plan(
   ## Occurrence data ----
   # Raw occurrence data processing was done in R/process_raw_data.R
 
-  # Load geographic shapes, richness, and num of specimens at 20 km grid scale
+  # Use Mollweide equal-area projection with longitude centered on Japan
+  mollweide = "+proj=moll +lon_0=135",
+
+  # Load grid cells, richness, abundance, redundancy at 20 km grid scale
   tar_file(japan_ferns_shape_full_file, "data/japan_ferns_shape_full.gpkg"),
-  shape_ferns_full = sf::st_read(japan_ferns_shape_full_file),
+  shape_ferns_full = load_jferns_shape(
+    japan_ferns_shape_full_file, crs = mollweide),
 
   # Load community matrix at 20 km grid scale (not filtered by redundancy)
   tar_file(japan_ferns_comm_full_file, "data/japan_ferns_comm_full.csv"),
@@ -90,14 +94,16 @@ tar_plan(
   ## Map data ----
   # Load (unlabled) map of Japan
   tar_file(japan_map_file, "data/japan_map.gpkg"),
-  japan_shp = st_read(japan_map_file),
+  japan_shp = st_read(japan_map_file) %>% st_transform(mollweide),
 
   # Load manually entered points of interest for drawing a map of Japan
   tar_file(japan_map_points_file, "data/japan_map_points.csv"),
   japan_map_points = read_csv(japan_map_points_file),
 
-  # Calculate area as rolling mean in 1 degree latitudinal windows
-  lat_area_ja = calc_area_by_lat(japan_shp, lat_cut = 0.2, lat_window = 1),
+  # Calculate latitudinal area (sq km) as rolling mean in 100 km latitudinal
+  # windows across 20 km bands
+  lat_area_ja = calc_area_by_lat(
+    japan_shp, lat_cut = 20000, lat_window = 100000),
 
   # Phylogenetic analysis ----
   # Summary: combine Japan rbcL sequences with global sampling,
@@ -220,7 +226,8 @@ tar_plan(
 
   # Load climate data from WorldClim database at 2.5 minute resolution
   tar_file(ja_climate_data_file, "data/japan_climate.gpkg"),
-  ja_climate_data = sf::st_read(ja_climate_data_file),
+  ja_climate_data = sf::st_read(ja_climate_data_file) %>%
+    st_transform(mollweide),
 
   # Calculate mean climate values in each grid cell
   mean_climate = calc_mean_climate(shape_ferns, ja_climate_data),
@@ -362,11 +369,10 @@ tar_plan(
     left_join(format_cpr_res(rand_test_traits_ferns), by = "grids") %>%
     left_join(bioregions, by = "grids") %>%
     # Add environmental data
-    sf_add_centroids %>%
     add_roll_area(lat_area_ja) %>%
     left_join(mean_climate, by = "grids") %>%
     # Add % apomictic taxa
-    left_join(percent_apo) %>%
+    left_join(percent_apo, by = "grids") %>%
     # Classify endemism and significance of randomization tests
     cpr_classify_endem() %>%
     classify_signif("pd") %>%
@@ -375,9 +381,7 @@ tar_plan(
     classify_signif("rfd") %>%
     classify_signif("pe", one_sided = TRUE, upper = TRUE) %>%
     # Add richness percent rank
-    mutate(richness_obs_p_upper = dplyr::percent_rank(richness)) %>%
-    # Add redundancy
-    mutate(redundancy = 1 - (richness/abundance)),
+    mutate(richness_obs_p_upper = dplyr::percent_rank(richness)),
 
   # - Japan endemics only
   biodiv_ferns_endemic_spatial =
@@ -394,7 +398,6 @@ tar_plan(
     classify_signif("pd") %>%
     classify_signif("rpd") %>%
     # Add environmental data, % apomictic taxa
-    sf_add_centroids %>%
     add_roll_area(lat_area_ja) %>%
     left_join(mean_climate, by = "grids") %>%
     left_join(percent_apo),
@@ -432,7 +435,7 @@ tar_plan(
 
   # Check for correlation between independent variables in repro data
   t_test_results = run_mod_ttest_ja(
-    st_set_geometry(biodiv_ferns_spatial, NULL),
+    biodiv_ferns_spatial,
     vars_select = c(
       "temp", "temp_season", "precip",
       "precip_season", "percent_apo", "lat_area")
@@ -551,11 +554,11 @@ tar_plan(
   # - high: no human activities allowed
   # - medium: permission required for economic activities
   tar_file(protected_areas_file, "data/japan_protected_areas.gpkg"),
-  protected_areas = st_read(protected_areas_file),
+  protected_areas = st_read(protected_areas_file) %>% st_transform(mollweide),
 
   ## Read in deer distribution map
   tar_file(deer_range_file, "data/japan_deer_range.gpkg"),
-  deer_range = st_read(deer_range_file),
+  deer_range = st_read(deer_range_file) %>% st_transform(mollweide),
 
   # Crop siginficantly diverse grid cells to protected areas,
   # and to areas with deer
@@ -572,7 +575,10 @@ tar_plan(
   # Write out selected results files for dryad ----
 
   # Choose variables to include in biodiv results, convert to centroids
-  biodiv_ferns_cent_dryad = biodiv_ferns_spatial_to_cent(biodiv_ferns_spatial),
+  biodiv_ferns_cent_dryad = biodiv_ferns_spatial_to_cent(
+    biodiv_ferns_spatial,
+    crs = 4612 # convert to JDG2000 CRS
+    ),
 
   # japan_ferns_biodiv.csv
   tar_file(

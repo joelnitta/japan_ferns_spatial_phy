@@ -160,7 +160,7 @@ biodiv_ferns_spatial_lumped %>%
 However, this ignores evolutionary history and is not sufficient for making conservation decisions.
 Here, we characterize multiple facets and drivers of biodiversity to understand how these relate to bioregions and conservation status in the ferns of Japan.
 
-**Methods:** We compiled a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 0.2° grid-cells including `r ncol(comm_ferns)` taxa based on > `r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` specimen records.
+**Methods:** We compiled a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 20 km × 20 km grid-cells including `r ncol(comm_ferns)` taxa based on > `r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` specimen records.
 We combined this with a phylogeny and functional traits to analyze taxonomic, phylogenetic, and functional diversity, and modeled biodiversity metrics in response to environmental factors and reproductive mode.
 We used hierarchical clustering to analyze bioregions.
 We compared the overlap of significantly diverse grid-cells with conservation zones and range maps of native Japanese deer to assess conservation status and threats.
@@ -191,8 +191,6 @@ repro_data %>%
   group_by(mode) %>%
   summarize(total = sum(n)) %>%
   split(.$mode)
-
-repro_count$known$total
 
 repro_count$known$percent <- (repro_count$known$total/(repro_count$unknown$total + repro_count$known$total)) %>% percent(accuracy = 0.1)
 ```
@@ -233,21 +231,31 @@ Map data for Japan were downloaded from the Geospatial Information Authority of 
 
 ### Occurrence data
 
-We used a list of all native, non-hybrid fern specimens deposited at TNS [herbarium codes follow @Thiers2021]. 
-We chose to use this over other sources (e.g., GBIF), because of its high taxonomic quality: all identifications are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/). 
-Furthermore, the overall sampling completeness of this dataset is extremely high (`r s_figure("sampling-curve")` in Appendix S1; see Supplemental Data with this article). 
+We used a list of native, non-hybrid fern specimens deposited at herbaria in Japan to quantify occurrences [@Ebihara2016b; @Ebihara2017; @Ebihara2019b].
+We chose to use this over other sources (e.g., GBIF) because of its extremely high quality, which obviates many cleaning steps otherwise needed when working with large, publicly available datasets.
+Furthermore, the overall sampling completeness of this dataset is also extremely high (`r s_figure("sampling-curve")` in Appendix S1; see Supplemental Data with this article). 
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa at the rank of species, subspecies, form, or variety (hereafter referred to as "taxa" unless otherwise indicated), excluding non-native taxa and nothotaxa.
-Latitude and longitude of each occurrence record were projected into the Japanese Geodetic Datum 2000 (JGD 2000), which was also used for all further geographic analyses.
-We filtered out any occurrences not within a map of standard grid squares defined by the Statistics Bureau of Japan (http://www.stat.go.jp/english/data/mesh/05.html) and removed duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
-The R package `r pack("sf")` was used for all GIS analyses [@Pebesma2018].
+All names are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/).
 
-A necessary step in any analysis of biodiversity is to set the grain size used to accurately define communities. 
+Occurrence records were georeferenced and thoroughly vetted as follows [@Ebihara2016b; @Ebihara2017; @Ebihara2019b].
+For specimens that lacked latitude and logitude data, georeferencing was done by mapping collection site names to a set of standard ca. 10 × 10 km grid squares defined by the Statistics Bureau of Japan (the "second-degree mesh"; http://www.stat.go.jp/english/data/mesh/05.html), and the centroid of the second-degree mesh cell used as the specimen location.
+In the case that the collection site could not be mapped to a single second-degree mesh cell, it was excluded.
+Next, occurrence maps were generated for each taxon showing presence or absence in each second-degree mesh cell.
+In the case that a given taxon appeared insufficiently sampled (i.e., not present on the map where it would typically be expected to occur), AE and members of the Nippon Fernist Club (amateur botanists familiar with the ferns of Japan) searched for additional specimens, which were then added to the list. 
+The occurrence maps were iteratively refined until the vast majority of known Japanese ferns had been observed across their expected ranges; the resulting set of occurrence records can be considered accurate to ca. 10 km (the grain size of the second-degree mesh map).
+
+We further cleaned the list prior to analysis by filtering out any occurrences not within the second-degree mesh and removing duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
+
+A necessary step in any analysis of biodiversity is to set the grain size used to accurately define communities (co-occurring species). 
 Here, one must consider that smaller grain size is needed to detect environmental effects, while larger grain size is needed to ensure adequate species sampling. 
-We tested using 0.1°, 0.2°, 0.3°, and 0.4° grid-cells (size refers to length of side of a grid-cell) for defining communities (co-occurring species). 
+We created sets of 10 km, 20 km, 30 km, and 40 km grid-cells covering Japan using a Mollweide equal-area projection (size refers to the length of the side of each square grid-cell).
 At each grain size, species occurrences were converted to a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid-cell). 
 We calculated sampling redundancy [1 - richness/number of specimens; @Garcillan2003] to quantify adequacy of sampling. 
-Preliminary analysis indicated that 0.2° grid-cells are optimal for our dataset (`r s_figure("grain-size")`). 
-We filtered out any cells with redundancy < 0.1 and used this size for subsequent analyses.
+Preliminary analysis indicated that 20 km grid-cells are optimal for our dataset (`r s_figure("grain-size")`). 
+Although the grid-cells are defined with equal area, actual land area of each cell varies due to presence of coastlines, etc.
+Strictly filtering out all grid-cells with less than complete land area would result in a large loss of data, as Japan has many coastlines and small islands.
+Therefore, we instead filtered the grid-cells by sampling completeness, removing any cells with redundancy < 0.1; this dataset was used for all subsequent analyses.
+The R package `r pack("sf")` was used for all GIS analyses [@Pebesma2018].
 
 ### Morphological trait data
 
@@ -266,8 +274,8 @@ We calculated the percentage of apomictic species in each grid-cell as the sum o
 ### Environmental data
 
 We downloaded climate data at the 2.5 minute scale from the WorldClim database using the `r func("getData")` function in the R package `r pack("raster")` [@R-raster], and extracted four variables related to our research questions as follows: mean annual temperature (bio1; hereafter "temperature"), temperature seasonality (bio4), annual precipitation (bio12; hereafter "precipitation"), and precipitation seasonality (bio15) (`r s_figure("envir")`). 
-We identified the intersection of the climate data at the 2.5 minute scale with the 0.2° grid-cells, then calculated the mean of each climatic variable for each 0.2° grid-cell.
-We calculated area as rolling mean area (km^2^) across 1° latitudinal bands.
+We identified the intersection of the climate data at the 2.5 minute scale with the 20 km grid-cells, then calculated the mean of each climatic variable for each grid-cell.
+We calculated area as rolling mean area (km^2^) across 100 km latitudinal bands.
 This approach reflects the idea that the amount of area with a given climate regime enclosing each grid-cell may influence species richness of that cell [@Fahrig2013], and that using raw island areas would not be appropriate in this context as there are just four very large islands with many much smaller ones located close by (`r figure("japan-map")`).
 
 ### Phylogenetic analysis
@@ -353,8 +361,8 @@ n_japan_fern_taxa <- japan_rbcL %>%
 # Verify that tips in the plastome tree are accounted for
 # by FTOL sampling + japan fern rbcL
 tibble(taxon = plastome_tree$tip.label) %>%
-  anti_join(select(plastome_sampling, taxon) %>% unique) %>%
-  anti_join(tibble(taxon = rownames(japan_rbcL))) %>%
+  anti_join(select(plastome_sampling, taxon) %>% unique, by = "taxon") %>%
+  anti_join(tibble(taxon = rownames(japan_rbcL)), by = "taxon") %>%
   verify(nrow(.) == 0, success_fun = success_logical)
 
 # Number of fossils used for dating
@@ -421,7 +429,7 @@ To partially account for this, we also calculated all endemism-related metrics u
 
 ### Spatial models
 
-Initial inspection of the biodiversity and environmental data showed a single outlier in % apomictic taxa due to extremely low species richness (Appendix S2; see Supplemental Data with this article), so that grid-cell and one grid-cell lacking environmental data were excluded from modeling analyses.
+Two grid cells lacking environmental data and an outlier with 100% apomictic taxa due to extremely low species richness were excluded from modeling analyses (Appendix S2; see Supplemental Data with this article).
 
 We tested for spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of FD, SES of RPD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) using Moran's I with the `r func("moran.mc")` function in the R package `r pack("spdep")` [@Bivand2013]. 
 In all cases, significant spatial autocorrelation was detected (Moran's I > 0, *P* value of permutation test < 0.05) (`r s_table("moran")`). 
@@ -478,7 +486,7 @@ For taxonomic richness, cells ranked in the top > 5% were considered highly dive
 fern_list <-
   green_list %>%
   mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
-  left_join(ppgi) %>%
+  left_join(ppgi, by = "genus") %>%
   filter(class == "Polypodiopsida")
 
 fern_list_non_hybrid <-
@@ -653,11 +661,13 @@ Results of the randomization test for functional diversity were broadly similar 
 ### Relationships between biodiversity and climate or reproductive mode
 
 ```{r discus-model-stats}
-# Check that conditional AIC was lower in the reproductive model compared to the environmental model for SES of RPD and SES of PD
+# Check that conditional AIC was lower in the reproductive model compared to 
+# the environmental model for SES of RPD
 # Split aic_env_repro dataframe into nested list for easier indexing
 c_aic <- aic_env_repro %>% split(.$resp_var) %>% map(~split(., .$model_type))
-assert_that(c_aic$pd_obs_z$percent_apo$conditional_aic < c_aic$pd_obs_z$temp$conditional_aic)
 assert_that(c_aic$rpd_obs_z$percent_apo$conditional_aic < c_aic$rpd_obs_z$temp$conditional_aic)
+# But not for SES of PD
+assert_that(c_aic$pd_obs_z$percent_apo$conditional_aic > c_aic$pd_obs_z$temp$conditional_aic)
 ```
 
 All models were significant relative to null models without any fixed effects (`r s_table("lrt-null")`). 
@@ -665,7 +675,7 @@ The effect of temperature dominated (had the greatest absolute *t*-value) in env
 Richness showed a hump-shaped relationship with temperature, reaching maximum richness at intermediate temperatures (`r figure("modelfit")`A). 
 Phylogenetic and functional diversity showed either moderately (SES of PD, SES of FD) to strongly (SES of RPD, SES of RFD) hump-shaped relationships with temperature (`r figure("modelfit")`B--E). 
 SES of RPD showed a clear, linear decline with % apomictic taxa (`r figure("modelfit")`G); a similar pattern was detected in SES of PD, but with wider confidence intervals (`r figure("modelfit")`F). 
-Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD and SES of PD (`r s_table("aic")`).
+Conditional AIC was lower (indicating better model fit) in the reproductive model compared to the environmental model for SES of RPD, but not SES of PD (`r s_table("aic")`).
 
 ### Categorical analysis of neo- and paleo-endemism
 
@@ -684,7 +694,7 @@ assert_that(bioregion_cutoff == 2, msg = "Bioregions cutoff for lumping not 2!")
 Clustering analysis grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` bioregions (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively. 
 The vast majority of grid-cells fell to a subset of these bioregions: using taxonomic distances, they include bioregion 1 (Hokkaido and northern Honshu), bioregion 2 (southern Honshu, Kyushu, and Shikoku), bioregion 3 (Ryukyu Islands), and bioregion 4 (Ogasawara Islands) (`r figure("bioregions")`A; `r s_figure("dendrogram")`A). 
 Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single bioregion (3), and bioregion 1 extended slightly further south (`r figure("bioregions")`B; `r s_figure("dendrogram")`B). 
-The other much smaller bioregions ("singletons" including only a single grid-cell each) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
+The other much smaller bioregions (including only one or two grid-cells each) are likely artifacts of insufficiently low taxon richness for robust clustering, and are not discussed further.
 
 Taxonomic bioregions 3 and 4 have higher SES values of PD, RPD, FD, and RFD than bioregions 1 and 2 (`r figure("div-by-tax-region")`). 
 Bioregions 3 and 4 also have consistently high PE *p*-scores, whereas bioregions 1 and 2 have a much wider variation. 
@@ -900,7 +910,7 @@ taxon_with_widest_lat <- lat_span_summary %>%
   left_join(
     tibble(
       taxon = "Pteridium_aquilinum_japonicum",
-      text = "*Pteridium aquilinum* (L.) Kuhn subsp. *japonicum* (Nakai) A. et S. Löve"
+      text = "*Pteridium aquilinum* (L.) Kuhn subsp. *japonicum* (Nakai) A. et S. Löve" #nolint
     ),
     by = "taxon"
   ) %>%
@@ -988,9 +998,9 @@ Additional supporting information may be found online in the Supporting Informat
 **`r s_table("aic")`**. Model fit as measured with conditional Akaike Information Criterion (cAIC).  
 **`r s_figure("sampling-curve")`**. Species collection curve for the ferns of Japan.  
 **`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy.    
-**`r s_figure("envir")`**. Reproductive mode and environmental data in 0.2° grid cells across Japan.  
+**`r s_figure("envir")`**. Reproductive mode and environmental data in 20 km grid cells across Japan.  
 **`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding nothotaxa.  
-**`r s_figure("abundance")`**. Observed number of specimens and sampling redundancy per 0.2° grid cell in the ferns of Japan.  
+**`r s_figure("abundance")`**. Observed number of specimens and sampling redundancy per 20 km grid cell in the ferns of Japan.  
 **`r s_figure("raw-lat")`**. Raw taxonomic diversity, phylogenetic diversity, and functional diversity of the ferns of Japan plotted by latitude.  
 **`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan.  
 **`r s_figure("endemism-restricted")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan.  
@@ -1049,20 +1059,26 @@ indep_var_lookup <- tribble(
 )
 
 # Crop high-res map of Japan to spatial div results area
-japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
+japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial)) %>%
+  st_transform(4612)
 
-# Format biodiv_ferns_spatial data
+# Format biodiv_ferns_spatial data for plotting
 biodiv_ferns_spatial <-
-  biodiv_ferns_spatial %>% 
+  biodiv_ferns_spatial %>%
   # Set order of factor levels for plotting
   mutate(
-    endem_type = factor(endem_type, levels = c("neo", "paleo", "not significant", "mixed", "super")),
-    # can ignore warning about unknown levels, since they don't exist in all variables but that's OK
+    endem_type = factor(
+      endem_type,
+      levels = c("neo", "paleo", "not significant", "mixed", "super")),
+    # can ignore warning about unknown levels, since they don't exist in all
+    # variables but that's OK
     across(
       contains("signif"),
-      ~fct_relevel(.x, "< 0.01",  "< 0.025", "not significant", "> 0.975", "> 0.99")
+      ~fct_relevel(.x, 
+      "< 0.01",  "< 0.025", "not significant", "> 0.975", "> 0.99")
     )
-  )
+  ) %>%
+  st_transform(4612)
 ```
 
 ```{r japan-map-make}
@@ -1070,7 +1086,8 @@ biodiv_ferns_spatial <-
 
 # Set vectors of different areas to label
 main_islands <- c("Hokkaido", "Shikoku", "Kyushu", "Honshu")
-small_islands <- c("Okinawa", "Amami", "Ogasawara Islands", "Yakushima", "Izu Islands", "Iriomote", "Miyako")
+small_islands <- c("Okinawa", "Amami", "Ogasawara Islands", "Yakushima",
+  "Izu Islands", "Iriomote", "Miyako")
 other <- c("Tokyo")
 
 # Modify dataframe to include formatting for printing label on map
@@ -1539,7 +1556,7 @@ ggsave(result_file(figure("bioregions"), "pdf"), bioregions_plot, width = 7.25, 
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (A) Taxonomic bioregions. (B) Phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of > 1 grid-cell each are lumped into the "Other" category.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (A) Taxonomic bioregions. (B) Phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of > `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 

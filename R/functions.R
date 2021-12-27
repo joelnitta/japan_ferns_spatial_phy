@@ -201,6 +201,19 @@ load_jferns_comm <- function(csv_file) {
     column_to_rownames("grids")
 }
 
+#' Load Japan ferns shape data
+#'
+#' @param file_in Path to geometric shapes data
+#' @crs Coordinate reference system to use for shapes data
+#'
+#' @return data.frame
+load_jferns_shape <- function(file_in, crs) {
+  sf::st_read(file_in) %>%
+    # Convert 'grids' to character
+    mutate(grids = as.character(grids)) %>%
+    sf::st_transform(crs)
+}
+
 #' Run iNEXT on fern data
 #'
 #' @param occ_point_data_ferns Dataframe; raw point occurrence data,
@@ -736,10 +749,13 @@ summarize_fern_lat_span <- function (comm_ferns, shape_ferns) {
   # Get lat/long of each grid cell centroid
   centroids <-
     shape_ferns %>%
+    # Set CRS to JDG2000 = EPSG code 4612
+    st_transform(4612) %>%
     sf_add_centroids %>%
     select(grids, longitude = long, latitude = lat) %>%
     st_drop_geometry() %>%
-    as_tibble()
+    as_tibble() %>%
+    mutate(grids = as.character(grids))
   
   comm_ferns %>%
     # Add lat/long to community data
@@ -2163,17 +2179,22 @@ combine_bioregions <- function(regions_taxonomy, regions_phylogeny) {
 #'
 #' @return Dataframe; bioregions relabeled in descending order by mean latitude
 #' 
-relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 2) {
+relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
   
   # Summarize bioregions data: cells per cluster, mean latitude of each bioregion
   bioregions_summary_all <-
     shape_ferns %>%
     left_join(bioregions, by = "grids") %>%
+    # Set CRS to JDG2000 = EPSG code 4612 so that lat and long are in degrees
+    st_transform(4612) %>%
     sf_add_centroids() %>%
     st_drop_geometry() %>%
     select(contains("cluster"), lat, grids) %>%
     as_tibble() %>%
-    pivot_longer(names_to = "cluster_type", values_to = "cluster", -c(grids, lat)) %>%
+    pivot_longer(
+      names_to = "cluster_type",
+      values_to = "cluster",
+      -c(grids, lat)) %>%
     group_by(cluster_type, cluster) %>%
     summarize(mean_lat = mean(lat), n = n(), .groups = "drop")
   
@@ -2182,41 +2203,35 @@ relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 2) {
     bioregions_summary_all %>%
     # New labels are in descending order by latitude starting with major regions
     # (n grid-cells above cutoff)
-    mutate(major_region = n >= cutoff) %>%
+    mutate(major_region = n > cutoff) %>%
     arrange(cluster_type, desc(major_region), desc(mean_lat)) %>%
     group_by(cluster_type) %>%
     mutate(new_cluster = sort(cluster)) %>%
-    ungroup()
+    ungroup() %>%
+    mutate(new_cluster = case_when(
+      major_region == FALSE ~ "Other",
+      TRUE ~ new_cluster
+    ))
   
   # Convert the old bioregion labels to new ones
-  res <-
-    bioregions %>%
+  bioregions %>%
     left_join(
-      filter(cluster_mapping, cluster_type == "phylo_cluster") %>% select(cluster, new_phylo_cluster = new_cluster),
+      filter(cluster_mapping, cluster_type == "phylo_cluster") %>% 
+        select(cluster, new_phylo_cluster = new_cluster),
       by = c("phylo_cluster" = "cluster")) %>%
     left_join(
-      filter(cluster_mapping, cluster_type == "taxonomic_cluster") %>% select(cluster, new_taxonomic_cluster = new_cluster),
+      filter(cluster_mapping, cluster_type == "taxonomic_cluster") %>% 
+        select(cluster, new_taxonomic_cluster = new_cluster),
       by = c("taxonomic_cluster" = "cluster")) %>%
-    select(grids, taxonomic_cluster = new_taxonomic_cluster, phylo_cluster = new_phylo_cluster)
-  
-  # Make sure the number of grid cells per cluster is the same (only the labels changed)
-  assert_that(
-    all(
-      res %>% count(taxonomic_cluster) %>% arrange(n) %>% pull(n) ==
-        bioregions %>% count(taxonomic_cluster) %>% arrange(n) %>% pull(n)
-    ),
-    msg = "Cluster mapping failed for taxonomic clusters"
-  )
-  
-  assert_that(
-    all(
-      res %>% count(phylo_cluster) %>% arrange(n) %>% pull(n) ==
-        bioregions %>% count(phylo_cluster) %>% arrange(n) %>% pull(n)
-    ),
-    msg = "Cluster mapping failed for phylogenetic clusters"
-  )
-
-  res
+    select(
+      grids, 
+      taxonomic_cluster = new_taxonomic_cluster, 
+      phylo_cluster = new_phylo_cluster
+    ) %>%
+    # Make sure the number of grid cells per cluster is the same 
+    # (only the labels changed)
+    assert(not_na, taxonomic_cluster, phylo_cluster) %>%
+    verify(nrow(.) == nrow(bioregions))
   
 }
 
@@ -2343,18 +2358,27 @@ crop_by_deer <- function(deer_range, biodiv_ferns_spatial, japan_shp) {
   # Restrict area to only significant biodiv covered by high status
   biodiv_ferns_spatial_cropped_filtered_estimated <-
     biodiv_ferns_spatial_cropped_filtered %>%
-    st_intersection(filter(deer_range, range == "estimated")) %>%
+    st_intersection(
+      filter(deer_range, range == "estimated") %>%
+        sf::st_make_valid()
+    ) %>%
     mutate(area = st_area(.) %>% units::set_units(km^2))
   
   # Restrict area to only significant biodiv covered by medium status
   biodiv_ferns_spatial_cropped_filtered_2003 <-
     biodiv_ferns_spatial_cropped_filtered %>%
-    st_intersection(filter(deer_range, range == "2003")) %>%
+    st_intersection(
+      filter(deer_range, range == "2003") %>%
+        sf::st_make_valid()
+    ) %>%
     mutate(area = st_area(.) %>% units::set_units(km^2))
 
   biodiv_ferns_spatial_cropped_filtered_1978 <-
     biodiv_ferns_spatial_cropped_filtered %>%
-    st_intersection(filter(deer_range, range == "1978")) %>%
+    st_intersection(
+      filter(deer_range, range == "1978") %>%
+        sf::st_make_valid()
+    ) %>%
     mutate(area = st_area(.) %>% units::set_units(km^2))
   
   list(
@@ -3056,46 +3080,71 @@ run_treepl <- function (
 #' @return Tibble
 spatial_to_cent_for_model <- function(data, vars_keep) {
   data %>%
+    sf_add_centroids() %>%
     # drop geometry (only need centroids for modeling)
-    st_set_geometry(NULL) %>%
-    # drop single percent_apo outlier
-    drop_apo_outlier %>%
+    st_drop_geometry() %>%
+    as_tibble() %>%
     # keep only variables needed for model and only rows with zero missing data
     select(all_of(vars_keep)) %>%
-    ggplot2::remove_missing()
+    # drop any rows with missing data
+    ggplot2::remove_missing() %>%
+    # drop percent_apo outliers (>60%)
+    drop_apo_outlier() %>%
+    assert(not_na, everything())
 }
 
+#' Drop one outlier value from biodiv data:
+#' single extremely high percent_apo (> 60%) due to small number of species
+#'
+#' @param data data on biodiversity of ferns in Japan, including
+#' columns `percent_apo`, `richness`, others
+#'
+#' @return data with one row dropped
+#' 
+drop_apo_outlier <- function (data) {
+  res <-
+  data %>%
+    verify(max(percent_apo) > 0.6) %>%
+    filter(percent_apo != max(percent_apo)) %>%
+    verify(max(percent_apo) < 0.6) %>%
+    verify(nrow(.) == (nrow(data) - 1))
+  warning("Removed 1 row with outlier percent apomixis")
+  res
+}
 
 #' Calculate centroids from SF (simple features) data
 #'
 #' @param sf_data Dataframe of class "sf"
+#' @param id_col Name of column that acts as unique identifier
 #'
 #' @return Tibble with columns "lat" and "long" with latitude and
 #' longitude of the centroid of each geometrical feature
 #' 
-sf_add_centroids <- function(sf_data) {
+sf_add_centroids <- function(sf_data, id_col = "grids") {
+  # Check that no cols already named X or Y, and no geometry is missing
+  sf_data %>%
+    verify(!("X" %in% colnames(.))) %>%
+    verify(!("Y" %in% colnames(.))) %>%
+    assert(not_na, geom, all_of(id_col)) %>%
+    assert(is_uniq, all_of(id_col), success_fun = success_logical)
   
-  # Extract centroids
-  centroids <-  # Start with Simple feature collection ("sf") dataframe
+  # get centroids
+  centroids <-
     sf_data %>%
-    # Calculate centroid of each geometry feature
-    st_centroid() %>% 
-    # Convert centroids to character (e.g., "c(140.9, 45.5)")
-    mutate(geom_char = as.character(geom)) %>% 
-    # Drop geometry column
-    sf::st_drop_geometry() %>%
-    as_tibble() %>%
-    # Parse centroids to numeric
-    separate(geom_char, c("long", "lat"), sep = ", ") %>%
-    mutate(across(c(long, lat), parse_number)) %>%
-    # Make sure it worked
-    assert(not_na, long, lat) %>%
-    assert(within_bounds(-180, 180), long) %>%
-    assert(within_bounds(-90, 90), lat) %>%
-    select(grids, long, lat)
+    st_centroid() %>%
+    mutate(
+      st_coordinates(.) %>%
+      as.data.frame() %>%
+      as_tibble() %>%
+      rename(lat = Y, long = X)
+    ) %>%
+      select(all_of(id_col), lat, long) %>%
+      st_drop_geometry()
   
-  # Add centroids to original data
-  left_join(sf_data, centroids, by = "grids")
+  # add centroids back in to original data
+  left_join(sf_data, centroids, by = all_of(id_col)) %>%
+    verify(nrow(.) == nrow(sf_data)) %>%
+    assert(is_uniq, all_of(id_col))
 }
 
 #' Make a spatial weights list for testing spatial autocorrelation
@@ -3186,12 +3235,18 @@ run_moran_mc <- function(var_name, biodiv_data, listw, nsim = 1000) {
 #' 
 run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
   
-  # Extract long/lat as matrix
-  coords <- select(biodiv_ferns_cent_repro, long, lat) %>% as.matrix()
+  # Extract long/lat in degrees as matrix
+  coords <- biodiv_ferns_cent_repro %>% 
+    sf::st_transform(4612) %>%
+    sf_add_centroids() %>%
+    st_drop_geometry() %>%
+    select(long, lat) %>%
+    as.matrix()
   
   # Make cross table of all unique combinations of independent vars
   t_test_vars <-
     biodiv_ferns_cent_repro %>%
+    st_drop_geometry() %>%
     select(all_of(vars_select)) %>%
     colnames() %>%
     list(var1 = ., var2 = .) %>%
@@ -3576,19 +3631,27 @@ area_from_crop <- function(x, ymin, ymax, xmin, xmax) {
 #' @param lat_cut Width of latitude to slice the shape into
 #' @param lat_window Width of rolling window to calulate rolling mean area
 #'
-#' @return Tibble with columns `ymin`, `ymax`, `area`
-calc_area_by_lat <- function(shp, lat_cut = 0.2, lat_window = 1) {
+#' @return Tibble with columns `ymin`, `ymax`, `area` (in sq km)
+calc_area_by_lat <- function(shp, lat_cut = 20000, lat_window = 100000) {
+  
+  # Define some helper functions
+  # Round x up to the nearest number which is divisible by m
+  round_up_divis <- function(x, m) {x + m - x %% m}
+  # Round x down to the nearest number which is divisible by m
+  round_down_divis <- function(x, m) {x - m - x %% m}
   
   # Get bounding box of the input shape (xmin, xmax, ymin, ymax)
-  bounds <- st_bbox(shp) 
+  bounds <- st_bbox(shp)
   
-  # Define latitudes to cut along: every 0.2 degree
+  # Define latitudes to cut along:
+  # start on lowest rounded number divisible by `lat_cut`,
+  # end at highest rounded number divisible by `lat_cut`
   lat_cuts <- seq(
-    floor(bounds$ymin), 
-    ceiling(bounds$ymax), 
-    0.2)
+    round_down_divis(bounds$ymin, lat_cut),
+    round_up_divis(bounds$ymax, lat_cut),
+    lat_cut)
   
-  # Prepare tibble for looping
+  # Prepare tibble for looping to calculate area in each band
   dat <- tibble(
     ymin = lat_cuts[1:(length(lat_cuts) - 1)],
     ymax = lat_cuts[2:length(lat_cuts)],
@@ -3599,17 +3662,21 @@ calc_area_by_lat <- function(shp, lat_cut = 0.2, lat_window = 1) {
   
   # Determine rolling mean window in units of input data
   # k x lat_cut = lat_window,
-  # so lat_window / lat_cut = 1 degree / 0.2 degree = 5
+  # so e.g., lat_window / lat_cut = 1 degree / 0.2 degree = 5
   width_k <- lat_window / lat_cut
   
-  # Calculate area in 0.2 degree latitudinal bands,
-  # then rolling mean in 1 degree bands
+  # Calculate area in km2 in latitudinal bands,
+  # then rolling mean across windows of bands
   dat %>%
     mutate(lat_area = pmap_dbl(., area_from_crop)) %>%
     select(ymin, ymax, lat_area) %>%
-    # for the missing values on either end, just extend from the first non-missing value
-    mutate(lat_area = zoo::rollmean(x = lat_area, k = width_k, fill = c("extend", NA, "extend")))
-  
+    # for the missing values on either end, extend from the first non-missing value
+    mutate(
+      lat_area = zoo::rollmean(
+        x = lat_area, 
+        k = width_k, 
+        fill = c("extend", NA, "extend")
+    ))
 }
 
 #' Add rolling mean area of latidudinal bands to biodiv data
@@ -3621,25 +3688,33 @@ calc_area_by_lat <- function(shp, lat_cut = 0.2, lat_window = 1) {
 #' @return Tibble
 #' 
 add_roll_area <- function(biodiv_ferns_spatial, lat_area_ja) {
-  # interval_inner_join() only works (properly) on integers
-  # Round lat to 1 decimal, then multiply by 10 to convert to integer
+
+  # Map lat. area to grid-cell centroids
   area_mapped_to_centroids <-
+    # Get centroid latitude of each grid cell
     biodiv_ferns_spatial %>% 
-    mutate(ymin = round(lat, 1)*10,
-           ymin = as.integer(ymin)) %>%
-    mutate(ymax = ymin) %>%
-    # fuzzyjoin doesn't like spatial dataframes
-    sf::st_set_geometry(NULL) %>%
+    sf_add_centroids %>%
+    st_drop_geometry() %>%
+    as_tibble() %>%
+    select(grids, lat) %>% 
+    # For single points (centroids), use same value for ymin and ymax
+    mutate(
+      ymin = as.integer(lat),
+      ymax = as.integer(lat)
+      ) %>%
     select(grids, ymin, ymax) %>%
-    fuzzyjoin::interval_inner_join(
-      mutate(lat_area_ja, ymin = as.integer(ymin*10), ymax = as.integer(ymax*10)),
+    # Join by y intervals
+    fuzzyjoin::interval_left_join(
+      mutate(lat_area_ja, ymin = as.integer(ymin), ymax = as.integer(ymax)),
       type = "within",
       by = c("ymin", "ymax")) %>% 
-    # make sure the join worked properly
+    # Make sure the join worked properly: no rows should be duplicated
     verify(nrow(.) == nrow(biodiv_ferns_spatial)) %>%
     select(-matches("ymin|ymax"))
-  
-  left_join(biodiv_ferns_spatial, area_mapped_to_centroids, by = "grids") %>%
+
+  # Join lat. area by grid-cell ID
+  biodiv_ferns_spatial %>%
+    left_join(area_mapped_to_centroids, by = "grids") %>%
     assert(is_uniq, grids) %>%
     assert(not_na, lat_area)
 }
@@ -3718,8 +3793,11 @@ add_selected_pred_to_model <- function(spatial_models) {
 #' @param biodiv_ferns_spatial Spatial dataframe including biodiveristy metrics and grid-cells
 #'
 #' @return Dataframe with centroids of each grid-cell
-biodiv_ferns_spatial_to_cent <- function(biodiv_ferns_spatial) {
+biodiv_ferns_spatial_to_cent <- function(biodiv_ferns_spatial, crs) {
   biodiv_ferns_spatial %>%
+    # Transform CRS, add centroids
+    st_transform(crs) %>%
+    sf_add_centroids() %>%
     # Drop geometry
     sf::st_drop_geometry() %>%
     as_tibble() %>%

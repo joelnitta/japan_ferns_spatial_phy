@@ -7,6 +7,7 @@ references:
     given: Christopher H
   - family: Werth
     given: Charles R.
+  citation-key: Barrington1989
   container-title: American Fern Journal
   DOI: 10.2307/1547160
   ISSN: 1938-422X
@@ -21,6 +22,7 @@ references:
   author:
   - family: Barrington
     given: David S
+  citation-key: Barrington1993
   container-title: Journal of Biogeography
   DOI: 10.2307/2845635
   ISSN: 1365-2699
@@ -39,6 +41,7 @@ references:
   author:
   - family: Baselga
     given: Andrés
+  citation-key: Baselga2012
   container-title: Global Ecology and Biogeography
   DOI: 10.1111/j.1466-8238.2011.00756.x
   ISSN: 1466822X
@@ -63,6 +66,7 @@ references:
   author:
   - family: Bengtsson
     given: B. O.
+  citation-key: Bengtsson2003
   container-title: Journal of Evolutionary Biology
   DOI: 10.1046/j.1420-9101.2003.00523.x
   ISSN: 1420-9101
@@ -82,6 +86,7 @@ references:
     given: Sophia A.
   - family: Laffan
     given: Shawn W.
+  citation-key: Bickford2006
   container-title: Global Ecology and Biogeography
   DOI: 10.1111/j.1466-822X.2006.00250.x
   ISSN: 1466-822X
@@ -101,6 +106,7 @@ references:
     given: Edzer
   - family: Gómez-Rubio
     given: Virgilio
+  citation-key: Bivand2013
   DOI: 10.1007/978-1-4614-7618-4
   event-place: New York
   ISBN: 978-1-4614-7618-4
@@ -118,6 +124,7 @@ references:
     given: Theodore
   - family: Ives
     given: Anthony R.
+  citation-key: Blomberg2003
   container-title: Evolution
   DOI: 10.1111/j.0014-3820.2003.tb00285.x
   ISSN: 00143820
@@ -154,6 +161,7 @@ references:
     given: J. D.
   - family: Rodrigues
     given: A. S. L.
+  citation-key: Brooks2006
   container-title: Science
   DOI: 10.1126/science.1127609
   ISSN: 0036-8075, 1095-9203
@@ -185,6 +193,7 @@ references:
     given: B
   - family: Green
     given: J
+  citation-key: Bryant2008
   container-title: Proceedings of the National Academy of Sciences
   DOI: 10.1073/pnas.0801920105
   ISSN: 1091-6490
@@ -204,6 +213,7 @@ references:
     given: Carsten
   - family: Gotelli
     given: Nicholas J
+  citation-key: Colwell2004a
   container-title: The American Naturalist
   DOI: 10.1086/382056
   ISSN: 1537-5323
@@ -225,6 +235,7 @@ references:
     given: Alexandre
   - family: Rousset
     given: François
+  citation-key: Courtiol2017
   container-title: bioRxiv
   DOI: 10.1101/207662
   issued:
@@ -245,6 +256,7 @@ references:
     given: A
   - family: Sack
     given: Lawren
+  citation-key: Creese2011
   container-title: American Journal of Botany
   DOI: 10.3732/ajb.1000237
   ISSN: 1537-2197
@@ -271,6 +283,7 @@ references:
     given: Alexandre
   - family: Faurby
     given: Søren
+  citation-key: Daru2020
   container-title: Nature Communications
   container-title-short: Nat Commun
   DOI: 10.1038/s41467-020-15921-6
@@ -297,6 +310,7 @@ references:
     given: Piyal
   - family: Schliep
     given: Klaus
+  citation-key: Daru2020a
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol. Evol.
   DOI: 10.1111/2041-210x.13478
@@ -329,6 +343,7 @@ references:
     given: Joel H.
   - family: Imaichi
     given: Ryoko
+  citation-key: Ebihara2013
   container-title: American Journal of Botany
   DOI: 10.3732/ajb.1200555
   ISSN: 1537-2197
@@ -338,14 +353,15 @@ references:
     month: 4
     day: 1
   page: 735-743
-  title: 'A survey of the fern gametophyte flora of Japan: Frequent independent occurrences
-    of noncordiform gametophytes'
+  title: '<span class="nocase">A survey of the fern gametophyte flora of Japan: Frequent
+    independent occurrences of noncordiform gametophytes</span>'
   type: article-journal
   volume: '100'
 - id: Ebihara2016b
   author:
   - family: Ebihara
     given: Atsushi
+  citation-key: Ebihara2016b
   event-place: Tokyo
   issued:
   - year: 2016
@@ -358,6 +374,7 @@ references:
   author:
   - family: Ebihara
     given: Atsushi
+  citation-key: Ebihara2017
   event-place: Tokyo
   issued:
   - year: 2017
@@ -383,6 +400,7 @@ references:
     given: Kaoru
   - family: Azakami
     given: Otowa
+  citation-key: Ebihara2019a
   container-title: Bulletin of the National Museum of Nature and Science, Series B
     (Botany), Tokyo
   issue: '2'
@@ -391,8 +409,8 @@ references:
     month: 5
     day: 22
   page: 77-86
-  title: Growth dynamics of independent gametophytes of *Pleurosoriopsis makinoi*
-    (Polypodiaceae)
+  title: <span class="nocase">Growth dynamics of independent gametophytes of *Pleurosoriopsis
+    makinoi* (Polypodiaceae)</span>
   type: article-journal
   volume: '45'
 - id: Ebihara2019b
@@ -401,6 +419,7 @@ references:
     given: Atsushi
   - family: Nitta
     given: Joel H.
+  citation-key: Ebihara2019b
   container-title: Journal of Plant Research
   container-title-short: J. Plant Res.
   DOI: 10.1007/s10265-019-01137-3
@@ -412,8 +431,8 @@ references:
     day: 16
   page: 723-738
   PMID: '31529289'
-  title: An update and reassessment of fern and lycophyte diversity data in the Japanese
-    Archipelago
+  title: <span class="nocase">An update and reassessment of fern and lycophyte diversity
+    data in the Japanese Archipelago</span>
   type: article-journal
   volume: '132'
 - id: Fahrig2013
@@ -424,6 +443,7 @@ references:
   author:
   - family: Fahrig
     given: Lenore
+  citation-key: Fahrig2013
   container-title: Journal of Biogeography
   container-title-short: J. Biogeogr.
   DOI: 10.1111/jbi.12130
@@ -446,6 +466,7 @@ references:
   author:
   - family: Faith
     given: Daniel P
+  citation-key: Faith1992
   container-title: Biological Conservation
   DOI: 10.1016/0006-3207(92)91201-3
   ISSN: 0006-3207
@@ -462,6 +483,7 @@ references:
     given: Susanne A.
   - family: Purvis
     given: Andy
+  citation-key: Fritz2010
   container-title: Conservation Biology
   DOI: 10.1111/j.1523-1739.2010.01455.x
   ISSN: 08888892
@@ -490,6 +512,7 @@ references:
     given: Junichi
   - family: Kubota
     given: Yasuhiro
+  citation-key: Fukaya2020
   container-title: Nature Communications
   container-title-short: Nat Commun
   DOI: 10.1038/s41467-020-15407-5
@@ -517,6 +540,7 @@ references:
     given: Exequiel
   - family: Riemann
     given: Hugo
+  citation-key: Garcillan2003
   container-title: Journal of Vegetation Science
   container-title-short: Journal of Vegetation Science
   DOI: 10.1111/j.1654-1103.2003.tb02174.x
@@ -536,6 +560,7 @@ references:
   author:
   - family: Givnish
     given: Thomas J
+  citation-key: Givnish1987
   container-title: New Phytologist
   DOI: 10.1111/j.1469-8137.1987.tb04687.x
   ISSN: 0028646X
@@ -562,6 +587,7 @@ references:
     given: Shawn
   - family: Miller
     given: Joseph T.
+  citation-key: Gonzalez-Orozco2014b
   container-title: Diversity and Distributions
   DOI: 10.1111/ddi.12129
   ISSN: 1472-4642
@@ -575,25 +601,11 @@ references:
   title: Biogeographical regions and phytogeography of the eucalypts
   type: article-journal
   volume: '20'
-- id: Gotelli2000
-  author:
-  - family: Gotelli
-    given: Nicholas J
-  container-title: Ecology
-  DOI: 10.2307/177478
-  ISSN: 00129658
-  issue: '9'
-  issued:
-  - year: 2000
-    month: 9
-  page: 2606-2621
-  title: Null model analysis of species co-occurrence patterns
-  type: article-journal
-  volume: '81'
 - id: Gower1971
   author:
   - family: Gower
     given: J. C.
+  citation-key: Gower1971
   container-title: Biometrics
   DOI: 10.2307/2528823
   ISSN: 0006341X
@@ -623,6 +635,7 @@ references:
     given: Eric
   - family: Haufler
     given: Christopher H.
+  citation-key: Grusz2021
   container-title: American Journal of Botany
   DOI: 10.1002/ajb2.1611
   ISSN: 1537-2197
@@ -674,6 +687,7 @@ references:
     given: Andreas
   - family: Ohlemüller
     given: Ralf
+  citation-key: Kessler2011a
   container-title: Global Ecology and Biogeography
   DOI: 10.1111/j.1466-8238.2011.00653.x
   ISSN: 1466822X
@@ -691,6 +705,7 @@ references:
     given: J
   - family: Kessler
     given: Michael
+  citation-key: Kluge2007
   container-title: Ecotropica
   issue: '1'
   issued:
@@ -712,6 +727,7 @@ references:
     given: April M. H.
   - family: Fowler
     given: Amy E.
+  citation-key: Krueger-Hadfield2019
   container-title: Journal of Phycology
   DOI: 10.1111/jpy.12906
   ISSN: 1529-8817
@@ -737,6 +753,7 @@ references:
     given: Takayuki
   - family: Kusumoto
     given: Buntarou
+  citation-key: Kubota2014
   container-title: Journal of Biogeography
   DOI: 10.1111/jbi.12290
   ISSN: '13652699'
@@ -765,6 +782,7 @@ references:
     given: Takayuki
   - family: Kubota
     given: Yasuhiro
+  citation-key: Kusumoto2017
   container-title: Ecological Research
   container-title-short: Ecol Res
   DOI: 10.1007/s11284-017-1451-6
@@ -803,6 +821,7 @@ references:
     given: Andrew H.
   - family: Mishler
     given: Brent D.
+  citation-key: Laffan2016
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol Evol
   DOI: 10/f8tbrk
@@ -827,6 +846,7 @@ references:
     given: Etienne
   - family: Legendre
     given: Pierre
+  citation-key: Laliberte2010
   container-title: Ecology
   ISSN: 0012-9658
   issue: '1'
@@ -847,6 +867,7 @@ references:
   author:
   - family: Landau
     given: William Michael
+  citation-key: Landau2021
   container-title: Journal of Open Source Software
   DOI: 10.21105/joss.02959
   ISSN: 2475-9066
@@ -867,6 +888,7 @@ references:
   author:
   - family: Lehtonen
     given: Samuli
+  citation-key: Lehtonen2011
   container-title: PLoS ONE
   DOI: 10.1371/journal.pone.0024851
   ISSN: 1932-6203
@@ -888,6 +910,7 @@ references:
     given: Melanie A.
   - family: Laffan
     given: Shawn W.
+  citation-key: Link-Perez2018
   container-title: Journal of Systematics and Evolution
   container-title-short: Jnl of Sytematics Evolution
   DOI: 10/gfb462
@@ -918,6 +941,7 @@ references:
     given: J
   - family: Schneider
     given: Harald
+  citation-key: Liu2012
   container-title: Journal of Botany
   ISSN: 2090-0139
   issue: '2'
@@ -947,6 +971,7 @@ references:
     given: Marcus
   - family: Salamin
     given: Nicolas
+  citation-key: Loiseau2020
   container-title: Annals of Botany
   DOI: 10.1093/aob/mcz145
   ISSN: '10958290'
@@ -968,6 +993,7 @@ references:
     given: C. R.
   - family: Pressey
     given: R. L.
+  citation-key: Margules2000
   container-title: Nature
   DOI: 10.1038/35012251
   ISSN: 1476-4687
@@ -993,6 +1019,7 @@ references:
     given: Virginie
   - family: Jaeger
     given: Jean-Jacques
+  citation-key: Millien-Parra1999
   container-title: Journal of Biogeography
   DOI: 10.1046/j.1365-2699.1999.00346.x
   ISSN: 03050270, 13652699
@@ -1017,6 +1044,7 @@ references:
   - family: Haeseler
     given: Arndt
     non-dropping-particle: von
+  citation-key: Minh2013
   container-title: Molecular Biology and Evolution
   DOI: 10.1093/molbev/mst024
   ISSN: 07374038
@@ -1041,6 +1069,7 @@ references:
     given: Shawn W.
   - family: Miller
     given: Joseph T.
+  citation-key: Mishler2014
   container-title: Nature Communications
   DOI: 10.1038/ncomms5473
   ISSN: 2041-1723
@@ -1073,6 +1102,7 @@ references:
     given: Julie M.
   - family: Laffan
     given: Shawn W.
+  citation-key: Mishler2020
   container-title: Journal of Systematics and Evolution
   container-title-short: J. Syst. Evol.
   DOI: 10/gg3h86
@@ -1093,6 +1123,7 @@ references:
     given: R
   - family: Smith
     given: Alan R.
+  citation-key: Moran2001
   container-title: Brittonia
   DOI: 10.1007/BF02812704
   issue: '2'
@@ -1116,6 +1147,7 @@ references:
     non-dropping-particle: da
   - family: Kent
     given: J.
+  citation-key: Myers2000
   container-title: Nature
   container-title-short: Nature
   DOI: 10.1038/35002501
@@ -1148,6 +1180,7 @@ references:
     given: Joseph T.
   - family: Mishler
     given: Brent D
+  citation-key: Nagalingum2015
   container-title: Frontiers in Genetics
   DOI: 10.3389/fgene.2015.00132
   ISSN: 1664-8021
@@ -1163,6 +1196,7 @@ references:
   author:
   - family: Nakaike
     given: Toshiyuki
+  citation-key: Nakaike1983
   container-title: Memoirs of the National Science Museum
   ISSN: 00824755
   issued:
@@ -1188,6 +1222,7 @@ references:
     given: Seiji
   - family: De Silva
     given: Naamal
+  citation-key: Natori2012
   container-title: Journal of Threatened Taxa
   container-title-short: J. Threat. Taxa
   DOI: 10.11609/jott.o2999.2797-805
@@ -1213,6 +1248,7 @@ references:
     non-dropping-particle: von
   - family: Minh
     given: Bui Quang
+  citation-key: Nguyen2015
   container-title: Molecular Biology and Evolution
   container-title-short: Mol. Biol. Evol.
   DOI: 10.1093/molbev/msu300
@@ -1245,6 +1281,7 @@ references:
     given: Dana L.
   - family: Tsukaya
     given: Hirokazu
+  citation-key: Nicotra2011
   container-title: Functional Plant Biology
   container-title-short: Functional Plant Biol.
   DOI: 10.1071/fp11057
@@ -1272,6 +1309,7 @@ references:
     given: Ryo
   - family: Mori
     given: Akira S.
+  citation-key: Nishizawa2016
   container-title: Ecological Research
   container-title-short: Ecol Res
   DOI: 10.1007/s11284-016-1367-6
@@ -1297,6 +1335,7 @@ references:
     given: Ravahere
   - family: Davis
     given: Charles C
+  citation-key: Nitta2017
   container-title: Ecological Monographs
   DOI: 10.1002/ecm.1246
   ISSN: 00129615
@@ -1306,8 +1345,8 @@ references:
     month: 5
     day: 2
   page: 278-296
-  title: 'Life cycle matters: DNA barcoding reveals contrasting community structure
-    between fern sporophytes and gametophytes'
+  title: '<span class="nocase">Life cycle matters: DNA barcoding reveals contrasting
+    community structure between fern sporophytes and gametophytes</span>'
   type: article-journal
   volume: '87'
 - id: Nitta2021a
@@ -1371,6 +1410,7 @@ references:
   author:
   - family: Pagel
     given: Mark
+  citation-key: Pagel1999
   container-title: Nature
   DOI: 10.1038/44766
   ISSN: 00280836
@@ -1389,6 +1429,7 @@ references:
   author:
   - family: Pebesma
     given: Edzer
+  citation-key: Pebesma2018
   container-title: The R Journal
   container-title-short: The R Journal
   DOI: 10.32614/rj-2018-009
@@ -1413,6 +1454,7 @@ references:
     given: Owen L.
   - family: Gaston
     given: Kevin J.
+  citation-key: Petchey2002
   container-title: Ecology Letters
   container-title-short: Ecol Letters
   DOI: 10.1046/j.1461-0248.2002.00339.x
@@ -1439,6 +1481,7 @@ references:
     given: Li-Yaung
   - family: Sessa
     given: Emily B
+  citation-key: Pinson2016a
   container-title: International Journal of Plant Sciences
   DOI: 10.1086/688773
   ISSN: 1058-5893
@@ -1448,8 +1491,8 @@ references:
     month: 1
     day: 1
   page: 1-18
-  title: 'The separation of generations: Biology and biogeography of long-lived sporophyteless
-    fern gametophytes'
+  title: '<span class="nocase">The separation of generations: Biology and biogeography
+    of long-lived sporophyteless fern gametophytes</span>'
   type: article-journal
   volume: '178'
 - id: Poppinga2015
@@ -1464,6 +1507,7 @@ references:
     given: Tom
   - family: Speck
     given: Thomas
+  citation-key: Poppinga2015
   container-title: PLoS ONE
   DOI: 10.1371/journal.pone.0138495
   ISSN: '19326203'
@@ -1478,6 +1522,7 @@ references:
 - id: PteridophytePhylogenyGroupI2016
   author:
   - literal: Pteridophyte Phylogeny Group I
+  citation-key: PteridophytePhylogenyGroupI2016
   container-title: Journal of Systematics and Evolution
   DOI: 10.1111/jse.12229
   issue: '6'
@@ -1499,6 +1544,7 @@ references:
     given: M
   - family: Wang
     given: X L
+  citation-key: Qian2012
   container-title: Plant Ecology
   DOI: 10.1007/s11258-012-0038-0
   ISSN: 1385-0237
@@ -1525,6 +1571,7 @@ references:
     given: Tao
   - family: Jin
     given: Yi
+  citation-key: Qian2021
   container-title: Global Ecology and Biogeography
   container-title-short: Global Ecol Biogeogr
   DOI: 10.1111/geb.13349
@@ -1574,6 +1621,7 @@ references:
   author:
   - family: Revell
     given: Liam J.
+  citation-key: Revell2012
   container-title: Methods in Ecology and Evolution
   DOI: 10.1111/j.2041-210X.2011.00169.x
   ISSN: 2041210X
@@ -1596,6 +1644,7 @@ references:
     given: S
   - family: Cook
     given: L
+  citation-key: Rosauer2009
   container-title: Molecular Ecology
   DOI: 10.1111/j.1365-294X.2009.04311.x
   ISSN: 1365294X
@@ -1614,6 +1663,7 @@ references:
     given: François
   - family: Ferdy
     given: Jean Baptiste
+  citation-key: Rousset2014
   container-title: Ecography
   DOI: 10.1111/ecog.00566
   ISSN: '16000587'
@@ -1630,6 +1680,7 @@ references:
     given: Eric
   - family: Pryer
     given: Kathleen M
+  citation-key: Schuettpelz2007
   container-title: Taxon
   DOI: 10.2307/25065903
   issue: '4'
@@ -1677,6 +1728,7 @@ references:
     non-dropping-particle: de
   - family: Kubota
     given: Yasuhiro
+  citation-key: Shiono2015
   container-title: Journal of Biogeography
   DOI: 10.1111/jbi.12503
   ISSN: '13652699'
@@ -1693,6 +1745,7 @@ references:
     given: Stephen A
   - family: O'Meara
     given: Brian C.
+  citation-key: Smith2012
   container-title: Bioinformatics
   DOI: 10.1093/bioinformatics/bts492
   ISSN: '13674803'
@@ -1723,6 +1776,39 @@ references:
   publisher-place: New York
   note: ISBN 978-3-030-56680-7
   URL: http://srb2gv.mat.utfsm.cl/
+- id: Strona2014
+  accessed:
+  - year: 2021
+    month: 10
+    day: 21
+  author:
+  - family: Strona
+    given: Giovanni
+  - family: Nappo
+    given: Domenico
+  - family: Boccacci
+    given: Francesco
+  - family: Fattorini
+    given: Simone
+  - family: San-Miguel-Ayanz
+    given: Jesus
+  citation-key: Strona2014
+  container-title: Nature Communications
+  container-title-short: Nat Commun
+  DOI: 10.1038/ncomms5114
+  ISSN: 2041-1723
+  issue: '1'
+  issued:
+  - year: 2014
+    month: 9
+    day: 22
+  language: en
+  page: '4114'
+  source: DOI.org (Crossref)
+  title: A fast and unbiased procedure to randomize ecological binary matrices with
+    fixed row and column totals
+  type: article-journal
+  volume: '5'
 - id: Suissa2021
   accessed:
   - year: 2021
@@ -1735,6 +1821,7 @@ references:
     given: Michael A.
   - family: Testo
     given: Weston L.
+  citation-key: Suissa2021
   container-title: Journal of Biogeography
   container-title-short: J Biogeogr
   DOI: 10.1111/jbi.14076
@@ -1758,6 +1845,7 @@ references:
   author:
   - family: Takatsuki
     given: Seiki
+  citation-key: Takatsuki2009
   container-title: Biological Conservation
   container-title-short: Biological Conservation
   DOI: 10.1016/j.biocon.2009.02.011
@@ -1783,6 +1871,7 @@ references:
     given: Mitsuru
   - family: Sato
     given: Toshiyuki
+  citation-key: Tanaka2014
   container-title: Plant Systematics and Evolution
   DOI: 10.1007/s00606-014-1036-6
   ISSN: 0378-2697
@@ -1801,6 +1890,7 @@ references:
     given: Weston L.
   - family: Sundue
     given: Michael A
+  citation-key: Testo2016a
   container-title: Molecular Phylogenetics and Evolution
   DOI: 10.1016/j.ympev.2016.09.003
   ISSN: '10959513'
@@ -1811,21 +1901,6 @@ references:
   title: A 4000-species dataset provides new insight into the evolution of ferns
   type: article-journal
   volume: '105'
-- type: webpage
-  id: Thiers2021
-  author:
-  - family: Thiers
-    given: Barbara
-  issued:
-    year: 2021
-  accessed:
-    year: 2021
-    month: 3
-    day: 1
-  title: 'Index Herbariorum: A global directory of public herbaria and associated
-    staff'
-  title-short: IH
-  URL: http://sweetgum.nybg.org/science/ih/
 - id: Tokita2006
   author:
   - family: Tokita
@@ -1850,6 +1925,7 @@ references:
   author:
   - family: Tryon
     given: Rolla
+  citation-key: Tryon1970
   container-title: Biotropica
   DOI: 10.2307/2989765
   issue: '2'
@@ -1869,6 +1945,7 @@ references:
     given: Florin
   - family: Blanchard
     given: Suzette
+  citation-key: Vaida2005
   container-title: Biometrika
   container-title-short: Biometrika
   DOI: 10.1093/biomet/92.2.351
@@ -1891,6 +1968,7 @@ references:
     given: N Michele
   - family: Zwieniecki
     given: M
+  citation-key: WatkinsJr.2010
   container-title: American Journal of Botany
   DOI: 10.3732/ajb.1000124
   ISSN: 1537-2197
@@ -1914,6 +1992,7 @@ references:
     given: Matthew
   - family: Price
     given: Trevor D.
+  citation-key: White2019
   container-title: Nature Communications
   DOI: 10.1038/s41467-019-10253-6
   ISSN: 2041-1723
@@ -1937,6 +2016,7 @@ references:
     given: K. H.
   - family: Chao
     given: Anne
+  citation-key: Hsieh2016
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol Evol
   DOI: 10/gdskcx
@@ -1958,6 +2038,7 @@ references:
   - family: Wickham
     given: Hadley
   call-number: '519.5'
+  citation-key: Wickham2016
   collection-title: Use R!
   DOI: 10.1007/978-3-319-24277-4
   edition: 2nd ed. 2016
@@ -1988,6 +2069,7 @@ references:
     given: Yi
   - family: Lam
     given: Tommy Tsan‐Yuk
+  citation-key: Yu2017
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol Evol
   DOI: 10.1111/2041-210x.12628

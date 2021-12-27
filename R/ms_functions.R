@@ -52,8 +52,8 @@ bioregion_cols <- c(
   "5" = "#56B4E9", # light blue
   "6" = "#E69F00", # goldenrod
   "7" = "#CC79A7", # magenta
-  "8" ="#000000", # black
-  "Other" = "grey80") 
+  "8" = "#000000", # black
+  "Other" = "grey80")
 
 # - Protected areas (Okabe-Ito CVD safe)
 protection_cols <- c(

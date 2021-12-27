@@ -145,8 +145,8 @@ The next code chunk runs a logical check to see if any rows have missing data. I
 ```{r check-missing}
 biodiv_ferns_cent_raw %>%
   assert(
-    not_na, everything(), 
-    error_fun = error_logical, 
+    not_na, everything(),
+    error_fun = error_logical,
     success_fun = success_logical)
 ```
 
@@ -161,12 +161,12 @@ error_rows <-
   unique()
 
 # Inspect the rows with missing data
-biodiv_ferns_cent_raw %>% 
-  slice(error_rows) %>% 
-  select(grids, where(~any(is.na(.x))))
+biodiv_ferns_cent_raw %>%
+  slice(error_rows) %>%
+  select(grids, richness, percent_apo, temp, precip, precip_season)
 ```
 
-The missing data was due to one grid-cell that lacks environmental data. This must be missing from the WorldClim dataset. Let's remove it, then continue.
+The missing data are due to two grid-cells that lack environmental data from the WorldClim dataset and one grid-cell that only had a single species with no breeding-system data. Let's remove these, then continue.
 
 ```{r remove-missing}
 # Exclude rows with missing data
@@ -175,8 +175,8 @@ biodiv_ferns_cent_no_missing <-
   slice(-error_rows)
 
 # Double check that the resulting dataframe has no missing data
-assert(biodiv_ferns_cent_no_missing, 
-       not_na, everything(), 
+assert(biodiv_ferns_cent_no_missing,
+       not_na, everything(),
        success_fun = success_logical)
 ```
 
@@ -197,7 +197,7 @@ biodiv_ferns_cent_no_missing %>%
   )
 ```
 
-There are a few points beyond the whiskers that may be outliers. In particular, there is one value of `percent_apo` > 60% that seems quite outside the normal range.
+There are a few points beyond the whiskers that may be outliers. In particular, there is one value of `percent_apo` that seems quite outside the normal range.
 
 Next, check for outliers using Grubb's test. Significant *p*-values indicate that the most extreme value is an outlier.
 
@@ -214,17 +214,17 @@ biodiv_ferns_cent_no_missing %>%
   mutate(signif = p_value < 0.05)
 ```
 
-Grubb's test confirms that the percent apomictic value > 60% is an outlier. It also indicates that the highest values of the variables `fd_obs_z`, `pd_obs_z`, `rfd_obs_z`, and `rpd_obs_z` may be outliers. 
+Grubb's test confirms that the percent apomictic value is an outlier. It also indicates that the highest values of the variables `fd_obs_z`, `pd_obs_z`, `rfd_obs_z`, and `rpd_obs_z` may be outliers. 
 
 One reason for artificially extreme values could be undersampling of species. Let's check richness of these possible outlier grid-cells.
 
 ```{r check-richness-apo}
 biodiv_ferns_cent_no_missing %>%
-  slice_max(1, order_by = percent_apo) %>%
+  slice_max(n = 1, order_by = percent_apo, with_ties = TRUE) %>%
   select(grids:long, percent_apo, richness)
 ```
 
-There are just three species in the grid-cell with > 60% apomictic taxa. This data point should be excluded. 
+There is just one species in the grid-cell that obviously contributes to the 100% apomixis rate. This data point should be excluded. 
 
 What about the other possible outliers?
 
@@ -246,7 +246,7 @@ biodiv_ferns_cent_no_missing %>%
   select(grids:long, rpd_obs_z, richness)
 ```
 
-They all come from the same two grid-cells, but don't have an extremely low number of species. 
+None of these have an extremely low number of species. 
 
 So we will conservatively only remove the grid-cell with unusually high % apomictic taxa, then run Grubb's test again.
 

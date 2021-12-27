@@ -424,8 +424,8 @@ Variable list:
       ~col, ~desc,
       "res", "Degree of resolution (grid-cell side length), from 0.1 to 0.4 degrees",
       "grids", "Name of grid-cell",
-      "abundance", "Number of specimens occurring in grid-cell",
       "richness", "Number of taxa occurring in grid-cell",
+      "abundance", "Number of specimens occurring in grid-cell",
       "redundancy", "Redundancy (measure of sampling completeness)"
   ))
 ```
@@ -461,8 +461,8 @@ Variable list:
     tribble(
       ~col, ~desc,
       "grids", "Name of grid-cell",
-      "abundance", "Number of specimens occurring in grid-cell",
       "richness", "Number of taxa occurring in grid-cell",
+      "abundance", "Number of specimens occurring in grid-cell",
       "redundancy", "Redundancy (measure of sampling completeness)",
       "geom", "Vector describing shape and position of grid-cell"
   ))
@@ -774,8 +774,8 @@ Variable list:
     tribble(
       ~col, ~desc,
       "grids", "Name of grid-cell",
-      "abundance", "Number of specimens occurring in grid-cell",
       "richness", "Number of taxa occurring in grid-cell",
+      "abundance", "Number of specimens occurring in grid-cell",
       "redundancy", "Redundancy (measure of sampling completeness)",
       "geom", "Vector describing shape and position of grid-cell"
   ))
