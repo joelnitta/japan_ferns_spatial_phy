@@ -251,7 +251,7 @@ Here, one must consider that smaller grain size is needed to detect environmenta
 We created sets of 10 km, 20 km, 30 km, and 40 km grid-cells covering Japan using a Mollweide equal-area projection (size refers to the length of the side of each square grid-cell).
 At each grain size, species occurrences were converted to a presence-absence community matrix (a species was considered present if at least one specimen was recorded in that grid-cell). 
 We calculated sampling redundancy [1 - richness/number of specimens; @Garcillan2003] to quantify adequacy of sampling. 
-Preliminary analysis indicated that 20 km grid-cells are optimal for our dataset (`r s_figure("grain-size")`). 
+Preliminary analysis indicated that 20 km grid-cells are optimal for our dataset: there is a sudden improvement in redundancy values from 10 km to 20 km, but much less improvement as grain size is increased beyond 20 km (`r s_figure("grain-size")`).
 Although the grid-cells are defined with equal area, actual land area of each cell varies due to presence of coastlines, etc.
 Strictly filtering out all grid-cells with less than complete land area would result in a large loss of data, as Japan has many coastlines and small islands.
 Therefore, we instead filtered the grid-cells by sampling completeness, removing any cells with redundancy < 0.1; this dataset was used for all subsequent analyses.
