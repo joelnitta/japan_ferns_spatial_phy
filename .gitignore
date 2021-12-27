@@ -33,3 +33,4 @@ _targets
 *.swp
 targets.o*
 .devcontainer
+.vscode
