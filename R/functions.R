@@ -1221,6 +1221,34 @@ calc_mean_climate <- function(shape_ferns, ja_climate_data) {
     st_drop_geometry()
 }
 
+#' Drop empty columns and rows from a community dataframe
+#'
+#' Excludes sites and species with zero total abundance from community dataframe
+#'
+#' @param comm Dataframe; community matrix with species as columns and rows
+#'   as sites
+#'
+#' @return Dataframe; community matrix
+#'
+drop_empty <- function(comm) {
+  comm %>%
+    rownames_to_column("grids") %>%
+    as_tibble() %>%
+    pivot_longer(names_to = "taxon", values_to = "abun", -grids) %>%
+    group_by(taxon) %>%
+    mutate(total_abun_taxon = sum(abun)) %>%
+    ungroup() %>%
+    filter(total_abun_taxon > 0) %>%
+    select(-total_abun_taxon) %>%
+    group_by(grids) %>%
+    mutate(total_abun_site = sum(abun)) %>%
+    ungroup() %>%
+    filter(total_abun_site > 0) %>%
+    select(-total_abun_site) %>%
+    pivot_wider(names_from = "taxon", values_from = "abun") %>%
+    column_to_rownames("grids")
+}
+
 # Traits ----
 
 #' Get the mean value of a numeric trait from data formatted for lucid

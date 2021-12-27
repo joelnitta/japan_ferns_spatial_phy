@@ -69,18 +69,20 @@ tar_plan(
   # Subset geographic shapes to redundancy > 0.1
   shape_ferns = filter(shape_ferns_full, redundancy > 0.1),
 
-  # Subset community matrix to communities with redundancy > 0.1
+  # Subset community matrix to communities with redundancy > 0.1,
+  # drop any remaining empty species or sites
   comm_ferns = filter_comm_by_redun(
     comm = comm_ferns_full,
     shape = shape_ferns,
     cutoff = 0.1
-  ),
+  ) %>% drop_empty(),
 
-  # Make community matrix subset to taxa endemic to Japan
+  # Make community matrix subset to taxa endemic to Japan,
+  # drop any remaining empty species or sites
   comm_ferns_endemic = subset_comm_to_endemic(
     comm = comm_ferns,
     green_list = green_list
-  ),
+  ) %>% drop_empty(),
 
   # Summarize latitudinal span by taxon
   lat_span_summary = summarize_fern_lat_span(comm_ferns, shape_ferns),
