@@ -131,10 +131,15 @@ tar_plan(
     japan_rbcL = japan_rbcL),
 
   # Infer tree
-  plastome_tree = jntools::iqtree(
+  tar_target(
+  plastome_tree,
+  jntools::iqtree(
     plastome_alignment,
-    m = "GTR+I+G", bb = 1000, nt = "AUTO",
-    redo = TRUE, echo = TRUE, wd = here::here("iqtree")),
+    m = "GTR+I+G", bb = 1000, nt = 10, seed = 905906,
+    redo = TRUE, echo = TRUE, wd = here::here("iqtree")
+    ),
+    deployment = "main"
+  ),
 
   # Root tree on bryophytes
   plastome_tree_rooted = ape::root(
