@@ -2740,7 +2740,7 @@ collapse_identical_tips <- function(tree, alignment, check_ultra = TRUE) {
   }
   
   # Make sure resulting tree is ultrametric
-  if(isTRUE(check_ultra)) assertthat::assert_that(is.ultrametric(collapsed_tree), msg = "Collapsed tree not ultrametric")
+  if(isTRUE(check_ultra)) assertthat::assert_that(is_ultrametric(collapsed_tree, method = "variance"), msg = "Collapsed tree not ultrametric")
   
   collapsed_tree
   
@@ -3065,6 +3065,33 @@ run_treepl <- function (
   # Read in tree
   ape::read.tree(fs::path(wd, outfile_path))
   
+}
+
+#' Check for ultrametricity of a tree
+#'
+#' See https://jonathanchang.org/blog/three-ways-to-check-and-fix-ultrametric-phylogenies/
+#' 
+#' @param tree Input phylogenetic tree
+#' @param method Method to use for testing ultrametricity. "variance"
+#' was used in ape < v4.0, "raito" after.
+#'
+#' @return Boolean
+is_ultrametric <- function(tree, method = c("variance", "ratio")) {
+  switch(
+    method,
+    variance = {
+      N <- Ntip(tree)
+      root_node <- N + 1
+      root_to_tip <- dist.nodes(tree)[1:N, root_node]
+      var(root_to_tip) < sqrt(.Machine$double.eps)
+    },
+    ratio = {
+      min_tip <- min(root_to_tip)
+      max_tip <- max(root_to_tip)
+      ((max_tip - min_tip) / max_tip) < sqrt(.Machine$double.eps)
+    },
+    stop("Must choose either 'variance' or 'ratio' for 'method'")
+  )
 }
 
 # Spatial models ----
