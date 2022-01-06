@@ -188,10 +188,10 @@ result_file <- function (result_num, extension) {
 
 # - First define the "full" version, which would include a caption
 # (except I never use the caption in the function, and instead replace with 'blank')
-figure_full <- captioner::captioner(prefix = "Fig.", suffix = "")
+figure_full <- captioner::captioner(prefix = "Fig.")
 table_full <- captioner::captioner(prefix = "Table")
-s_figure_full <- captioner::captioner(prefix = "Fig. S1.", auto_space = FALSE, suffix = "")
-s_table_full <- captioner::captioner(prefix = "Table S1.", auto_space = FALSE, suffix = "")
+s_figure_full <- captioner::captioner(prefix = "Fig. S1.", auto_space = FALSE)
+s_table_full <- captioner::captioner(prefix = "Table S1.", auto_space = FALSE)
 
 # - Make a short function that prints only the object type and number, e.g., "Fig. 1"
 figure <- pryr::partial(figure_full, display = "cite", caption = "blank")
