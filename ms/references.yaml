@@ -329,6 +329,28 @@ references:
   title-short: phyloregion
   type: article-journal
   volume: '11'
+- id: Ebihara2010
+  author:
+  - family: Ebihara
+    given: Atsushi
+  - family: Nitta
+    given: Joel H.
+  - family: Ito
+    given: M
+  citation-key: Ebihara2010
+  container-title: PLoS ONE
+  DOI: 10.1371/journal.pone.0015136
+  ISSN: 1932-6203
+  issue: '12'
+  issued:
+  - year: 2010
+    month: 12
+    day: 8
+  page: e15136
+  title: '<span class="nocase">Molecular species identification with rich floristic
+    sampling: DNA barcoding the pteridophyte flora of Japan</span>'
+  type: article-journal
+  volume: '5'
 - id: Ebihara2013
   author:
   - family: Ebihara
@@ -1421,6 +1443,34 @@ references:
   title: Inferring the historical patterns of biological evolution
   type: article-journal
   volume: '401'
+- id: Park2018
+  accessed:
+  - year: 2021
+    month: 12
+    day: 28
+  author:
+  - family: Park
+    given: Daniel S.
+  - family: Worthington
+    given: Steven
+  - family: Xi
+    given: Zhenxiang
+  citation-key: Park2018
+  container-title: Molecular Ecology
+  container-title-short: Mol Ecol
+  DOI: 10/gc4d4j
+  ISSN: 09621083
+  issue: '5'
+  issued:
+  - year: 2018
+    month: 3
+  language: en
+  page: 1296-1308
+  source: DOI.org (Crossref)
+  title: Taxon sampling effects on the quantification and comparison of community
+    phylogenetic diversity
+  type: article-journal
+  volume: '27'
 - id: Pebesma2018
   accessed:
   - year: 2021
