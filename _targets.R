@@ -14,6 +14,14 @@ plan(callr)
 # IMPORTANT: Change the plan / num. workers as needed for your system!
 plan(multicore, workers = 30)
 
+# Set options:
+# - Use targets workspaces for debugging
+# - Track dependencies in some packages
+tar_option_set(
+  workspace_on_error = TRUE,
+  imports = "canaper"
+  )
+
 tar_plan(
 
   # Run tests on custom functions ----
