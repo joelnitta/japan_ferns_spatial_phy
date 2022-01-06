@@ -1607,13 +1607,30 @@ format_traits <- function(traits_lucid_path) {
   # Drop correlated and non-varying traits from full dataframe
   traits_to_drop <- c(traits_static, traits_low_var, traits_correlated_to_drop) %>% unique()
   traits_combined <- select(traits_combined, -any_of(traits_to_drop))
-  
+    
   # Verify that observed correlations in final data are less than 0.6
-  traits_combined %>%
-    select(-taxon) %>%
-    corrr::correlate() %>%
-    pivot_longer(-rowname) %>%
-    assert(within_bounds(-0.6, 0.6), value, success_fun = success_logical)
+  suppressMessages( # silence correlate()
+    traits_combined %>%
+      select(-taxon) %>%
+      corrr::correlate(
+        method = "pearson",
+        use = "pairwise.complete.obs"
+      ) %>%
+      # Convert correlations to long format
+      pivot_longer(-term) %>%
+      # Exclude self-self comparisons
+      filter(term != name) %>%
+      rowwise() %>%
+      mutate(comparison = sort(c(term, name)) %>% paste(collapse = "-")) %>%
+      ungroup() %>%
+      select(comparison, value) %>%
+      unique() %>%
+      # Note some of these values are NA because of non-varying data
+      # after dropping missing values
+      assert(
+        within_bounds(-0.6, 0.6), value,
+        success_fun = assertr::success_logical)
+  )
   
   traits_combined
   
