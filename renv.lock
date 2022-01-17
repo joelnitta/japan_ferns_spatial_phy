@@ -1595,6 +1595,27 @@
       "Hash": "f3aefccc1cc50de6338146b62f115de8",
       "Requirements": []
     },
+    "gittargets": {
+      "Package": "gittargets",
+      "Version": "0.0.1",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "ropensci",
+      "RemoteRepo": "gittargets",
+      "RemoteRef": "main",
+      "RemoteSha": "ef4ce4d730dc199447f74aac636e41a44deb605c",
+      "Hash": "92542c90af260b076391209adf8ee6b3",
+      "Requirements": [
+        "cli",
+        "data.table",
+        "gert",
+        "processx",
+        "targets",
+        "tibble",
+        "uuid"
+      ]
+    },
     "globals": {
       "Package": "globals",
       "Version": "0.14.0",
