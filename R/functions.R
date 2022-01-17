@@ -14,7 +14,7 @@
 #' - rbcL_clean_sporos.fasta: rbcL sequences of sporophytes from Moorea
 #'
 unzip_ebihara_2019 <- function (dryad_zip_file, exdir) {
-  
+
   # Unzip only the needed files
   unzip(dryad_zip_file, "FernGreenListV1.01E.xls", exdir = exdir)
   unzip(dryad_zip_file, "ESM1.csv", exdir = exdir)
@@ -22,7 +22,7 @@ unzip_ebihara_2019 <- function (dryad_zip_file, exdir) {
   unzip(dryad_zip_file, "japan_pterido_rbcl_cipres.zip", exdir = exdir)
   unzip(dryad_zip_file, "2_grid_cells_all.csv", exdir = exdir)
   unzip(dryad_zip_file, "ppgi_taxonomy.csv", exdir = exdir)
-  
+
   c(
     fs::path(exdir, "FernGreenListV1.01E.xls"),
     fs::path(exdir, "ESM1.csv"),
@@ -31,7 +31,7 @@ unzip_ebihara_2019 <- function (dryad_zip_file, exdir) {
     fs::path(exdir, "2_grid_cells_all.csv"),
     fs::path(exdir, "ppgi_taxonomy.csv")
   )
-  
+
 }
 
 #' Unzip Fern Tree of Life (FTOL data)
@@ -44,16 +44,16 @@ unzip_ebihara_2019 <- function (dryad_zip_file, exdir) {
 #' - ftol_plastid_parts.csv
 #'
 unzip_ftol <- function (zip_file, exdir) {
-  
+
   # Unzip only the needed files
   unzip(zip_file, "ftol_plastid_concat.fasta", exdir = exdir)
   unzip(zip_file, "ftol_plastid_parts.csv", exdir = exdir)
-  
+
   c(
     fs::path(exdir, "ftol_plastid_concat.fasta"),
     fs::path(exdir, "ftol_plastid_parts.csv")
   )
-  
+
 }
 
 #' Load Green List from Ebihara and Nitta 2019 data file
@@ -125,7 +125,7 @@ load_repro_data <- function(ebihara_2019_zip_file = "data_raw/doi_10.5061_dryad.
 #' @return Path to file that was written out
 #' 
 st_write_tar <- function(obj, dsn, time_stamp = NULL, ...) {	
-  
+
   # Format time_stamp exactly for geopackage
   # see https://github.com/r-spatial/rgeopackage#related-functionality-in-core-spatial-r-packages
   time_stamp <- format(time_stamp, format = "%Y-%m-%dT%H:%M:%S.000Z", tz = "UTC")
@@ -282,12 +282,12 @@ tidy_japan_names <- function (data) {
     select(taxon_id = ID20160331, scientific_name = `GreenList Name`,
            endemic = Endemism, conservation_status = RL2012,
            hybrid = Hybrid)
-  
+
   # Parse names (split out taxon without author)
   parsed_names <-
     rgnparser::gn_parse_tidy(data$scientific_name) %>% 
     select(scientific_name = verbatim, taxon = canonicalsimple)
-  
+
   data %>%
     left_join(parsed_names, by = "scientific_name") %>%
     # Simplify taxon names, replace space with underscore
@@ -307,9 +307,9 @@ tidy_japan_names <- function (data) {
 #' @return Dataframe subset to ferns only
 #' 
 subset_to_ferns <- function(data, ppgi) {
-  
+
   cols_keep <- colnames(data)
-  
+
   data %>%
     mutate(genus = str_split(taxon, " |_") %>% map_chr(1)) %>%
     assert(not_na, genus) %>%
@@ -319,7 +319,7 @@ subset_to_ferns <- function(data, ppgi) {
     # Filter to only ferns
     filter(class == "Polypodiopsida") %>%
     select(all_of(cols_keep))
-  
+
 }
 
 #' Subset occurrence point data to only ferns
@@ -330,7 +330,7 @@ subset_to_ferns <- function(data, ppgi) {
 #' @return Phylogeny subset to ferns only
 #' 
 subset_tree <- function(phy, ppgi) {
-  
+
   tips_keep <-
     tibble(tip = phy$tip.label) %>%
     mutate(genus = str_split(tip, "_") %>% map_chr(1)) %>%
@@ -343,9 +343,9 @@ subset_tree <- function(phy, ppgi) {
     assert(not_na, tip) %>%
     assert(is_uniq, tip) %>%
     pull(tip)
-  
+
   ape::keep.tip(phy, tips_keep)
-  
+
 }
 
 #' Calculate sampling redundancy across different grid cell resolutions
@@ -378,7 +378,7 @@ calc_redundancy_by_res <- function(comm_scaled_list) {
 #' `percent_singletons` (percent of grid cells with only a single collection),
 #' 
 sum_redundancy_by_res <- function(redundancy_by_res) {
-  
+
   redundancy_by_res %>%
     mutate(above_50 = ifelse(redundancy > 0.5, 1, 0)) %>%
     mutate(singleton = ifelse(redundancy == 0, 1, 0)) %>%
@@ -391,7 +391,7 @@ sum_redundancy_by_res <- function(redundancy_by_res) {
       percent_singletons = n_singletons/ n_total,
       .groups = "drop"
     )
-  
+
 }
 
 #' Clean raw point occurrence data
@@ -427,15 +427,15 @@ clean_occ_point_data <- function (occ_point_data_raw, green_list) {
 #' @return Subsetted community matrix
 #' 
 subset_comm_to_endemic <- function (comm, green_list) {
-  
+
   endemic_taxa <-
     green_list %>%
     filter(!is.na(endemic)) %>%
     verify(all(endemic == "Endemic")) %>%
     pull(taxon)
-  
+
   comm[,colnames(comm) %in% endemic_taxa]
-  
+
 }
 
 #' Subset a community to only taxa with reproductive mode data
@@ -446,15 +446,15 @@ subset_comm_to_endemic <- function (comm, green_list) {
 #' @return Subsetted community matrix
 #' 
 subset_comm_by_repro <- function (comm, repro_data) {
-  
+
   taxa_with_repro <-
     repro_data %>%
     filter(!is.na(apomict)) %>%
     assert(not_na, apomict) %>%
     pull(taxon)
-  
+
   comm[,colnames(comm) %in% taxa_with_repro]
-  
+
 }
 
 #' Make community matrix from species' occurrences
@@ -587,9 +587,9 @@ comm_from_points <- function(
 #' @return Dataframe (sf object)
 #' 
 shape_from_comm_scaled_list <- function (comm_scaled_list, res_select) {
-  
+
   comm_scaled_list %>% filter(res == res_select) %>% pull(poly_shp) %>% magrittr::extract2(1) %>% sf::st_as_sf()
-  
+
 }
 
 #' Extract community dataframe from comm_scaled_list
@@ -600,7 +600,7 @@ shape_from_comm_scaled_list <- function (comm_scaled_list, res_select) {
 #' @return Dataframe (sf object)
 #' 
 comm_from_comm_scaled_list <- function (comm_scaled_list, res_select) {
-  
+
   comm_scaled_list %>% filter(res == res_select) %>% pull(comm_dat) %>% magrittr::extract2(1) %>%
     phyloregion::sparse2dense() %>% 
     as.data.frame() %>%
@@ -612,7 +612,7 @@ comm_from_comm_scaled_list <- function (comm_scaled_list, res_select) {
     # Make sure everything is 0-1
     assert(in_set(c(0,1)), everything()) %>%
     assert(not_na, everything())
-  
+
 }
 
 #' Filter occurrence points using a polygon mask
@@ -623,7 +623,7 @@ comm_from_comm_scaled_list <- function (comm_scaled_list, res_select) {
 #'
 #' @return Filtered data points
 filter_occ_points <- function(occ_point_data, mask) {
-  
+
   # Remove duplicates (same species collected on same day at same site)
   occ_point_data <-
     occ_point_data %>%
@@ -635,11 +635,11 @@ filter_occ_points <- function(occ_point_data, mask) {
       n = n(),
       .groups = "drop"
     )
-  
+
   # Convert point data to SF object,
   # with same projection as shape file
   occ_point_data <- sf::st_as_sf(occ_point_data, coords = c("longitude", "latitude"), crs = st_crs(mask))
-  
+
   # Join point data to mesh map
   sf::st_join(occ_point_data, mask, join = sf::st_within) %>%
     # Filter to only those with a grid ID (so, those that are within the mesh map)
@@ -653,7 +653,7 @@ filter_occ_points <- function(occ_point_data, mask) {
       longitude = coords$X,
       latitude = coords$Y) %>%
     select(-coords)
-  
+
 }
 
 #' Filter a community dataframe by sampling redundancy
@@ -670,14 +670,14 @@ filter_occ_points <- function(occ_point_data, mask) {
 #' @return Dataframe
 #' 
 filter_comm_by_redun <- function (comm, shape, cutoff = 0.1) {
-  
+
   grids_keep <-
     shape %>%
     filter(redundancy > cutoff) %>%
     pull(grids)
-  
+
   comm[rownames(comm) %in% grids_keep,]
-  
+
 }
 
 #' Summarize raw occurrence data
@@ -706,7 +706,7 @@ summarize_occ_data <- function(occ_point_data_ferns_unfiltered, occ_point_data_f
 #'
 #' @return Dataframe with maximum observed latitude in Japan for ferns by genus and family
 summarize_fern_lat_max <- function(lat_span_summary, ppgi) {
-  
+
   lat_genera <-
     lat_span_summary %>%
     mutate(higher_taxon = str_split(taxon, "_") %>% map_chr(1)) %>%
@@ -717,7 +717,7 @@ summarize_fern_lat_max <- function(lat_span_summary, ppgi) {
       .groups = "drop"
     ) %>%
     mutate(taxon_level = "genus")
-  
+
   lat_families <-
     lat_span_summary %>%
     mutate(genus = str_split(taxon, "_") %>% map_chr(1)) %>%
@@ -730,9 +730,9 @@ summarize_fern_lat_max <- function(lat_span_summary, ppgi) {
       .groups = "drop"
     ) %>%
     mutate(taxon_level = "family")
-  
+
   bind_rows(lat_genera, lat_families)
-  
+
 }
 
 #' Summarize latitudinal span in taxon occurrences
@@ -745,7 +745,7 @@ summarize_fern_lat_max <- function(lat_span_summary, ppgi) {
 #' @return Dataframe with three columns: `taxon`, `min_lat`, and `max_lat`
 #' 
 summarize_fern_lat_span <- function (comm_ferns, shape_ferns) {
-  
+
   # Get lat/long of each grid cell centroid
   centroids <-
     shape_ferns %>%
@@ -756,7 +756,7 @@ summarize_fern_lat_span <- function (comm_ferns, shape_ferns) {
     st_drop_geometry() %>%
     as_tibble() %>%
     mutate(grids = as.character(grids))
-  
+
   comm_ferns %>%
     # Add lat/long to community data
     rownames_to_column("grids") %>%
@@ -774,7 +774,7 @@ summarize_fern_lat_span <- function (comm_ferns, shape_ferns) {
       max_lat = max(latitude),
       .groups = "drop"
     )
-  
+
 }
 
 #' Load protected areas
@@ -792,7 +792,7 @@ summarize_fern_lat_span <- function (comm_ferns, shape_ferns) {
 #' @return Spatial dataframe with protection classified as "high", "medium", or "low"
 #' 
 load_protected_areas <- function(protected_areas_zip_file, crs) {
-  
+
   # 1: wilderness
   protected_1 <- load_shape_from_zip(protected_areas_zip_file, "原生自然環境保全地域_国指定自然環境保全地域.shp") %>%
     mutate(
@@ -803,7 +803,7 @@ load_protected_areas <- function(protected_areas_zip_file, crs) {
         ZONE == 4 ~ "low" # 4＝普通地区
       )
     )
-  
+
   # 2: quasi-national parks
   protected_2 <- load_shape_from_zip(protected_areas_zip_file, "国定公園.shp") %>%
     mutate(
@@ -816,7 +816,7 @@ load_protected_areas <- function(protected_areas_zip_file, crs) {
         ZONE == 5 ~ "marine" #5＝海域公園地区
       )
     )
-  
+
   # 3: national wildlife protection areas
   protected_3 <- load_shape_from_zip(protected_areas_zip_file, "国指定鳥獣保護区.shp") %>%
     mutate(
@@ -825,7 +825,7 @@ load_protected_areas <- function(protected_areas_zip_file, crs) {
         ZONE == 2 ~ "high", # 2＝特別保護地区
       )
     )
-  
+
   # 4: national parks
   protected_4 <- load_shape_from_zip(protected_areas_zip_file, "国立公園.shp") %>%
     mutate(
@@ -841,7 +841,7 @@ load_protected_areas <- function(protected_areas_zip_file, crs) {
     ) %>%
     # Remove protected area in inland sea (marine)
     filter(NAME != "瀬戸内海")
-  
+
   # 5: prefectural wildlife protection areas
   protected_5 <- load_shape_from_zip(protected_areas_zip_file, "都道府県指定鳥獣保護区.shp") %>%
     mutate(
@@ -851,7 +851,7 @@ load_protected_areas <- function(protected_areas_zip_file, crs) {
         ZONE == 3 ~ "low" # not specified, but assume no other special protection
       )
     )
-  
+
   # 6: prefectural natural parks
   protected_6 <- load_shape_from_zip(protected_areas_zip_file, "都道府県立自然公園.shp") %>%
     mutate(
@@ -861,7 +861,7 @@ load_protected_areas <- function(protected_areas_zip_file, crs) {
         ZONE == 3 ~ "low" # 3＝普通地区
       )
     )
-  
+
   # 7: prefectural protection areas
   protected_7 <- load_shape_from_zip(protected_areas_zip_file, "都道府県自然環境保全地域.shp") %>%
     mutate(
@@ -919,10 +919,10 @@ load_protected_areas <- function(protected_areas_zip_file, crs) {
 #' @return Spatial dataframe with protection classified as "high", "medium", or "low"
 #' 
 load_protected_areas_forest <- function(protected_areas_forest_folder, crs) {
-  
+
   # List all zip files in folder
   zip_files <- list.files(protected_areas_forest_folder, pattern = "zip", full.names = TRUE)
-  
+
   # A45_032 shows status as protected area or not (not protected is NA)
   map_df(
     zip_files,
@@ -967,7 +967,7 @@ load_deer_range <- function (zip_file, crs) {
     args = fs::path_abs(zip_file),
     wd = temp_dir
   )
-  
+
   # Load data on estimated deer range
   deer_estimated <- 
     fs::path(temp_dir, "map14-1/分布拡大予測.tif") %>%
@@ -983,7 +983,7 @@ load_deer_range <- function (zip_file, crs) {
     # fix geometry
     st_make_valid %>%
     transmute(range = "estimated")
-  
+
   # Load data on known deer range (surveys in 1978 and 2003)
   known_deer <- 
     fs::path(temp_dir, "map14-1/ニホンジカ分布.shp") %>%
@@ -993,7 +993,7 @@ load_deer_range <- function (zip_file, crs) {
       present_1978 = as.factor(present_1978),
       present_2003 = as.factor(present_2003)
     )
-  
+
   # Split into datasets by year
   deer_2003 <- known_deer %>%
     filter(present_2003 == 1) %>%
@@ -1002,13 +1002,13 @@ load_deer_range <- function (zip_file, crs) {
     # fix geometry
     st_make_valid() %>%
     transmute(range = "2003")
-  
+
   deer_1978 <- known_deer %>%
     filter(present_1978 == 1) %>%
     rmapshaper::ms_dissolve() %>%
     st_make_valid() %>%
     transmute(range = "1978")
-  
+
   # Combine into single dataframe
   res <- bind_rows(deer_estimated, deer_1978, deer_2003) %>%
     # Set CRS
@@ -1085,7 +1085,7 @@ combine_pa <- function(protected_areas_other, protected_areas_forest) {
 #'
 #' @return tibble
 modify_ppgi <- function (ppgi) {
-  
+
   # Use normal "e" for Isoetes
   ppgi_mod <-
     ppgi %>%
@@ -1097,25 +1097,25 @@ modify_ppgi <- function (ppgi) {
         transliterations = c("Latin-ASCII"),
         parsing_option = 0)
     )
-  
+
   # Add genera missing in PPGI that are included in Japan pteridophyte checklist
   # Use the sister (or encompassing) genus for each, so other higher-order
   # taxonomy will be correct
   anisocampium_dat <-
     ppgi_mod %>% filter(genus == "Athyrium") %>%
     mutate(genus = "Anisocampium")
-  
+
   humata_dat <-
     ppgi_mod %>% filter(genus == "Davallia") %>%
     mutate(genus = "Humata")
-  
+
   drynaria_dat <-
     ppgi_mod %>% filter(genus == "Aglaomorpha") %>%
     mutate(genus = "Drynaria")
-  
+
   bind_rows(ppgi_mod, anisocampium_dat, humata_dat, drynaria_dat) %>%
     select(genus, family, order, class)
-  
+
 }
 
 #' Clean up reproductive mode data for pteridophytes of Japan
@@ -1127,7 +1127,7 @@ modify_ppgi <- function (ppgi) {
 #' "apomictic", "sex_apo". Other columns are T/F for a particular growth form
 #' (evergreen/seasonal green) or reproductive mode.
 process_repro_data <- function (repro_data_raw, green_list) {
-  
+
   # Format repro mode data
   repro_data_raw %>%
     clean_names %>% 
@@ -1178,7 +1178,7 @@ process_repro_data <- function (repro_data_raw, green_list) {
     # Make sure that worked correctly
     assert(not_na, taxon) %>%
     assert(is_uniq, taxon)
-  
+
 }
 
 #' Load WorldClim data cropped to the area including Japan
@@ -1192,7 +1192,7 @@ process_repro_data <- function (repro_data_raw, green_list) {
 #' @return Simple features dataframe with four climate variables 
 #' 
 load_ja_worldclim_data <- function(path, crs) {
-  
+
   # Load the WorldClim dataset at 2.5 minute resolution, crop it to the area around Japan
   raster::getData("worldclim", download = FALSE, var = "bio", res = 2.5, path = path) %>%
     raster::crop(raster::extent(122, 154, 20, 46)) %>%
@@ -1207,7 +1207,7 @@ load_ja_worldclim_data <- function(path, crs) {
     ) %>%
     # Set CRS
     st_transform(crs)
-  
+
 }
 
 #' Join climate data to occurrence data,
@@ -1221,11 +1221,11 @@ load_ja_worldclim_data <- function(path, crs) {
 #' @return Tibble with mean values of each climate variable per grid cell
 #' 
 calc_mean_climate <- function(shape_ferns, ja_climate_data) {
-  
+
   # Check for correctly formatted columns
   assert_that("grids" %in% colnames(shape_ferns))
   assert_that("temp" %in% colnames(ja_climate_data))
-  
+
   shape_ferns %>%
     select(grids) %>%
     st_join(ja_climate_data) %>%
@@ -1313,7 +1313,7 @@ transform_traits <- function (traits,
                               scale_select = c("sla", "dissection", "stipe", "length",
                                                "width", "rhizome", "pinna")
 ) {
-  
+
   # Log-transform
   if (log_trans == TRUE) {
     traits <-
@@ -1324,7 +1324,7 @@ transform_traits <- function (traits,
       dplyr::mutate_at(all_of(trans_select), ~ifelse(. == 0, small_number, .)) %>%
       dplyr::mutate_at(all_of(trans_select), log)
   }
-  
+
   # Rescale by dividing original value by range of
   # that value (max - min) across the dataset
   if (scale_traits == TRUE) {
@@ -1336,9 +1336,9 @@ transform_traits <- function (traits,
         all_of(scale_select), ~ . / (max(., na.rm = TRUE) - min(., na.rm = TRUE))
       )
   }
-  
+
   traits
-  
+
 }
 
 #' Clean up raw lucid traits
@@ -1351,7 +1351,7 @@ transform_traits <- function (traits,
 #' @return Dataframe with data in Japanese removed, filtered to native ferns in Green List
 #' 
 clean_lucid_traits <- function(raw_lucid_data, green_list, ppgi) {
-  
+
   # Read in raw trait data for pteridophytes of Japan.
   # These were originally formatted for lucid dichotomous key software.
   # So they are mostly quantitative traits that have been converted to binary format,
@@ -1393,17 +1393,17 @@ clean_lucid_traits <- function(raw_lucid_data, green_list, ppgi) {
 #' @return Tibble
 #'
 format_traits <- function(traits_lucid_path) {
-  
+
   # Read in traits from CSV
   traits_lucid <- readr::read_csv(traits_lucid_path)
-  
+
   # Separate out lucid data into numeric and binary traits
   # (numeric container "number" in name, assume binary otherwise)
   traits_numeric <- select(traits_lucid, taxon, contains("number"))
   traits_binary <-  select(traits_lucid, -contains("number"))
-  
+
   ### Cleanup binary traits ###
-  
+
   # These are what the values mean according to the lucid manual
   # "common and misinterpreted" means that the user may incorrectly think the trait is
   # absent when it's actually frequently present.
@@ -1415,7 +1415,7 @@ format_traits <- function(traits_lucid_path) {
   # 4=common and misinterpreted
   # 5=rare and misinterpreted
   # 6=not scoped
-  
+
   # Reformat so all traits are either present (1), absent (0), or NA
   traits_binary <-
     traits_binary %>%
@@ -1428,7 +1428,7 @@ format_traits <- function(traits_lucid_path) {
       TRUE ~ .
     )) %>%
     assert(in_set(c(0,1)), -taxon)
-  
+
   # Reformat presence/absence of indusium. This has one column each for "presence" (0 or 1),
   # "absence" (also 0 or 1), and also another related state ("caducous").
   # Combine this into a single "present" column, treat as present if either true or false indusium is present
@@ -1442,9 +1442,9 @@ format_traits <- function(traits_lucid_path) {
         TRUE ~ 0
       )) %>%
     assert(in_set(c(0,1)), -taxon)
-  
+
   # Select only putatively functional traits: frond shape, frond texture, margin shape, presence or absence of indusium
-  
+
   # # qualitative traits include:
   # (* indicates trait to use; others discarded)
   # *leaf_lamina_shape_sterile_frond 
@@ -1463,7 +1463,7 @@ format_traits <- function(traits_lucid_path) {
   # leaf_lamina_rhachis_adaxial_side_grooved_present
   # leaf_lamina_terminal_pinna_present
   # leaf_sorus_indusium_present
-  
+
   traits_binary <-
     traits_binary %>% 
     select(
@@ -1476,7 +1476,7 @@ format_traits <- function(traits_lucid_path) {
     rename_with(~str_replace_all(.x, "leaf_lamina_shape_fertile_frond", "shape")) %>%
     rename_with(~str_replace_all(.x, "leaf_lamina_texture", "texture")) %>%
     rename_with(~str_replace_all(.x, "leaf_lamina_margin", "margin"))
-  
+
   #### Clean up numeric traits ###
   # Replace missing (0 or 3) with NA,
   # take the mean of the range of normal values otherwise
@@ -1487,20 +1487,20 @@ format_traits <- function(traits_lucid_path) {
     mutate_at(vars(-taxon), ~na_if(., "0")) %>%
     mutate_at(vars(-taxon), ~na_if(., "3")) %>%
     mutate_at(vars(-taxon), ~map_dbl(., get_lucid_mean))
-  
+
   # Split numeric traits into those measured on sterile vs fertile plants
   # (i.e., with or without spores)
-  
+
   traits_numeric_sterile <- select(traits_numeric, taxon, contains("sterile")) %>%
     rename_all(~str_remove(., "sterile_")) %>%
     gather(trait, value, -taxon) %>%
     mutate(type = "sterile")
-  
+
   traits_numeric_fertile <- select(traits_numeric, taxon, contains("fertile")) %>%
     rename_all(~str_remove(., "fertile_")) %>%
     gather(trait, value, -taxon) %>%
     mutate(type = "fertile")
-  
+
   # Combine these, taking the maximum value regardless of sterile or fertile
   traits_numeric_combined <-
     bind_rows(traits_numeric_sterile, traits_numeric_fertile) %>%
@@ -1517,7 +1517,7 @@ format_traits <- function(traits_lucid_path) {
     mutate(value = na_if(value, -Inf)) %>%
     spread(trait, value) %>%
     rename_all(~str_remove(., "_number"))
-  
+
   # Select only putatively functional traits: frond length + width, stipe length, number of pinna pairs
   # (`leaf_lamina_index_length_width_frond` is the ratio of length to width, but not using)
   traits_numeric_combined <-
@@ -1529,12 +1529,12 @@ format_traits <- function(traits_lucid_path) {
       stipe_length = leaf_lamina_index_lamina_length_stipe_length_frond,
       number_pinna_pairs = leaf_lamina_lateral_pinna_of_pairs_frond_number
     )
-  
+
   # Combine all numeric and categorical traits
   traits_combined <- left_join(traits_numeric_combined, traits_binary, by = "taxon")
-  
+
   ### Find correlated traits to drop ###
-  
+
   # helper function to identify static traits
   get_static_traits <- function (data) {
     data %>%
@@ -1548,7 +1548,7 @@ format_traits <- function(traits_lucid_path) {
       filter(n < 2) %>%
       pull(trait)
   }
-  
+
   # helper function to identify low-variance traits
   # (less than two occurrences of a given trait state)
   get_low_var_traits <- function (data) {
@@ -1560,50 +1560,50 @@ format_traits <- function(traits_lucid_path) {
       filter(n < 3) %>%
       pull(trait)
   }
-  
+
   # To calculate Pearson's correlation co-efficient, 
   # can't allow any missing traits, so use a subset of the data
   traits_corr_test <- ggplot2::remove_missing(traits_combined)
-  
+
   # First make vector of any static trait (only a single trait state)
   traits_corr_static <- 
     traits_corr_test %>%
     select(all_of(colnames(traits_binary))) %>% # consider binary traits only
     get_static_traits
-  
+
   # Next make a vector of any trait with less than two occurrences of a given trait state
   traits_corr_low_var <-
     traits_corr_test %>%
     select(all_of(colnames(traits_binary))) %>% # consider binary traits only
     get_low_var_traits
-  
+
   # Drop the low and non-varying traits, drop the "taxon" column
   traits_corr_test <- select(traits_corr_test, -any_of(c(traits_corr_static, traits_corr_low_var))) %>%
     select(-taxon)
-  
+
   # Calculate correlations
   correlations <- cor(traits_corr_test)
-  
+
   # Select columns to remove with absolute correlation > 0.6
   traits_correlated_to_drop <- caret::findCorrelation(correlations, cutoff = 0.6) %>%
     magrittr::extract(colnames(traits_corr_test), .)
-  
+
   if(length(traits_correlated_to_drop) > 0) message(glue::glue("The following traits have correlation coefficient > 0.6 and will be dropped: {traits_correlated_to_drop}"))
-  
+
   ### Drop zero and low-variance traits from full dataframe ###
-  
+
   # Vector of any static trait (only a single trait state)
   traits_static <- 
     traits_combined %>%
     select(all_of(colnames(traits_binary))) %>% # consider binary traits only
     get_static_traits
-  
+
   # Next make a vector of any trait with less than two occurrences of a given trait state
   traits_low_var <-
     traits_combined %>%
     select(all_of(colnames(traits_binary))) %>% # consider binary traits only
     get_low_var_traits
-  
+
   # Drop correlated and non-varying traits from full dataframe
   traits_to_drop <- c(traits_static, traits_low_var, traits_correlated_to_drop) %>% unique()
   traits_combined <- select(traits_combined, -any_of(traits_to_drop))
@@ -1631,9 +1631,9 @@ format_traits <- function(traits_lucid_path) {
         within_bounds(-0.6, 0.6), value,
         success_fun = assertr::success_logical)
   )
-  
+
   traits_combined
-  
+
 }
 
 #' Summarize traits for supplemental info
@@ -1643,7 +1643,7 @@ format_traits <- function(traits_lucid_path) {
 #' @return Tibble
 #'
 make_trait_summary <- function (traits) {
-  
+
   # Summarize traits
   traits %>%
     select(-taxon) %>%
@@ -1674,13 +1674,13 @@ make_trait_summary <- function (traits) {
 #' @return Distance matrix
 #'
 make_trait_dist_matrix <- function (traits_for_dist) {
-  
+
   # Count trait states to categorize traits.
   # Those with > 3 states should be numeric.
   # (binary can be 1, 0, or missing).
   states <- map_df(traits_for_dist, n_distinct) %>%
     gather(trait, n_states)
-  
+
   # Set up weighting
   trait_categories <-
     traits_for_dist %>%
@@ -1714,18 +1714,18 @@ make_trait_dist_matrix <- function (traits_for_dist) {
     # and equal across trait types (binary vs continuous)
     verify(sum(weight_by_comp_trait) == n_distinct(comp_trait)) %>%
     verify(sum(weight_by_type) == n_distinct(trait_type))
-  
+
   # Make sure traits for calculating the distance matrix are in correct
   # order for weighting
   traits_for_dist <- select(traits_for_dist, taxon, all_of(trait_categories$trait))
-  
+
   # Convert to dataframe for gowdis
   traits_df <- traits_for_dist %>%
     column_to_rownames("taxon")
-  
+
   # Run gowdis with trait weightings
   FD::gowdis(traits_df, w = trait_categories$final_weight)
-  
+
 }
 
 #' Make trait dendrogram
@@ -1737,13 +1737,13 @@ make_trait_dist_matrix <- function (traits_for_dist) {
 #' results/traits_dendrogram.pdf
 #'
 make_traits_dendrogram <- function(trait_distance_matrix, taxon_id_map) {
-  
+
   # Cluster species by trait distances
   h <- hclust(trait_distance_matrix)
-  
+
   # Relabel from taxon id to species names
   h[["labels"]] <- taxon_id_map$taxon[match(h[["labels"]], taxon_id_map$taxon_id)]
-  
+
   # Output plot
   pdf(height = 50, width = 8, file = "results/traits_dendrogram.pdf")
   plot(ape::as.phylo(h), cex = 0.4)
@@ -1768,35 +1768,35 @@ make_traits_dendrogram <- function(trait_distance_matrix, taxon_id_map) {
 #'
 #' @examples
 match_traits_and_tree <- function (traits, phy, return = c("traits", "tree")) {
-  
+
   assert_that("taxon" %in% colnames(traits))
-  
+
   # Keep only species in phylogeny
   traits <- traits %>%
     filter(taxon %in% phy$tip.label) 
-  
+
   # Trim to only species with trait data
   phy <- drop.tip(phy, setdiff(phy$tip.label, traits$taxon))
-  
+
   # Get traits in same order as tips
   traits <- left_join(
     tibble(taxon = phy$tip.label),
     traits,
     by = "taxon"
   )
-  
+
   # Make sure that worked
   assert_that(isTRUE(all.equal(traits$taxon, phy$tip.label)))
-  
+
   # Return traits or tree
   assert_that(return %in% c("tree", "traits"))
-  
+
   if(return == "tree") { 
     return (phy) 
   } else {
     return (traits)
   }
-  
+
 }
 
 #' Analyze phylogenetic signal in a continuous trait of interest
@@ -1810,25 +1810,25 @@ match_traits_and_tree <- function (traits, phy, return = c("traits", "tree")) {
 #' their significance
 #' 
 analyze_cont_phylosig <- function (selected_trait, traits, phy) {
-  
+
   # Trim data to non-missing trait values and
   # make sure species in same order in tree and traits
   traits_select <- traits %>% select(taxon, all_of(selected_trait)) %>%
     remove_missing(na.rm = TRUE)
-  
+
   traits_trim <- match_traits_and_tree(traits = traits_select, phy = phy, "traits") 
   phy_trim <- match_traits_and_tree(traits = traits_select, phy = phy, "tree") 
-  
+
   # Extract named vector of trait values for phylosig()
   trait_vec <- pull(traits_trim, selected_trait) %>%
     set_names(traits_trim$taxon)
-  
+
   # Run phylosig() on selected trait
   # using Blomberg's K
   k_model <- phytools::phylosig(phy_trim, trait_vec, method = "K", test = TRUE)
   # and Pagel's lambda
   lambda_model <- phytools::phylosig(phy_trim, trait_vec, method = "lambda", test = TRUE)
-  
+
   # get model results
   tibble(
     trait = selected_trait,
@@ -1838,7 +1838,7 @@ analyze_cont_phylosig <- function (selected_trait, traits, phy) {
     lambda_pval = lambda_model$P,
     n = length(trait_vec)
   )
-  
+
 }
 
 #' Analyze phylogenetic signal in binary traits
@@ -1851,10 +1851,10 @@ analyze_cont_phylosig <- function (selected_trait, traits, phy) {
 #' associated statistics for each binary trait in `traits`
 #' 
 analyze_binary_phylosig <- function (traits, phy) {
-  
+
   # Duplicated node labels are not allowed, so drop these
   if(any(duplicated(phy$node.label))) phy$node.label <- NULL
-  
+
   # Nest by trait and loop phylo.d()
   # Note: some of the traits include NAs.
   # For phylo.d(), need to have matching tree and trait data with all NAs removed
@@ -1895,7 +1895,7 @@ analyze_binary_phylosig <- function (traits, phy) {
     ) %>%
     select(trait, phylo_d_summary) %>%
     unnest(cols = phylo_d_summary)
-  
+
 }
 
 #' Make a trait dendrogram from a matrix of distances
@@ -1973,9 +1973,9 @@ calc_perc_apo <- function(comm_ferns, repro_data) {
 #' @return Dataframe
 #' 
 classify_signif <- function(df, metric, one_sided = FALSE, upper = FALSE) {
-  
+
   df[[paste0(metric, "_obs_p_lower")]]
-  
+
   if (!isTRUE(one_sided)) {
     signif <- dplyr::case_when(
       df[[paste0(metric, "_obs_p_lower")]] > 0.99 ~ "< 0.01",
@@ -1998,11 +1998,11 @@ classify_signif <- function(df, metric, one_sided = FALSE, upper = FALSE) {
         )
       }
     }
-  
+
   df[[paste0(metric, "_signif")]] <- signif
-  
+
   df
-  
+
 }
 
 # Bioregions ----
@@ -2020,30 +2020,30 @@ classify_signif <- function(df, metric, one_sided = FALSE, upper = FALSE) {
 #' - ev: explained variance given k
 #' 
 find_k_taxonomy <- function (comm_df, k_max = 20) {
-  
+
   # Convert input dataframe to sparse
   comm_sparse <- phyloregion::dense2sparse(comm_df)
-  
+
   # Calculate taxonomic beta diversity
   bc <- phyloregion::beta_diss(comm_sparse, index.family = "sorensen")
-  
+
   # Select the best clustering algorithm
   method_scores <- phyloregion::select_linkage(bc[[1]])
-  
+
   # The values used for `method` in phyloregion::phyloregion() are
   # slightly different from the output of phyloregion::select_linkage(),
   # so adjust appropriately
-  
+
   method_names <- c(
     ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
     Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
     WPGMC = "median",  UPGMC = "centroid")
-  
+
   method_select <- method_names[names(method_scores[1])]
-  
+
   # Find the optimal K value
   phyloregion::optimal_phyloregion(bc[[1]], method = method_select, k = k_max)
-  
+
 }
 
 #' Find optimal K for clustering by phylogeny
@@ -2060,35 +2060,35 @@ find_k_taxonomy <- function (comm_df, k_max = 20) {
 #' - ev: explained variance given k
 #' 
 find_k_phylogeny <- function (comm_df, k_max = 20, phy) {
-  
+
   # Use only taxa that are in common between phylogeny and community
   subsetted_data <- picante::match.phylo.comm(phy = phy, comm = comm_df)
   phy <- subsetted_data[["phy"]]
   comm_df <- subsetted_data[["comm"]]
-  
+
   # Convert input dataframe to sparse
   comm_sparse <- phyloregion::dense2sparse(comm_df)
-  
+
   # Calculate taxonomic beta diversity
   bc <- phyloregion::phylobeta(comm_sparse, phy, index.family = "sorensen")
-  
+
   # Select the best clustering algorithm
   method_scores <- phyloregion::select_linkage(bc[[1]])
-  
+
   # The values used for `method` in phyloregion::phyloregion() are
   # slightly different from the output of phyloregion::select_linkage(),
   # so adjust appropriately
-  
+
   method_names <- c(
     ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
     Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
     WPGMC = "median",  UPGMC = "centroid")
-  
+
   method_select <- method_names[names(method_scores[1])]
-  
+
   # Find the optimal K value
   phyloregion::optimal_phyloregion(bc[[1]], method = method_select, k = k_max)
-  
+
 }
 
 #' Cluster regions by taxonomy
@@ -2100,30 +2100,30 @@ find_k_phylogeny <- function (comm_df, k_max = 20, phy) {
 #' @return Dataframe
 #' 
 cluster_taxonomic_regions <- function (comm_df, k) {
-  
+
   # Convert input dataframe to sparse
   comm_sparse <- phyloregion::dense2sparse(comm_df)
-  
+
   # Calculate taxonomic beta diversity
   bc <- phyloregion::beta_diss(comm_sparse, index.family = "sorensen")
-  
+
   # Select the best clustering algorithm
   method_scores <- phyloregion::select_linkage(bc[[1]])
-  
+
   # The values used for `method` in phyloregion::phyloregion() are
   # slightly different from the output of phyloregion::select_linkage(),
   # so adjust appropriately
-  
+
   method_names <- c(
     ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
     Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
     WPGMC = "median",  UPGMC = "centroid")
-  
+
   method_select <- method_names[names(method_scores[1])]
-  
+
   # Assign taxonomic regions based on clustering
   regions <- phyloregion::phyloregion(bc[[1]], k = k, method = method_select)
-  
+
   regions[["membership"]] %>%
     as_tibble()
 }
@@ -2138,35 +2138,35 @@ cluster_taxonomic_regions <- function (comm_df, k) {
 #' @return Dataframe
 #' 
 cluster_phylo_regions <- function (comm_df, phy, k) {
-  
+
   # Use only taxa that are in common between phylogeny and community
   subsetted_data <- picante::match.phylo.comm(phy = phy, comm = comm_df)
   phy <- subsetted_data[["phy"]]
   comm_df <- subsetted_data[["comm"]]
-  
+
   # Convert input dataframe to sparse
   comm_sparse <- phyloregion::dense2sparse(comm_df)
-  
+
   # Calculate phylogenetic beta diversity
   bc <- phyloregion::phylobeta(comm_sparse, phy, index.family = "sorensen")
-  
+
   # Select the best clustering algorithm
   method_scores <- phyloregion::select_linkage(bc[[1]])
-  
+
   # The values used for `method` in phyloregion::phyloregion() are
   # slightly different from the output of phyloregion::select_linkage(),
   # so adjust appropriately
-  
+
   method_names <- c(
     ward.D = "ward.D", ward.D2 = "ward.D2", Single = "single",
     Complete = "complete", UPGMA = "average", WPGMA = "mcquitty",
     WPGMC = "median",  UPGMC = "centroid")
-  
+
   method_select <- method_names[names(method_scores[1])]
-  
+
   # Assign regions based on clustering
   regions <- phyloregion::phyloregion(bc[[1]], k = k, method = method_select)
-  
+
   regions[["membership"]] %>%
     as_tibble()
 }
@@ -2197,7 +2197,7 @@ combine_bioregions <- function(regions_taxonomy, regions_phylogeny) {
 #' @return Dataframe; bioregions relabeled in descending order by mean latitude
 #' 
 relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
-  
+
   # Summarize bioregions data: cells per cluster, mean latitude of each bioregion
   bioregions_summary_all <-
     shape_ferns %>%
@@ -2214,7 +2214,7 @@ relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
       -c(grids, lat)) %>%
     group_by(cluster_type, cluster) %>%
     summarize(mean_lat = mean(lat), n = n(), .groups = "drop")
-  
+
   # Map original cluster labels to new cluster labels
   cluster_mapping <-
     bioregions_summary_all %>%
@@ -2229,7 +2229,7 @@ relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
       major_region == FALSE ~ "Other",
       TRUE ~ new_cluster
     ))
-  
+
   # Convert the old bioregion labels to new ones
   bioregions %>%
     left_join(
@@ -2249,7 +2249,7 @@ relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
     # (only the labels changed)
     assert(not_na, taxonomic_cluster, phylo_cluster) %>%
     verify(nrow(.) == nrow(bioregions))
-  
+
 }
 
 # Conservation ----
@@ -2280,49 +2280,49 @@ crop_by_pa <- function(protected_areas, biodiv_ferns_spatial, japan_shp) {
     )),
     msg = "CRS must match between all input shapes"
   )
-  
+
   ### Prepare for crop/join steps ###
   # Crop to Japan to spatial div results area
   japan_shp <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial))
-  
+
   # Fix some geometries
   biodiv_ferns_spatial <- sf::st_make_valid(biodiv_ferns_spatial)
-  
+
   protected_areas <- sf::st_make_valid(protected_areas)
-  
+
   ### Cropping ###
   # Crop spatial data to only land regions within Japan map,
   # filter to only cells with significant biodiv
   biodiv_ferns_spatial_cropped <- rmapshaper::ms_clip(biodiv_ferns_spatial, japan_shp)
-  
+
   # inspect plot to make sure it worked
   # plot <- ggplot(biodiv_ferns_spatial_cropped) + geom_sf(aes(fill = richness_obs_p_upper), color = "transparent") + geom_sf(data = japan_shp, fill = "transparent")
   # ggsave(plot = plot, file ="plot.pdf")
-  
+
   # Filter diverse areas to make joins go faster
   biodiv_ferns_spatial_cropped_filtered <-
     biodiv_ferns_spatial_cropped %>%
     select(grids, richness_obs_p_upper, pd_obs_p_upper, fd_obs_p_upper, pe_obs_p_upper) %>%
     filter(richness_obs_p_upper > 0.95 | pd_obs_p_upper > 0.95 | fd_obs_p_upper > 0.95 | pe_obs_p_upper > 0.95)
-  
+
   # Restrict area to only significant biodiv covered by high status
   biodiv_ferns_spatial_cropped_filtered_high <-
     biodiv_ferns_spatial_cropped_filtered %>%
     st_intersection(filter(protected_areas, status == "high")) %>%
     mutate(area = st_area(.) %>% units::set_units(km^2))
-  
+
   # Restrict area to only significant biodiv covered by medium status
   biodiv_ferns_spatial_cropped_filtered_med <-
     biodiv_ferns_spatial_cropped_filtered %>%
     st_intersection(filter(protected_areas, status == "medium")) %>%
     mutate(area = st_area(.) %>% units::set_units(km^2))
-  
+
   list(
     biodiv_ferns_spatial_cropped_filtered = biodiv_ferns_spatial_cropped_filtered,
     biodiv_ferns_spatial_cropped_filtered_med = biodiv_ferns_spatial_cropped_filtered_med,
     biodiv_ferns_spatial_cropped_filtered_high = biodiv_ferns_spatial_cropped_filtered_high
   )
-  
+
 }
 
 #' Crop biodiversity data to deer distribution in Japan
@@ -2360,18 +2360,18 @@ crop_by_deer <- function(deer_range, biodiv_ferns_spatial, japan_shp) {
 
   # Fix some geometries
   biodiv_ferns_spatial <- sf::st_make_valid(biodiv_ferns_spatial) 
-  
+
   ### Cropping ###
   # Crop spatial data to only land regions within Japan map,
   # filter to only cells with significant biodiv
   biodiv_ferns_spatial_cropped <- rmapshaper::ms_clip(biodiv_ferns_spatial, japan_shp)
-  
+
   # Filter diverse areas to make joins go faster
   biodiv_ferns_spatial_cropped_filtered <-
     biodiv_ferns_spatial_cropped %>%
     select(grids, richness_obs_p_upper, pd_obs_p_upper, fd_obs_p_upper, pe_obs_p_upper) %>%
     filter(richness_obs_p_upper > 0.95 | pd_obs_p_upper > 0.95 | fd_obs_p_upper > 0.95 | pe_obs_p_upper > 0.95)
-  
+
   # Restrict area to only significant biodiv covered by high status
   biodiv_ferns_spatial_cropped_filtered_estimated <-
     biodiv_ferns_spatial_cropped_filtered %>%
@@ -2380,7 +2380,7 @@ crop_by_deer <- function(deer_range, biodiv_ferns_spatial, japan_shp) {
         sf::st_make_valid()
     ) %>%
     mutate(area = st_area(.) %>% units::set_units(km^2))
-  
+
   # Restrict area to only significant biodiv covered by medium status
   biodiv_ferns_spatial_cropped_filtered_2003 <-
     biodiv_ferns_spatial_cropped_filtered %>%
@@ -2397,14 +2397,14 @@ crop_by_deer <- function(deer_range, biodiv_ferns_spatial, japan_shp) {
         sf::st_make_valid()
     ) %>%
     mutate(area = st_area(.) %>% units::set_units(km^2))
-  
+
   list(
     biodiv_ferns_spatial_cropped_filtered = biodiv_ferns_spatial_cropped_filtered,
     biodiv_ferns_spatial_cropped_filtered_estimated = biodiv_ferns_spatial_cropped_filtered_estimated,
     biodiv_ferns_spatial_cropped_filtered_2003 = biodiv_ferns_spatial_cropped_filtered_2003,
     biodiv_ferns_spatial_cropped_filtered_1978 = biodiv_ferns_spatial_cropped_filtered_1978
   )
-  
+
 }
 
 #' Calculate percentage of protected area of areas with significantly diverse fern
@@ -2429,7 +2429,7 @@ calculate_percent_protected <- function(protected_biodiv) {
   biodiv_ferns_spatial_cropped_filtered <- protected_biodiv$biodiv_ferns_spatial_cropped_filtered
   biodiv_ferns_spatial_cropped_filtered_high <- protected_biodiv$biodiv_ferns_spatial_cropped_filtered_high
   biodiv_ferns_spatial_cropped_filtered_med <- protected_biodiv$biodiv_ferns_spatial_cropped_filtered_med
-  
+
   # Calculate total area of cells with significantly high biodiversity
   signif_cells_total_area <-
     biodiv_ferns_spatial_cropped_filtered %>%
@@ -2445,7 +2445,7 @@ calculate_percent_protected <- function(protected_biodiv) {
       total_area = sum(area),
       .groups = "drop"
     )
-  
+
   # Calculate area of protected zones within cells with significantly high biodiversity
   bind_rows(
     st_drop_geometry(biodiv_ferns_spatial_cropped_filtered_high),
@@ -2488,7 +2488,7 @@ calculate_percent_deer_danger <- function(deer_danger_biodiv) {
   biodiv_ferns_spatial_cropped_filtered_estimated = deer_danger_biodiv$biodiv_ferns_spatial_cropped_filtered_estimated
   biodiv_ferns_spatial_cropped_filtered_2003 = deer_danger_biodiv$biodiv_ferns_spatial_cropped_filtered_2003
   biodiv_ferns_spatial_cropped_filtered_1978 = deer_danger_biodiv$biodiv_ferns_spatial_cropped_filtered_1978
-  
+
   # Calculate total area of cells with significantly high biodiversity
   signif_cells_total_area <-
     biodiv_ferns_spatial_cropped_filtered %>%
@@ -2504,7 +2504,7 @@ calculate_percent_deer_danger <- function(deer_danger_biodiv) {
       total_area = sum(area),
       .groups = "drop"
     )
-  
+
   # Calculate area of protected zones within cells with significantly high biodiversity
   bind_rows(
     st_drop_geometry(biodiv_ferns_spatial_cropped_filtered_estimated),
@@ -2534,17 +2534,17 @@ calculate_percent_deer_danger <- function(deer_danger_biodiv) {
 #' @return List of class DNAbin; DNA alignment
 #' 
 read_ja_rbcL_from_zip <- function (zip_folder) {
-  
+
   temp_dir <- tempdir()
-  
+
   unzip(zip_folder, exdir = temp_dir)
-  
+
   unzip(fs::path(temp_dir, "japan_pterido_rbcl_cipres.zip"), exdir = temp_dir)
-  
+
   ape::read.nexus.data(fs::path(temp_dir, "japan_pterido_rbcl_cipres/infile.nex")) %>%
     as.DNAbin %>%
     as.matrix()
-  
+
 }
 
 #' Read in Green List from the downloaded Dryad zip file
@@ -2554,13 +2554,13 @@ read_ja_rbcL_from_zip <- function (zip_folder) {
 #' @return Dataframe
 #' 
 read_greenlist_from_zip <- function (zip_folder) {
-  
+
   temp_dir <- tempdir()
-  
+
   unzip(zip_folder, exdir = temp_dir)
-  
+
   readxl::read_excel(fs::path(temp_dir, "FernGreenListV1.01E.xls"))
-  
+
 }
 
 #' Combine Japanese rbcL sequences with globally sampled genes
@@ -2571,35 +2571,35 @@ read_greenlist_from_zip <- function (zip_folder) {
 #' other ferns, plus DNA sequences for other genes not including Japanese species
 #'
 combine_ja_rbcL_with_global <- function (broad_alignment_list, japan_rbcL) {
-  
+
   # Remove all sequences matching a Japan fern name from broad alignment list
   reduced <- map(broad_alignment_list, ~magrittr::extract(., !(rownames(.) %in% rownames(japan_rbcL)),))
-  
+
   # Add Japan rbcL sequences back, align with mafft
   reduced[["rbcL"]] <- c(as.list(reduced[["rbcL"]]), as.list(japan_rbcL)) %>%
     ips::mafft(x = ., exec = "/usr/bin/mafft", options = "--adjustdirection") %>%
     remove_mafft_r %>%
     # Trim any rbcL column that is >90% gaps
     ips::deleteGaps(gap.max = nrow(.)*0.9)
-  
+
   # Concatenate all genes
   do.call(cbind.DNAbin, c(reduced, check.names = TRUE, fill.with.gaps = TRUE))
-  
+
 }
 
 # Remove sequences that are all missing from an alignment
 # - helper function for load_ftol_alignment()
 remove_blank_seqs <- function(dna_align) {
-  
+
   # First convert to alignment to character
   aln_char <- as.character(dna_align)
-  
+
   # Get a vector of unique bases for each sequence
   uni_chars <- apply(aln_char, 1, unique)
-  
+
   # Only keep those that are not all missing
   not_missing <- uni_chars != "-"
-  
+
   dna_align[not_missing, ]
 }
 
@@ -2626,14 +2626,14 @@ load_ftol_alignment <- function(ftol_zip_file = "data/ftol_data_release_v0.0.1.z
   # Make sure temp dir is empty first
   if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
   unzip(ftol_zip_file, files = c("ftol_plastid_concat.fasta", "ftol_plastid_parts.csv"), exdir = temp_dir)
-  
+
   # Load each gene separately as a list
   # Load concatenated sequences and start/end positions of each gene
   ftol_plastid_concat_path <- fs::path(temp_dir, "ftol_plastid_concat.fasta") 
   ftol_plastid_parts_path  <- fs::path(temp_dir, "ftol_plastid_parts.csv")
   ftol_plastid_concat_seqs <- ape::read.FASTA(ftol_plastid_concat_path) %>% as.matrix()
   ftol_plastid_parts_dat <- readr::read_csv(ftol_plastid_parts_path)
-  
+
   # Split the concatenated sequences into a list of sequences, one per gene
   broad_alignment_list <- 
     ftol_plastid_parts_dat %>%
@@ -2642,10 +2642,10 @@ load_ftol_alignment <- function(ftol_zip_file = "data/ftol_data_release_v0.0.1.z
     set_names(ftol_plastid_parts_dat$gene) %>%
     # Remove empty sequences from each gene
     map(remove_blank_seqs)
-  
+
   # Cleanup
   if(dir.exists(temp_dir)) fs::dir_delete(temp_dir)
-  
+
   # Return gene list
   broad_alignment_list
 }
@@ -2660,7 +2660,7 @@ load_ftol_alignment <- function(ftol_zip_file = "data/ftol_data_release_v0.0.1.z
 #' @return Renamed DNA alignment with species as names instead of codes
 #'
 rename_alignment <- function (alignment, taxon_id_map) {
-  
+
   new_names <-
     tibble(name = rownames(alignment)) %>%
     mutate(taxon_id = str_split(name, "_") %>% map_chr(2)) %>%
@@ -2668,11 +2668,11 @@ rename_alignment <- function (alignment, taxon_id_map) {
     assert(not_na, taxon) %>%
     assert(is_uniq, taxon) %>%
     pull(taxon)
-  
+
   rownames(alignment) <- new_names
-  
+
   alignment
-  
+
 }
 
 #' Collapse a clade to a star phylogeny
@@ -2689,9 +2689,9 @@ rename_alignment <- function (alignment, taxon_id_map) {
 #' @return Phylogeny with the clade collapsed to a star
 #' 
 collapse_to_star_zero <- function(tree, taxa){
-  
+
   node <- ape::getMRCA(tree, taxa)
-  
+
   if(!inherits(tree,"phylo")) stop("tree should be an object of class \"phylo\".")
   if(node==(Ntip(tree)+1)){
     object<-list(edge=cbind(rep(Ntip(tree)+1,Ntip(tree)),1:Ntip(tree)),
@@ -2723,7 +2723,7 @@ collapse_to_star_zero <- function(tree, taxa){
 #'
 #' @return Phylogenetic tree (list of class "phylo")
 collapse_identical_tips <- function(tree, alignment, check_ultra = TRUE) {
-  
+
   # Find groups of identical sequences in alignment
   identical_seq_groups <-
     # convert alignment to tibble
@@ -2741,26 +2741,26 @@ collapse_identical_tips <- function(tree, alignment, check_ultra = TRUE) {
     select(-seq) %>%
     filter(n > 1, taxon %in% tree$tip.label) %>%
     arrange(desc(n))
-  
+
   # Collapse list of identical sequences to one row per group
   identical_seq_groups <-
     tibble(
       taxon_vec = split(identical_seq_groups$taxon, identical_seq_groups$seq_id)
     ) %>%
     mutate(seq_id = names(taxon_vec))
-  
+
   # Use list of identical sequences to collapse nodes in tree
   collapsed_tree <- tree
-  
+
   for(i in 1:length(identical_seq_groups$taxon_vec)) {
     collapsed_tree <- collapse_to_star_zero(collapsed_tree, identical_seq_groups$taxon_vec[[i]])
   }
-  
+
   # Make sure resulting tree is ultrametric
   if(isTRUE(check_ultra)) assertthat::assert_that(is_ultrametric(collapsed_tree, method = "variance"), msg = "Collapsed tree not ultrametric")
-  
+
   collapsed_tree
-  
+
 }
 
 # Dating with treePL ----
@@ -2830,25 +2830,25 @@ run_treepl_cv <- function (
   nthreads = "1",
   seed,
   thorough = TRUE, wd) {
-  
+
   # Check that all taxa are in tree
   taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
-  
+
   assertthat::assert_that(all(taxa %in% phy$tip.label),
                           msg = glue::glue(
                             "Taxa in calibration dates not present in tree: 
                             {taxa[!taxa %in% phy$tip.label]}"))
-  
+
   # Write tree to working directory
   phy_name <- deparse(substitute(phy))
   phy_path <- fs::path_ext_set(phy_name, "tre")
   if(isTRUE(write_tree)) {ape::write.tree(phy, fs::path(wd, phy_path))}
-  
+
   # Get number of sites in alignment
   num_sites <- dim(alignment)[2]
-  
+
   outfile_path <- fs::path_ext_set(paste0(phy_name, "_cv"), "out")
-  
+
   # Write config file to working directory
   treepl_config <- c(
     glue("treefile = {phy_path}"),
@@ -2869,25 +2869,25 @@ run_treepl_cv <- function (
     priming_results %>% extract(., str_detect(., "optad =")),
     priming_results %>% extract(., str_detect(., "optcvad ="))
   )
-  
+
   if(thorough) treepl_config <- c(treepl_config, "thorough")
-  
+
   readr::write_lines(treepl_config, fs::path(wd, "treepl_cv_config"))
-  
+
   stderr_path <- Sys.time() %>% 
     str_replace_all(" |:", "_") %>% paste0("treepl_cv_config", ., ".stderr") %>%
     fs::path(wd, .)
-  
+
   stdout_path <- Sys.time() %>% 
     str_replace_all(" |:", "_") %>% paste0("treepl_cv_config", ., ".stdout") %>%
     fs::path(wd, .)
-  
+
   # Run treePL
   processx::run("treePL", "treepl_cv_config", wd = wd, stderr = stderr_path, stdout = stdout_path)
-  
+
   # Return cross-validation results
   read_lines(fs::path(wd, outfile_path))
-  
+
 }
 
 #' Do an initial treepl run to determine optimal
@@ -2920,23 +2920,23 @@ run_treepl_prime <- function (
   nthreads = "1",
   seed,
   thorough = TRUE, wd) {
-  
+
   # Check that all taxa are in tree
   taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
-  
+
   assertthat::assert_that(all(taxa %in% phy$tip.label),
                           msg = glue::glue(
                             "Taxa in calibration dates not present in tree: 
                             {taxa[!taxa %in% phy$tip.label]}"))
-  
+
   # Write tree to working directory
   phy_name <- deparse(substitute(phy))
   phy_path <- fs::path_ext_set(phy_name, "tre")
   if(isTRUE(write_tree)) {ape::write.tree(phy, fs::path(wd, phy_path))}
-  
+
   # Get number of sites in alignment
   num_sites <- dim(alignment)[2]
-  
+
   # Write config file to working directory
   treepl_config <- c(
     glue("treefile = {phy_path}"),
@@ -2948,21 +2948,21 @@ run_treepl_prime <- function (
     glue("nthreads = {nthreads}"),
     "prime"
   )
-  
+
   if(thorough) treepl_config <- c(treepl_config, "thorough")
-  
+
   readr::write_lines(treepl_config, fs::path(wd, "treepl_prime_config"))
-  
+
   stderr_path <- Sys.time() %>% 
     str_replace_all(" |:", "_") %>% paste0("treepl_prime_config", ., ".stderr") %>%
     fs::path(wd, .)
-  
+
   # Run treePL
   results <- processx::run(command = "treePL", args = "treepl_prime_config", wd = wd, stderr = stderr_path)
-  
+
   # Return stdout
   read_lines(results$stdout)
-  
+
 }
 
 #' Run treePL
@@ -3002,23 +3002,23 @@ run_treepl <- function (
   nthreads = "1",
   seed,
   thorough = TRUE, wd) {
-  
+
   # Check that all taxa are in tree
   taxa <- c(calibration_dates$taxon_1, calibration_dates$taxon_2) %>% unique
-  
+
   assertthat::assert_that(all(taxa %in% phy$tip.label),
                           msg = glue::glue(
                             "Taxa in calibration dates not present in tree: 
                             {taxa[!taxa %in% phy$tip.label]}"))
-  
+
   # Write tree to working directory
   phy_name <- deparse(substitute(phy))
   phy_path <- fs::path_ext_set(phy_name, "tre")
   if(isTRUE(write_tree)) {ape::write.tree(phy, fs::path(wd, phy_path))}
-  
+
   # Get number of sites in alignment
   num_sites <- dim(alignment)[2]
-  
+
   # Get best smoothing parameter
   # Select the optimum smoothing value (smallest chisq) from cross-validation
   # The raw output looks like this:
@@ -3037,10 +3037,10 @@ run_treepl <- function (
     arrange(chisq, smooth) %>%
     slice(1) %>%
     pull(smooth)
-  
+
   # Set name of output file
   outfile_path <- fs::path_ext_set(paste0(phy_name, "_dated"), "tre")
-  
+
   # Write config file to working directory
   treepl_config <- c(
     glue("treefile = {phy_path}"),
@@ -3059,29 +3059,29 @@ run_treepl <- function (
     priming_results %>% extract(., str_detect(., "optad =")),
     priming_results %>% extract(., str_detect(., "optcvad ="))
   )
-  
+
   if(thorough) treepl_config <- c(treepl_config, "thorough")
-  
+
   readr::write_lines(treepl_config, fs::path(wd, "treepl_config"))
-  
+
   stderr_path <- Sys.time() %>% 
     str_replace_all(" |:", "_") %>% paste0("treepl_", ., ".stderr") %>%
     fs::path(wd, .)
-  
+
   stdout_path <- Sys.time() %>% 
     str_replace_all(" |:", "_") %>% paste0("treepl_", ., ".stdout") %>%
     fs::path(wd, .)
-  
+
   # Run treePL, save stderr and stdout to working dir
   processx::run(
     "treePL", "treepl_config", 
     wd = wd, 
     stderr = stderr_path,
     stdout = stdout_path)
-  
+
   # Read in tree
   ape::read.tree(fs::path(wd, outfile_path))
-  
+
 }
 
 #' Check for ultrametricity of a tree
@@ -3171,7 +3171,7 @@ sf_add_centroids <- function(sf_data, id_col = "grids") {
     verify(!("Y" %in% colnames(.))) %>%
     assert(not_na, geom, all_of(id_col)) %>%
     assert(is_uniq, all_of(id_col), success_fun = success_logical)
-  
+
   # get centroids
   centroids <-
     sf_data %>%
@@ -3184,7 +3184,7 @@ sf_add_centroids <- function(sf_data, id_col = "grids") {
     ) %>%
       select(all_of(id_col), lat, long) %>%
       st_drop_geometry()
-  
+
   # add centroids back in to original data
   left_join(sf_data, centroids, by = all_of(id_col)) %>%
     verify(nrow(.) == nrow(sf_data)) %>%
@@ -3198,7 +3198,7 @@ sf_add_centroids <- function(sf_data, id_col = "grids") {
 #' @return List
 #' 
 make_dist_list <- function(data) {
-  
+
   # Convert centroids to matrix
   centroids <- data %>%
     # Make sure needed columns are present
@@ -3209,20 +3209,20 @@ make_dist_list <- function(data) {
     as_tibble() %>%
     column_to_rownames("grids") %>% 
     as.matrix()
-  
+
   # Make inverted distance matrix (so points far away have high values)
   dist_mat <- 1/as.matrix(dist(centroids))
-  
+
   # Set the diagonal (same site to same site) to zero
   diag(dist_mat) <- 0
-  
+
   # If sites have the exact same lat/long,
   # replace Inf values for these with 0
   dist_mat[is.infinite(dist_mat)] <- 0
-  
+
   # Convert distance matrix to spatial weights list
   spdep::mat2listw(dist_mat, row.names = rownames(dist_mat), style = "M")
-  
+
 }
 
 #' Prepare data for calculating Moran's I in a loop
@@ -3278,7 +3278,7 @@ run_moran_mc <- function(var_name, biodiv_data, listw, nsim = 1000) {
 #' @return Tibble with modified t-test statistics
 #' 
 run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
-  
+
   # Extract long/lat in degrees as matrix
   coords <- biodiv_ferns_cent_repro %>% 
     sf::st_transform(4612) %>%
@@ -3286,7 +3286,7 @@ run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
     st_drop_geometry() %>%
     select(long, lat) %>%
     as.matrix()
-  
+
   # Make cross table of all unique combinations of independent vars
   t_test_vars <-
     biodiv_ferns_cent_repro %>%
@@ -3304,7 +3304,7 @@ run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
     select(comb1) %>%
     unique() %>%
     separate(comb1, c("var1", "var2"), sep = " ")
-  
+
   # Helper function for running SpatialPack::modified.ttest() in a loop across variables
   run_mod_ttest <- function(var1, var2, data, coords) {
     res <- SpatialPack::modified.ttest(data[[var1]], data[[var2]], coords)
@@ -3317,9 +3317,9 @@ run_mod_ttest_ja <- function(biodiv_ferns_cent_repro, vars_select) {
       dof = res$dof
     )
   }
-  
+
   map2_df(t_test_vars$var1, t_test_vars$var2, ~run_mod_ttest(var1 = .x, var2 = .y, data = biodiv_ferns_cent_repro, coords = coords))
-  
+
 }
 
 #' Prepare data for running spaMM in a loop
@@ -3393,10 +3393,10 @@ run_spamm <- function(formula, data, resp_var) {
 #'
 #' @return Tibble
 generate_spatial_comparisons <- function(resp_var, indep_vars) {
-  
+
   full_formula_string <- glue("{resp_var} ~ {paste(indep_vars, collapse = ' + ')} + Matern(1|long+lat)") %>% 
     as.character
-  
+
   tibble(
     resp_var = resp_var,
     indep_var = indep_vars,
@@ -3459,7 +3459,7 @@ extract_indep_vars <- function(formula_string) {
 #' and 'full_formula'
 #' 
 prepare_data_for_lrt <- function(spatial_models, biodiv_ferns_cent) {
-  
+
   # Extract response and independent variables from models
   spatial_models %>%
     mutate(indep_vars = map(formula, extract_indep_vars)) %>%
@@ -3471,7 +3471,7 @@ prepare_data_for_lrt <- function(spatial_models, biodiv_ferns_cent) {
     # Add data
     mutate(data = list(biodiv_ferns_cent)) %>%
     assert(not_na, everything())
-  
+
 }
 
 #' Run a likelihood ratio test on formulas provided as a tibble
@@ -3487,14 +3487,14 @@ prepare_data_for_lrt <- function(spatial_models, biodiv_ferns_cent) {
 #' 'loglik_full', 'resp_var', and 'comparison'
 #' 
 run_spamm_lrt <- function(null_formula, full_formula, data, resp_var, comparison) {
-  
+
   # Conduct LRT
   lrt_res <- spaMM::fixedLRT(
     null.formula = as.formula(null_formula), 
     formula = as.formula(full_formula), 
     data = data, 
     method = "ML")
-  
+
   # Extract important statistics from result
   # (chi2, df, p-value, log-likelihoods of null and full model)
   lrt_res %>%
@@ -3522,10 +3522,10 @@ run_spamm_lrt <- function(null_formula, full_formula, data, resp_var, comparison
 #'   unnest(beta_table)
 #' 
 get_beta_table <- function(model) {
-  
+
   # Make version of summary() that won't print to screen
   quiet_summary <- quietly(summary)
-  
+
   model %>%
     # get model summary
     quiet_summary %>%
@@ -3677,16 +3677,16 @@ area_from_crop <- function(x, ymin, ymax, xmin, xmax) {
 #'
 #' @return Tibble with columns `ymin`, `ymax`, `area` (in sq km)
 calc_area_by_lat <- function(shp, lat_cut = 20000, lat_window = 100000) {
-  
+
   # Define some helper functions
   # Round x up to the nearest number which is divisible by m
   round_up_divis <- function(x, m) {x + m - x %% m}
   # Round x down to the nearest number which is divisible by m
   round_down_divis <- function(x, m) {x - m - x %% m}
-  
+
   # Get bounding box of the input shape (xmin, xmax, ymin, ymax)
   bounds <- st_bbox(shp)
-  
+
   # Define latitudes to cut along:
   # start on lowest rounded number divisible by `lat_cut`,
   # end at highest rounded number divisible by `lat_cut`
@@ -3694,7 +3694,7 @@ calc_area_by_lat <- function(shp, lat_cut = 20000, lat_window = 100000) {
     round_down_divis(bounds$ymin, lat_cut),
     round_up_divis(bounds$ymax, lat_cut),
     lat_cut)
-  
+
   # Prepare tibble for looping to calculate area in each band
   dat <- tibble(
     ymin = lat_cuts[1:(length(lat_cuts) - 1)],
@@ -3703,12 +3703,12 @@ calc_area_by_lat <- function(shp, lat_cut = 20000, lat_window = 100000) {
     xmax = bounds$xmax %>% ceiling,
     x = list(shp)
   )
-  
+
   # Determine rolling mean window in units of input data
   # k x lat_cut = lat_window,
   # so e.g., lat_window / lat_cut = 1 degree / 0.2 degree = 5
   width_k <- lat_window / lat_cut
-  
+
   # Calculate area in km2 in latitudinal bands,
   # then rolling mean across windows of bands
   dat %>%
@@ -3790,27 +3790,27 @@ drop_apo_outlier <- function (data) {
 #' 95% CI lower and upper bounds.
 #' 
 predict_fit <- function(spatial_models) {
-  
+
   indep_var <- case_when(
     str_detect(spatial_models$formula, "temp") ~ "temp",
     str_detect(spatial_models$formula, "percent_apo") ~ "percent_apo",
     TRUE ~ NA_character_
   )
-  
+
   model <- spatial_models$model[[1]]
-  
+
   fit <- spaMM::pdep_effects(model, focal_var = indep_var)
-  
+
   colnames(fit)[colnames(fit) == "focal_var"] <- indep_var
   colnames(fit)[colnames(fit) == "pointp"] <- model$predictor[[2]] %>% as.character()
-  
+
   tibble(
     resp_var = spatial_models$resp_var,
     indep_var = indep_var,
     formula = spatial_models$formula,
     fit = list(as_tibble(fit))
   )
-  
+
 }
 
 #' Add column add selected predictor variable to spatial models
@@ -3821,7 +3821,7 @@ predict_fit <- function(spatial_models) {
 #' independent variable to use for plotting
 #' 
 add_selected_pred_to_model <- function(spatial_models) {
-  
+
   spatial_models %>%
     mutate(indep_var_select = case_when(
       str_detect(formula, "temp") ~ "temp",
@@ -3829,7 +3829,7 @@ add_selected_pred_to_model <- function(spatial_models) {
       TRUE ~ NA_character_
     )) %>%
     assert(not_na, indep_var_select)
-  
+
 }
 
 #' Convert spatial biodiversity data to centroids for Dryad
