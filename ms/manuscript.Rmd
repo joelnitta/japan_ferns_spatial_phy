@@ -164,8 +164,8 @@ Here, we characterize multiple facets and drivers of biodiversity to understand 
 
 **Methods:** We compiled a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 20 km × 20 km grid-cells including `r ncol(comm_ferns)` taxa based on > `r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` specimen records.
 We combined this with a phylogeny and functional traits to analyze taxonomic, phylogenetic, and functional diversity, and modeled biodiversity metrics in response to environmental factors and reproductive mode.
-We used hierarchical clustering to analyze bioregions.
-We compared the overlap of significantly diverse grid-cells with conservation zones and range maps of native Japanese deer to assess conservation status and threats.
+Hierarchical clustering was used to analyze bioregions.
+Conservation status and threats were assessed by comparing the overlap of significantly diverse grid-cells with conservation zones and range maps of native Japanese deer.
 
 **Results:** Taxonomic richness was highest at mid-latitudes.
 Phylogenetic and functional diversity and phylogenetic endemism were highest in small southern islands.
@@ -202,19 +202,26 @@ repro_count$known$percent <-
 ```
 
 Characterizing the spatial distribution of biodiversity is a major goal of evolutionary biology with two equally important aspects: to understand the processes generating it, and to conserve it.
-The vast majority of studies seeking to understand the spatial distribution of biodiversity focus on species richness.
-Hotspots, or areas of exceptionally high richness, have received particular attention, resulting in a widely-recognized set of 36 terrestrial hotspots [@Myers2000; @Noss2016] and motivating conservation strategies to preserve them [@Margules2000; @Brooks2006].
-However, richness alone cannot provide a complete picture of biodiversity.
+Until recently, the vast majority of studies seeking to understand the spatial distribution of biodiversity have focused on species richness.
+Hotspots, or areas of exceptionally high species richness or endemism, have received particular attention, resulting in a widely-recognized set of 36 terrestrial hotspots [@Myers2000; @Noss2016] and motivating conservation strategies to preserve them [@Margules2000; @Brooks2006].
+However, species richness alone cannot provide a complete picture of biodiversity.
 All organisms are related to a greater or lesser degree by descent from a common ancestor, and these evolutionary relationships must be taken into account to obtain a full understanding of the biodiversity present in an area.
 
-Presumably, the main reason phylogeny has not been taken into account more prominently in biodiversity studies is because the necessary data (DNA sequences and georeferenced occurrence records) and analytic tools have only become available relatively recently.
+Presumably, the main reason phylogeny has not been taken into account more prominently in biodiversity studies is because the necessary data (DNA sequences and georeferenced occurrence records) and analytic tools have only become available relatively recently [@Soltis2016a; @Folk2021].
 These datasets and tools now make it possible to analyze other dimensions of biodiversity, such as phylogenetic diversity [@Faith1992] and phylogenetic endemism [@Rosauer2009].
-Better ways to characterize biological regions ("bioregions") are also available [e.g., @Laffan2016; @White2019; @Daru2020a], rather than relying on ad-hoc characterizations.
+Better ways to characterize biological regions ("bioregions"; `r ie`, areas defined by their taxonomic composition or evolutionary history) are also available [`r eg`, @Laffan2016; @White2019; @Daru2020a], rather than relying on ad-hoc characterizations.
 Furthermore, incorporating these two frameworks---the categorization of areas into phyloregions with analysis of over/under dispersion of biodiversity---can provide powerful insights into the processes structuring biodiversity and suggest conservation priorities.
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale.
 The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled [reviewed in @Ebihara2019b].
-One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa excluding hybrids [`r repro_count$known$percent`]), which is likely to affect genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
+The ferns of Japan include 721 native, non-hyrbid taxa (including species and varieties) and hundreds of hybrids [@Ebihara2019b].
+The availability of detailed distribution data [distribution maps at the ca. 10 km scale for all species\; @Ebihara2016b; @Ebihara2017], trait data [multiple quantitative and qualitative traits compiled for species identification of nearly all species\; @Ebihara2019b], and DNA sequences for >97% of non-hybrid species [@Ebihara2010; @Ebihara2019b] make the ferns of Japan an ideal system for investigating the relationships between, and drivers of, multiple dimensions of biodiversity.
+
+One particularly valuable characteristic of this flora is the availability of data on reproductive mode (known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa excluding hybrids [`r repro_count$known$percent`]) [@Ebihara2019b].
+Such densley sampled reproductive data for a large clade on the regional scale is rare, and we are unaware of any other comparable dataset in ferns.
+Reproductive mode is likely to affect population-level genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
+In ferns, clonally reproducing apomictic species are often polyploid hybrids that share identical plastid genotypes among taxa and within populations.
+Therefore, we expect high prevalence of apomictic species within a community to decrease phylogenetic diversity.
 
 Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south.
 Furthermore, it is a mountainous country with great variation in elevation on the larger islands.
@@ -265,9 +272,10 @@ The R package `r pack("sf")` was used for all GIS analyses [@Pebesma2018].
 
 ### Morphological trait data
 
-We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017].
-Continuous traits were measured on 10 randomly selected specimens per species.
-Fertile (`r ie`, spore-bearing) and sterile fronds were measured separately, then averaged.
+We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017], which were formatted to be used with Lucid software (https://www.lucidcentral.org/).
+Continuous traits were measured on 10 randomly selected specimens per species, then four values were obtained from these measurements following Lucid format: outside (`r ie` outside the typical range) minimum, typical minimum, typical maximum, and outside maximum.
+For species with dimorphic fertile (`r ie`, spore-bearing) and sterile fronds, fertile and sterile fronds were measured separately.
+We took the mean of the typical minimum and maximum values to use as the species mean value.
 Qualitative traits were scored by observing voucher specimens.
 All qualitative traits were scored in binary format; `r eg`, a single trait with three states was formatted as three binary traits.
 From the original trait list, we selected only traits with putative ecological function (`r table("traits-used")`), calculated mean values for continuous traits, and removed any traits that had Pearson correlation coefficient >0.6 or fewer than three observations of a given trait state.
@@ -475,7 +483,13 @@ We categorized protected areas as either "high" (no human activities allowed at 
 Conservation status in Japan is administered by multiple laws, and protected areas frequently overlap [@Natori2012].
 To prevent double-counting, all protected areas within a protection status were merged, and protected areas that overlapped between medium and high status were considered only high status.
 
-We downloaded distribution maps (SHP and TIF) of native Japanese deer (*Cervus nippon*), an herbivore that has caused extensive damage to native plant communities due to rapid population growth since the 1970s [@Takatsuki2009] and poses a high risk to ferns, from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html).
+Besides habitat loss due to human activity, one major threat to ferns in Japan is herbivory by native Japanese deer (*Cervus nippon*).
+Japanee deer have caused extensive damage to native plant communities due to rapid population growth since the 1970s [@Takatsuki2009].
+Extirpation of fern populations due to expansion of deer range has been observed in multiple sites across the country.
+Furthermore, 33 of 212 (15.5%) fern taxa listed as endangered (Red List status CR, EN or VU) in Japan include herbivory by deer as one of the reasons for their endangered status, and one taxon (**Arachniodes yasu-inouei** var. **angustipinnula**) is thought to have gone extinct due to deer herbivory, among other causes [@MOJ2015; @kankyosho2022].
+Therefore, analysis of the threat posed to fern biodiversity by deer herbivory is needed to inform future conservation policies.
+
+We downloaded distribution maps (SHP and TIF) of *Cervus nippon* from the Japan Ministry of the Environment (https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html).
 To assess change in threat due to herbivory by deer over time, we used three maps available in this dataset: range of Japanese deer surveyed in 1978, range surveyed in 2003, and estimated range inferred from a model including snow cover and forest type based on the 2003 survey data [@kankyosho2021].
 We limited estimated range to areas considered "highly likely" to be occupied by deer [movement cost < 0.10; @kankyosho2021].
 

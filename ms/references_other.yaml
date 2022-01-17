@@ -15,6 +15,29 @@ references:
   title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R. R Package Version 0.0.0.9000'
   URL: https://doi.org/10.5281/zenodo.5094033
 
+- id: kankyosho2022
+  type: webpage
+  author:
+  - literal: Japan Ministry of the Environment
+  issued:
+    year: 2022
+  accessed:
+    year: 2022
+    month: 01
+    day: 17
+  title: 'Ikimono-rogu reddo-deta-bukku (Organisms Log, Red Data Book; in Japanese)'
+  URL: https://ikilog.biodic.go.jp/Rdb/
+
+- id: MOJ2015
+  type: book
+  author:
+  - literal: Japan Ministry of the Environment
+  issued:
+  - year: 2015
+  title: 'Red Data Book 2014--Threatened Wildlife of Japan--Vol. 8 Vascular Plants'
+  publisher: Gyosei Co.
+  publisher-place: Tokyo
+
 - id: kankyosho2021b
   type: webpage
   author:
