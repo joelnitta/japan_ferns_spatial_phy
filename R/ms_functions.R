@@ -26,11 +26,11 @@ colorb_paired <- brewer.pal(n = 8, name = "Paired")
 colorb_ylgn <- brewer.pal(n = 5, name = "YlGn")
 signif_cols <-
   c(
-    "> 0.99" = colorb_paired[[2]], # Dark blue 
-    "> 0.975" = colorb_paired[[1]], # Light blue 
-    "< 0.025" = colorb_paired[[5]], # Light red
     "< 0.01" = colorb_paired[[6]], #  Dark red
-    "not significant" = colorb_ylgn[[1]] # Beige
+    "< 0.025" = colorb_paired[[5]], # Light red
+    "not significant" = colorb_ylgn[[1]], # Beige
+    "> 0.975" = colorb_paired[[1]], # Light blue 
+    "> 0.99" = colorb_paired[[2]] # Dark blue 
   )
 
 # - CANAPE (Okabe-Ito CVD safe)

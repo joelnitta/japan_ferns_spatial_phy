@@ -205,6 +205,29 @@ references:
     and plant diversity'
   type: article-journal
   volume: '105'
+- id: Chao2012a
+  author:
+  - family: Chao
+    given: Yi-Shan
+  - family: Dong
+    given: Shi-Yong
+  - family: Chiang
+    given: Yu-Chung
+  - family: Liu
+    given: Ho-Yih
+  - family: Chiou
+    given: Wen-Liang
+  citation-key: Chao2012a
+  container-title: International Journal of Molecular Sciences
+  DOI: 10.3390/ijms13044523
+  ISSN: 1422-0067
+  issue: '12'
+  issued:
+  - year: 2012
+  page: 4523-4544
+  title: Extreme multiple reticulate origins of the *Pteris* *cadieri* complex (Pteridaceae)
+  type: article-journal
+  volume: '13'
 - id: Colwell2004a
   author:
   - family: Colwell
@@ -499,6 +522,32 @@ references:
   title: Conservation evaluation and phylogenetic diversity
   type: article-journal
   volume: '61'
+- id: Folk2021
+  accessed:
+  - year: 2022
+    month: 1
+    day: 17
+  author:
+  - family: Folk
+    given: Ryan A.
+  - family: Siniscalchi
+    given: Carolina M.
+  citation-key: Folk2021
+  container-title: American Journal of Botany
+  container-title-short: Am. J. Bot.
+  DOI: 10/gk5npc
+  ISSN: 0002-9122, 1537-2197
+  issue: '6'
+  issued:
+  - year: 2021
+    month: 6
+  language: en
+  page: 912-924
+  source: DOI.org (Crossref)
+  title: 'Biodiversity at the global scale: The synthesis continues'
+  title-short: Biodiversity at the global scale
+  type: article-journal
+  volume: '108'
 - id: Fritz2010
   author:
   - family: Fritz
@@ -639,6 +688,25 @@ references:
   title: A general coefficient of similarity and some of its properties
   type: article-journal
   volume: '27'
+- id: Grusz2009
+  author:
+  - family: Grusz
+    given: Amanda L.
+  - family: Windham
+    given: Michael D
+  - family: Pryer
+    given: Kathleen M
+  citation-key: Grusz2009
+  container-title: American Journal of Botany
+  ISSN: 1537-2197
+  issue: '9'
+  issued:
+  - year: 2009
+  page: 1636-1645
+  title: Deciphering the origins of apomictic polyploids in the <span class="nocase">*Cheilanthes
+    yavapensis*</span> complex (Pteridaceae)
+  type: article-journal
+  volume: '96'
 - id: Grusz2021
   accessed:
   - year: 2021
@@ -673,6 +741,59 @@ references:
   title-short: A drought-driven model for the evolution of obligate apomixis in ferns
   type: article-journal
   volume: '108'
+- id: Hori2014
+  author:
+  - family: Hori
+    given: Kiyotaka
+  - family: Tono
+    given: Akitaka
+  - family: Fujimoto
+    given: Kazuto
+  - family: Kato
+    given: Juntaro
+  - family: Ebihara
+    given: Atsushi
+  - family: Watano
+    given: Yasuyuki
+  - family: Murakami
+    given: Noriaki
+  citation-key: Hori2014
+  container-title: Journal of Plant Research
+  DOI: 10.1007/s10265-014-0652-0
+  ISSN: 0918-9440
+  issue: '6'
+  issued:
+  - year: 2014
+  page: 661-684
+  title: Reticulate evolution in the apogamous <span class="nocase">*Dryopteris varia*</span>
+    complex (Dryopteridaceae, subg. *Erythrovariae*, sect. *Variae*) and its related
+    sexual species in Japan
+  type: article-journal
+  volume: '127'
+- id: Hori2019
+  accessed:
+  - year: 2022
+    month: 1
+    day: 18
+  author:
+  - family: Hori
+    given: Kiyotaka
+  - family: Murakami
+    given: Noriaki
+  citation-key: Hori2019
+  container-title: PhytoKeys
+  container-title-short: PK
+  DOI: 10/gn6drb
+  ISSN: 1314-2003, 1314-2011
+  issued:
+  - year: 2019
+    month: 6
+    day: 18
+  page: 57-76
+  source: DOI.org (Crossref)
+  title: Origin of the *Diplazium* *hachijoense* complex (Athyriaceae)
+  type: article-journal
+  volume: '124'
 - id: kankyosho2021
   type: webpage
   author:
@@ -699,6 +820,18 @@ references:
   title: Kokuritsu, kokuteikouen soutenken jigyou ni tsuite (On the project to overhaul
     national parks and quasi-national parks; in Japanese)
   URL: https://www.env.go.jp/park/topics/review/attach/jigyo/full.pdf
+- id: kankyosho2022
+  type: webpage
+  author:
+  - literal: Japan Ministry of the Environment
+  issued:
+    year: 2022
+  accessed:
+    year: 2022
+    month: 1
+    day: 17
+  title: Ikimono-rogu reddo-deta-bukku (Organisms Log, Red Data Book; in Japanese)
+  URL: https://ikilog.biodic.go.jp/Rdb/
 - id: Kessler2011a
   author:
   - family: Kessler
@@ -1031,6 +1164,35 @@ references:
   title: Systematic conservation planning
   type: article-journal
   volume: '405'
+- id: Miller2018
+  accessed:
+  - year: 2020
+    month: 7
+    day: 2
+  author:
+  - family: Miller
+    given: Joseph T.
+  - family: Jolley‐Rogers
+    given: Garry
+  - family: Mishler
+    given: Brent D.
+  - family: Thornhill
+    given: Andrew H.
+  citation-key: Miller2018
+  container-title: Journal of Systematics and Evolution
+  container-title-short: Jnl of Sytematics Evolution
+  DOI: 10.1111/jse.12436
+  ISSN: 1674-4918, 1759-6831
+  issue: '6'
+  issued:
+  - year: 2018
+    month: 11
+  language: en
+  page: 663-667
+  source: DOI.org (Crossref)
+  title: Phylogenetic diversity is a better measure of biodiversity than taxon counting
+  type: article-journal
+  volume: '56'
 - id: Millien-Parra1999
   accessed:
   - year: 2020
@@ -1057,6 +1219,18 @@ references:
   title-short: Island biogeography of the Japanese terrestrial mammal assemblages
   type: article-journal
   volume: '26'
+- id: Minamitani2005
+  author:
+  - family: Minamitani
+    given: Tadashi
+  container-title: BUNRUI (In Japanese)
+  issue: '2'
+  volume: '5'
+  issued:
+  - year: 2005
+  page: 67-84
+  title: New taxa discovered from southern Kyusyu and those preservation
+  type: article-journal
 - id: Minh2013
   author:
   - family: Minh
@@ -1139,6 +1313,15 @@ references:
   title: Spatial phylogenetics of the North American flora
   type: article-journal
   volume: '58'
+- id: MOJ2015
+  type: book
+  author:
+  - literal: Japan Ministry of the Environment
+  issued:
+  - year: 2015
+  title: Red Data Book 2014--Threatened Wildlife of Japan--Vol. 8 Vascular Plants
+  publisher: Gyosei Co.
+  publisher-place: Tokyo
 - id: Moran2001
   author:
   - family: Moran
@@ -1519,6 +1702,39 @@ references:
   title: Functional diversity (FD), species richness and community composition
   type: article-journal
   volume: '5'
+- id: Picard2021
+  accessed:
+  - year: 2022
+    month: 1
+    day: 18
+  author:
+  - family: Picard
+    given: Kathryn T.
+  - family: Ranft
+    given: Hannah
+  - family: Grusz
+    given: Amanda L.
+  - family: Windham
+    given: Michael D.
+  - family: Schuettpelz
+    given: Eric
+  citation-key: Picard2021
+  container-title: American Journal of Botany
+  container-title-short: Am J Bot
+  DOI: 10/gn6dsr
+  ISSN: 0002-9122, 1537-2197
+  issue: '11'
+  issued:
+  - year: 2021
+    month: 11
+  language: en
+  page: 2220-2234
+  source: DOI.org (Crossref)
+  title: 'When it only takes one to tango: Assessing the impact of apomixis in the
+    fern genus *Pteris*'
+  title-short: When it only takes one to tango
+  type: article-journal
+  volume: '108'
 - id: Pinson2016a
   author:
   - family: Pinson
@@ -1682,6 +1898,46 @@ references:
   title: 'phytools: an R package for phylogenetic comparative biology (and other things)'
   type: article-journal
   volume: '3'
+- id: Rice2019a
+  accessed:
+  - year: 2020
+    month: 7
+    day: 29
+  author:
+  - family: Rice
+    given: Anna
+  - family: Šmarda
+    given: Petr
+  - family: Novosolov
+    given: Maria
+  - family: Drori
+    given: Michal
+  - family: Glick
+    given: Lior
+  - family: Sabath
+    given: Niv
+  - family: Meiri
+    given: Shai
+  - family: Belmaker
+    given: Jonathan
+  - family: Mayrose
+    given: Itay
+  citation-key: Rice2019a
+  container-title: Nature Ecology & Evolution
+  DOI: 10/gfzpqs
+  ISSN: 2397-334X
+  issue: '2'
+  issued:
+  - year: 2019
+    month: 2
+  language: en
+  number: '2'
+  page: 265-273
+  publisher: Nature Publishing Group
+  source: www.nature.com
+  title: The global biogeography of polyploid plants
+  type: article-journal
+  volume: '3'
 - id: Rosauer2009
   author:
   - family: Rosauer
@@ -1808,6 +2064,24 @@ references:
     phylogenies'
   type: article-journal
   volume: '28'
+- id: Soltis2016a
+  author:
+  - family: Soltis
+    given: Douglas E.
+  - family: Soltis
+    given: Pamela S.
+  citation-key: Soltis2016a
+  container-title: Plant Diversity
+  DOI: 10.1016/j.pld.2016.12.001
+  ISSN: '24682659'
+  issue: '6'
+  issued:
+  - year: 2016
+  page: 264-270
+  title: Mobilizing and integrating big data in studies of spatial and phylogenetic
+    patterns of biodiversity
+  type: article-journal
+  volume: '38'
 - id: SpatialPack2020
   type: book
   author:
@@ -2052,6 +2326,68 @@ references:
   page: '2646'
   title: Regional influences on community structure across the tropical-temperate
     divide
+  type: article-journal
+  volume: '10'
+- id: Yahara2006
+  author:
+  - family: Yahara
+    given: Tetsukazu
+  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer
+    eat world heritage sites: Ecology of deer and forests). In Japanese.'
+  editor:
+  - family: Yumoto
+    given: Takakazu
+  - family: Matsuda
+    given: Hiroyuki
+  issued:
+  - year: 2006
+  page: 168-188
+  publisher: Bunichi Sogo Shuppan
+  publisher-place: Tokyo
+  title: Shika no zouka to yasei shokubutsu no zetsumetsu risku (Increase in deer
+    population and plant extinction risk). In Japanese.
+  type: chapter
+  URL: https://ci.nii.ac.jp/naid/10029109218
+- id: Zizka2019
+  author:
+  - family: Zizka
+    given: Alexander
+  - family: Silvestro
+    given: Daniele
+  - family: Andermann
+    given: Tobias
+  - family: Azevedo
+    given: Josué
+  - family: Duarte Ritter
+    given: Camila
+  - family: Edler
+    given: Daniel
+  - family: Farooq
+    given: Harith
+  - family: Herdean
+    given: Andrei
+  - family: Ariza
+    given: María
+  - family: Scharn
+    given: Ruud
+  - family: Svantesson
+    given: Sten
+  - family: Wengström
+    given: Niklas
+  - family: Zizka
+    given: Vera
+  - family: Antonelli
+    given: Alexandre
+  citation-key: Zizka2019
+  container-title: Methods in Ecology and Evolution
+  DOI: 10.1111/2041-210X.13152
+  ISSN: 2041210X
+  issue: '5'
+  issued:
+  - year: 2019
+  page: 744-751
+  title: 'CoordinateCleaner: Standardized cleaning of occurrence records from biological
+    collection databases'
   type: article-journal
   volume: '10'
 - id: Hsieh2016

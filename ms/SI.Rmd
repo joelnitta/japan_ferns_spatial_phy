@@ -512,7 +512,7 @@ a + b +
   plot_layout(nrow = 1)
 ```
 
-**`r s_figure("abundance")`**. Observed number of specimens (a) and sampling redundancy (b) per 0.2° grid cell in the ferns of Japan.
+**`r s_figure("abundance")`**. Observed number of specimens (a) and sampling redundancy (b) per 20 km grid cell in the ferns of Japan.
 
 \clearpage
 
@@ -604,7 +604,9 @@ ggplot() +
   geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
   geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent") +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
-  scale_fill_manual(values = canape_cols) +
+  scale_fill_manual(
+    values = canape_cols,
+    na.value = "transparent") +
   annotation_scale(location = "tl", width_hint = 0.2) +
   map_theme() +
   theme(legend.title = element_blank())
@@ -770,12 +772,12 @@ plot_genus <- function(part, genus_select) {
     )
 }
 
-a <- plot_genus("a", "Equisetum")
-b <- plot_genus("b", "Deparia")
-c <- plot_genus("c", "Cyrtomium")
-d <- plot_genus("d", "Dryopteris")
-e <- plot_genus("e", "Pteris")
-f <- plot_genus("f", "Diplazium") +
+a <- plot_genus("A", "Equisetum")
+b <- plot_genus("B", "Deparia")
+c <- plot_genus("C", "Cyrtomium")
+d <- plot_genus("D", "Dryopteris")
+e <- plot_genus("E", "Pteris")
+f <- plot_genus("F", "Diplazium") +
   annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)

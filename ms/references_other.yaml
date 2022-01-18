@@ -134,7 +134,7 @@ references:
   title: 'Announcing the world’s 36th biodiversity hotspot: The North American coastal plain'
   title-short: '36th biodiversity hotspot'
   URL: https://www.cepf.net/node/4422
-  
+
 - id: Tokita2006
   author:
   - family: Tokita
@@ -151,6 +151,25 @@ references:
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo
   title: 'Shizen kouen ni okeru shika mondai (The problem of deer in natural parks). In Japanese.'
+  type: chapter
+  URL: https://ci.nii.ac.jp/naid/10029109218
+
+- id: Yahara2006
+  author:
+  - family: Yahara
+    given: Tetsukazu
+  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer eat world heritage sites: Ecology of deer and forests). In Japanese.'
+  editor:
+  - family: Yumoto
+    given: Takakazu
+  - family: Matsuda
+    given: Hiroyuki
+  issued:
+  - year: 2006
+  page: 168-188
+  publisher: Bunichi Sogo Shuppan
+  publisher-place: Tokyo
+  title: 'Shika no zouka to yasei shokubutsu no zetsumetsu risku (Increase in deer population and plant extinction risk). In Japanese.'
   type: chapter
   URL: https://ci.nii.ac.jp/naid/10029109218
 
@@ -187,7 +206,20 @@ references:
   publisher-place: New York
   note: ISBN 978-3-030-56680-7
   URL: http://srb2gv.mat.utfsm.cl/
-  
+
+- id: Minamitani2005
+  author:
+  - family: Minamitani
+    given: Tadashi
+  container-title: BUNRUI (In Japanese)
+  issue: '2'
+  volume: '5'
+  issued:
+  - year: 2005
+  page: 67-84
+  title: 'New taxa discovered from southern Kyusyu and those preservation'
+  type: article-journal
+
 - id: Shimizu2014
   accessed:
   - year: 2020
