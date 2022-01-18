@@ -188,8 +188,8 @@ result_file <- function (result_num, extension) {
 
 # - First define the "full" version, which would include a caption
 # (except I never use the caption in the function, and instead replace with 'blank')
-figure_full <- captioner::captioner(prefix = "Fig.")
-table_full <- captioner::captioner(prefix = "Table")
+figure_full <- captioner::captioner(prefix = "Fig. ", auto_space = FALSE)
+table_full <- captioner::captioner(prefix = "Table ", auto_space = FALSE)
 s_figure_full <- captioner::captioner(prefix = "Fig. S1.", auto_space = FALSE)
 s_table_full <- captioner::captioner(prefix = "Table S1.", auto_space = FALSE)
 
