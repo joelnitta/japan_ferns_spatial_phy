@@ -1339,6 +1339,30 @@ references:
     pteridophytes
   type: article-journal
   volume: '53'
+- id: Murakami2021
+  accessed:
+  - year: 2021
+    month: 12
+    day: 8
+  author:
+  - family: Murakami
+    given: Noriaki
+  - family: Sakai
+    given: Erika
+  - family: Yoneoka
+    given: Katsuhiro
+  citation-key: Murakami2021
+  container-title: BSJ-Review
+  DOI: 10.24480/bsj-review.12c3.00211
+  issued:
+  - year: 2021
+  language: Japanese
+  page: 159-168
+  source: DOI.org (CSL JSON)
+  title: Inventories of fern independent gametophytes in Japan using DNA barcoding
+    based on nucleotide sequences of *rbcL* gene (in Japanese)
+  type: article-journal
+  volume: '12'
 - id: Myers2000
   author:
   - family: Myers

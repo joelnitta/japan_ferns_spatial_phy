@@ -218,14 +218,14 @@ The ferns of Japan are excellent model system because they have been the target 
 The ferns of Japan include 721 native, non-hyrbid taxa (including species and varieties) and hundreds of hybrids [@Ebihara2019b].
 The availability of detailed distribution data [distribution maps at the ca. 10 km scale for all species\; @Ebihara2016b; @Ebihara2017], trait data [multiple quantitative and qualitative traits compiled for species identification of nearly all species\; @Ebihara2019b], and DNA sequences for >97% of non-hybrid species [@Ebihara2010; @Ebihara2019b] make the ferns of Japan an ideal system for investigating the relationships between, and drivers of, multiple dimensions of biodiversity.
 
-One particularly valuable characteristic of the Japanese fern flora is the availability of data on reproductive mode (known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa excluding hybrids [`r repro_count$known$percent`]) [@Ebihara2019b].
+One particularly valuable characteristic of the Japanese fern flora is the availability of data on reproductive mode, which is known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa excluding hybrids [`r repro_count$known$percent`\; @Ebihara2019b].
 Reproductive mode is likely to affect population-level genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
 In ferns, clonally reproducing apomictic species are often polyploid hybrids that share identical plastid genotypes among taxa and within populations [@Grusz2009; @Chao2012a; @Hori2014; @Hori2019].
 Therefore, we expect high prevalence of apomictic species within a community to decrease phylogenetic diversity.
 
 Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south.
 Furthermore, it is a mountainous country with great variation in elevation on the larger islands.
-Plant distributions often reflect physiological adaptations to climate [e.g., precipitation and temperature/; @Woodward1987].
+Plant distributions often reflect physiological adaptations to climate [e.g., precipitation and temperature\; @Woodward1987].
 Therefore, we expect the spatial distribution of biodiversity to be determined by climatic variation in addition to reproductive mode.
 
 Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail.
@@ -415,7 +415,7 @@ These methods for phylogenetic signal cannot use a tree with zero-length polytom
 
 We measured taxonomic diversity using taxonomic richness (number of taxa in each community).
 
-We measured phylogenetic diversity (PD) using the Faith's PD [the total branch length connecting all terminal taxa in a community, including the root of the phylogeny; @Faith1992].
+We measured phylogenetic diversity (PD) using the Faith's PD [the total branch length connecting all terminal taxa in a community, including the root of the phylogeny\; @Faith1992].
 To detect areas with unusually long or short branches, we calculated relative phylogenetic diversity (RPD), which is a ratio of observed PD to PD measured on a tree where all branch lengths have been transformed to equal length [@Mishler2014].
 
 We measured functional diversity (FD) following the method of @Petchey2002.
@@ -674,7 +674,7 @@ percent_traits_missing <-
 ```
 
 The phylogeny included `r ape::Ntip(japan_fern_tree)` taxa (`r phylogeny_sampled_percent` of the total number of native, non-hybrid ferns [`r total_fern_taxa` taxa]) representing `r n_fern_phylo_genera` genera and `r n_fern_phylo_families` families.
-The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a\; `r s_figure("tree")`).
+The topology was in general agreement with other recent, large plastid fern phylogenies [@Schuettpelz2007; @Lehtonen2011; @Testo2016a\; `r s_figure("tree")`].
 Ferns were recovered as monophyletic, as were all families and genera except for *`r non_mono_genus`* [families follow @PteridophytePhylogenyGroupI2016].
 The age of the fern clade is estimated to be `r phylogeny_age` ma.
 
@@ -981,8 +981,8 @@ Ultimately, it is likely that temperature, in combination with other environment
 As fern gametophytes are only a single cell-layer in thickness with no cuticle or stomata, it is expected they would be particularly susceptible to freezing damage induced by larger cells with higher water content; however, no experimental studies have tested these hypotheses to our knowledge.
 
 Water limitation is thought to play an important role in promoting apomixis in ferns especially in deserts [@Grusz2021], since ferns depend on water for transfer of sperm to egg, and apomictic plants would be able to reproduce in the absence of water.
-A similar argument has been made to assert that areas with seasonal monsoons are linked to increased rates of apomictic ferns [@Liu2012; @Tanaka2014; @Picard2021], but in Japan, although the areas including high percentages of apomictic taxa are monsoonal, the degree of seasonal water limitation does not approach that of a desert.
-The monsoon hypothesis is also not supported by our results, which show precipitation seasonality did not play a strong role in any model and was not correlated with % apomictic taxa.
+A similar argument has been made to assert that areas with seasonal monsoons are linked to increased rates of apomixis in ferns [@Liu2012; @Tanaka2014; @Picard2021], but in Japan, although the areas including high percentages of apomictic taxa are monsoonal, the degree of seasonal water limitation does not approach that of a desert.
+The monsoon hypothesis is not supported by our results, which did not show a particularly strong effect of precipitation seasonality in most models `r figure("coeff")`, nor a correlation with % apomictic taxa (`r s_table("corr")`).
 
 The variation in distribution of different biodiversity metrics is reflected by the bioregions analysis, which tended to group cells with similar biodiversity values (`r figure("div-by-tax-region")`).
 Interestingly, the bioregions identified here correspond roughly to major vegetation zones previously categorized on an *ad-hoc* basis; bioregion 1 corresponds to the cool or subartic deciduous type, bioregion 2 to the warm evergreen type, and bioregions 3 and 4 to the subtropical rainy type [@Shimizu2014].
@@ -995,9 +995,9 @@ Rather, fern bioregions in Japan broadly separate along gradients of temperature
 
 ### Conservation status and threats
 
-We found that grid-cells with significantly high amounts of biodiversity are better protected than the baseline protection rate at the medium protection level across all biodiversity metrics, and better than the baseline rate at the high protection level for PE (`r figure("conserv-status")`A).
+We found that grid-cells with significantly high amounts of biodiversity are similarly or better protected compared to the baseline protection rate at the medium protection level across all biodiversity metrics, and better than the baseline rate at the high protection level for PE (`r figure("conserv-status")`A).
 The high protection status of grid-cells with high PE may be due to an emphasis on conserving endemic plant and animal species in Japanese southern islands such as Iriomote and Amami [@kankyosho2021b], which include many grid-cells with high PE (`r s_figure("protected-map")`D).
-One possible reason for the generally high level of protection overall is that in the past, some ferns have been included in lists of rare and endemic plants for consideration in designation of conservation areas [A. Ebihara, pers. comm.; @kankyosho2021b].
+One possible reason for the generally high level of protection overall is that in the past, some ferns have been included in lists of rare and endemic plants for consideration in designation of conservation areas [A. Ebihara, pers. comm.\; @kankyosho2021b].
 Also, (as suggested previously) ferns may serve as bioindicators reflecting overall levels of biodiversity, particularly for other plant groups.
 
 Despite the good news that ferns enjoy relatively strong protection status in Japan, we must bear in mind that there are other threats posed that conservation zones cannot ameliorate, the most obvious being climate change.
@@ -1007,7 +1007,7 @@ At dense populations, the deer can prevent forest regeneration and result in pla
 They have caused extensive damage even within national parks [@Tokita2006], which have the highest protection status.
 Although various efforts to prevent deer herbivory have been deployed such as culling and exclusion fences [@Takatsuki2009], much work remains to be done to save vulnerable plant populations.
 
-Our analysis shows that the threat to fern biodiversity posed by Japanese deer differs strongly by biodiversity type; although grid-cells with significantly high FD, PD, and PE tend to have lower rates of deer occupancy compared to the baseline rate, grid-cells with high richness experience much greater co-occurrence with deer than the baseline rate (`r figure("conserv-status")`B).
+Our analysis shows that the threat to fern biodiversity posed by Japanese deer differs strongly by biodiversity type; although grid-cells with significantly high FD, PD, and PE tend to have lower rates of deer occupancy compared to the baseline rate in recent surveys or modeled data, grid-cells with high richness experience much greater co-occurrence with deer than the baseline rate (`r figure("conserv-status")`B).
 This pattern is due to the fact that Japanese deer do not occur in the southern islands, which house high amounts of PD and PE; rather, areas with high species richness are primarily located in southern Honshu, Shikoku, and Kyushu, where deer expansion has been intense (`r s_figure("protected-map")`A).
 This result highlights the importance of using multiple metrics of biodiversity for establishing conservation priorities.
 
@@ -1067,7 +1067,7 @@ For example, Taiwan, which is just east of the southernmost Japanese islands and
 This supports that the sharp taxonomic turnover between southern and main islands is more likely due to ecological factors than dispersal limitation.
 
 One element of biodiversity that we did not consider here is hybrids.
-The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa.
+The Japanese fern flora includes `r n_hybrid_fern_taxa` hybrid taxa [@Ebihara2019b].
 Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification [@Barrington1989].
 Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
 Methods for calculating PD would need to be modified to take into account multiple lineages contributing to one terminal taxon.
@@ -1076,12 +1076,12 @@ Finally, a long under-appreciated aspect of fern ecology is the role of the game
 Unlike seed plants, ferns have gametophytes that are capable of growing independently from the sporophyte.
 Futhermore, the two stages of the life cycle have vastly different morphology and ecophysiology, and may even occur over partially to completely disjunct ranges [reviewed in @Pinson2016a].
 Here, as in the vast majority of fern ecology studies, we consider only the sporophyte stage.
-However, recent studies in Japan [@Ebihara2013; @Ebihara2019a] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes.
+However, recent studies in Japan [@Ebihara2013; @Ebihara2019a; @Murakami2021] and elsewhere [@Nitta2017] have revealed different patterns in the distribution of gametophytes and sporophytes.
 The comprehensive molecular sampling of sporophytes in Japan makes this area ideal for conducting high-throughput DNA sequencing analyses to compare patterns of biodiversity between life stages in ferns across large spatial scales.
 
 # Acknowledgements
 
-The authors thank Members of the Iwasaki Lab at the University of Tokyo for providing comments that improved the manuscript.
+The authors thank Members of the Iwasaki Lab at the University of Tokyo and two anonymous reviewers for providing comments that improved the manuscript.
 Shawn Laffan provided advice about CANAPE.
 This study was supported by JSPS KAKENHI Grant Number 16H06279.
 
@@ -1094,7 +1094,6 @@ J.H.N., B.M., and A.E. conceived the ideas; A.E. provided the data; J.H.N. analy
 Code to replicate all analyses, figures, and this manuscript are available at https://github.com/joelnitta/japan_ferns_spatial_phy.
 A Docker image to run the code is available at https://hub.docker.com/r/joelnitta/japan_ferns_spatial_phy.
 Data files needed to run the analysis and selected results files are available from Figshare at http://doi.org/10.6084/m9.figshare.16655263.
-**Note to reviewers**: the Figshare DOI will not be accessible until the paper is accepted. During review, the data can be accessed from this link: https://figshare.com/s/de3d5a70e118208e56c5.
 
 # Online supporting information
 
