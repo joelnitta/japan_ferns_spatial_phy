@@ -32,10 +32,14 @@ extract_citations <- function(rmd_file) {
 #' @param yaml_in String or list; if string, the path to the YAML file to filter.
 #' If list, should be result of reading in a YAML file with yaml::read_yaml()
 #' @param yaml_out Path to write filtered YAML reference file
+#' @param strict Logical; should input YAML file be required to include
+#' all references in rmd file?
 #'
 #' @return NULL; externally, the filtered YAML will be written to `yaml_out`
 #' 
-filter_refs_yaml <- function(rmd_file, yaml_in = "ms/main_library.yaml", yaml_out = "ms/references.yaml") {
+filter_refs_yaml <- function(
+  rmd_file, yaml_in = "ms/main_library.yaml", yaml_out = "ms/references.yaml",
+  strict = FALSE) {
   
   # Parse RMD file and extract citation keys
   citations <- map_df(rmd_file, extract_citations)
@@ -59,9 +63,13 @@ filter_refs_yaml <- function(rmd_file, yaml_in = "ms/main_library.yaml", yaml_ou
   # Check that all keys in the yaml are present in the input YAML
   missing <- citations %>% anti_join(cite_keys_all, by = "key")
   
+  if (isTRUE(strict)) {
   assertthat::assert_that(
     nrow(missing) == 0,
-    msg = glue("The following ref keys are present in the Rmd but missing from the input YAML: {missing$key}"))
+    msg = glue::glue(
+      "The following ref keys are present in the Rmd but missing from the input YAML: {paste(missing$key, collapse = ', ')}"
+      ))
+  }
   
   cite_keys_filtered <- citations %>% inner_join(cite_keys_all, by = "key")
   
