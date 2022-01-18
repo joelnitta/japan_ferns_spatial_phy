@@ -92,6 +92,7 @@ tar_load(c(
   "protected_areas",
   "refs_other_yaml",
   "refs_yaml",
+  "refs_other_bib",
   "repro_data",
   "signif_cells_protected_area",
   "signif_cells_deer_danger",
@@ -183,6 +184,32 @@ Future conservation efforts should recognize that threats can vary by biodiversi
 \newpage
 
 ```{r intro-stats}
+# Make list of all native ferns in Japan (based off Green List)
+# *including* hybrids
+fern_list <-
+  green_list %>%
+  mutate(
+    genus = str_split(taxon, "_") %>%
+      map_chr(1)
+  ) %>%
+  left_join(ppgi, by = "genus") %>%
+  assert(not_na, class) %>%
+  filter(class == "Polypodiopsida")
+
+fern_list_non_hybrid <-
+  fern_list %>%
+  filter(hybrid == FALSE) %>%
+  mutate(
+    gn_parse_tidy(.$scientific_name) %>%
+      select(taxon = canonicalsimple)
+  ) %>%
+  mutate(taxon = str_replace_all(taxon, " ", "_"))
+
+# Caculate number of native, non-hybrid fern taxa
+total_fern_taxa <- fern_list_non_hybrid %>%
+  pull(taxon) %>%
+  n_distinct()
+
 # Tally number of non-hybrid pteridophytes with known repro. mode
 repro_count <-
 repro_data %>%
@@ -212,7 +239,7 @@ Furthermore, incorporating these two frameworks---the categorization of areas in
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale.
 The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled [reviewed in @Ebihara2019b].
-The ferns of Japan include 721 native, non-hyrbid taxa (including species and varieties) and hundreds of hybrids [@Ebihara2019b].
+The ferns of Japan include `r total_fern_taxa` native, non-hyrbid taxa (including species and varieties) and hundreds of hybrids [@Ebihara2019b].
 The availability of detailed distribution data [distribution maps at the ca. 10 km scale for all species\; @Ebihara2016b; @Ebihara2017], trait data [multiple quantitative and qualitative traits compiled for species identification of nearly all species\; @Ebihara2019b], and DNA sequences for >97% of non-hybrid species [@Ebihara2010; @Ebihara2019b] make the ferns of Japan an ideal system for investigating the relationships between, and drivers of, multiple dimensions of biodiversity.
 
 One particularly valuable characteristic of the Japanese fern flora is the availability of data on reproductive mode, which is known for `r repro_count$known$total` of `r repro_count$known$total + repro_count$unknown$total` native pteridophyte taxa excluding hybrids [`r repro_count$known$percent`\; @Ebihara2019b].
@@ -503,30 +530,7 @@ For taxonomic richness, cells ranked in the top > 5% were considered highly dive
 
 ```{r dataset-stats}
 ### Taxon list ###
-# Make list of all native ferns in Japan (based off Green List)
-# *including* hybrids
-fern_list <-
-  green_list %>%
-  mutate(
-    genus = str_split(taxon, "_") %>%
-      map_chr(1)
-  ) %>%
-  left_join(ppgi, by = "genus") %>%
-  filter(class == "Polypodiopsida")
-
-fern_list_non_hybrid <-
-  fern_list %>%
-  filter(hybrid == FALSE) %>%
-  mutate(
-    gn_parse_tidy(.$scientific_name) %>%
-      select(taxon = canonicalsimple)
-  ) %>%
-  mutate(taxon = str_replace_all(taxon, " ", "_"))
-
-# Caculate number of native, non-hybrid fern taxa
-total_fern_taxa <- fern_list_non_hybrid %>%
-  pull(taxon) %>%
-  n_distinct()
+# Make list of fern taxa `total_fern_taxa` in chunk `intro-stats`
 
 ### Phylogeny ###
 phylogeny_sampled_percent <- ape::Ntip(japan_fern_tree) %>%
@@ -1714,7 +1718,7 @@ ggsave(
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (A) Taxonomic bioregions. (B) Phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of > `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category.
+**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (A) Taxonomic bioregions. (B) Phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 

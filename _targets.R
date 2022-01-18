@@ -657,8 +657,9 @@ tar_plan(
   # Track ms files
   tar_file(refs_yaml, "ms/references.yaml"),
   tar_file(refs_other_yaml, "ms/references_other.yaml"),
-  tar_file(template_file, "ms/template.docx"),
-  tar_file(csl_file, "ms/apa-6th-edition.csl"),
+  tar_file(refs_other_bib, "ms/references_other.bib"),
+  tar_file(template_file, "ms/american-journal-of-botany.docx"),
+  tar_file(csl_file, "ms/american-journal-of-botany.csl"),
   tar_file(ms_functions, "R/ms_functions.R"),
 
   # MS, docx format
