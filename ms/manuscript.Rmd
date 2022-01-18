@@ -8,17 +8,17 @@ mainfontoptions:
   - BoldItalicFont=Roboto-BoldItalic.ttf
 output:
   bookdown::word_document2:
-    pandoc_args: [ "--csl", "apa-6th-edition.csl"]
+    pandoc_args: [ "--csl", "american-journal-of-botany.csl"]
     toc: no
     number_sections: no
-    reference_docx: template.docx
+    reference_docx: american-journal-of-botany.docx
   bookdown::pdf_document2:
     citation_package: default
     toc: no
     number_sections: no
     fig_caption: no
     latex_engine: xelatex
-    pandoc_args: [ "--csl", "apa-6th-edition.csl"]
+    pandoc_args: [ "--csl", "american-journal-of-botany.csl"]
 params:
   doc_type: doc
 editor_options:
