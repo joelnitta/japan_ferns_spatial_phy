@@ -14,7 +14,7 @@ output:
     fig_caption: yes
     keep_tex: no
     latex_engine: xelatex
-    pandoc_args: [ "--csl", "apa-6th-edition.csl"]
+    pandoc_args: [ "--csl", "american-journal-of-botany.csl"]
 header-includes: 
   - \usepackage{float} # keep figures from floating away
   - \usepackage{booktabs} # need for kable tables
@@ -89,11 +89,12 @@ tar_load(c(
   "protected_areas",
   "deer_range",
   "biodiv_ferns_spatial_lumped",
-  "bioregion_cutoff"
+  "bioregion_cutoff",
+  "ms_functions"
 ))
 ```
 
-```{r load-captions}
+```{r load-captions, cache = FALSE}
 # Source captions numbers from MS
 # 
 # So that caption numbers are in order of appearance in MS
@@ -184,24 +185,6 @@ t_test_results_for_table %>%
 
 \clearpage
 
-```{r phy-sig, results = "as-is"}
-phy_sig_results %>%
-  mutate(across(c(kval, lambda, k_pval, lambda_pval), ~format(., digits = 2))) %>%
-  # format for kable/latex
-  mutate(trait = str_replace_all(trait, "_", "\\\\_")) %>%
-  rename(
-    "Trait" = trait,
-    `\\textit{K}` = kval, `\\textit{P}(\\textit{K})` = k_pval, 
-    `λ` = lambda, `\\textit{P}(λ)` = lambda_pval,
-    `\\textit{N}` = n) %>%
-  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
-  kable_styling(latex_options = c("striped", "HOLD_position"))
-```
-
-**`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
-
-\clearpage
-
 ```{r phy-sig-binary, results = "as-is"}
 binary_sig_results %>%
   select(trait, D, num_present, num_absent, prob_random, prob_brownian) %>%
@@ -223,6 +206,24 @@ binary_sig_results %>%
 ```
 
 **`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format. Values of *D* rounded to three decimal places.
+
+\clearpage
+
+```{r phy-sig, results = "as-is"}
+phy_sig_results %>%
+  mutate(across(c(kval, lambda, k_pval, lambda_pval), ~format(., digits = 2))) %>%
+  # format for kable/latex
+  mutate(trait = str_replace_all(trait, "_", "\\\\_")) %>%
+  rename(
+    "Trait" = trait,
+    `\\textit{K}` = kval, `\\textit{P}(\\textit{K})` = k_pval, 
+    `λ` = lambda, `\\textit{P}(λ)` = lambda_pval,
+    `\\textit{N}` = n) %>%
+  kbl(booktabs = TRUE, escape = FALSE, format = "latex") %>%
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+```
+
+**`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
 
 \clearpage
 
