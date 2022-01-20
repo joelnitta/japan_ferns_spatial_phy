@@ -1223,13 +1223,13 @@ references:
   author:
   - family: Minamitani
     given: Tadashi
-  container-title: BUNRUI (In Japanese)
+  container-title: BUNRUI
   issue: '2'
   volume: '5'
   issued:
   - year: 2005
   page: 67-84
-  title: New taxa discovered from southern Kyusyu and those preservation
+  title: New taxa discovered from southern Kyusyu and those preservation (In Japanese)
   type: article-journal
 - id: Minh2013
   author:
@@ -2030,7 +2030,7 @@ references:
   author:
   - family: Shimizu
     given: Yoshikazu
-  container-title: Chiikigaku-kenkyu (In Japanese)
+  container-title: Chiikigaku-kenkyu
   ISSN: 0915-4094
   issue: '27'
   issued:
@@ -2039,7 +2039,7 @@ references:
   page: 19-75
   source: CiNii
   title: 'Process of the formation of Japanese forest and typification of vegetation
-    zone: From an East Asian viewpoint'
+    zone: From an East Asian viewpoint (In Japanese)'
   type: article-journal
 - id: Shiono2015
   author:
@@ -2254,7 +2254,7 @@ references:
   - family: Tokita
     given: Kunihiko
   container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer
-    eat world heritage sites: Ecology of deer and forests). In Japanese.'
+    eat world heritage sites: Ecology of deer and forests; In Japanese).'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2265,10 +2265,9 @@ references:
   page: 20-37
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo
-  title: Shizen kouen ni okeru shika mondai (The problem of deer in natural parks).
-    In Japanese.
+  title: Shizen kouen ni okeru shika mondai (The problem of deer in natural parks;
+    In Japanese).
   type: chapter
-  URL: https://ci.nii.ac.jp/naid/10029109218
 - id: Tryon1970
   author:
   - family: Tryon
@@ -2357,7 +2356,7 @@ references:
   - family: Yahara
     given: Tetsukazu
   container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer
-    eat world heritage sites: Ecology of deer and forests). In Japanese.'
+    eat world heritage sites: Ecology of deer and forests; In Japanese).'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2369,9 +2368,8 @@ references:
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo
   title: Shika no zouka to yasei shokubutsu no zetsumetsu risku (Increase in deer
-    population and plant extinction risk). In Japanese.
+    population and plant extinction risk; Japanese).
   type: chapter
-  URL: https://ci.nii.ac.jp/naid/10029109218
 - id: Zizka2019
   author:
   - family: Zizka
@@ -2414,6 +2412,75 @@ references:
     collection databases'
   type: article-journal
   volume: '10'
+- id: Zizka2020
+  accessed:
+  - year: 2020
+    month: 10
+    day: 7
+  author:
+  - family: Zizka
+    given: Alexander
+  - family: Carvalho
+    given: Fernanda Antunes
+  - family: Calvente
+    given: Alice
+  - family: Baez-Lizarazo
+    given: Mabel Rocio
+  - family: Cabral
+    given: Andressa
+  - family: Coelho
+    given: Jéssica Fernanda Ramos
+  - family: Colli-Silva
+    given: Matheus
+  - family: Fantinati
+    given: Mariana Ramos
+  - family: Fernandes
+    given: Moabe F.
+  - family: Ferreira-Araújo
+    given: Thais
+  - family: Moreira
+    given: Fernanda Gondim Lambert
+  - family: Santos
+    given: Nathália Michellyda Cunha
+  - family: Santos
+    given: Tiago Andrade Borges
+  - family: Santos-Costa
+    given: Renata Clicia
+    dropping-particle: dos
+  - family: Serrano
+    given: Filipe C.
+  - family: Silva
+    given: Ana Paula Alves
+    dropping-particle: da
+  - family: Soares
+    given: Arthur de Souza
+  - family: Souza
+    given: Paolla Gabryelle Cavalcante
+    dropping-particle: de
+  - family: Tomaz
+    given: Eduardo Calisto
+  - family: Vale
+    given: Valéria Fonseca
+  - family: Vieira
+    given: Tiago Luiz
+  - family: Antonelli
+    given: Alexandre
+  citation-key: Zizka2020
+  container-title: PeerJ
+  container-title-short: PeerJ
+  DOI: 10/ghd3nk
+  ISSN: 2167-8359
+  issued:
+  - year: 2020
+    month: 9
+    day: 28
+  language: en
+  page: e9916
+  publisher: PeerJ Inc.
+  source: peerj.com
+  title: No one-size-fits-all solution to clean GBIF
+  type: article-journal
+  volume: '8'
 - id: Hsieh2016
   accessed:
   - year: 2021
