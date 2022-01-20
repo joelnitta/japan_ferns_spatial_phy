@@ -254,7 +254,7 @@ Therefore, we expect high prevalence of apomictic species within a community to 
 
 Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south.
 Furthermore, it is a mountainous country with great variation in elevation on the larger islands.
-Plant distributions often reflect physiological adaptations to climate [e.g., precipitation and temperature\; @Woodward1987].
+Plant distributions often reflect physiological adaptations to climate [`r eg`, precipitation and temperature\; @Woodward1987].
 Therefore, we expect the spatial distribution of biodiversity to be determined by climatic variation in addition to reproductive mode.
 
 Here we leverage this exceptionally rich dataset to analyze the geographic distribution of biodiversity in detail.
@@ -274,7 +274,7 @@ Map data for Japan were downloaded from the Geospatial Information Authority of 
 ## Occurrence data
 
 We used a list of native, non-hybrid fern specimens deposited at herbaria in Japan to quantify occurrences [@Ebihara2016b; @Ebihara2017; @Ebihara2019b].
-We chose to use this over other sources (e.g., GBIF) because of its high quality, which obviates many cleaning steps otherwise needed when working with large, publicly available datasets.
+We chose to use this over other sources (`r eg`, GBIF) because of its high quality, which obviates many cleaning steps otherwise needed when working with large, publicly available datasets.
 Furthermore, the overall sampling completeness of this dataset is also high (`r s_figure("sampling-curve")` in Appendix S1; see Supplemental Data with this article).
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa at the rank of species, subspecies, form, or variety, excluding non-native taxa and nothotaxa.
 For the purposes of analysis, we treated infraspecific taxa as distinct species and hereafter use "taxon" and "species" interchangeably to refer to entities at this rank, unless otherwise indicated.
@@ -284,7 +284,7 @@ Occurrence records were georeferenced and thoroughly vetted as follows [@Ebihara
 For specimens that lacked latitude and longitude data, georeferencing was done by mapping collection site names to a set of standard ca. 10 × 10 km grid squares defined by the Statistics Bureau of Japan (the "second-degree mesh"; http://www.stat.go.jp/english/data/mesh/05.html), and the centroid of the second-degree mesh cell used as the specimen location.
 In the case that the collection site could not be mapped to a single second-degree mesh cell, it was excluded.
 Next, occurrence maps were generated for each taxon showing presence or absence in each second-degree mesh cell.
-In the case that a given taxon appeared insufficiently sampled (i.e., not present on the map where it would typically be expected to occur), AE and members of the Nippon Fernist Club (amateur botanists familiar with the ferns of Japan) searched for additional specimens, which were then added to the list.
+In the case that a given taxon appeared insufficiently sampled (`r ie`, not present on the map where it would typically be expected to occur), AE and members of the Nippon Fernist Club (local botanists familiar with the ferns of Japan) searched for additional specimens, which were then added to the list.
 The occurrence maps were iteratively refined until the vast majority of known Japanese ferns had been observed across their expected ranges; the resulting set of occurrence records can be considered accurate to ca. 10 km (the grain size of the second-degree mesh map).
 
 We further cleaned the list prior to analysis by filtering out any occurrences not within the second-degree mesh and removing duplicate collections (`r occ_sum$filtered$n_specimens$value %>% scales::number(big.mark = ",")` specimens, `r occ_sum$filtered$n_taxa$value` taxa after filtering).
@@ -971,7 +971,7 @@ Another reason for the greater richness on the main islands compared to southern
 
 The overwhelming pattern characterizing phylogenetic and functional diversity (PD and FD) is the high diversity of southern subtropical islands (Ryukyu and Ogasawara Isl.) (`r figure("rand-diversity")`A, C).
 This is almost certainly due to the presence of primarily tropical lineages that do not occur in other parts of the country, which lack subtropical climate; `r n_southern_genera` genera and `r n_southern_families` families only occur south of 30.1° latitude (just south of Yakushima Isl.).
-The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis (Tables `r s_table_num("phy-sig")`, `r s_table_num("phy-sig-binary")`), and suggests that at least in the ferns of Japan, phylogeny can be used as a reasonable stand-in for functional diversity.
+The similarity in patterns of PD and FD is likely due to the moderate degree of phylogenetic signal present in the traits used in our analysis (Tables `r s_table_num("phy-sig-binary")`, `r s_table_num("phy-sig")`), and suggests that at least in the ferns of Japan, phylogeny can be used as a reasonable stand-in for functional diversity.
 Given their high PD, it is perhaps not surprising that southern islands also host high amounts of phylogenetic endemism (PE); indeed, the vast majority of cells with significant levels of PE, as well as paleoendemic cells, are located in the southern islands (Figs. `r figure_num("endemism")`, `r s_figure_num("endemism-restricted")`).
 This is clearly due to the small land area of these islands: small area combined with high PD is expected to lead to high PE.
 
@@ -1112,8 +1112,8 @@ Additional supporting information may be found online in the Supporting Informat
 
 **`r s_table("moran")`**. Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of RPD, SES of FD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*.  
 **`r s_table("corr")`**. Results of modified *t*-test for correlation between variables while taking into account spatial position.  
-**`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan.  
 **`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan.  
+**`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan.  
 **`r s_table("lrt-null")`**. Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix).  
 **`r s_table("aic")`**. Model fit as measured with conditional Akaike Information Criterion (cAIC).  
 **`r s_figure("sampling-curve")`**. Species collection curve for the ferns of Japan.  
