@@ -167,9 +167,9 @@ Description of methods used for collection/generation of data:
 
 A list of native, non-hybrid fern specimens housed at the herbarium of the
 Museum of Science and Nature, Japan was converted to a community data matrix at
-four grain sizes (grid-cells spanning Japan, each 0.1, 0.2, 0.3, or 0.4 degrees
-per side). The 0.2 degree grain size was selected for further analysis based on 
-redundancy (ratio of number of specimens to number of taxa per cell).
+four grain sizes (square grid-cells spanning Japan, each 10, 20, 30, or 40 km
+per side). The 20 km degree grain size was selected for further analysis based 
+on redundancy (ratio of number of specimens to number of taxa per cell).
 
 All taxon names are based on the Green List (http://www.rdplants.org/gl/;
 English version available at
@@ -265,7 +265,7 @@ assert(ja_climate_data, not_na, everything(), success_fun = success_logical)
 `r fs::path_file(ja_climate_data_file)`: Climate data in Japan downloaded from
 WorldClim database (https://worldclim.org/data/v1.4/formats.html). Raw data were
 downloaded at the 2.5 minute scale. The intersection of the raw climate data
-with 0.2 degree grid-cells (japan_ferns_shape_full.gpkg) were identified,
+with 20 km × 20 km grid-cells (japan_ferns_shape_full.gpkg) were identified,
 then average value for each climatic variable was calculated for each grid-cell.
 
 Number of variables: `r ncol(ja_climate_data)`
@@ -302,8 +302,8 @@ assert(japan_ferns_comm_full, not_na, everything(), success_fun = success_logica
 ```
 
 `r fs::path_file(japan_ferns_comm_full_file)`: Community matrix (species x sites
-matrix) of native, non-hybrid ferns in Japan. Sites correspond to 0.2 degree x
-0.2 degree grid-cells covering Japan. For location of grid-cells, see
+matrix) of native, non-hybrid ferns in Japan. Sites correspond to 20 km x
+20 km grid-cells covering Japan. For location of grid-cells, see
 japan_ferns_shape_full.gpkg. Full dataset including all grid-cells (none
 excluded due to low redundancy).
 
@@ -422,7 +422,7 @@ Variable list:
   make_data_desc(
     tribble(
       ~col, ~desc,
-      "res", "Degree of resolution (grid-cell side length), from 0.1 to 0.4 degrees",
+      "res", "Degree of resolution (grid-cell side length), from 10 to 40 km (in m)",
       "grids", "Name of grid-cell",
       "richness", "Number of taxa occurring in grid-cell",
       "abundance", "Number of specimens occurring in grid-cell",
@@ -444,14 +444,14 @@ assert(japan_ferns_shape_full, not_na, everything(), success_fun = success_logic
 
 `r fs::path_file(japan_ferns_shape_full_file)`: Location of grid-cells (sites)
 for native, non-hybrid ferns in Japan in GeoPackage format. Compiled from raw
-specimen data by binning specimens into 0.2 degree grid-cells across Japan. Full
-dataset including all grid-cells (none excluded due to low redundancy).
+specimen data by binning specimens into 20 km × 20 km grid-cells across Japan. 
+Full dataset including all grid-cells (none excluded due to low redundancy).
 
 Number of variables: `r ncol(japan_ferns_shape_full)`
 
 Number of cases/rows: `r nrow(japan_ferns_shape_full)`
 
-Coordinate reference system: JGD2000
+Coordinate reference system: Mollweide (+proj=moll +lon_0=135)
 
 Variable list:
 
