@@ -90,6 +90,7 @@ tar_load(c(
   "deer_range",
   "biodiv_ferns_spatial_lumped",
   "bioregion_cutoff",
+  "bioregions_all_labels",
   "ms_functions"
 ))
 ```
@@ -406,7 +407,7 @@ a + b + c +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. (A), Percent of grid cells with redundancy > 0.5 by grain size (side length of square grid cells set to 10 km, 20 km, 30 km, or 40 km). (B), Percent of grid cells with redundancy = 0 by grain size. (C), Distribution of redundancy values by grain size.
+**`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. (A) Percent of grid cells with redundancy > 0.5 by grain size (side length of square grid cells set to 10 km, 20 km, 30 km, or 40 km). (B) Percent of grid cells with redundancy = 0 by grain size. (C) Distribution of redundancy values by grain size.
 
 \clearpage
 
@@ -437,18 +438,18 @@ plot_env <- function(part, label, var_select, fill_lab = "", labels = ggplot2::w
     )
 }
 
-a <- plot_env("a", "Area", "lat_area", "km^2")
-b <- plot_env("b", "% apomictic taxa", "percent_apo", labels = function(x) scales::percent(x, accuracy = 1))
-c <- plot_env("c", "Precipitation", "precip", "mm")
-d <- plot_env("d", "Precip. season.", "precip_season" , "")
-e <- plot_env("e", "Temperature", "temp", "°C", function(x) x/10)
-f <- plot_env("f", "Temp. season.", "temp_season") +
+a <- plot_env("A", "Area", "lat_area", "km^2")
+b <- plot_env("B", "% apomictic taxa", "percent_apo", labels = function(x) scales::percent(x, accuracy = 1))
+c <- plot_env("C", "Precipitation", "precip", "mm")
+d <- plot_env("D", "Precip. season.", "precip_season" , "")
+e <- plot_env("E", "Temperature", "temp", "°C", function(x) x/10)
+f <- plot_env("F", "Temp. season.", "temp_season") +
   annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
 
-**`r s_figure("envir")`**. Reproductive mode and environmental data in 20 km × 20 km grid cells across Japan. (A), rolling mean area (km^2^) in 20 km latitudinal bands.  (B), % apomictic taxa. (C), annual precipitation. (D), percipitation seasonality (coefficient of variation). (E), mean annual temperature. (F), temperature seasonality (standard deviation × 100). Data excluded from models not shown in this and subsequent plots unless otherwise mentioned.
+**`r s_figure("envir")`**. Reproductive mode and environmental data in 20 km × 20 km grid cells across Japan. (A) rolling mean area (km^2^) in 20 km latitudinal bands. (B) % apomictic taxa. (C) annual precipitation. (D) percipitation seasonality (coefficient of variation). (E) mean annual temperature. (F) temperature seasonality (standard deviation × 100). Data excluded from models not shown in this and subsequent plots unless otherwise mentioned.
 
 \clearpage
 
@@ -513,7 +514,7 @@ a + b +
   plot_layout(nrow = 1)
 ```
 
-**`r s_figure("abundance")`**. Observed number of specimens (A) and sampling redundancy (B) per 20 km grid cell in the ferns of Japan.
+**`r s_figure("abundance")`**. Observed number of specimens (A) and sampling redundancy (B) per 20 km × 20 km grid cell in the ferns of Japan.
 
 \clearpage
 
@@ -565,7 +566,7 @@ a + b + c +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("raw-lat")`**. (A) Raw taxonomic diversity (B), phylogenetic diversity, and (C) functional diversity of the ferns of Japan plotted by latitude. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths. Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
+**`r s_figure("raw-lat")`**. (A) Raw taxonomic diversity, (B) phylogenetic diversity, and (C) functional diversity of the ferns of Japan plotted by latitude. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths. Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
 \clearpage
 
@@ -596,7 +597,7 @@ a + b + c + d +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("raw-biplot")`**. Relationships between observed functional and phylogenetic diversity and taxonomic richness in the ferns of Japan. (A), Phylogenetic diversity (PD). (B), Relative phylogenetic diversity (RPD). (C), Functional diversity (FD). (D), Relative functional diversity (RFD). Trendlines in (a, c) fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
+**`r s_figure("raw-biplot")`**. Relationships between observed phylogenetic and functional diversity and taxonomic richness in the ferns of Japan. (A) Phylogenetic diversity (PD). (B) Relative phylogenetic diversity (RPD). (C) Functional diversity (FD). (D) Relative functional diversity (RFD). Trendlines in (A, C) fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
 \clearpage
 
@@ -613,7 +614,7 @@ ggplot() +
   theme(legend.title = element_blank())
 ```
 
-**`r s_figure("endemism-restricted")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan. 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Methods.
+**`r s_figure("endemism-restricted")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan. 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
 
 \clearpage
 
@@ -670,7 +671,7 @@ a + b +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("k-plot")`**. Selection of *k* for bioregions. (A), taxonomic bioregions. (B), phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal).
+**`r s_figure("k-plot")`**. Selection of *k* for bioregions. (A) taxonomic bioregions. (B) phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal).
 
 \clearpage
 
@@ -678,18 +679,29 @@ a + b +
 # Extract dendrogram from phyloregions analysis, convert to phylogeny
 dendro_tax <- attributes(k_taxonomy$df)$meta$hclust.obj %>% as.phylo() %>% ladderize()
 
-# Map taxonomic clusters to grid cells
+# Map taxonomic clusters to grid cells. Include original ("old") clusters
+# so that grouping of "other" works correctly even if not monophyletic
 clusters_tax <-
-  biodiv_ferns_spatial %>%
-  as_tibble() %>%
-  select(grids, cluster = taxonomic_cluster)
+bioregions_all_labels %>%
+  # Filter to grid-cells used in modeling
+  inner_join(
+    select(biodiv_ferns_spatial, grids),
+    by = "grids"
+  ) %>%
+  add_count(old_taxonomic_cluster) %>%
+  mutate(
+    taxonomic_cluster = case_when(
+      n <= bioregion_cutoff ~ paste(taxonomic_cluster, old_taxonomic_cluster, sep = "_"),
+      TRUE ~ taxonomic_cluster
+      )
+  ) %>%
+  select(-n) %>%
+  select(grids, cluster = taxonomic_cluster) %>%
+  arrange(grids)
 
 cluster_nodes_tax_tbl <- map_df(unique(clusters_tax$cluster), ~map_cluster_to_nodes(dendro_tax, clusters_tax, .)) %>%
   # Lump regions with fewer grid-cells than cutoff
-  mutate(cluster = as.factor(cluster) %>% fct_lump_min(bioregion_cutoff))
-
-# Make sure cutoff matches caption
-assert_that(bioregion_cutoff == 2, msg = "Bioregions cutoff for lumping not 2!")
+  mutate(cluster = as.factor(cluster) %>% fct_lump_min(bioregion_cutoff + 1))
 
 # Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
 ggtree(dendro_tax, size = 0.15) %<+% 
@@ -702,22 +714,36 @@ ggtree(dendro_tax, size = 0.15) %<+%
   theme(plot.subtitle = element_markdown())
 ```
 
-**`r s_figure("dendrogram")`**. Bioregion dendrograms. Tips are sites (names not shown). Dendrograms generated by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between sites (see Materials and Methods). Color shows bioregion; bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category. (A), taxonomic bioregions. (B), phylogenetic bioregions. Dendrograms visualized with the `r pack("ggtree")` R package [@Yu2017].
+**`r s_figure("dendrogram")`**. Bioregion dendrograms. Tips are sites (names not shown). Dendrograms generated by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between sites (see Materials and Methods). Color shows bioregion; bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category. (A) taxonomic bioregions. (B) phylogenetic bioregions. Dendrograms visualized with the `r pack("ggtree")` R package [@Yu2017].
 \clearpage
 
 ```{r dendrogram-b, fig.width = 7, fig.height = 9}
 # Extract dendrogram from phyloregions analysis, convert to phylogeny
 dendro_phy <- attributes(k_phylogeny$df)$meta$hclust.obj %>% as.phylo() %>% ladderize()
 
-# Map phylogenetic clusters to grid cells
+# Map phylogenetic clusters to grid cells. Include original ("old") clusters
+# so that grouping of "other" works correctly even if not monophyletic
 clusters_phy <-
-  biodiv_ferns_spatial %>%
-  as_tibble() %>%
-  select(grids, cluster = phylo_cluster)
+bioregions_all_labels %>%
+  # Filter to grid-cells used in modeling
+  inner_join(
+    select(biodiv_ferns_spatial, grids),
+    by = "grids"
+  ) %>%
+  add_count(old_phylo_cluster) %>%
+  mutate(
+    phylo_cluster = case_when(
+      n <= bioregion_cutoff ~ paste(phylo_cluster, old_phylo_cluster, sep = "_"),
+      TRUE ~ phylo_cluster
+      )
+  ) %>%
+  select(-n) %>%
+  select(grids, cluster = phylo_cluster) %>%
+  arrange(grids)
 
 cluster_nodes_phy_tbl <- map_df(unique(clusters_phy$cluster), ~map_cluster_to_nodes(dendro_phy, clusters_phy, .)) %>%
   # Lump regions with fewer grid-cells than cutoff
-  mutate(cluster = as.factor(cluster) %>% fct_lump_min(bioregion_cutoff))
+  mutate(cluster = as.factor(cluster) %>% fct_lump_min(bioregion_cutoff + 1))
 
 # Use the ggtree::`%<+%` operator to map the bootstrap values onto the ggtree object
 ggtree(dendro_phy, size = 0.15) %<+% 
@@ -784,7 +810,7 @@ f <- plot_genus("F", "Diplazium") +
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
 
-**`r s_figure("genus-map")`**. Map of species richness for selected genera of ferns of Japan. (A), *Equisetum* is an example of a possible refugial lineage with greater species richness in northern Japan. (B), *Deparia* is an example of a genus with possible recent radiation in southern Honshu. (C)--(F) show genera with high rates of apomictic taxa (`r s_figure("apo-genus")`), which tend to be greatest in southern Honshu.
+**`r s_figure("genus-map")`**. Map of species richness for selected genera of ferns of Japan. (A) *Equisetum* is an example of a possible refugial lineage with greater species richness in northern Japan. (B) *Deparia* is an example of a genus with possible recent radiation in southern Honshu. (C)--(F) show genera with high rates of apomictic taxa (`r s_figure("apo-genus")`), which tend to be greatest in southern Honshu.
 
 \clearpage
 
@@ -939,10 +965,10 @@ make_protected_plot <- function(part, variable, ...) {
     map_theme()
 }
 
-a <- make_protected_plot("a", "Richness", richness_obs_p_upper > 0.95)
-b <- make_protected_plot("b", "PD", pd_obs_p_upper > 0.95)
-c <- make_protected_plot("c", "FD", fd_obs_p_upper > 0.95)
-d <- make_protected_plot("d", "PE", pe_obs_p_upper > 0.95) +
+a <- make_protected_plot("A", "Richness", richness_obs_p_upper > 0.95)
+b <- make_protected_plot("B", "PD", pd_obs_p_upper > 0.95)
+c <- make_protected_plot("C", "FD", fd_obs_p_upper > 0.95)
+d <- make_protected_plot("D", "PE", pe_obs_p_upper > 0.95) +
   annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
@@ -976,10 +1002,10 @@ make_deer_plot <- function(part, variable, ...) {
     map_theme()
 }
 
-a <- make_deer_plot("a", "Richness", richness_obs_p_upper > 0.95)
-b <- make_deer_plot("b", "PD", pd_obs_p_upper > 0.95)
-c <- make_deer_plot("c", "FD", fd_obs_p_upper > 0.95)
-d <- make_deer_plot("d", "PE", pe_obs_p_upper > 0.95) +
+a <- make_deer_plot("A", "Richness", richness_obs_p_upper > 0.95)
+b <- make_deer_plot("B", "PD", pd_obs_p_upper > 0.95)
+c <- make_deer_plot("C", "FD", fd_obs_p_upper > 0.95)
+d <- make_deer_plot("D", "PE", pe_obs_p_upper > 0.95) +
   annotation_scale(location = "tl", width_hint = 0.2, pad_y = unit(0.8, "cm"))
 
 a + b + c + d + plot_layout(ncol = 2, nrow = 2) +

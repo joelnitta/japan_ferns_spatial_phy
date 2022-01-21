@@ -334,6 +334,9 @@ tar_plan(
   bioregion_cutoff = 2, # later, lump bioregions into "other" if they have fewer than this number of grid-cells # nolint
   bioregions = relabel_bioregions_by_lat(
     bioregions_raw, shape_ferns, cutoff = bioregion_cutoff),
+  # - once more, retaining original labels for plotting
+  bioregions_all_labels = relabel_bioregions_by_lat_keep_old(
+    bioregions_raw, shape_ferns, cutoff = bioregion_cutoff),
 
   # Traits analysis ----
 

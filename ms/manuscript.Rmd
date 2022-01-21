@@ -165,17 +165,17 @@ Here, we characterize multiple facets and drivers of biodiversity to understand 
 
 **Methods:** We compiled a community dataset of `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` 20 km × 20 km grid-cells including `r ncol(comm_ferns)` taxa based on > `r occ_sum$filtered$n_specimens$value %>% plyr::round_any(1000, f = floor) %>% number(big.mark = ",")` specimen records.
 We combined this with a phylogeny and functional traits to analyze taxonomic, phylogenetic, and functional diversity, and modeled biodiversity metrics in response to environmental factors and reproductive mode.
-Hierarchical clustering was used to analyze bioregions.
+Hierarchical clustering was used to delimit bioregions.
 Conservation status and threats were assessed by comparing the overlap of significantly diverse grid-cells with conservation zones and range maps of native Japanese deer.
 
 **Results:** Taxonomic richness was highest at mid-latitudes.
 Phylogenetic and functional diversity and phylogenetic endemism were highest in small southern islands.
-Relative phylogenetic and functional diversity were high at both high and low latitudes, and low at mid-latitudes.
-Grid-cells were grouped in to `r maj_cluster_count$phylo_cluster$n %>% english2` (phylogenetic) or `r maj_cluster_count$taxonomic_cluster$n %>% english2` (taxonomic) major bioregions.
-Temperature and apomixis were identified as drivers of taxonomic and phylogenetic diversity.
-Conservation status was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory was greater for taxonomic richness than other metrics.
+Relative phylogenetic and functional diversity were high at high and low latitudes, and low at mid-latitudes.
+Grid-cells were grouped into `r maj_cluster_count$phylo_cluster$n %>% english2` (phylogenetic) or `r maj_cluster_count$taxonomic_cluster$n %>% english2` (taxonomic) major bioregions.
+Temperature and apomixis were identified as drivers of biodiversity patterns.
+Conservation status was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory by deer was greater for taxonomic richness than other metrics.
 
-**Conclusions:** The integrative approach used here reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan.
+**Conclusions:** Our integrative approach reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan.
 Future conservation efforts should recognize that threats can vary by biodiversity metric and consider multiple multiple metrics when establishing conservation priorities.
 
 <!-- may include title words -->
@@ -244,8 +244,8 @@ Furthermore, incorporating these two frameworks---the categorization of areas in
 
 However, a comprehensive understanding of the relationships between richness and other metrics requires densely sampled data, and such datasets are rare on the regional (country) scale.
 The ferns of Japan are excellent model system because they have been the target of intense botanical interest for several decades and are densely sampled [reviewed in @Ebihara2019b].
-The ferns of Japan include `r total_fern_taxa` native, non-hybrid taxa (including species and varieties) and hundreds of hybrids [@Ebihara2019b].
-The availability of detailed distribution data [distribution maps at the ca. 10 km scale for nearly all species\; @Ebihara2016b; @Ebihara2017], trait data [multiple quantitative and qualitative traits compiled for identification of nearly all species\; @Ebihara2019b], and DNA sequences for > 97% of species [@Ebihara2010; @Ebihara2019b\; all coverage statistics exclude hybrids] make the ferns of Japan an ideal system for investigating the relationships between, and drivers of, multiple dimensions of biodiversity.
+The ferns of Japan include `r total_fern_taxa` native, non-hybrid taxa (including species and varieties) and hundreds of hybrids [nothotaxa\; @Ebihara2019b].
+The availability of detailed distribution data [distribution maps at the ca. 10 km scale for nearly all species\; @Ebihara2016b; @Ebihara2017], trait data [multiple quantitative and qualitative traits compiled for identification of nearly all species\; @Ebihara2019b], and DNA sequences for > 97% of species [@Ebihara2010; @Ebihara2019b\; all coverage statistics exclude nothotaxa] make the ferns of Japan an ideal system for investigating the relationships between, and drivers of, multiple dimensions of biodiversity.
 
 One particularly valuable characteristic of the Japanese fern flora is the availability of data on reproductive mode, which is known for `r repro_count$known$total` native fern taxa excluding hybrids [`r repro_count$known$percent`\; @Ebihara2019b].
 Reproductive mode is likely to affect population-level genetic diversity [@Bengtsson2003], and thereby higher-level biodiversity [@Krueger-Hadfield2019].
@@ -274,14 +274,14 @@ Map data for Japan were downloaded from the Geospatial Information Authority of 
 ## Occurrence data
 
 We used a list of native, non-hybrid fern specimens deposited at herbaria in Japan to quantify occurrences [@Ebihara2016b; @Ebihara2017; @Ebihara2019b].
-We chose to use this over other sources (`r eg`, GBIF) because of its high quality, which obviates many cleaning steps otherwise needed when working with large, publicly available datasets.
+We chose to use this over other sources such as the Global Biodiversity Information Facility (GBIF) because of its high quality, which obviates many cleaning steps otherwise needed when working with large, publicly available datasets.
 Furthermore, the overall sampling completeness of this dataset is also high (`r s_figure("sampling-curve")` in Appendix S1; see Supplemental Data with this article).
 The original list comprises `r occ_sum$unfiltered$n_specimens$value %>% scales::number(big.mark = ",")` specimens representing `r occ_sum$unfiltered$n_taxa$value` terminal taxa at the rank of species, subspecies, form, or variety, excluding non-native taxa and nothotaxa.
-For the purposes of analysis, we treated infraspecific taxa as distinct species and hereafter use "taxon" and "species" interchangeably to refer to entities at this rank, unless otherwise indicated.
+We treated infraspecific taxa as distinct species during analysis and hereafter use "taxon" and "species" interchangeably to refer to entities at this rank, unless otherwise indicated.
 All names are standardized to a common taxonomy, the Japan Green List v. 1.01 (http://www.rdplants.org/gl/).
 
 Occurrence records were georeferenced and thoroughly vetted as follows [@Ebihara2016b; @Ebihara2017; @Ebihara2019b].
-For specimens that lacked latitude and longitude data, georeferencing was done by mapping collection site names to a set of standard ca. 10 × 10 km grid squares defined by the Statistics Bureau of Japan (the "second-degree mesh"; http://www.stat.go.jp/english/data/mesh/05.html), and the centroid of the second-degree mesh cell used as the specimen location.
+For specimens that lacked latitude and longitude data, georeferencing was done by mapping collection site names to a set of standard ca. 10 km × 10 km grid squares defined by the Statistics Bureau of Japan (the "second-degree mesh"; http://www.stat.go.jp/english/data/mesh/05.html), and the centroid of the second-degree mesh cell used as the specimen location.
 In the case that the collection site could not be mapped to a single second-degree mesh cell, it was excluded.
 Next, occurrence maps were generated for each taxon showing presence or absence in each second-degree mesh cell.
 In the case that a given taxon appeared insufficiently sampled (`r ie`, not present on the map where it would typically be expected to occur), AE and members of the Nippon Fernist Club (local botanists familiar with the ferns of Japan) searched for additional specimens, which were then added to the list.
@@ -422,6 +422,7 @@ Furthermore, use of community phylogenies generated by only by sampling the spec
 Because one goal of the study is to understand the distribution of paleo- vs. neo-endemic areas (defined in units of time), we require an ultrametric tree.
 Therefore, to obtain a robust, ultrametric tree, we combined the *rbcL* data of @Ebihara2019b (`r n_japan_fern_taxa` taxa) with a globally sampled plastid dataset including all fern sequences on GenBank for four widely-sequenced plastid genes (*atpA*, *atpB*, *rbcL*, and *rps4*; `r n_ftol_fern_taxa` taxa) and `r n_plastome_genes` other coding, single-copy plastid genes extracted from `r n_plastome_fern_taxa` complete fern plastomes (Nitta et al., in prep.) (`r ape::Ntip(plastome_tree) %>% scales::number(big.mark = ",")` OTUs total, including outgroup taxa).
 This gene sampling is comparable to a recent global fern phylogeny that resolved relationships across ca. 4,000 taxa using six plastid markers [@Testo2016a], and the addition of plastome data can be expected to increase support along the backbone.
+
 We conducted maximum-likelihood phylogenetic analysis with `r software("IQ-TREE")` v1.6.12 [@Nguyen2015] under the GTR+I+G model (all sites concatenated into a single data matrix), and assessed node support with 1,000 ultrafast bootstrap replicates [@Minh2013].
 Molecular dating was conducted with `r software("treePL")` v1.0 [@Smith2012] using `r n_fossil_points` fossil calibration points after @Testo2016a, with the exception of treating fossil *Kuylisporites* as belonging to crown *Cyathea*, not *Cyathea* + *Alsophila* [@Loiseau2020].
 The root of the tree (most recent common ancestor of all land plants) was fixed to 475 mya [@Testo2016a].
@@ -1075,7 +1076,7 @@ If high elevation habitats were available, the southern islands would be expecte
 For example, Taiwan, which is just east of the southernmost Japanese islands and harbors high mountains (> 3,000 m), shares many fern species with the main Japanese islands that are not found in southern Japanese islands.
 This supports that the sharp taxonomic turnover between southern and main islands is more likely due to ecological factors than dispersal limitation.
 
-One element of biodiversity that we did not consider here is hybrids (nothotaxa).
+One element of biodiversity that we did not consider here is hybrids.
 The Japanese fern flora includes `r n_hybrid_fern_taxa` nothotaxa [@Ebihara2019b].
 Although hybrids are often thought of as evolutionary "dead-ends", in some cases they are able to interbreed with diploids and thus contribute to diversification [@Barrington1989].
 Future studies should consider the distribution of hybrids in Japan and their possible effects on biodiversity.
@@ -1093,6 +1094,7 @@ The comprehensive molecular sampling of sporophytes in Japan makes this area ide
 The authors thank Members of the Iwasaki Lab at the University of Tokyo and two anonymous reviewers for providing comments that improved the manuscript.
 Shawn Laffan provided advice about CANAPE.
 This study was supported by JSPS KAKENHI Grant Number 16H06279.
+The authors are grateful to members of the Nippon Fernist Club for their cooperation and efforts towards quantifying and conserving the biodiversity of the ferns of Japan.
 
 ## AUTHOR CONTRIBUTIONS
 
@@ -1677,7 +1679,7 @@ ggsave(
 endemism_plot
 ```
 
-**`r figure("endemism")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism). 'paleo' indicates areas with an overabundance of rare long branches; 'neo' indicates areas with an overabundance of rare short branches; 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
+**`r figure("endemism")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism). 'neo' indicates areas with an overabundance of rare short branches; 'paleo' indicates areas with an overabundance of rare long branches; 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
 
 `r pagebreak_pdf()`
 

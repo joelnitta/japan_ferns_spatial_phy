@@ -1833,7 +1833,7 @@ references:
   author:
   - literal: R Core Team
   issued:
-  - year: 2020
+  - year: 2021
   accessed:
     year: 2021
     month: 09
@@ -2440,7 +2440,7 @@ references:
   page: 1451-1456
   source: DOI.org (Crossref)
   title: 'iNEXT: an R package for rarefaction and extrapolation of species diversity
-    ( <span style="font-variant:small-caps;" smallcaps="smallcaps">H</span> ill numbers)'
+    (Hill numbers)'
   title-short: iNEXT
   type: article-journal
   volume: '7'
@@ -2484,9 +2484,6 @@ references:
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol Evol
   DOI: 10.1111/2041-210x.12628
-  editor:
-  - family: McInerny
-    given: Greg
   ISSN: 2041-210X, 2041-210X
   issue: '1'
   issued:
@@ -2495,8 +2492,8 @@ references:
   language: en
   page: 28-36
   source: DOI.org (Crossref)
-  title: '<span style="font-variant:small-caps;" smallcaps="smallcaps">ggtree</span>
-    : an <span style="font-variant:small-caps;" smallcaps="smallcaps">r</span> package
+  title: '<span style="font-variant:small-caps;" smallcaps="smallcaps">ggtree</span>:
+    an <span style="font-variant:small-caps;" smallcaps="smallcaps">R</span> package
     for visualization and annotation of phylogenetic trees with their covariates and
     other associated data'
   title-short: ''

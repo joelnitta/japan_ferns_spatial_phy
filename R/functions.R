@@ -2252,6 +2252,79 @@ relabel_bioregions_by_lat <- function(bioregions, shape_ferns, cutoff = 1) {
 
 }
 
+
+#' Relabel bioregions in order of latidudinal position
+#' 
+#' Keep the old labels in the dataframe.
+#' 
+#' Should eventually use this as a replacement for relabel_bioregions_by_lat()
+#'
+#' @param bioregions Bioregions of Japanese ferns; output of combine_bioregions()
+#' @param shape_ferns Simple features data frame; grid of fern richness, abundance, and redundancy
+#' @param cutoff Cutoff value to use for filtering 'major' bioregions. Only bioregions
+#' with more grid-cells than the cutoff value will be relabeled.
+#'
+#' @return Dataframe; bioregions relabeled in descending order by mean latitude
+#' 
+relabel_bioregions_by_lat_keep_old <- function(bioregions, shape_ferns, cutoff = 1) {
+
+  # Summarize bioregions data: cells per cluster, mean latitude of each bioregion
+  bioregions_summary_all <-
+    shape_ferns %>%
+    left_join(bioregions, by = "grids") %>%
+    # Set CRS to JDG2000 = EPSG code 4612 so that lat and long are in degrees
+    st_transform(4612) %>%
+    sf_add_centroids() %>%
+    st_drop_geometry() %>%
+    select(contains("cluster"), lat, grids) %>%
+    as_tibble() %>%
+    pivot_longer(
+      names_to = "cluster_type",
+      values_to = "cluster",
+      -c(grids, lat)) %>%
+    group_by(cluster_type, cluster) %>%
+    summarize(mean_lat = mean(lat), n = n(), .groups = "drop")
+
+  # Map original cluster labels to new cluster labels
+  cluster_mapping <-
+    bioregions_summary_all %>%
+    # New labels are in descending order by latitude starting with major regions
+    # (n grid-cells above cutoff)
+    mutate(major_region = n > cutoff) %>%
+    arrange(cluster_type, desc(major_region), desc(mean_lat)) %>%
+    group_by(cluster_type) %>%
+    mutate(new_cluster = sort(cluster)) %>%
+    ungroup() %>%
+    mutate(new_cluster = case_when(
+      major_region == FALSE ~ "Other",
+      TRUE ~ new_cluster
+    ))
+
+  # Convert the old bioregion labels to new ones
+  bioregions %>%
+    left_join(
+      filter(cluster_mapping, cluster_type == "phylo_cluster") %>% 
+        select(cluster, new_phylo_cluster = new_cluster),
+      by = c("phylo_cluster" = "cluster")) %>%
+    left_join(
+      filter(cluster_mapping, cluster_type == "taxonomic_cluster") %>% 
+        select(cluster, new_taxonomic_cluster = new_cluster),
+      by = c("taxonomic_cluster" = "cluster")) %>%
+    rename(
+      old_taxonomic_cluster = taxonomic_cluster,
+      old_phylo_cluster = phylo_cluster,
+    ) %>%
+    rename(
+      taxonomic_cluster = new_taxonomic_cluster, 
+      phylo_cluster = new_phylo_cluster
+    ) %>%
+    # Make sure the number of grid cells per cluster is the same 
+    # (only the labels changed)
+    assert(not_na, taxonomic_cluster, phylo_cluster) %>%
+    verify(nrow(.) == nrow(bioregions))
+
+}
+
 # Conservation ----
 
 #' Crop biodiversity data to protected areas in Japan
