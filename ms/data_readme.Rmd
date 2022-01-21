@@ -51,13 +51,13 @@ tar_load(
     "japan_map_points_file",
     "protected_areas_file",
     "calibration_dates_file",
-    "japan_ferns_biodiv_dryad_file",
-    "comm_ferns_dryad_file",
-    "shape_ferns_dryad_file",
-    "fern_traits_dryad_file",
-    "japan_fern_phylogram_dryad_file",
-    "japan_fern_tree_dryad_file",
-    "japan_fern_tree_uncollapsed_dryad_file",
+    "japan_ferns_biodiv_figshare_file",
+    "comm_ferns_figshare_file",
+    "shape_ferns_figshare_file",
+    "fern_traits_figshare_file",
+    "japan_fern_phylogram_figshare_file",
+    "japan_fern_tree_figshare_file",
+    "japan_fern_tree_uncollapsed_figshare_file",
     "refs_yaml"
     )
   )
@@ -662,11 +662,11 @@ MD5 checksum: `r tools::md5sum(here::here(calibration_dates_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
-```{r japan-ferns-biodiv-dryad}
-japan_ferns_biodiv_dryad <- read_csv(here::here(japan_ferns_biodiv_dryad_file))
+```{r japan-ferns-biodiv-figshare}
+japan_ferns_biodiv_figshare <- read_csv(here::here(japan_ferns_biodiv_figshare_file))
 ```
 
-`r fs::path_file(japan_ferns_biodiv_dryad_file)` (contained in "results.zip"):
+`r fs::path_file(japan_ferns_biodiv_figshare_file)` (contained in "results.zip"):
 Biodiversity statistics of native, non-hybrid ferns and environmental variables
 in Japan. Biodiversity metrics calculated as described in Nitta et al. 2021. 
 Climatic (temperature and preciptation) variables
@@ -674,14 +674,14 @@ calculated as described for japan_climate.gpkg. Includes one row with missing
 environmental data and one outlier for % apomixis that were removed prior to
 spatial modeling analysis in Nitta et al. 2021.
 
-Number of variables: `r ncol(japan_ferns_biodiv_dryad)`
+Number of variables: `r ncol(japan_ferns_biodiv_figshare)`
 
-Number of cases/rows: `r nrow(japan_ferns_biodiv_dryad)`
+Number of cases/rows: `r nrow(japan_ferns_biodiv_figshare)`
 
 Variable list:
 
-```{r japan-ferns-biodiv-dryad-cols, results = "asis"}
-  japan_ferns_biodiv_dryad %>%
+```{r japan-ferns-biodiv-figshare-cols, results = "asis"}
+  japan_ferns_biodiv_figshare %>%
   make_data_desc(
     tribble(
       ~col, ~desc,
@@ -718,24 +718,24 @@ Variable list:
 
 Missing data codes: No data entered between commas in CSV.
 
-MD5 checksum: `r tools::md5sum(here::here(japan_ferns_biodiv_dryad_file))`
+MD5 checksum: `r tools::md5sum(here::here(japan_ferns_biodiv_figshare_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
-```{r comm-ferns-dryad-file}
-comm_ferns_dryad <- read_csv(here::here(comm_ferns_dryad_file))
+```{r comm-ferns-figshare-file}
+comm_ferns_figshare <- read_csv(here::here(comm_ferns_figshare_file))
 # Check that no data are missing
-assert(comm_ferns_dryad, not_na, everything(), success_fun = success_logical)
+assert(comm_ferns_figshare, not_na, everything(), success_fun = success_logical)
 ```
 
-`r fs::path_file(comm_ferns_dryad_file)` (contained in "results.zip"): Community
+`r fs::path_file(comm_ferns_figshare_file)` (contained in "results.zip"): Community
 matrix (species x sites matrix) of native, non-hybrid ferns in Japan used for
 biodiversity analysis. Same as japan_ferns_comm_full.csv, but grid-cells with
 redundancy <0.1 (indicating under-sampling) excluded. 
 
-Number of variables: `r ncol(comm_ferns_dryad)`
+Number of variables: `r ncol(comm_ferns_figshare)`
 
-Number of cases/rows: `r nrow(comm_ferns_dryad)`
+Number of cases/rows: `r nrow(comm_ferns_figshare)`
 
 Variable list:
 
@@ -745,31 +745,31 @@ Variable list:
 
 Missing data codes: No missing data.
 
-MD5 checksum: `r tools::md5sum(here::here(comm_ferns_dryad_file))`
+MD5 checksum: `r tools::md5sum(here::here(comm_ferns_figshare_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
-```{r shape-ferns-dryad-file}
-shape_ferns_dryad <- sf::st_read(here::here(shape_ferns_dryad_file))
+```{r shape-ferns-figshare-file}
+shape_ferns_figshare <- sf::st_read(here::here(shape_ferns_figshare_file))
 # Check that no data are missing
-assert(shape_ferns_dryad, not_na, everything(), success_fun = success_logical)
+assert(shape_ferns_figshare, not_na, everything(), success_fun = success_logical)
 ```
 
-`r fs::path_file(shape_ferns_dryad_file)` (contained in "results.zip"): Location
+`r fs::path_file(shape_ferns_figshare_file)` (contained in "results.zip"): Location
 of grid-cells (sites) for native, non-hybrid ferns in Japan used for
 biodiversity analysis. Same as japan_ferns_shape_full.gpkg, but grid-cells with
 redundancy <0.1 (indicating under-sampling) excluded.
 
-Number of variables: `r ncol(shape_ferns_dryad)`
+Number of variables: `r ncol(shape_ferns_figshare)`
 
-Number of cases/rows: `r nrow(shape_ferns_dryad)`
+Number of cases/rows: `r nrow(shape_ferns_figshare)`
 
 Coordinate reference system: JGD2000
 
 Variable list:
 
-```{r shape-ferns-dryad-file-cols, results = "asis"}
-  shape_ferns_dryad %>%
+```{r shape-ferns-figshare-file-cols, results = "asis"}
+  shape_ferns_figshare %>%
   make_data_desc(
     tribble(
       ~col, ~desc,
@@ -783,21 +783,21 @@ Variable list:
 
 Missing data codes: No missing data.
 
-MD5 checksum: `r tools::md5sum(here::here(shape_ferns_dryad_file))`
+MD5 checksum: `r tools::md5sum(here::here(shape_ferns_figshare_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
-```{r fern-traits-dryad-file}
-fern_traits_dryad <- read_csv(here::here(fern_traits_dryad_file))
+```{r fern-traits-figshare-file}
+fern_traits_figshare <- read_csv(here::here(fern_traits_figshare_file))
 ```
 
-`r fs::path_file(fern_traits_dryad_file)` (contained in "results.zip"): Trait
+`r fs::path_file(fern_traits_figshare_file)` (contained in "results.zip"): Trait
 matrix of native, non-hybrid ferns in Japan used for functional biodiversity
 analysis.
 
-Number of variables: `r ncol(fern_traits_dryad)`
+Number of variables: `r ncol(fern_traits_figshare)`
 
-Number of cases/rows: `r nrow(fern_traits_dryad)`
+Number of cases/rows: `r nrow(fern_traits_figshare)`
 
 Variable list: 'taxon' indicates taxon name. Other columns correspond to traits.
 'frond_width', 'stipe_length', 'number_pinna_pairs' are numeric; others are
@@ -805,52 +805,52 @@ binary (0 or 1)
 
 Missing data codes: Missing data coded as 'NA'.
 
-MD5 checksum: `r tools::md5sum(here::here(fern_traits_dryad_file))`
+MD5 checksum: `r tools::md5sum(here::here(fern_traits_figshare_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
-```{r japan-fern-phylogram-dryad-file}
-japan_fern_phylogram_dryad <- ape::read.tree(here::here(japan_fern_phylogram_dryad_file))
+```{r japan-fern-phylogram-figshare-file}
+japan_fern_phylogram_figshare <- ape::read.tree(here::here(japan_fern_phylogram_figshare_file))
 ```
 
-`r fs::path_file(japan_fern_phylogram_dryad_file)` (contained in
+`r fs::path_file(japan_fern_phylogram_figshare_file)` (contained in
 "results.zip"): Maximim-likelihood phylogeny of native, non-hybrid ferns in
 Japan in newick format inferred with maximum likelihood IQ-TREE v1.6.12
 [@Nguyen2015]. Values at nodes are bootstrap support values calculated using
 1000 replicates of ultrafast bootstrap [@Nguyen2015].
 
-Number of tips: `r ape::Ntip(japan_fern_phylogram_dryad)`
+Number of tips: `r ape::Ntip(japan_fern_phylogram_figshare)`
 
 Missing data codes: No missing data.
 
-MD5 checksum: `r tools::md5sum(here::here(japan_fern_phylogram_dryad_file))`
+MD5 checksum: `r tools::md5sum(here::here(japan_fern_phylogram_figshare_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
-```{r japan-fern-dryad-uncollapsed-file}
-japan_fern_tree_uncollapsed_dryad <- ape::read.tree(here::here(japan_fern_tree_uncollapsed_dryad_file))
+```{r japan-fern-figshare-uncollapsed-file}
+japan_fern_tree_uncollapsed_figshare <- ape::read.tree(here::here(japan_fern_tree_uncollapsed_figshare_file))
 ```
 
-`r fs::path_file(japan_fern_tree_uncollapsed_dryad_file)` (contained in "results.zip"):
+`r fs::path_file(japan_fern_tree_uncollapsed_figshare_file)` (contained in "results.zip"):
 Maximim-likelihood, ultrametric (dated) phylogeny of native, non-hybrid ferns in
 Japan in newick format. Tree dated using treePL v1.0 [@Smith2012] with `r n_fossil_points` 
 fossil calibration points after @Testo2016a. Values at nodes
 are bootstrap support values calculated using 1000 replicates of ultrafast
 bootstrap [@Nguyen2015]. Clades consisting of identical OTUs not collapsed.
 
-Number of tips: `r ape::Ntip(japan_fern_tree_uncollapsed_dryad)`
+Number of tips: `r ape::Ntip(japan_fern_tree_uncollapsed_figshare)`
 
 Missing data codes: No missing data.
 
-MD5 checksum: `r tools::md5sum(here::here(japan_fern_tree_uncollapsed_dryad_file))`
+MD5 checksum: `r tools::md5sum(here::here(japan_fern_tree_uncollapsed_figshare_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 
-```{r japan-fern-dryad-file}
-japan_fern_tree_dryad <- ape::read.tree(here::here(japan_fern_tree_dryad_file))
+```{r japan-fern-figshare-file}
+japan_fern_tree_figshare <- ape::read.tree(here::here(japan_fern_tree_figshare_file))
 ```
 
-`r fs::path_file(japan_fern_tree_dryad_file)` (contained in "results.zip"):
+`r fs::path_file(japan_fern_tree_figshare_file)` (contained in "results.zip"):
 Maximim-likelihood, ultrametric (dated) phylogeny of native, non-hybrid ferns in
 Japan in newick format. Tree dated using treePL v1.0 [@Smith2012] with `r n_fossil_points` 
 fossil calibration points after @Testo2016a. Values at nodes
@@ -858,11 +858,11 @@ are bootstrap support values calculated using 1000 replicates of ultrafast
 bootstrap [@Nguyen2015]. Clades consisting of identical sequences have been
 collapsed to polytomies with zero branch length between OTUs.
 
-Number of tips: `r ape::Ntip(japan_fern_tree_dryad)`
+Number of tips: `r ape::Ntip(japan_fern_tree_figshare)`
 
 Missing data codes: No missing data.
 
-MD5 checksum: `r tools::md5sum(here::here(japan_fern_tree_dryad_file))`
+MD5 checksum: `r tools::md5sum(here::here(japan_fern_tree_figshare_file))`
 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 

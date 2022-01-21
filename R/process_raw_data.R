@@ -1,4 +1,4 @@
-# Separate targets plan to process raw data that can't be uploaded to Dryad
+# Separate targets plan to process raw data that can't be uploaded to FigShare
 #
 # This should be run with:
 # targets::tar_make(script = "R/process_raw_data.R", store = "_raw_data_cache") #nolint

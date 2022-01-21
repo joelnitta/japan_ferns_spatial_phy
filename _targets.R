@@ -588,63 +588,65 @@ tar_plan(
   signif_cells_protected_area = calculate_percent_protected(protected_biodiv),
   signif_cells_deer_danger = calculate_percent_deer_danger(deer_danger_biodiv),
 
-  # Write out selected results files for dryad ----
+  # Write out selected results files for figshare ----
 
   # Choose variables to include in biodiv results, convert to centroids
-  biodiv_ferns_cent_dryad = biodiv_ferns_spatial_to_cent(
+  biodiv_ferns_cent_figshare = biodiv_ferns_spatial_to_cent(
     biodiv_ferns_spatial,
     crs = 4612 # convert to JDG2000 CRS
     ),
 
   # japan_ferns_biodiv.csv
   tar_file(
-    japan_ferns_biodiv_dryad_file,
+    japan_ferns_biodiv_figshare_file,
     write_csv_tar(
-      biodiv_ferns_cent_dryad, "results/dryad_files/japan_ferns_biodiv.csv")
+      biodiv_ferns_cent_figshare,
+      "results/figshare_files/japan_ferns_biodiv.csv")
   ),
 
   # japan_ferns_comm.csv
   tar_file(
-    comm_ferns_dryad_file,
-    comm_ferns %>% rownames_to_column("grids") %>%
-      write_csv_tar("results/dryad_files/japan_ferns_comm.csv")
+    comm_ferns_figshare_file,
+    comm_ferns %>%
+      rownames_to_column("grids") %>%
+      write_csv_tar("results/figshare_files/japan_ferns_comm.csv")
   ),
 
   # japan_ferns_shape.gpkg
   tar_file(
-    shape_ferns_dryad_file,
+    shape_ferns_figshare_file,
     st_write_tar(
       shape_ferns,
-      "results/dryad_files/japan_ferns_shape.gpkg",
+      "results/figshare_files/japan_ferns_shape.gpkg",
       time_stamp = as.Date("2021-09-03")
     )
   ),
 
   # japan_ferns_traits.csv
   tar_file(
-    fern_traits_dryad_file,
-    write_csv_tar(fern_traits, "results/dryad_files/japan_ferns_traits.csv")
+    fern_traits_figshare_file,
+    write_csv_tar(fern_traits, "results/figshare_files/japan_ferns_traits.csv")
   ),
 
   # japan_ferns_tree.tre
   tar_file(
-    japan_fern_phylogram_dryad_file,
+    japan_fern_phylogram_figshare_file,
     write_tree_tar(japan_fern_phylogram,
-      "results/dryad_files/japan_ferns_tree.tre")
+      "results/figshare_files/japan_ferns_tree.tre")
   ),
 
   # japan_ferns_tree_dated.tre
   tar_file(
-    japan_fern_tree_dryad_file,
+    japan_fern_tree_figshare_file,
     write_tree_tar(japan_fern_tree,
-      "results/dryad_files/japan_ferns_tree_dated.tre")
+      "results/figshare_files/japan_ferns_tree_dated.tre")
   ),
 
   # japan_ferns_tree_dated_uncollapsed.tre
   tar_file(
-    japan_fern_tree_uncollapsed_dryad_file,
+    japan_fern_tree_uncollapsed_figshare_file,
     write_tree_tar(japan_fern_tree_uncollapsed,
-      "results/dryad_files/japan_ferns_tree_dated_uncollapsed.tre")
+      "results/figshare_files/japan_ferns_tree_dated_uncollapsed.tre")
   ),
 
   # Etc ----
