@@ -260,6 +260,7 @@ references:
     given: François
   citation-key: Courtiol2017
   container-title: bioRxiv
+  volume: '207662'
   DOI: 10.1101/207662
   issued:
   - year: 2017
@@ -271,6 +272,7 @@ references:
   source: www.biorxiv.org
   title: Modelling isoscapes using mixed models
   type: article-journal
+  URL: https://doi.org/10.1101/207662
 - id: Creese2011
   author:
   - family: Creese
@@ -337,9 +339,6 @@ references:
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol. Evol.
   DOI: 10.1111/2041-210x.13478
-  editor:
-  - family: Silvestro
-    given: Daniele
   ISSN: 2041-210X, 2041-210X
   issue: '11'
   issued:
@@ -427,37 +426,6 @@ references:
   publisher-place: Tokyo
   title: The Standard of Ferns and Lycophytes in Japan, Vol. 2
   type: book
-- id: Ebihara2019a
-  author:
-  - family: Ebihara
-    given: Atsushi
-  - family: Nitta
-    given: Joel H.
-  - family: Matsumoto
-    given: Yurika
-  - family: Fukazawa
-    given: Yuri
-  - family: Kurihara
-    given: Marie
-  - family: Yokote
-    given: Hitomi
-  - family: Sakuma
-    given: Kaoru
-  - family: Azakami
-    given: Otowa
-  citation-key: Ebihara2019a
-  container-title: Bulletin of the National Museum of Nature and Science, Series B
-    (Botany), Tokyo
-  issue: '2'
-  issued:
-  - year: 2019
-    month: 5
-    day: 22
-  page: 77-86
-  title: <span class="nocase">Growth dynamics of independent gametophytes of *Pleurosoriopsis
-    makinoi* (Polypodiaceae)</span>
-  type: article-journal
-  volume: '45'
 - id: Ebihara2019b
   author:
   - family: Ebihara
@@ -492,9 +460,6 @@ references:
   container-title: Journal of Biogeography
   container-title-short: J. Biogeogr.
   DOI: 10.1111/jbi.12130
-  editor:
-  - family: Triantis
-    given: Kostas
   ISSN: '03050270'
   issue: '9'
   issued:
@@ -980,9 +945,6 @@ references:
   container-title: Methods in Ecology and Evolution
   container-title-short: Methods Ecol Evol
   DOI: 10/f8tbrk
-  editor:
-  - family: Jones
-    given: Kate
   ISSN: 2041-210X, 2041-210X
   issue: '5'
   issued:
@@ -1034,7 +996,7 @@ references:
   language: en
   page: '2959'
   source: joss.theoj.org
-  title: 'The targets R package: a dynamic Make-like function-oriented pipeline toolkit
+  title: 'The targets R package: A dynamic Make-like function-oriented pipeline toolkit
     for reproducibility and high-performance computing'
   title-short: The targets R package
   type: article-journal
@@ -1077,8 +1039,7 @@ references:
   language: en
   page: 498-522
   source: DOI.org (Crossref)
-  title: 'Fern and lycophyte diversity in the Pacific Northwest: Patterns and predictors:
-    Fern and lycophyte diversity in Pacific Northwest'
+  title: 'Fern and lycophyte diversity in the Pacific Northwest: Patterns and predictors'
   title-short: Fern and lycophyte diversity in the Pacific Northwest
   type: article-journal
   volume: '56'
@@ -1273,7 +1234,7 @@ references:
   - year: 2014
   page: '4473'
   title: Phylogenetic measures of biodiversity and neo- and paleo-endemism in Australian
-    Acacia
+    *Acacia*
   type: article-journal
   volume: '5'
 - id: Mishler2020
@@ -1339,30 +1300,6 @@ references:
     pteridophytes
   type: article-journal
   volume: '53'
-- id: Murakami2021
-  accessed:
-  - year: 2021
-    month: 12
-    day: 8
-  author:
-  - family: Murakami
-    given: Noriaki
-  - family: Sakai
-    given: Erika
-  - family: Yoneoka
-    given: Katsuhiro
-  citation-key: Murakami2021
-  container-title: BSJ-Review
-  DOI: 10.24480/bsj-review.12c3.00211
-  issued:
-  - year: 2021
-  language: Japanese
-  page: 159-168
-  source: DOI.org (CSL JSON)
-  title: Inventories of fern independent gametophytes in Japan using DNA barcoding
-    based on nucleotide sequences of *rbcL* gene (in Japanese)
-  type: article-journal
-  volume: '12'
 - id: Myers2000
   author:
   - family: Myers
@@ -1434,7 +1371,7 @@ references:
     day: 1
   page: 105-110
   title: On the "*Gleichenia japonica* Line" as an indicator of the border line with
-    the distribution of the warm temperate species in Japan  \[in Japanese]
+    the distribution of the warm temperate species in Japan  (in Japanese)
   type: article-journal
   volume: '16'
 - id: Natori2012
@@ -1578,20 +1515,20 @@ references:
     community structure between fern sporophytes and gametophytes</span>'
   type: article-journal
   volume: '87'
-- id: Nitta2021a
+- id: Nitta2022
   type: webpage
   accessed:
-  - year: 2021
-    month: 8
+  - year: 2022
+    month: 1
     day: 19
   author:
   - family: Nitta
     given: Joel H.
   issued:
-  - year: 2021
+  - year: 2022
   title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R. R Package
-    Version 0.0.0.9000'
-  URL: https://doi.org/10.5281/zenodo.5094033
+    Version 0.0.2'
+  URL: https://doi.org/10.5281/zenodo.5885646
 - type: webpage
   id: Noss2016
   author:
@@ -1630,7 +1567,7 @@ references:
     year: 2021
     month: 09
     day: 1
-  title: 'Caper: Comparative analyses of phylogenetics and evolution in r. Version
+  title: 'Caper: Comparative analyses of phylogenetics and evolution in R. Version
     1.0.1'
   title-short: Caper
   note: R package version 1.0.1
@@ -1695,7 +1632,7 @@ references:
   issued:
   - year: 2018
   language: en
-  page: '439'
+  page: 439-446
   source: DOI.org (Crossref)
   title: 'Simple features for R: Standardized support for spatial vector data'
   title-short: Simple Features for R
@@ -1865,9 +1802,6 @@ references:
   container-title: Global Ecology and Biogeography
   container-title-short: Global Ecol Biogeogr
   DOI: 10.1111/geb.13349
-  editor:
-  - family: Baselga
-    given: Andres
   ISSN: 1466-822X, 1466-8238
   issue: '9'
   issued:
@@ -1894,7 +1828,7 @@ references:
   title-short: Raster
   note: R package version 3.1-5
   URL: https://CRAN.R-project.org/package=raster
-- id: RCoreTeam2020
+- id: RCoreTeam2021
   type: webpage
   author:
   - literal: R Core Team
@@ -1904,7 +1838,7 @@ references:
     year: 2021
     month: 09
     day: 1
-  title: 'R: A language and environment for statistical computing. Version 4.0.0.
+  title: 'R: A language and environment for statistical computing. Version 4.1.2.
     R Foundation for Statistical Computing, Vienna, Austria'
   URL: https://www.R-project.org/
 - id: Revell2012
@@ -1983,7 +1917,7 @@ references:
   - year: 2009
     month: 10
   page: 4061-4072
-  title: 'Phylogenetic endemism: a new approach for identifying geographical concentrations
+  title: 'Phylogenetic endemism: A new approach for identifying geographical concentrations
     of evolutionary history'
   type: article-journal
   volume: '18'
@@ -2032,7 +1966,7 @@ references:
     given: Yoshikazu
   container-title: Chiikigaku-kenkyu
   ISSN: 0915-4094
-  issue: '27'
+  volume: '27'
   issued:
   - year: 2014
     month: 3
