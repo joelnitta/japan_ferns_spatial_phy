@@ -8,7 +8,7 @@ All code is in [R](https://cran.r-project.org/). The [targets package](https://d
 
 Data files need to be downloaded from three locations.
 
-1. Dataset on Dryad for this project: https://doi.org/doi:10.5061/dryad.w0vt4b8s2 (LINK NOT LIVE YET). Cick on the "download dataset" icon, download the zipped dataset, then unzip it and put the contents in the `data/` folder in this repo.
+1. Dataset on FigShare for this project: https://doi.org/10.6084/m9.figshare.16655263 (LINK NOT LIVE YET). Cick on the "Download all" icon, download the zipped dataset, then unzip it and put the contents in the `data/` folder in this repo.
 2. Dataset on Dryad for Ebihara and Nitta 2019: https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32. Download the zipped dataset and put in the `data/` folder directly (without unzipping).
 3. Dataset on FigShare for FTOL v0.0.1 (Nitta et al, in prep): https://doi.org/doi:10.6084/m9.figshare.13256801 (LINK NOT LIVE YET). Download the zipped dataset and put in the `data/` folder directly (without unzipping).
 
@@ -50,15 +50,49 @@ When you're done, take down the container:
 docker-compose down
 ```
 
-## Using the `targets` cache
+## Targets cache
 
-The analysis includes some steps that take a long time to run, especially maximum-likelihood phylogenetic analysis (ca. 1 week with 10 cores in parallel). To avoid running the entire workflow from scratch, untar the `_targets.tar.gz` file in the Dryad dataset and place it in the root of this repo as `_targets`:
+The [targets package](https://docs.ropensci.org/targets/index.html) manages the workflow and saves all intermediate analysis results to a folder named `_targets`; this is the targets cache.
+Normally, you would have to run all of the analyses starting from the original data files to generate all of the analysis results, as described above.
+This takes a long time. The longest step is the phylogenetic analysis, which takes about 1 week using 10 cores in parallel.
+
+I have put the targets cache for this project [on github](https://github.com/joelnitta/japan_ferns_spatial_phy_cache) (LINK NOT LIVE YET) under version control using the [gittargets package](https://github.com/ropensci/gittargets).
+
+So instead of running everything from scratch, you can checkout the exact results matching a specific code version as follows (this assumes we are in the `japan_ferns_spatial_phy` folder and requires git):
+
+1. Clone the targets cache to a folder called `_targets`.
 
 ```
-tar -xzf _targets.tar.gz
+git clone https://github.com/joelnitta/japan_ferns_spatial_phy_cache _targets
 ```
 
-Then, when you open the project in R [as described above](#interacting-with-the-code), you can use `targets::tar_load()` to load any target (intermediate workflow step) listed in [`_targets.R`](_targets.R). For more information on how to use the `targets` package, see https://github.com/ropensci/targets.
+2. Enter the `_targets` directory.
+
+```
+cd _targets
+```
+
+3. Fetch branches from the remote repo ([each branch corresponds to a selected commit in the code](https://docs.ropensci.org/gittargets/articles/git.html#snapshot-model)).
+
+```
+git fetch
+```
+
+4. Change to the latest branch (the part of the name after `code=` matches the corresponding commit hash in `japan_ferns_spatial_phy`).
+
+```
+git switch code=0f9744508fbdc1d22319faa6118c2811c34c0c7d
+```
+
+5. Move back up to the `japan_ferns_spatial_phy` folder.
+
+```
+cd ..
+```
+
+You can also change between different snapshots of the targets cache and code using [gittargets](https://github.com/ropensci/gittargets).
+
+When you open the project in R [as described above](#interacting-with-the-code), you can use `targets::tar_load()` to load any target (intermediate workflow step) listed in [`_targets.R`](_targets.R). For more information on how to use the `targets` package, see https://github.com/ropensci/targets.
 
 ## Licenses
 
@@ -66,4 +100,3 @@ Then, when you open the project in R [as described above](#interacting-with-the-
 - Data: [CC0 1.0 license](https://creativecommons.org/publicdomain/zero/1.0/)
 - [Manuscript (preprint)](https://doi.org/10.1101/2021.08.26.457744): [CC BY-NC-ND 4.0 license](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 - [Roboto font](https://github.com/google/roboto/): [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0)
-
