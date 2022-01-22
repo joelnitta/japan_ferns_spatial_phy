@@ -81,7 +81,7 @@ git fetch
 4. Change to the latest branch (the part of the name after `code=` matches the corresponding commit hash in `japan_ferns_spatial_phy`).
 
 ```
-git switch code=0f9744508fbdc1d22319faa6118c2811c34c0c7d
+git switch code=809787c0002df8d66f23b4001f8d30792bc7bd10
 ```
 
 5. Move back up to the `japan_ferns_spatial_phy` folder.
