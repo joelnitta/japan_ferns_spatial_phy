@@ -90,25 +90,25 @@ grubbs_tidy <- function(x, type = 10, ...) {
 
 The dataset includes biodiversity metrics and environmental data measured on native, non-hybrid ferns of Japan.
 
-All biodiversity metrics were calculated during the `targets` workflow (`_targets.R`), and are contained in the `biodiv_ferns_cent_dryad` object in the `targets` cache. 
+All biodiversity metrics were calculated during the `targets` workflow (`_targets.R`), and are contained in the `biodiv_ferns_cent_figshare` object in the `targets` cache. 
 
 The next step uses `tar_load()` to load the dataset from the targets cache. Alternatively, this can be loaded from the data file as shown in the commented-out code below.
 
 ```{r load-data, message = FALSE}
 # Load the data from the targets workflow
-tar_load(biodiv_ferns_cent_dryad)
+tar_load(biodiv_ferns_cent_figshare)
 
 # Alternatively, unzip `results.zip`
 # (FIXME: add DOI when available)
 # and read in the data from there
-# biodiv_ferns_cent_dryad <- read_csv(here::here("japan_ferns_biodiv.csv"))
+# biodiv_ferns_cent_figshare <- read_csv(here::here("japan_ferns_biodiv.csv"))
 ```
 
 This dataframe actually has more variables than are needed for modeling, so we will subset it to only the relevant variables.
 
 ```{r subset-vars}
-biodiv_ferns_cent_raw <- 
-  biodiv_ferns_cent_dryad %>%
+biodiv_ferns_cent_raw <-
+  biodiv_ferns_cent_figshare %>%
   select(
     grids, lat, long, # grid-cell ID, latitude, longitude
     richness, pd_obs_z, fd_obs_z, rpd_obs_z, rfd_obs_z, # response vars
