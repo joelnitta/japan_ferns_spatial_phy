@@ -22,6 +22,55 @@ tar_option_set(
   imports = "canaper"
   )
 
+# To avoid superfluous "object 'params' not found"
+# define Rmd targets here, then insert in plan below
+tmp <- capture.output({
+  # MS, docx format
+  ms_doc_tar <- tar_render(
+    ms_doc,
+    knit_root_dir = here::here(),
+    path = "ms/manuscript.Rmd",
+    output_format = "bookdown::word_document2",
+    output_file = here::here("results/manuscript.docx"),
+    params = list(doc_type = "doc")
+  )
+  # MS, pdf format
+  ms_pdf_tar <- tar_render(
+    ms_pdf,
+    knit_root_dir = here::here(),
+    path = "ms/manuscript.Rmd",
+    output_format = "bookdown::pdf_document2",
+    output_file = here::here("results/manuscript.pdf"),
+    params = list(doc_type = "pdf")
+  )
+  # SI appendix 1
+  si_pdf_tar <- tar_render(
+    si_pdf,
+    knit_root_dir = here::here(),
+    path = "ms/SI.Rmd",
+    output_format = "bookdown::pdf_document2",
+    output_file = here::here("results/appendix_s1.pdf"),
+    params = list(doc_type = "pdf")
+  )
+  # SI appendix 2 on data exploration for models
+  si_data_exploration_tar <- tar_render(
+    si_data_exploration,
+    knit_root_dir = here::here(),
+    path = "ms/data_exploration.Rmd",
+    output_format = "bookdown::pdf_document2",
+    output_file = here::here("results/appendix_s2.pdf"),
+    params = list(knit_type = "targets")
+  )
+  data_readme_tar <- tar_render(
+    data_readme,
+    knit_root_dir = here::here(),
+    path = "ms/data_readme.Rmd",
+    output_file = here::here("results/data_readme.rtf")
+  )
+  },
+  type = "message"
+)
+
 tar_plan(
 
   # Run tests on custom functions ----
@@ -666,47 +715,10 @@ tar_plan(
   tar_file(template_file, "ms/american-journal-of-botany.docx"),
   tar_file(csl_file, "ms/american-journal-of-botany.csl"),
   tar_file(ms_functions, "R/ms_functions.R"),
-
-  # MS, docx format
-  tar_render(
-    ms_doc,
-    knit_root_dir = here::here(),
-    path = "ms/manuscript.Rmd",
-    output_format = "bookdown::word_document2",
-    output_file = here::here("results/manuscript.docx"),
-    params = list(doc_type = "doc")
-  ),
-  # MS, pdf format
-  tar_render(
-    ms_pdf,
-    knit_root_dir = here::here(),
-    path = "ms/manuscript.Rmd",
-    output_format = "bookdown::pdf_document2",
-    output_file = here::here("results/manuscript.pdf"),
-    params = list(doc_type = "pdf")
-  ),
-  # SI appendix 1
-  tar_render(
-    si_pdf,
-    knit_root_dir = here::here(),
-    path = "ms/SI.Rmd",
-    output_format = "bookdown::pdf_document2",
-    output_file = here::here("results/appendix_s1.pdf"),
-    params = list(doc_type = "pdf")
-  ),
-  # SI appendix 2 on data exploration for models
-  tar_render(
-    si_data_exploration,
-    knit_root_dir = here::here(),
-    path = "ms/data_exploration.Rmd",
-    output_format = "bookdown::pdf_document2",
-    output_file = here::here("results/appendix_s2.pdf"),
-    params = list(knit_type = "targets")
-  ),
-  tar_render(
-    data_readme,
-    knit_root_dir = here::here(),
-    path = "ms/data_readme.Rmd",
-    output_file = here::here("results/data_readme.rtf")
-  )
+  # pre-defined targets
+  ms_doc_tar,
+  ms_pdf_tar,
+  si_pdf_tar,
+  si_data_exploration_tar,
+  data_readme_tar
 )
