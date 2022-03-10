@@ -13,6 +13,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # https://hub.docker.com/r/rocker/geospatial/dockerfile
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
+    git-lfs \
     mafft \
     fasttree \
     gcc \
