@@ -83,8 +83,9 @@ deer_lines <- c(
 
 # Words ----
 # Define formatting for some common custom words that may vary in style between journals
-ie <- "*ie*"
-eg <- "*eg*"
+# AJB: Common Latin words (e.g., in vivo, sensu lato) are not italicized.
+ie <- "i.e."
+eg <- "e.g."
 
 #' Format R packages names
 #' 
@@ -188,9 +189,9 @@ result_file <- function (result_num, extension) {
 
 # - First define the "full" version, which would include a caption
 # (except I never use the caption in the function, and instead replace with 'blank')
-figure_full <- captioner::captioner(prefix = "Fig. ", auto_space = FALSE)
+figure_full <- captioner::captioner(prefix = "Figure ", auto_space = FALSE)
 table_full <- captioner::captioner(prefix = "Table ", auto_space = FALSE)
-s_figure_full <- captioner::captioner(prefix = "Fig. S", auto_space = FALSE)
+s_figure_full <- captioner::captioner(prefix = "Figure S", auto_space = FALSE)
 s_table_full <- captioner::captioner(prefix = "Table S", auto_space = FALSE)
 
 # - Make a short function that prints only the object type and number, e.g., "Fig. 1"

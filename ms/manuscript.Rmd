@@ -176,7 +176,7 @@ Temperature and apomixis were identified as drivers of biodiversity patterns.
 Conservation status was generally high for grid-cells with significantly high biodiversity, but the threat due to herbivory by deer was greater for taxonomic richness than other metrics.
 
 **Conclusions:** Our integrative approach reveals previously undetected patterns and drivers of biodiversity in the ferns of Japan.
-Future conservation efforts should recognize that threats can vary by biodiversity metric and consider multiple multiple metrics when establishing conservation priorities.
+Future conservation efforts should recognize that threats can vary by biodiversity metric and consider multiple metrics when establishing conservation priorities.
 
 <!-- may include title words -->
 **Keywords:** apomixis, biodiversity, biogeography, CANAPE, conservation, ferns, Japan, phylogenetic diversity.
@@ -252,7 +252,7 @@ Reproductive mode is likely to affect population-level genetic diversity [@Bengt
 In ferns, clonally reproducing apomictic species are often polyploid hybrids that share identical plastid genotypes among taxa and within populations [@Grusz2009; @Chao2012a; @Hori2014; @Hori2019].
 Therefore, we expect high prevalence of apomictic species within a community to decrease phylogenetic diversity.
 
-Japan is situated along a latitudinal gradient spanning seasonal, temperate areas in the north to subtropical, mostly aseasonal islands in the south.
+Japan is situated along a latitudinal gradient spanning temperate, seasonal areas in the north to subtropical, mostly aseasonal islands in the south.
 Furthermore, it is a mountainous country with great variation in elevation on the larger islands.
 Plant distributions often reflect physiological adaptations to climate [`r eg`, precipitation and temperature\; @Woodward1987].
 Therefore, we expect the spatial distribution of biodiversity to be determined by climatic variation in addition to reproductive mode.
@@ -304,7 +304,7 @@ The R package `r pack("sf")` was used for all GIS analyses [@Pebesma2018].
 ## Morphological trait data
 
 We used traits originally compiled for identification of ferns and lycophytes of Japan [@Ebihara2016b; @Ebihara2017], which were formatted to be used with Lucid software (https://www.lucidcentral.org/).
-Continuous traits were measured on 10 randomly selected specimens per species, then four values per species were obtained from these measurements following Lucid format: outside (`r ie` outside the typical range) minimum, typical minimum, typical maximum, and outside maximum.
+Continuous traits were measured on 10 randomly selected specimens per species, then four values per species were obtained from these measurements following Lucid format: outside (`r ie`, outside the typical range) minimum, typical minimum, typical maximum, and outside maximum.
 For species with dimorphic fertile (`r ie`, spore-bearing) and sterile fronds, fertile and sterile fronds were measured separately.
 We took the mean of the typical minimum and maximum values to use as the species mean value.
 Qualitative traits were scored by observing voucher specimens.
@@ -518,7 +518,7 @@ To prevent double-counting, all protected areas within a protection status were 
 Besides habitat loss due to human activity, one major threat to ferns in Japan is herbivory by Japanese deer (*Cervus nippon*).
 Although native, Japanese deer have caused extensive damage to native plant communities due to rapid population growth and range expansion since the 1970s [@Takatsuki2009].
 Decrease or extirpation of fern populations due to deer herbivory has been observed in multiple sites and species across the country [@Minamitani2005; @Yahara2006; @Hattori2010].
-Furthermore, 33 of 212 (15.5%) fern taxa listed as endangered (Red List status CR, EN or VU) in Japan include herbivory by deer as one of the reasons for their endangered status [@MOJ2015; @kankyosho2022].
+Furthermore, 33 of 212 (15.5%) fern taxa listed as endangered (Red List status CR, EN, or VU) in Japan include herbivory by deer as one of the reasons for their endangered status [@MOJ2015; @kankyosho2022].
 Although not all species of ferns are equally susceptible to deer herbivory [some are unpalatable to deer\; @Minamitani2005], these studies show it is an existential threat to many species.
 Therefore, analysis of the threat posed to fern biodiversity by deer herbivory is needed to inform future conservation policies.
 
@@ -691,7 +691,7 @@ The distribution of collection locations was highly skewed, with > 3,000 specime
 Despite this, sampling redundancy was generally good [> 0.3\; @Gonzalez-Orozco2014b] throughout the country (mean `r mean_redundancy`, final community data matrix; errors are SD unless mentioned otherwise; `r s_figure("abundance")`B).
 The final community data matrix included `r ncol(comm_ferns)` taxa and `r nrow(comm_ferns) %>% scales::number(big.mark = ",")` grid-cells. `r n_excluded_cells` grid-cells were excluded due to low redundancy (< 0.1); these were mostly from Hokkaido and coastal areas.
 
-After removing correlated and low-variance traits, the final trait set included `r n_binary_traits` binary trait, `r n_cont_traits` continuous traits, and `r n_qual_traits` qualitative traits (coded as `r n_qual_traits_as_binary` binary traits; Tables `r table_num("traits-used")`, `r s_table_num("phy-sig-binary")`.
+After removing correlated and low-variance traits, the final trait set included `r n_binary_traits` binary trait, `r n_cont_traits` continuous traits, and `r n_qual_traits` qualitative traits (coded as `r n_qual_traits_as_binary` binary traits; Tables `r table_num("traits-used")`, `r s_table_num("phy-sig-binary")`).
 The trait matrix included `r n_taxa_traits_sampled` taxa (`r percent_taxa_traits_sampled`) and `r fern_traits %>% select(-taxon) %>% ncol()` traits, with `r percent_traits_missing` missing data.
 
 ## Phylogenetic signal
@@ -765,7 +765,7 @@ assert_that(bioregion_cutoff == 2, msg = "Bioregions cutoff for lumping not 2!")
 ```
 
 Clustering analysis grouped grid-cells into `r english2(k_taxonomy$optimal$k)` or `r english2(k_phylogeny$optimal$k)` bioregions (`r s_figure("k-plot")`) on the basis of taxonomic or phylogenetic distances, respectively.
-The vast majority of grid-cells fell to a subset of these bioregions: using taxonomic distances, they include bioregion 1 (Hokkaido and high elevation areas of northern Honshu), bioregion 2 (low elevation areas of northern Honshu, southern Honshu, Kyushu, and Shikoku), bioregion 3 (Ryukyu Islands), and bioregion 4 (Ogasawara Islands) (`r figure("bioregions")`A; `r s_figure("dendrogram")`A).
+The vast majority of grid-cells fell into a subset of these bioregions: using taxonomic distances, they include bioregion 1 (Hokkaido and high elevation areas of northern Honshu), bioregion 2 (low elevation areas of northern Honshu, southern Honshu, Kyushu, and Shikoku), bioregion 3 (Ryukyu Islands), and bioregion 4 (Ogasawara Islands) (`r figure("bioregions")`A; `r s_figure("dendrogram")`A).
 Phylogenetic distances produced similar results, but the Ryukyu and Ogasawara Islands merged into a single bioregion (3), and bioregion 1 covered most of northern Honshu, while extending further south (`r figure("bioregions")`B; `r s_figure("dendrogram")`B).
 The other much smaller bioregions (including only one or two grid-cells each) are likely artifacts of insufficiently low taxon richness for robust clustering and are not discussed further.
 
@@ -967,7 +967,7 @@ Similar patterns have been observed in deciduous broadleaved trees and conifers 
 Our spatial modeling analysis indicates that this is strongly linked to temperature, with maximum richness occurring at intermediate temperatures (`r figure("modelfit")`A).
 Previous studies have identified temperature, water availability [@Bickford2006; @Qian2012], or a combination of these [@Nagalingum2015; @Link-Perez2018; @Qian2021] to be important drivers of spatial fern diversity.
 A hump-shaped pattern of richness along elevation (maximum richness at intermediate elevations) has been frequently observed in ferns on mountains in tropical or sub-tropical areas [@Kessler2011a; @Suissa2021].
-Hypotheses to explain such a pattern include purely geometrical constraints as well as biological hypothesis positing maximally favorable environmental conditions at mid-elevations [@Colwell2004a].
+Hypotheses to explain such a pattern include purely geometrical constraints as well as biological hypotheses positing maximally favorable environmental conditions at mid-elevations [@Colwell2004a].
 Another reason for the greater richness on the main islands compared to southern islands in Japan is that the main islands harbor higher elevational variation that may support a wider range of taxa than is present in the southern islands.
 
 The overwhelming pattern characterizing phylogenetic and functional diversity (PD and FD) is the high diversity of southern subtropical islands (Ryukyu and Ogasawara Isl.) (`r figure("rand-diversity")`A, C).
@@ -1288,7 +1288,7 @@ ggsave(
 japan_map_plot
 ```
 
-**`r figure("japan-map")`**. Map of Japan showing names of places mentioned in the text. Names of the four main islands in bold. The Ryukyu Islands include Yakushima, Amami, Okinawa, Miyako, and Iriomote. Solid line shows location of Tsugaru Strait; dashed line shows Tokara Strait.
+**`r figure("japan-map") %>% str_to_upper()`**. Map of Japan showing names of places mentioned in the text. Names of the four main islands in bold. The Ryukyu Islands include Yakushima, Amami, Okinawa, Miyako, and Iriomote. Solid line shows location of Tsugaru Strait; dashed line shows Tokara Strait.
 
 `r pagebreak_pdf()`
 
@@ -1357,7 +1357,7 @@ ggsave(
 raw_diversity_plot
 ```
 
-**`r figure("raw-diversity")`**. Raw (observed) biodiversity metrics of the ferns of Japan. (A) Raw taxonomic diversity (B). Raw phylogenetic diversity. (C) Raw functional diversity. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths.
+**`r figure("raw-diversity") %>% str_to_upper()`**. Raw (observed) biodiversity metrics of the ferns of Japan. (A) Raw taxonomic diversity. (B) Raw phylogenetic diversity. (C) Raw functional diversity. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths.
 
 `r pagebreak_pdf()`
 
@@ -1450,7 +1450,7 @@ ggsave(
 rand_diversity_plot
 ```
 
-**`r figure("rand-diversity")`**. Results of randomization test for phylogenetic and functional diversity of the ferns of Japan. (A) Phylogenetic diversity (PD). (B) Relative phylogenetic diversity (RPD). (C) Functional diversity (FD). (D) Relative functional diversity (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Materials and Methods.
+**`r figure("rand-diversity") %>% str_to_upper()`**. Results of randomization tests for phylogenetic and functional diversity of the ferns of Japan. (A) Phylogenetic diversity (PD). (B) Relative phylogenetic diversity (RPD). (C) Functional diversity (FD). (D) Relative functional diversity (RFD). For each metric, raw values were compared to a null distribution of 999 random values, and the *P*-value calculated using a two-tailed test. For details, see Materials and Methods.
 
 `r pagebreak_pdf()`
 
@@ -1591,7 +1591,7 @@ ggsave(
 coeff_plot
 ```
 
-**`r figure("coeff")`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models for the effect of environment and reproductive mode on biodiversity metrics in the ferns of Japan. (A)--(E) Environmental models (models including temperature). (F, G) Reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *P*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
+**`r figure("coeff") %>% str_to_upper()`**. Regression coefficient *t*-values (coefficient divided by standard error) of general mixed models for the effect of environment and reproductive mode on biodiversity metrics in the ferns of Japan. (A)--(E) Environmental models (models including temperature). (F, G) Reproductive models (models including % apomictic taxa). Statistical significance assessed with a likelihood ratio test (LRT) between the full model and a model with the focal independent variable removed (null model); *P*-value indicates probability of no difference between the full and null model. Name of response variable and model type indicated above each subplot. Independent variable with greatest absolute *t*-value in bold for each model.
 
 ```{r modelfit-make}
 # Make plot showing model fits
@@ -1652,7 +1652,7 @@ ggsave(
 modelfit_plot
 ```
 
-**`r figure("modelfit")`**. Relationship between biodiversity metrics and selected predictor variables in the ferns of Japan. (A)--(E) Environmental models (models including temperature). (F, G) Reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For phylogenetic diversity (PD), relative PD (RPD), functional diversity (FD), and relative FD (RFD), the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
+**`r figure("modelfit") %>% str_to_upper()`**. Relationship between biodiversity metrics and selected predictor variables in the ferns of Japan. (A)--(E) Environmental models (models including temperature). (F, G) Reproductive models (models including % apomictic taxa). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For phylogenetic diversity (PD), relative PD (RPD), functional diversity (FD), and relative FD (RFD), the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 `r pagebreak_pdf()`
 
@@ -1679,7 +1679,7 @@ ggsave(
 endemism_plot
 ```
 
-**`r figure("endemism")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism). 'neo' indicates areas with an overabundance of rare short branches; 'paleo' indicates areas with an overabundance of rare long branches; 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
+**`r figure("endemism") %>% str_to_upper()`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism). 'neo' indicates areas with an overabundance of rare short branches; 'paleo' indicates areas with an overabundance of rare long branches; 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
 
 `r pagebreak_pdf()`
 
@@ -1728,7 +1728,7 @@ ggsave(
 bioregions_plot
 ```
 
-**`r figure("bioregions")`**. Bioregions of the ferns of Japan. (A) Taxonomic bioregions. (B) Phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category.
+**`r figure("bioregions") %>% str_to_upper()`**. Bioregions of the ferns of Japan. (A) Taxonomic bioregions. (B) Phylogenetic bioregions. Bioregions determined by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between grid-cells. Bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category.
 
 `r pagebreak_pdf()`
 
@@ -1861,7 +1861,7 @@ ggsave(
 div_by_tax_region_plot
 ```
 
-**`r figure("div-by-tax-region")`**. Phylogenetic and morphological diversity of the ferns of Japan by taxonomic bioregion. (A) Standard effect size (SES) of phylogenetic diversity (PD). (B) SES of relative PD (RPD). (C) SES of functional diversity (FD). (D) SES of relative FD (RFD). (E) *P*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
+**`r figure("div-by-tax-region") %>% str_to_upper()`**. Phylogenetic and morphological diversity of the ferns of Japan by taxonomic bioregion. (A) Standard effect size (SES) of phylogenetic diversity (PD). (B) SES of relative PD (RPD). (C) SES of functional diversity (FD). (D) SES of relative FD (RFD). (E) *P*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top four clusters with the most sites shown.
 
 `r pagebreak_pdf()`
 
@@ -1999,4 +1999,4 @@ ggsave(
 conserv_status_plot
 ```
 
-**`r figure("conserv-status")`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (A) Percent of land area with medium or high protected status for grid-cells with significantly high biodiversity by protection status. (B) Percent of land area occupied by deer for grid-cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). For (A), vertical lines indicate total percent area protected across Japan (baseline protection rate). For (B), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
+**`r figure("conserv-status") %>% str_to_upper()`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (A) Percent of land area with medium or high protected status for grid-cells with significantly high biodiversity by protection status. (B) Percent of land area occupied by deer for grid-cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). For (A), vertical lines indicate total percent area protected across Japan (baseline protection rate). For (B), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
