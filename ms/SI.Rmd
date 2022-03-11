@@ -19,8 +19,8 @@ header-includes:
   - \usepackage{float} # keep figures from floating away
   - \usepackage{booktabs} # need for kable tables
   - \usepackage{colortbl} # need for kable tables
-  - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother # keep figures from floating away
   - \usepackage{fancyhdr} # enable header
+  - \makeatletter\renewcommand*{\fps@figure}{H}\makeatother # keep figures from floating away
   - \pagestyle{fancy}  # enable header
   - \fancypagestyle{plain}{\pagestyle{fancy}} # show header on first page
   - \renewcommand{\headrulewidth}{0pt} # delete line beneath header
@@ -147,7 +147,9 @@ morans_i %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-**`r s_table("moran")`**. Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of RPD, SES of FD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*. Significant *I* > 0 indicates autocorrelation.
+### **`r s_table("moran")`**
+
+Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of RPD, SES of FD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*. Significant *I* > 0 indicates autocorrelation.
 
 \clearpage
 
@@ -182,7 +184,9 @@ t_test_results_for_table %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-**`r s_table("corr")`**. Results of modified *t*-test for correlation between variables while taking into account spatial position. Significantly correlated variables at *P* < 0.05 in bold.
+### **`r s_table("corr")`**
+
+Results of modified *t*-test for correlation between variables while taking into account spatial position. Significantly correlated variables at *P* < 0.05 in bold.
 
 \clearpage
 
@@ -206,7 +210,9 @@ binary_sig_results %>%
   kable_styling(latex_options = c("striped", "scale_down", "HOLD_position", "repeat_header"))
 ```
 
-**`r s_table("phy-sig-binary")`**. Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format. Values of *D* rounded to three decimal places.
+### **`r s_table("phy-sig-binary")`**
+
+Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format. Values of *D* rounded to three decimal places.
 
 \clearpage
 
@@ -224,7 +230,9 @@ phy_sig_results %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-**`r s_table("phy-sig")`**. Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
+### **`r s_table("phy-sig")`**
+
+Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
 
 \clearpage
 
@@ -256,7 +264,9 @@ lrt_table_data %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-**`r s_table("lrt-null")`**. Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
+### **`r s_table("lrt-null")`**
+
+Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
 
 \clearpage
 
@@ -281,7 +291,9 @@ aic_table_data %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-**`r s_table("aic")`**. Model fit as measured with conditional Akaike Information Criterion (cAIC). Environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. Lower cAIC indicates better fit.
+### **`r s_table("aic")`**
+
+Model fit as measured with conditional Akaike Information Criterion (cAIC). Environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. Lower cAIC indicates better fit.
 
 \clearpage
 
@@ -355,7 +367,9 @@ inext_res %>%
   )
 ```
 
-**`r s_figure("sampling-curve")`**. Species collection curve for the ferns of Japan fit with the `r pack("iNEXT")` package [@Hsieh2016]. Grey shading indicates 95% confidence interval (not visible where it does not extend beyond the fitted line). Point indicates observed taxonomic richness (`r observed_data$qD` taxa, 95% confidence interval `r rich_interval` taxa). Taxa include species, subspecies, and varieties, excluding hybrids. Sampling completeness is estimated to be `r est_completeness` (95% confidence interval `r completeness_interval`).
+### **`r s_figure("sampling-curve")`**
+
+Species collection curve for the ferns of Japan fit with the `r pack("iNEXT")` package [@Hsieh2016]. Grey shading indicates 95% confidence interval (not visible where it does not extend beyond the fitted line). Point indicates observed taxonomic richness (`r observed_data$qD` taxa, 95% confidence interval `r rich_interval` taxa). Taxa include species, subspecies, and varieties, excluding hybrids. Sampling completeness is estimated to be `r est_completeness` (95% confidence interval `r completeness_interval`).
 
 \clearpage
 
@@ -407,7 +421,9 @@ a + b + c +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("grain-size")`**. Effect of grain size on sampling redundancy. (A) Percent of grid cells with redundancy > 0.5 by grain size (side length of square grid cells set to 10 km, 20 km, 30 km, or 40 km). (B) Percent of grid cells with redundancy = 0 by grain size. (C) Distribution of redundancy values by grain size.
+### **`r s_figure("grain-size")`**
+
+Effect of grain size on sampling redundancy. (A) Percent of grid cells with redundancy > 0.5 by grain size (side length of square grid cells set to 10 km, 20 km, 30 km, or 40 km). (B) Percent of grid cells with redundancy = 0 by grain size. (C) Distribution of redundancy values by grain size.
 
 \clearpage
 
@@ -449,7 +465,9 @@ f <- plot_env("F", "Temp. season.", "temp_season") +
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
 
-**`r s_figure("envir")`**. Reproductive mode and environmental data in 20 km × 20 km grid cells across Japan. (A) rolling mean area (km^2^) in 20 km latitudinal bands. (B) % apomictic taxa. (C) annual precipitation. (D) percipitation seasonality (coefficient of variation). (E) mean annual temperature. (F) temperature seasonality (standard deviation × 100). Data excluded from models not shown in this and subsequent plots unless otherwise mentioned.
+### **`r s_figure("envir")`**
+
+Reproductive mode and environmental data in 20 km × 20 km grid cells across Japan. (A) rolling mean area (km^2^) in 20 km latitudinal bands. (B) % apomictic taxa. (C) annual precipitation. (D) percipitation seasonality (coefficient of variation). (E) mean annual temperature. (F) temperature seasonality (standard deviation × 100). Data excluded from models not shown in this and subsequent plots unless otherwise mentioned.
 
 \clearpage
 
@@ -480,7 +498,9 @@ p <- ggtree(phy, layout = "fan", size = 0.25, open.angle = 3) %<+%
 rotate_tree(p, 3)
 ```
 
-**`r s_figure("tree")`**. Time tree of native Japanese ferns and lycophytes, excluding hybrids. Points at nodes indicate bootstrap support. Scalebar 100 my. Tree visualized with the `r pack("ggtree")` R package [@Yu2017].
+### **`r s_figure("tree")`**
+
+Time tree of native Japanese ferns and lycophytes, excluding hybrids. Points at nodes indicate bootstrap support. Scalebar 100 my. Tree visualized with the `r pack("ggtree")` R package [@Yu2017].
 
 \clearpage
 
@@ -514,7 +534,9 @@ a + b +
   plot_layout(nrow = 1)
 ```
 
-**`r s_figure("abundance")`**. Observed number of specimens (A) and sampling redundancy (B) per 20 km × 20 km grid cell in the ferns of Japan.
+### **`r s_figure("abundance")`**
+
+Observed number of specimens (A) and sampling redundancy (B) per 20 km × 20 km grid cell in the ferns of Japan.
 
 \clearpage
 
@@ -566,7 +588,9 @@ a + b + c +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("raw-lat")`**. (A) Raw taxonomic diversity, (B) phylogenetic diversity, and (C) functional diversity of the ferns of Japan plotted by latitude. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths. Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
+### **`r s_figure("raw-lat")`**
+
+(A) Raw taxonomic diversity, (B) phylogenetic diversity, and (C) functional diversity of the ferns of Japan plotted by latitude. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths. Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
 \clearpage
 
@@ -597,7 +621,9 @@ a + b + c + d +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("raw-biplot")`**. Relationships between observed phylogenetic and functional diversity and taxonomic richness in the ferns of Japan. (A) Phylogenetic diversity (PD). (B) Relative phylogenetic diversity (RPD). (C) Functional diversity (FD). (D) Relative functional diversity (RFD). Trendlines in (A, C) fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
+### **`r s_figure("raw-biplot")`**
+
+Relationships between observed phylogenetic and functional diversity and taxonomic richness in the ferns of Japan. (A) Phylogenetic diversity (PD). (B) Relative phylogenetic diversity (RPD). (C) Functional diversity (FD). (D) Relative functional diversity (RFD). Trendlines in (A, C) fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
 \clearpage
 
@@ -614,7 +640,9 @@ ggplot() +
   theme(legend.title = element_blank())
 ```
 
-**`r s_figure("endemism-restricted")`**. Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan. 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
+### **`r s_figure("endemism-restricted")`**
+
+Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted dataset including only taxa endemic to Japan. 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
 
 \clearpage
 
@@ -671,7 +699,9 @@ a + b +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("k-plot")`**. Selection of *k* for bioregions. (A) taxonomic bioregions. (B) phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal).
+### **`r s_figure("k-plot")`**
+
+Selection of *k* for bioregions. (A) taxonomic bioregions. (B) phylogenetic bioregions. Color indicates optimal *k* selected selected by the `r func("optimal_phyloregion")` function in the R package `r pack("phyloregion")` (black, non-optimal; red, optimal).
 
 \clearpage
 
@@ -714,7 +744,9 @@ ggtree(dendro_tax, size = 0.15) %<+%
   theme(plot.subtitle = element_markdown())
 ```
 
-**`r s_figure("dendrogram")`**. Bioregion dendrograms. Tips are sites (names not shown). Dendrograms generated by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between sites (see Materials and Methods). Color shows bioregion; bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category. (A) taxonomic bioregions. (B) phylogenetic bioregions. Dendrograms visualized with the `r pack("ggtree")` R package [@Yu2017].
+### **`r s_figure("dendrogram")`**
+
+Bioregion dendrograms. Tips are sites (names not shown). Dendrograms generated by clustering taxonomic (Sørensen) or phylogenetic (PhyloSor) distances between sites (see Materials and Methods). Color shows bioregion; bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category. (A) taxonomic bioregions. (B) phylogenetic bioregions. Dendrograms visualized with the `r pack("ggtree")` R package [@Yu2017].
 \clearpage
 
 ```{r dendrogram-b, fig.width = 7, fig.height = 9}
@@ -757,6 +789,129 @@ ggtree(dendro_phy, size = 0.15) %<+%
 ```
 
 **`r s_figure("dendrogram")`**, continued.
+
+\clearpage
+
+```{r div-by-phy-region, fig.width = 7.25, fig.height = 7}
+data <-
+  biodiv_ferns_spatial %>%
+  filter(phylo_cluster %in% c(1, 2, 3)) %>%
+  as_tibble %>%
+  select(
+    pd_obs_z, rpd_obs_z, fd_obs_z, rfd_obs_z,
+    pe_obs_p_upper, phylo_cluster)
+
+a <- ggplot(data, aes(x = phylo_cluster, y = pd_obs_z)) +
+  geom_jitter(aes(color = phylo_cluster)) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
+  geom_boxplot(
+    color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES PD",
+    x = "Cluster",
+    color = "Bioregion"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+b <- ggplot(data, aes(x = phylo_cluster, y = rpd_obs_z)) +
+  geom_jitter(aes(color = phylo_cluster)) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
+  geom_boxplot(
+    color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES RPD",
+    x = "Cluster",
+    color = "Bioregion"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+c <- ggplot(data, aes(x = phylo_cluster, y = fd_obs_z)) +
+  geom_jitter(aes(color = phylo_cluster)) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
+  geom_boxplot(
+    color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES FD",
+    x = "Cluster",
+    color = "Bioregion"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.x = element_blank()
+  )
+
+d <- ggplot(data, aes(x = phylo_cluster, y = rfd_obs_z)) +
+  geom_jitter(aes(color = phylo_cluster)) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
+  geom_boxplot(
+    color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "SES RFD",
+    x = "Cluster",
+    color = "Bioregion"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.title.x = element_blank()
+  )
+
+e <- ggplot(data, aes(x = phylo_cluster, y = pe_obs_p_upper)) +
+  geom_jitter(aes(color = phylo_cluster)) +
+  scale_color_manual(values = bioregion_cols, breaks = 1:4) +
+  geom_boxplot(
+    color = "grey80", fill = "transparent", outlier.shape = NA, alpha = 0.25) +
+  labs(
+    y = "PE *p*-score",
+    x = "Cluster",
+    color = "Bioregion"
+  ) +
+  theme_bw() +
+  theme(
+    axis.title.y = element_markdown(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.y = element_blank(),
+  )
+
+a + b + c + d + e +
+  plot_layout(ncol = 2) +
+  plot_annotation(
+    tag_levels = "A",
+    tag_prefix = "",
+    tag_suffix = ""
+  ) &
+  theme(
+    legend.position = "none",
+    plot.tag = element_text(face = "bold"))
+```
+
+### **`r s_figure("div-by-phy-region")`**
+
+Phylogenetic and morphological diversity of the ferns of Japan by phylogenetic bioregion. (A) Standard effect size (SES) of phylogenetic diversity (PD). (B) SES of relative PD (RPD). (C) SES of functional diversity (FD). (D) SES of relative FD (RFD). (E) *P*-score of observed phylogenetic endemism (PE) relative to 999 random communities. Only top three bioregions with the most sites shown.
 
 \clearpage
 
@@ -810,7 +965,9 @@ f <- plot_genus("F", "Diplazium") +
 a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ```
 
-**`r s_figure("genus-map")`**. Map of species richness for selected genera of ferns of Japan. (A) *Equisetum* is an example of a possible refugial lineage with greater species richness in northern Japan. (B) *Deparia* is an example of a genus with possible recent radiation in southern Honshu. (C)--(F) show genera with high rates of apomictic taxa (`r s_figure("apo-genus")`), which tend to be greatest in southern Honshu.
+### **`r s_figure("genus-map")`**
+
+Map of species richness for selected genera of ferns of Japan. (A) *Equisetum* is an example of a possible refugial lineage with greater species richness in northern Japan. (B) *Deparia* is an example of a genus with possible recent radiation in southern Honshu. (C)--(F) show genera with high rates of apomictic taxa (`r s_figure("apo-genus")`), which tend to be greatest in southern Honshu.
 
 \clearpage
 
@@ -854,7 +1011,9 @@ percent_apo_genus %>%
   )
 ```
 
-**`r s_figure("apo-genus")`**. Rate of apomixis in genera of native, non-hybrid Japanese ferns with > 1 apomictic taxon. Numbers next to each bar show number of apomictic taxa out of total richness per genus.
+### **`r s_figure("apo-genus")`**
+
+Rate of apomixis in genera of native, non-hybrid Japanese ferns with > 1 apomictic taxon. Numbers next to each bar show number of apomictic taxa out of total richness per genus.
 
 \clearpage
 
@@ -901,7 +1060,9 @@ wrap_plots(modelfit_plot_list) +
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("modelfit-not-ult")`**. Relationship between (A) phylogenetic diversity (PD) and (B) relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For RPD, the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
+### **`r s_figure("modelfit-not-ult")`**
+
+Relationship between (A) phylogenetic diversity (PD) and (B) relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For RPD, the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 \clearpage
 
@@ -940,7 +1101,9 @@ a + b + plot_annotation(tag_levels = "A",
   theme(plot.tag = element_text(face = "bold"))
 ```
 
-**`r s_figure("bioregions-env")`**. Scatterplots of grid cell membership in (A) taxonomic or (B) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points. Bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category.
+### **`r s_figure("bioregions-env")`**
+
+Scatterplots of grid cell membership in (A) taxonomic or (B) phylogenetic bioregions arranged by mean annual temperature and annual precipitation. Points shown with partial transparency; darker areas indicate overlapping points. Bioregions not consisting of more than `r english2(bioregion_cutoff)` grid-cells each are lumped into the "Other" category.
 
 \clearpage
 
@@ -976,7 +1139,9 @@ a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
   theme(legend.position = "bottom")
 ```
 
-**`r s_figure("protected-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and protected areas. Grid-cells with black outlines indicate significantly high biodiversity. Biodiversity metrics include (A) taxon richness, (B) phylogenetic diversity (PD), (C) functional diversity (FD), and (D) phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods).
+### **`r s_figure("protected-map")`**
+
+Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and protected areas. Grid-cells with black outlines indicate significantly high biodiversity. Biodiversity metrics include (A) taxon richness, (B) phylogenetic diversity (PD), (C) functional diversity (FD), and (D) phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods).
 
 \clearpage
 
@@ -1013,7 +1178,9 @@ a + b + c + d + plot_layout(ncol = 2, nrow = 2) +
   theme(legend.position = "bottom")
 ```
 
-**`r s_figure("deer-map")`**. Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and distribution of Japanese deer (*Cervus nippon*). Grid-cells with black outlines indicate significantly high biodiversity. Biodiversity metrics include (A) taxon richness, (B) phylogenetic diversity (PD), (C) functional diversity (FD), and (D) phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). Deer range data sources include 1978 survey, 2003 survey, and range estimated from model based on 2003 survey data. Deer ranges plotted in layers in ascending order (estimated, 2003, 1978) such that upper layers may obscure lower layers; however, deer ranges generally expanded from 1978 to estimated range, so very few sites are obscured.
+### **`r s_figure("deer-map")`**
+
+Maps showing overlap of grid-cells with significantly high biodiversity for the ferns of Japan and distribution of Japanese deer (*Cervus nippon*). Grid-cells with black outlines indicate significantly high biodiversity. Biodiversity metrics include (A) taxon richness, (B) phylogenetic diversity (PD), (C) functional diversity (FD), and (D) phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid-cells in the top 5% considered highly diverse (see Materials and Methods). Deer range data sources include 1978 survey, 2003 survey, and range estimated from model based on 2003 survey data. Deer ranges plotted in layers in ascending order (estimated, 2003, 1978) such that upper layers may obscure lower layers; however, deer ranges generally expanded from 1978 to estimated range, so very few sites are obscured.
 
 \clearpage
 

@@ -201,9 +201,9 @@ s_figure <- pryr::partial(s_figure_full, display = "cite", caption = "blank")
 s_table <- pryr::partial(s_table_full, display = "cite", caption = "blank")
 
 # - Make a short function that prints only the number (e.g., "1")
-figure_num <- function (name) {figure(name) %>% str_remove("Fig. ")}
+figure_num <- function (name) {figure(name) %>% str_remove("Figure ")}
 table_num <- function (name) {table(name) %>% str_remove("Table ")}
-s_figure_num <- function (name) {s_figure(name) %>% str_remove("Fig. ")}
+s_figure_num <- function (name) {s_figure(name) %>% str_remove("Figure ")}
 s_table_num <- function (name) {s_table(name) %>% str_remove("Table ")}
 
 # Etc ----
