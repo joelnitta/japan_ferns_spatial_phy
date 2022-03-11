@@ -120,8 +120,9 @@ references:
   author:
   - family: Blomberg
     given: Simon P
-  - family: Garland Jr.
+  - family: Garland
     given: Theodore
+    suffix: Jr.
   - family: Ives
     given: Anthony R.
   citation-key: Blomberg2003
@@ -1190,7 +1191,7 @@ references:
   issued:
   - year: 2005
   page: 67-84
-  title: New taxa discovered from southern Kyusyu and those preservation (In Japanese)
+  title: New taxa discovered from southern Kyusyu and those preservation (in Japanese)
   type: article-journal
 - id: Minh2013
   author:
@@ -1973,7 +1974,7 @@ references:
   page: 19-75
   source: CiNii
   title: 'Process of the formation of Japanese forest and typification of vegetation
-    zone: From an East Asian viewpoint (In Japanese)'
+    zone: From an East Asian viewpoint (in Japanese)'
   type: article-journal
 - id: Shiono2015
   author:
@@ -2188,7 +2189,7 @@ references:
   - family: Tokita
     given: Kunihiko
   container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer
-    eat world heritage sites: Ecology of deer and forests; In Japanese).'
+    eat world heritage sites: Ecology of deer and forests; in Japanese).'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2200,7 +2201,7 @@ references:
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo
   title: Shizen kouen ni okeru shika mondai (The problem of deer in natural parks;
-    In Japanese).
+    in Japanese).
   type: chapter
 - id: Tryon1970
   author:
@@ -2243,8 +2244,9 @@ references:
   volume: '92'
 - id: WatkinsJr.2010
   author:
-  - family: Watkins Jr.
+  - family: Watkins
     given: James E
+    suffix: Jr.
   - family: Holbrook
     given: N Michele
   - family: Zwieniecki
@@ -2290,7 +2292,7 @@ references:
   - family: Yahara
     given: Tetsukazu
   container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer
-    eat world heritage sites: Ecology of deer and forests; In Japanese).'
+    eat world heritage sites: Ecology of deer and forests; in Japanese).'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2302,7 +2304,7 @@ references:
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo
   title: Shika no zouka to yasei shokubutsu no zetsumetsu risku (Increase in deer
-    population and plant extinction risk; Japanese).
+    population and plant extinction risk; in Japanese).
   type: chapter
 - id: Zizka2019
   author:

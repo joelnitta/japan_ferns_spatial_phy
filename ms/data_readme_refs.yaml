@@ -1,0 +1,112 @@
+references:
+- id: Ebihara2019b
+  author:
+  - family: Ebihara
+    given: Atsushi
+  - family: Nitta
+    given: Joel H.
+  citation-key: Ebihara2019b
+  container-title: Journal of Plant Research
+  container-title-short: J. Plant Res.
+  DOI: 10.1007/s10265-019-01137-3
+  ISSN: '16180860'
+  issue: '6'
+  issued:
+  - year: 2019
+    month: 9
+    day: 16
+  page: 723-738
+  PMID: '31529289'
+  title: 'An update and reassessment of fern and lycophyte diversity
+    data in the Japanese Archipelago'
+  type: article-journal
+  volume: '132'
+- id: Hsieh2016
+  accessed:
+  - year: 2021
+    month: 8
+    day: 20
+  author:
+  - family: Hsieh
+    given: T. C.
+  - family: Ma
+    given: K. H.
+  - family: Chao
+    given: Anne
+  citation-key: Hsieh2016
+  container-title: Methods in Ecology and Evolution
+  container-title-short: Methods Ecol Evol
+  DOI: 10/gdskcx
+  ISSN: 2041-210X, 2041-210X
+  issue: '12'
+  issued:
+  - year: 2016
+    month: 12
+  language: en
+  page: 1451-1456
+  source: DOI.org (Crossref)
+  title: 'iNEXT: an R package for rarefaction and extrapolation of species diversity
+    (Hill numbers)'
+  title-short: iNEXT
+  type: article-journal
+  volume: '7'
+- id: Nguyen2015
+  author:
+  - family: Nguyen
+    given: Lam-Tung
+  - family: Schmidt
+    given: Heiko A.
+  - family: Haeseler
+    given: Arndt
+    non-dropping-particle: von
+  - family: Minh
+    given: Bui Quang
+  citation-key: Nguyen2015
+  container-title: Molecular Biology and Evolution
+  container-title-short: Mol. Biol. Evol.
+  DOI: 10.1093/molbev/msu300
+  ISSN: '15371719'
+  issue: '1'
+  issued:
+  - year: 2015
+  page: 268-274
+  title: 'IQ-TREE: A fast and effective stochastic algorithm for estimating maximum-likelihood
+    phylogenies'
+  type: article-journal
+  volume: '32'
+- id: Smith2012
+  author:
+  - family: Smith
+    given: Stephen A
+  - family: O'Meara
+    given: Brian C.
+  citation-key: Smith2012
+  container-title: Bioinformatics
+  DOI: 10.1093/bioinformatics/bts492
+  ISSN: '13674803'
+  issue: '20'
+  issued:
+  - year: 2012
+  page: 2689-2690
+  PMID: '22908216'
+  title: 'treePL: divergence time estimation using penalized likelihood for large
+    phylogenies'
+  type: article-journal
+  volume: '28'
+- id: Testo2016a
+  author:
+  - family: Testo
+    given: Weston L.
+  - family: Sundue
+    given: Michael A
+  citation-key: Testo2016a
+  container-title: Molecular Phylogenetics and Evolution
+  DOI: 10.1016/j.ympev.2016.09.003
+  ISSN: '10959513'
+  issued:
+  - year: 2016
+  page: 200-211
+  PMID: '27621129'
+  title: A 4000-species dataset provides new insight into the evolution of ferns
+  type: article-journal
+  volume: '105'

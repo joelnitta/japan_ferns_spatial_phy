@@ -108,8 +108,44 @@ refs_combined <- list(
     refs_all$references[cite_keys_keep$order])
 )
 
+# Fix "Jr." in author names: should be in 'suffix' field, not part of
+# first or last name
+
+# to make code easier to read,
+# extract first nested item of refs_combined
+refs <- refs_combined[[1]]
+
+for(i in seq_along(refs)) {
+  for(j in seq_along(refs[[i]]$author)) {
+    family_has_jr <- FALSE
+    given_has_jr <- FALSE
+    if(
+      !is.null(refs[[i]]$author[[j]]$family) &
+      !is.null(refs[[i]]$author[[j]]$given)) {
+      family_has_jr <- str_detect(refs[[i]]$author[[j]]$family, "Jr\\.")
+      given_has_jr <- str_detect(refs[[i]]$author[[j]]$given, "Jr\\.")
+      refs[[i]]$author[[j]]$family <- str_remove_all(
+        refs[[i]]$author[[j]]$family, "Jr\\.") %>%
+        str_squish()
+      refs[[i]]$author[[j]]$given <- str_remove_all(
+        refs[[i]]$author[[j]]$given, "Jr\\.") %>%
+        str_squish()
+      if(family_has_jr | given_has_jr) {
+        refs[[i]]$author[[j]]$suffix <- "Jr."
+        # uncomment to show changed name
+        # message(glue::glue("Fixed {refs[[i]]$author}"))
+      }
+    }
+  }
+}
+
+refs_combined[[1]] <- refs
+
 # Filter YAML references ----
+# - main MS
 filter_refs_yaml(c("ms/manuscript.Rmd", "ms/SI.Rmd"), refs_combined, "ms/references.yaml")
+# - data README (remember to remove `<span class="nocase">` manually)
+filter_refs_yaml("ms/data_readme.Rmd", refs_combined, "ms/data_readme_refs.yaml")
 
 # Write out 'aux' file with citation keys to make collection in Zotero
 # so reference data are easier to work with.

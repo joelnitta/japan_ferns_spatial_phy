@@ -139,7 +139,7 @@ references:
   author:
   - family: Tokita
     given: Kunihiko
-  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer eat world heritage sites: Ecology of deer and forests; In Japanese).'
+  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer eat world heritage sites: Ecology of deer and forests; in Japanese).'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -150,14 +150,14 @@ references:
   page: 20-37
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo
-  title: 'Shizen kouen ni okeru shika mondai (The problem of deer in natural parks; In Japanese).'
+  title: 'Shizen kouen ni okeru shika mondai (The problem of deer in natural parks; in Japanese).'
   type: chapter
 
 - id: Yahara2006
   author:
   - family: Yahara
     given: Tetsukazu
-  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer eat world heritage sites: Ecology of deer and forests; In Japanese).'
+  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer eat world heritage sites: Ecology of deer and forests; in Japanese).'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -168,7 +168,7 @@ references:
   page: 168-188
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo
-  title: 'Shika no zouka to yasei shokubutsu no zetsumetsu risku (Increase in deer population and plant extinction risk; Japanese).'
+  title: 'Shika no zouka to yasei shokubutsu no zetsumetsu risku (Increase in deer population and plant extinction risk; in Japanese).'
   type: chapter
 
 - id: R-raster
@@ -215,7 +215,7 @@ references:
   issued:
   - year: 2005
   page: 67-84
-  title: 'New taxa discovered from southern Kyusyu and those preservation (In Japanese)'
+  title: 'New taxa discovered from southern Kyusyu and those preservation (in Japanese)'
   type: article-journal
 
 - id: Shimizu2014
@@ -234,7 +234,7 @@ references:
     month: 3
   page: 19-75
   source: CiNii
-  title: 'Process of the formation of Japanese forest and typification of vegetation zone: From an East Asian viewpoint (In Japanese)'
+  title: 'Process of the formation of Japanese forest and typification of vegetation zone: From an East Asian viewpoint (in Japanese)'
   type: article-journal
 
 - id: Courtiol2017
