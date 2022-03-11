@@ -8,7 +8,7 @@ All code is in [R](https://cran.r-project.org/). The [targets package](https://d
 
 Data files need to be downloaded from three locations.
 
-1. Dataset on FigShare for this project: https://doi.org/10.6084/m9.figshare.16655263 (LINK NOT LIVE YET). Cick on the "Download all" icon, download the zipped dataset, then unzip it and put the contents in the `data/` folder in this repo.
+1. Dataset on FigShare for this project: https://doi.org/10.6084/m9.figshare.16655263. Cick on the "Download all" icon, download the zipped dataset, then unzip it and put the contents in the `data/` folder in this repo.
 2. Dataset on Dryad for Ebihara and Nitta 2019: https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32. Download the zipped dataset and put in the `data/` folder directly (without unzipping).
 3. Dataset on FigShare for FTOL v0.0.1 (Nitta et al, in prep): https://doi.org/doi:10.6084/m9.figshare.13256801 (LINK NOT LIVE YET). Download the zipped dataset and put in the `data/` folder directly (without unzipping).
 
@@ -56,7 +56,7 @@ The [targets package](https://docs.ropensci.org/targets/index.html) manages the 
 Normally, you would have to run all of the analyses starting from the original data files to generate all of the analysis results, as described above.
 This takes a long time. The longest step is the phylogenetic analysis, which takes about 1 week using 10 cores in parallel.
 
-I have put the targets cache for this project [on github](https://github.com/joelnitta/japan_ferns_spatial_phy_cache) (LINK NOT LIVE YET) under version control using the [gittargets package](https://github.com/ropensci/gittargets).
+I have put the targets cache for this project [on github](https://github.com/joelnitta/japan_ferns_spatial_phy_cache) under version control using the [gittargets package](https://github.com/ropensci/gittargets).
 
 So instead of running everything from scratch, you can checkout the exact results matching a specific code version as follows (this assumes we are in the `japan_ferns_spatial_phy` folder and requires git):
 
