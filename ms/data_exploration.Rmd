@@ -134,7 +134,7 @@ The columns are as follows:
 * `temp`: mean annual temperature (10 x °C)
 * `precip`: total annual precipitation (mm)
 * `precip_season`: seasonality in precipitation
-* `lat_area`: rolling mean of area in 0.2 degree latitudinal bands
+* `lat_area`: rolling mean of area in 100 km latitudinal bands
 
 ## Check for missing data
 
@@ -214,7 +214,7 @@ biodiv_ferns_cent_no_missing %>%
   mutate(signif = p_value < 0.05)
 ```
 
-Grubb's test confirms that the percent apomictic value is an outlier. It also indicates that the highest values of the variables `fd_obs_z`, `pd_obs_z`, `rfd_obs_z`, and `rpd_obs_z` may be outliers. 
+Grubb's test confirms that the percent apomictic value is an outlier. It also indicates that the highest values of the variables `pd_obs_z`, `fd_obs_z`, `rpd_obs_z`, and `rfd_obs_z` may be outliers. 
 
 One reason for artificially extreme values could be undersampling of species. Let's check richness of these possible outlier grid-cells.
 
