@@ -93,6 +93,41 @@ references:
     phylogenies'
   type: article-journal
   volume: '28'
+- id: Kusumoto2017
+  accessed:
+  - year: 2020
+    month: 6
+    day: 30
+  author:
+  - family: Kusumoto
+    given: Buntarou
+  - family: Shiono
+    given: Takayuki
+  - family: Konoshima
+    given: Masashi
+  - family: Yoshimoto
+    given: Atsushi
+  - family: Tanaka
+    given: Takayuki
+  - family: Kubota
+    given: Yasuhiro
+  citation-key: Kusumoto2017
+  container-title: Ecological Research
+  container-title-short: Ecol Res
+  DOI: 10.1007/s11284-017-1451-6
+  ISSN: 0912-3814, 1440-1703
+  issue: '3'
+  issued:
+  - year: 2017
+    month: 5
+  language: en
+  page: 299-311
+  source: DOI.org (Crossref)
+  title: How well are biodiversity drivers reflected in protected areas? A representativeness
+    assessment of the geohistorical gradients that shaped endemic flora in Japan
+  title-short: How well are biodiversity drivers reflected in protected areas?
+  type: article-journal
+  volume: '32'
 - id: Testo2016a
   author:
   - family: Testo

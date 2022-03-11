@@ -145,6 +145,7 @@ refs_combined[[1]] <- refs
 # - main MS
 filter_refs_yaml(c("ms/manuscript.Rmd", "ms/SI.Rmd"), refs_combined, "ms/references.yaml")
 # - data README (remember to remove `<span class="nocase">` manually)
+# also for some reason Kusumoto2017 isn't included, so copy over manually
 filter_refs_yaml("ms/data_readme.Rmd", refs_combined, "ms/data_readme_refs.yaml")
 
 # Write out 'aux' file with citation keys to make collection in Zotero

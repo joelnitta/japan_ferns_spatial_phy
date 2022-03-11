@@ -1,12 +1,12 @@
 ---
-output: rtf_document
+output: md_document
 editor_options:
   chunk_output_type: console
 ---
 
 ---
 bibliography: 
-- `r here::here("ms/references.yaml")`
+- `r here::here("ms/data_readme_refs.yaml")`
 ---
 
 ```{r manual, include = FALSE, evaluate = FALSE}
@@ -19,15 +19,6 @@ source(here::here("R/ms_functions.R"))
 ```
 
 ```{r setup, include = FALSE, cache = FALSE}
-# TO CONVERT TO PLAIN TEXT:
-# after rendering to rtf,
-# 1. Copy the contents of the rtf file, paste to txt.
-# 2. Replace all single line breaks with double line breaks
-# (in Atom search-replace with grep: \n for \n\n)
-# 3. Hard-wrap all text at 80 characters (in Atom with autoflow: cmd-alt-q)
-# (optional: add name after first line)
-# 4. Save as "README.txt"
-
 knitr::opts_chunk$set(
   echo = FALSE, message = FALSE,
   warning = FALSE, results = "hide", cache = FALSE)
@@ -58,14 +49,14 @@ tar_load(
     "japan_fern_phylogram_figshare_file",
     "japan_fern_tree_figshare_file",
     "japan_fern_tree_uncollapsed_figshare_file",
-    "refs_yaml"
+    "refs_data_readme_yaml"
     )
   )
 ```
 
 This README.txt file was generated on `r format(Sys.time(), '%d %B, %Y')` by Joel Nitta
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\- GENERAL INFORMATION \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+------------------- GENERAL INFORMATION -----------------
 
 Title of Dataset: Data from: Spatial phylogenetics of Japanese ferns: Patterns,
 processes, and implications for conservation
@@ -85,11 +76,11 @@ Information about funding sources or sponsorship that supported the collection
 of the data: Funding provided in part by the Japan Society for the Promotion of
 Science (Kakenhi) Grant Number 16H06279
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 SHARING/ACCESS INFORMATION
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 Licenses/restrictions placed on the data, or limitations of reuse: CC0 1.0
 Universal (CC0 1.0)
@@ -100,16 +91,17 @@ and implications for conservation FIXME: add DOI when available
 
 Citation for and links to publications that cite or use the data: Nitta JH,
 Mishler BD, Iwasaki W, Ebihara A (2022) Spatial phylogenetics of Japanese ferns:
-Patterns, processes, and implications for conservation FIXME: add journal when published
+Patterns, processes, and implications for conservation.
+American Journal of Botany. FIXME: add DOI, page numbers when available
 
 Code for analyzing the data is available on github:
 https://github.com/joelnitta/japan_ferns_spatial_phy
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------
 
 DATA & FILE OVERVIEW
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------
 
 File list (filenames, directory structure (for zipped files) and brief
 description of all data files):
@@ -149,11 +141,11 @@ FIXME: replace with DOI when available
 
 Checksums are 32-byte MD5 hashes generated with tools::md5sum() in R.
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 METHODOLOGICAL INFORMATION
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r summary-stats}
 # Number of fossils used for dating
@@ -177,8 +169,9 @@ https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32).
 Traits were measured on each species as described in @Ebihara2019b.
 
 Phylogenetic analysis was conducted with maximum likelihood in IQ-TREE v1.6.12
-[@Nguyen2015] by combining plastid *rbcL* sequences of each taxon with a
-globally sampled data matrix (Nitta et al, in prep). Next, dating analysis was
+[@Nguyen2015] by combining plastid rbcL sequences of each taxon with a
+globally sampled data matrix (FTOL v0.0.1; Nitta et al., in prep.; 
+https://github.com/fernphy/ftol/). Next, dating analysis was
 carried out using treePL v1.0 [@Smith2012] with `r n_fossil_points` fossil
 calibration points after @Testo2016a. The dated phylogeny was then trimmed to
 include Japanese taxa only.
@@ -192,13 +185,14 @@ https://github.com/joelnitta/japan_ferns_spatial_phy/blob/main/R/process_raw_dat
 
 For full methods, see Nitta JH, Mishler BD, Iwasaki W, Ebihara A (2022) Spatial
 phylogenetics of Japanese ferns: Patterns, processes, and implications for
-conservation FIXME: Add journal when published
+conservation. American Journal of Botany. 
+FIXME: add DOI, page numbers when available
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 DATA-SPECIFIC INFORMATION
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r deer-range}
 deer_range <- sf::st_read(here::here(deer_range_file))
@@ -223,7 +217,7 @@ Coordinate reference system: JGD2000
 
 Variable list:
 
-```{r results = "asis"}
+```{r deer-range-cols, results = "asis"}
   deer_range %>%
   make_data_desc(
     tribble(
@@ -237,7 +231,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(deer_range_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r ja-climate-data}
 ja_climate_data <- sf::st_read(here::here(ja_climate_data_file))
@@ -267,7 +261,7 @@ Variable list:
       "temp", "Mean annual temperature, in units of 10 * degrees celsius (BIO1)",
       "temp_season", "Temperature seasonality (standard deviation ×100) (BIO4)",
       "precip", "Annual precipitation (mm) (BIO12)",
-      "precip_season", "Precipitation seasonlaity (coefficient of variation) (BIO15)",
+      "precip_season", "Precipitation seasonality (coefficient of variation) (BIO15)",
       "geom", "Vector describing shape and position of grid-cell"
   ))
 ```
@@ -276,7 +270,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(ja_climate_data_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-ferns-comm-full}
 japan_ferns_comm_full <- read_csv(here::here(japan_ferns_comm_full_file))
@@ -304,7 +298,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_ferns_comm_full_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-ferns-inext-results}
 inext_res <- read_csv(here::here(inext_res_file))
@@ -329,7 +323,7 @@ Variable list:
     tribble(
       ~col, ~desc,
       "m", "Sample size (number of individuals)",
-      "method", "Method used to estimate diveristy",
+      "method", "Method used to estimate diversity",
       "order", "Diversity order of Hill number (here 0, equivalent to species richness)",
       "qD", "Estimated diversity",
       "qD.LCL", "Lower 95% confidence limit on estimated diversity",
@@ -344,7 +338,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(inext_res_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r occ-point-data-summary}
 occ_point_data_summary <- read_csv(here::here(occ_point_data_summary_file))
@@ -355,7 +349,7 @@ assert(occ_point_data_summary, not_na, everything(), success_fun = success_logic
 `r fs::path_file(occ_point_data_summary_file)`: Summary of raw specimen data for
 native, non-hybrid ferns of Japan. Raw specimen data consists of one row per
 specimen, with species name, latitude, longitude, and collection date (raw
-specimen data not included here to protect endangered species). Raw data were
+specimen data not included here). Raw data were
 filtered to remove duplicate specimens and specimens that occurred outside of
 the second-degree mesh (approximately 10 km sq grid-cell) map of Japan
 (http://www.biodic.go.jp/trialSystem/EN/shpddl.html)
@@ -381,7 +375,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(occ_point_data_summary_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r redundancy-by-res}
 redundancy_by_res <- read_csv(here::here(redundancy_by_res_file))
@@ -417,7 +411,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(redundancy_by_res_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-ferns-shape-full}
 japan_ferns_shape_full <- st_read(here::here(japan_ferns_shape_full_file))
@@ -455,7 +449,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_ferns_shape_full_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-ferns-traits-lucid}
 japan_ferns_traits_lucid <- read_csv(here::here(raw_trait_data_file))
@@ -490,13 +484,13 @@ unless missing (0 or 3). For example, 1:9.4:12:14:16. The starting '1:' does not
 mean anything. The next series of numbers correspond to the outside minimum,
 normal minimum, normal maximum and outside maximum. For example, a plant leaf
 may normally be in the range of 4-5 cm, but sometimes as low as 2 cm or as high
-as 6 cm. This would be written 2:4:5:6.
+as 6 cm. This would be written 1:2:4:5:6.
 
 Missing data codes: '0' indicates trait is missing; '3' indicates uncertain.
 
 MD5 checksum: `r tools::md5sum(here::here(raw_trait_data_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-map-points}
 japan_map_points <- read_csv(here::here(japan_map_points_file))
@@ -529,7 +523,7 @@ Missing data codes: No data entered between commas in CSV.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_map_points_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-map}
 japan_map <- sf::st_read(here::here(japan_map_file))
@@ -562,7 +556,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_map_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r protected-areas}
 protected_areas <- st_read(here::here(protected_areas_file))
@@ -606,7 +600,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(protected_areas_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r plastome-calibration-dates}
 plastome_calibration_dates <- read_csv(here::here(calibration_dates_file))
@@ -643,7 +637,7 @@ Missing data codes: No data entered between commas in CSV.
 
 MD5 checksum: `r tools::md5sum(here::here(calibration_dates_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-ferns-biodiv-figshare}
 japan_ferns_biodiv_figshare <- read_csv(here::here(japan_ferns_biodiv_figshare_file))
@@ -653,9 +647,9 @@ japan_ferns_biodiv_figshare <- read_csv(here::here(japan_ferns_biodiv_figshare_f
 Biodiversity statistics of native, non-hybrid ferns and environmental variables
 in Japan. Biodiversity metrics calculated as described in Nitta et al. 2022. 
 Climatic (temperature and preciptation) variables
-calculated as described for japan_climate.gpkg. Includes one row with missing
-environmental data and one outlier for % apomixis that were removed prior to
-spatial modeling analysis in Nitta et al. 2022.
+calculated as described for japan_climate.gpkg. Includes three rows with missing 
+data and one outlier for % apomixis that were removed prior to
+spatial modeling analysis.
 
 Number of variables: `r ncol(japan_ferns_biodiv_figshare)`
 
@@ -675,7 +669,7 @@ Variable list:
       "richness", "Number of taxa occurring in grid-cell",
       "fd_obs_z", "Z-score (standard effect size) of observed functional diversity (FD)",
       "pd_obs_z", "Z-score of observed phylogenetic diversity (PD)",
-      "pe_obs_z", "Z-score of observed phylogenetic endemisim (PE)",
+      "pe_obs_z", "Z-score of observed phylogenetic endemism (PE)",
       "rfd_obs_z", "Z-score of observed relative FD",
       "rpd_obs_z", "Z-score of observed relative PD",
       "richness_obs_p_upper", "Richness percentile",
@@ -703,7 +697,7 @@ Missing data codes: No data entered between commas in CSV.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_ferns_biodiv_figshare_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r comm-ferns-figshare-file}
 comm_ferns_figshare <- read_csv(here::here(comm_ferns_figshare_file))
@@ -730,7 +724,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(comm_ferns_figshare_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r shape-ferns-figshare-file}
 shape_ferns_figshare <- sf::st_read(here::here(shape_ferns_figshare_file))
@@ -768,7 +762,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(shape_ferns_figshare_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r fern-traits-figshare-file}
 fern_traits_figshare <- read_csv(here::here(fern_traits_figshare_file))
@@ -790,7 +784,7 @@ Missing data codes: Missing data coded as 'NA'.
 
 MD5 checksum: `r tools::md5sum(here::here(fern_traits_figshare_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-fern-phylogram-figshare-file}
 japan_fern_phylogram_figshare <- ape::read.tree(here::here(japan_fern_phylogram_figshare_file))
@@ -808,7 +802,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_fern_phylogram_figshare_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-fern-figshare-uncollapsed-file}
 japan_fern_tree_uncollapsed_figshare <- ape::read.tree(here::here(japan_fern_tree_uncollapsed_figshare_file))
@@ -827,7 +821,7 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_fern_tree_uncollapsed_figshare_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 ```{r japan-fern-figshare-file}
 japan_fern_tree_figshare <- ape::read.tree(here::here(japan_fern_tree_figshare_file))
@@ -847,16 +841,23 @@ Missing data codes: No missing data.
 
 MD5 checksum: `r tools::md5sum(here::here(japan_fern_tree_figshare_file))`
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
 CHANGE LOG
 
-\-\-\-
+2022-03-11
+
+- Use Mollweide projection for grid-cells
+- Don't include targets cache (move to https://github.com/joelnitta/japan_ferns_spatial_phy_cache)
+- Fix spelling errors in README text
+- Fix missing '1:' in LUCID trait data example
+- Fix description of rows with missing data in japan_ferns_biodiv.csv
+- Automate generation of plain text file
 
 2021-09-22
 
-Generate this README file.
+- Generate this README file.
 
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+--------------------------
 
-References
+REFERENCES

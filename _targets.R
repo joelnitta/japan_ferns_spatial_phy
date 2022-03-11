@@ -62,10 +62,10 @@ tmp <- capture.output({
     params = list(knit_type = "targets")
   )
   data_readme_tar <- tar_render(
-    data_readme,
+    data_readme_md,
     knit_root_dir = here::here(),
     path = "ms/data_readme.Rmd",
-    output_file = here::here("results/data_readme.rtf")
+    output_file = here::here("results/data_readme.md")
   )
   },
   type = "message"
@@ -644,7 +644,6 @@ tar_plan(
     biodiv_ferns_spatial,
     crs = 4612 # convert to JDG2000 CRS
     ),
-
   # japan_ferns_biodiv.csv
   tar_file(
     japan_ferns_biodiv_figshare_file,
@@ -652,7 +651,6 @@ tar_plan(
       biodiv_ferns_cent_figshare,
       "results/figshare_files/japan_ferns_biodiv.csv")
   ),
-
   # japan_ferns_comm.csv
   tar_file(
     comm_ferns_figshare_file,
@@ -660,7 +658,6 @@ tar_plan(
       rownames_to_column("grids") %>%
       write_csv_tar("results/figshare_files/japan_ferns_comm.csv")
   ),
-
   # japan_ferns_shape.gpkg
   tar_file(
     shape_ferns_figshare_file,
@@ -670,32 +667,45 @@ tar_plan(
       time_stamp = as.Date("2021-09-03")
     )
   ),
-
   # japan_ferns_traits.csv
   tar_file(
     fern_traits_figshare_file,
     write_csv_tar(fern_traits, "results/figshare_files/japan_ferns_traits.csv")
   ),
-
   # japan_ferns_tree.tre
   tar_file(
     japan_fern_phylogram_figshare_file,
     write_tree_tar(japan_fern_phylogram,
       "results/figshare_files/japan_ferns_tree.tre")
   ),
-
   # japan_ferns_tree_dated.tre
   tar_file(
     japan_fern_tree_figshare_file,
     write_tree_tar(japan_fern_tree,
       "results/figshare_files/japan_ferns_tree_dated.tre")
   ),
-
   # japan_ferns_tree_dated_uncollapsed.tre
   tar_file(
     japan_fern_tree_uncollapsed_figshare_file,
     write_tree_tar(japan_fern_tree_uncollapsed,
       "results/figshare_files/japan_ferns_tree_dated_uncollapsed.tre")
+  ),
+  # Zip into a single archive
+  tar_file(
+    figshare_zipped,
+    zip_files(
+      zipfile = "results/figshare_files/results.zip",
+      files = c(
+        japan_ferns_biodiv_figshare_file,
+        comm_ferns_figshare_file,
+        shape_ferns_figshare_file,
+        fern_traits_figshare_file,
+        japan_fern_phylogram_figshare_file,
+        japan_fern_tree_figshare_file,
+        japan_fern_tree_uncollapsed_figshare_file
+      ),
+      flags = "--junk-paths"
+    )
   ),
 
   # Etc ----
@@ -712,6 +722,7 @@ tar_plan(
   tar_file(refs_yaml, "ms/references.yaml"),
   tar_file(refs_other_yaml, "ms/references_other.yaml"),
   tar_file(refs_other_bib, "ms/references_other.bib"),
+  tar_file(refs_data_readme_yaml, "ms/data_readme_refs.yaml"),
   tar_file(template_file, "ms/american-journal-of-botany.docx"),
   tar_file(csl_file, "ms/american-journal-of-botany.csl"),
   tar_file(ms_functions, "R/ms_functions.R"),
@@ -720,5 +731,19 @@ tar_plan(
   ms_pdf_tar,
   si_pdf_tar,
   si_data_exploration_tar,
-  data_readme_tar
+  data_readme_tar,
+  # convert data readme to plain text (raw)
+  tar_file(
+    data_readme_txt_raw,
+    pandoc(
+      c(data_readme_md[[1]], 
+        "-o", "results/data_readme_raw.txt"),
+      "results/data_readme_raw.txt"
+    )
+  ),
+  # clean up odd formatting
+  tar_file(
+    data_readme_txt,
+    clean_text_file(data_readme_txt_raw, "results/figshare_files/README.txt")
+  )
 )
