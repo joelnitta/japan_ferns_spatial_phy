@@ -61,11 +61,13 @@ tmp <- capture.output({
     output_file = here::here("results/appendix_s2.pdf"),
     params = list(knit_type = "targets")
   )
+  # Data README for figshare
   data_readme_tar <- tar_render(
-    data_readme_md,
+    data_readme_txt,
     knit_root_dir = here::here(),
     path = "ms/data_readme.Rmd",
-    output_file = here::here("results/data_readme.md")
+    output_format = plain_document(),
+    output_file = here::here("results/figshare_files/README.txt")
   )
   },
   type = "message"
@@ -731,19 +733,5 @@ tar_plan(
   ms_pdf_tar,
   si_pdf_tar,
   si_data_exploration_tar,
-  data_readme_tar,
-  # convert data readme to plain text (raw)
-  tar_file(
-    data_readme_txt_raw,
-    pandoc(
-      c(data_readme_md[[1]], 
-        "-o", "results/data_readme_raw.txt"),
-      "results/data_readme_raw.txt"
-    )
-  ),
-  # clean up odd formatting
-  tar_file(
-    data_readme_txt,
-    clean_text_file(data_readme_txt_raw, "results/figshare_files/README.txt")
-  )
+  data_readme_tar
 )

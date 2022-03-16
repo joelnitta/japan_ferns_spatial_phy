@@ -3945,6 +3945,18 @@ pandoc <- function(args, out_file = NULL) {
   out_file
 }
 
+#' Convert to a plain text document
+#'
+#' @return R Markdown output format to pass to rmarkdown::render()
+#' 
+plain_document <- function() {
+  rmarkdown::output_format(
+    knitr = rmarkdown::knitr_options(opts_chunk = list(dev = 'png')),
+    pandoc = rmarkdown::pandoc_options(to = "plain"),
+    clean_supporting = TRUE
+  )
+}
+
 #' Clean a text file
 #' 
 #' - Strip escape characters (backslashes)
