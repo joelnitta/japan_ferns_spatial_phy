@@ -3931,20 +3931,6 @@ biodiv_ferns_spatial_to_cent <- function(biodiv_ferns_spatial, crs) {
 
 # Rendering ----
 
-#' Run Pandoc
-#' 
-#' No checks are run to ensure that `out_file` exists.
-#'
-#' @param args Character vector of arguments to pass to pandoc
-#' @param out_file Optional; path to output file(s)
-#'
-#' @return NULL or the path to the output file
-#' 
-pandoc <- function(args, out_file = NULL) {
-  processx::run("pandoc", args)
-  out_file
-}
-
 #' Convert to a plain text document
 #'
 #' @return R Markdown output format to pass to rmarkdown::render()
@@ -3955,24 +3941,6 @@ plain_document <- function() {
     pandoc = rmarkdown::pandoc_options(to = "plain"),
     clean_supporting = TRUE
   )
-}
-
-#' Clean a text file
-#' 
-#' - Strip escape characters (backslashes)
-#' - Replace weird unicode space character with normal space
-#'
-#' @param in_file Input file path
-#' @param out_file Output file path
-#'
-#' @return Output file path
-#' 
-clean_text_file <- function(in_file, out_file) {
-  readr::read_lines(in_file) %>%
-    stringr::str_remove_all("\\\\") %>%
-    stringr::str_replace_all(" ", " ") %>%
-    readr::write_lines(out_file)
-  out_file
 }
 
 # Figshare ----
