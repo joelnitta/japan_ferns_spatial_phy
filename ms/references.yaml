@@ -114,7 +114,7 @@ references:
   - year: 2013
   publisher: Springer
   publisher-place: New York
-  title: 'Applied spatial data analysis with R: Second edition'
+  title: Applied spatial data analysis with R, 2nd ed.
   type: book
 - id: Blomberg2003
   author:
@@ -195,7 +195,7 @@ references:
   - family: Green
     given: J
   citation-key: Bryant2008
-  container-title: Proceedings of the National Academy of Sciences
+  container-title: Proceedings of the National Academy of Sciences, USA
   DOI: 10.1073/pnas.0801920105
   ISSN: 1091-6490
   issue: Supplement 1
@@ -407,25 +407,25 @@ references:
   - family: Ebihara
     given: Atsushi
   citation-key: Ebihara2016b
-  event-place: Tokyo
+  event-place: Tokyo, Japan
   issued:
   - year: 2016
   number-of-pages: '475'
   publisher: Gakken Plus
-  publisher-place: Tokyo
-  title: The Standard of Ferns and Lycophytes in Japan, Vol. 1
+  publisher-place: Tokyo, Japan
+  title: The standard of ferns and lycophytes in Japan, vol. 1
   type: book
 - id: Ebihara2017
   author:
   - family: Ebihara
     given: Atsushi
   citation-key: Ebihara2017
-  event-place: Tokyo
+  event-place: Tokyo, Japan
   issued:
   - year: 2017
   publisher: Gakken Plus
-  publisher-place: Tokyo
-  title: The Standard of Ferns and Lycophytes in Japan, Vol. 2
+  publisher-place: Tokyo, Japan
+  title: The standard of ferns and lycophytes in Japan, vol. 2
   type: book
 - id: Ebihara2019b
   author:
@@ -787,8 +787,8 @@ references:
     year: 2021
     month: 09
     day: 1
-  title: Yaseichoju ni yoru seitaikei heno eikyo ga kennen sareru chiiki (Areas where
-    effects of wild animals on the environment is a concern; in Japanese)
+  title: Yaseichoju ni yoru seitaikei heno eikyo ga kennen sareru chiiki [Areas where
+    effects of wild animals on the environment is a concern; in Japanese]
   URL: https://www.biodic.go.jp/biodiversity/activity/policy/map/map14/index.html
 - id: kankyosho2021b
   type: webpage
@@ -800,8 +800,8 @@ references:
     year: 2021
     month: 09
     day: 1
-  title: Kokuritsu, kokuteikouen soutenken jigyou ni tsuite (On the project to overhaul
-    national parks and quasi-national parks; in Japanese)
+  title: Kokuritsu, kokuteikouen soutenken jigyou ni tsuite [On the project to overhaul
+    national parks and quasi-national parks; in Japanese]
   URL: https://www.env.go.jp/park/topics/review/attach/jigyo/full.pdf
 - id: kankyosho2022
   type: webpage
@@ -813,7 +813,7 @@ references:
     year: 2022
     month: 1
     day: 17
-  title: Ikimono-rogu reddo-deta-bukku (Organisms Log, Red Data Book; in Japanese)
+  title: Ikimono-rogu reddo-deta-bukku [Organisms Log, Red Data Book; in Japanese]
   URL: https://ikilog.biodic.go.jp/Rdb/
 - id: Kessler2011a
   author:
@@ -1208,7 +1208,7 @@ references:
   issued:
   - year: 2005
   page: 67-84
-  title: New taxa discovered from southern Kyusyu and those preservation (in Japanese)
+  title: New taxa discovered from southern Kyusyu and those preservation [in Japanese]
   type: article-journal
 - id: Minh2013
   author:
@@ -1298,9 +1298,9 @@ references:
   - literal: Japan Ministry of the Environment
   issued:
   - year: 2015
-  title: Red Data Book 2014--Threatened Wildlife of Japan--Vol. 8 Vascular Plants
+  title: Red data book 2014, Threatened wildlife of Japan, vol. 8 Vascular plants
   publisher: Gyosei Co.
-  publisher-place: Tokyo
+  publisher-place: Tokyo, Japan
 - id: Moran2001
   author:
   - family: Moran
@@ -1543,8 +1543,7 @@ references:
     given: Joel H.
   issued:
   - year: 2022
-  title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R. R Package
-    Version 0.0.2'
+  title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R, version 0.0.2'
   URL: https://doi.org/10.5281/zenodo.5885646
 - id: Nitta2022b
   author:
@@ -1608,7 +1607,7 @@ references:
     year: 2021
     month: 09
     day: 1
-  title: 'Caper: Comparative analyses of phylogenetics and evolution in R. Version
+  title: 'caper: Comparative analyses of phylogenetics and evolution in R, version
     1.0.1'
   title-short: Caper
   note: R package version 1.0.1
@@ -2014,7 +2013,7 @@ references:
   page: 19-75
   source: CiNii
   title: 'Process of the formation of Japanese forest and typification of vegetation
-    zone: From an East Asian viewpoint (in Japanese)'
+    zone: From an East Asian viewpoint [in Japanese]'
   type: article-journal
 - id: Shiono2015
   author:
@@ -2228,8 +2227,8 @@ references:
   author:
   - family: Tokita
     given: Kunihiko
-  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer
-    eat world heritage sites: Ecology of deer and forests; in Japanese).'
+  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku [Deer
+    eat world heritage sites: Ecology of deer and forests; in Japanese].'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2239,9 +2238,9 @@ references:
   - year: 2006
   page: 20-37
   publisher: Bunichi Sogo Shuppan
-  publisher-place: Tokyo
-  title: Shizen kouen ni okeru shika mondai (The problem of deer in natural parks;
-    in Japanese).
+  publisher-place: Tokyo, Japan
+  title: Shizen kouen ni okeru shika mondai [The problem of deer in natural parks;
+    in Japanese].
   type: chapter
 - id: Tryon1970
   author:
@@ -2331,8 +2330,8 @@ references:
   author:
   - family: Yahara
     given: Tetsukazu
-  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku (Deer
-    eat world heritage sites: Ecology of deer and forests; in Japanese).'
+  container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku [Deer
+    eat world heritage sites: Ecology of deer and forests; in Japanese].'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2342,9 +2341,9 @@ references:
   - year: 2006
   page: 168-188
   publisher: Bunichi Sogo Shuppan
-  publisher-place: Tokyo
-  title: Shika no zouka to yasei shokubutsu no zetsumetsu risku (Increase in deer
-    population and plant extinction risk; in Japanese).
+  publisher-place: Tokyo, Japan
+  title: Shika no zouka to yasei shokubutsu no zetsumetsu risku [Increase in deer
+    population and plant extinction risk; in Japanese].
   type: chapter
 - id: Zizka2019
   author:

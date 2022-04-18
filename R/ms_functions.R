@@ -32,6 +32,14 @@ signif_cols <-
     "> 0.975" = colorb_paired[[1]], # Light blue 
     "> 0.99" = colorb_paired[[2]] # Dark blue 
   )
+signif_labels <-
+  c(
+    "< 0.01" = "*p* < 0.01", #  Dark red
+    "< 0.025" = "*p* < 0.025", # Light red
+    "not significant" = "not significant", # Beige
+    "> 0.975" = "*p* > 0.975", # Light blue 
+    "> 0.99" = "*p* > 0.99" # Dark blue 
+  )
 
 # - CANAPE (Okabe-Ito CVD safe)
 canape_cols <-
@@ -86,6 +94,46 @@ deer_lines <- c(
 # AJB: Common Latin words (e.g., in vivo, sensu lato) are not italicized.
 ie <- "i.e."
 eg <- "e.g."
+ca <- "ca."
+
+# Helper function to count decimal places in a number
+# https://stackoverflow.com/questions/5173692/how-to-return-number-of-decimal-places-in-r
+decimalplaces <- function(x) {
+  # We only care about decimal places, not actual number so this is OK:
+  # Add 1 so as.character() doesn't result in scientific notation
+  if (x < 1) x <- 1 + x
+  if (abs(x - round(x)) > .Machine$double.eps^0.5) {
+    as.character(x) %>%
+      sub('0+$', '', .) %>%
+      strsplit(".", fixed = TRUE) %>%
+      purrr::pluck(1) %>%
+      purrr::pluck(2) %>%
+      nchar()
+  } else {
+    # If number of decimals exceeds machine precision, return
+    # default number of digits for printing
+    getOption("digits")
+  }
+}
+
+# Format numbers
+# AJB rules:
+# no commas with four-digit numbers (e.g., 1000 instead of 1,000)
+# 0.13 instead of .13.
+number <- function(x, accuracy = NULL, ...) {
+  
+  # Set default accuracy to number of decimal places
+  # in the number, if precision is below machine precision
+  if (is.null(accuracy) & abs(x - round(x)) > .Machine$double.eps^0.5) {
+    accuracy <- 1/10^decimalplaces(x)
+  }
+  
+  if (as.integer(x) > 9999) {
+    scales::number(x, big.mark = ",", accuracy = accuracy, ...)
+  } else {
+    scales::number(x, big.mark = "", accuracy = accuracy, ...)
+  }
+}
 
 #' Format R packages names
 #' 

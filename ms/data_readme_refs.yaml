@@ -17,8 +17,8 @@ references:
     day: 16
   page: 723-738
   PMID: '31529289'
-  title: 'An update and reassessment of fern and lycophyte diversity
-    data in the Japanese Archipelago'
+  title: <span class="nocase">An update and reassessment of fern and lycophyte diversity
+    data in the Japanese Archipelago</span>
   type: article-journal
   volume: '132'
 - id: Hsieh2016
@@ -63,7 +63,6 @@ references:
     given: Bui Quang
   citation-key: Nguyen2015
   container-title: Molecular Biology and Evolution
-  container-title-short: Mol. Biol. Evol.
   DOI: 10.1093/molbev/msu300
   ISSN: '15371719'
   issue: '1'
@@ -93,6 +92,23 @@ references:
     phylogenies'
   type: article-journal
   volume: '28'
+- id: Testo2016a
+  author:
+  - family: Testo
+    given: Weston L.
+  - family: Sundue
+    given: Michael A
+  citation-key: Testo2016a
+  container-title: Molecular Phylogenetics and Evolution
+  DOI: 10.1016/j.ympev.2016.09.003
+  ISSN: '10959513'
+  issued:
+  - year: 2016
+  page: 200-211
+  PMID: '27621129'
+  title: A 4000-species dataset provides new insight into the evolution of ferns
+  type: article-journal
+  volume: '105'
 - id: Kusumoto2017
   accessed:
   - year: 2020
@@ -128,20 +144,3 @@ references:
   title-short: How well are biodiversity drivers reflected in protected areas?
   type: article-journal
   volume: '32'
-- id: Testo2016a
-  author:
-  - family: Testo
-    given: Weston L.
-  - family: Sundue
-    given: Michael A
-  citation-key: Testo2016a
-  container-title: Molecular Phylogenetics and Evolution
-  DOI: 10.1016/j.ympev.2016.09.003
-  ISSN: '10959513'
-  issued:
-  - year: 2016
-  page: 200-211
-  PMID: '27621129'
-  title: A 4000-species dataset provides new insight into the evolution of ferns
-  type: article-journal
-  volume: '105'

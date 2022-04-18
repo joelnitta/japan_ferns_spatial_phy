@@ -50,7 +50,7 @@ library(ggspatial) # for scalebars on maps
 # Load functions and variables only used when rendering Rmds
 source(here::here("R/ms_functions.R"), local = TRUE)
 # Set knitr options
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, results = "hide", cache = FALSE, dev="cairo_pdf")
 ```
 
 ```{r libraries-no-run-in-plan, eval = FALSE}
@@ -130,6 +130,10 @@ fs::file_delete(temp_file)
 <!-- Don't indent -->
 \setlength{\parindent}{0ex}
 
+### **`r s_table("moran")`**
+
+Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of RPD, SES of FD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*. Significant *I* > 0 indicates autocorrelation.
+
 ```{r moran, results = "as-is"}
 morans_i %>%
   select(resp_var = var, morans_i, pval_i) %>%
@@ -147,11 +151,10 @@ morans_i %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-### **`r s_table("moran")`**
-
-Spatial autocorrelation in biodiversity metrics (richness, SES of PD, SES of RPD, SES of FD, SES of RFD) and independent variables (environmental variables and % apomictic taxa) as measured with Moran's *I*. Significant *I* > 0 indicates autocorrelation.
-
 \clearpage
+### **`r s_table("corr")`**
+
+Results of modified *t*-test for correlation between variables while taking into account spatial position. Significantly correlated variables at *P* < 0.05 in bold.
 
 ```{r corr, results = "as-is"}
 t_test_results_for_table <-
@@ -184,11 +187,11 @@ t_test_results_for_table %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-### **`r s_table("corr")`**
-
-Results of modified *t*-test for correlation between variables while taking into account spatial position. Significantly correlated variables at *P* < 0.05 in bold.
-
 \clearpage
+
+### **`r s_table("phy-sig-binary")`**
+
+Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format. Values of *D* rounded to three decimal places.
 
 ```{r phy-sig-binary, results = "as-is"}
 binary_sig_results %>%
@@ -210,11 +213,11 @@ binary_sig_results %>%
   kable_styling(latex_options = c("striped", "scale_down", "HOLD_position", "repeat_header"))
 ```
 
-### **`r s_table("phy-sig-binary")`**
-
-Phylogenetic signal in quantitative (binary) functional traits of the ferns of Japan. *D*, Fritz and Purvis' *D*; *N* (present), number of times a trait was observed present; *N* (absent), number of times a trait was observed absent; *P*(random), probability of obtaining observed trait distribution given random distribution of traits; *P*(Brownian), probability of obtaining observed trait distribution given random evolution by Brownian Motion. Presence or absence of indusium was originally a binary trait; other traits (margin, shape, texture) are qualitative traits scored in binary format. Values of *D* rounded to three decimal places.
-
 \clearpage
+
+### **`r s_table("phy-sig")`**
+
+Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
 
 ```{r phy-sig, results = "as-is"}
 phy_sig_results %>%
@@ -230,11 +233,11 @@ phy_sig_results %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-### **`r s_table("phy-sig")`**
-
-Phylogenetic signal in continuous functional traits of the ferns of Japan. *K*, Blomberg's *K*; λ, Pagel's λ.
-
 \clearpage
+
+### **`r s_table("lrt-null")`**
+
+Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
 
 ```{r lrt-null, results = "as-is"}
 # Need to keep the input data separate for pack_rows()
@@ -264,11 +267,11 @@ lrt_table_data %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
 
-### **`r s_table("lrt-null")`**
-
-Likelihood ratio test (LRT) between full model and null model (model only including the spatial Matérn correlation matrix). Higher (less negative) log likelihood indicates better fit. Full environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Full reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. PD, phylogenetic diversity; RPD, relative phylogenetic diversity; FD, functional diversity; RFD, relative functional diversity; SES, standard effect size.
-
 \clearpage
+
+### **`r s_table("aic")`**
+
+Model fit as measured with conditional Akaike information criterion (cAIC). Environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. Lower cAIC indicates better fit.
 
 ```{r aic, results = "as-is"}
 aic_table_data <- aic_env_repro %>%
@@ -290,10 +293,6 @@ aic_table_data %>%
   pack_rows(index = base::table(aic_table_data$model_type)) %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
-
-### **`r s_table("aic")`**
-
-Model fit as measured with conditional Akaike Information Criterion (cAIC). Environmental models included the effects of temperature, precipitation, precipitation seasonality, and area. Reproductive models included the effects of % apomictic taxa, precipitation, precipitation seasonality, and area. Lower cAIC indicates better fit.
 
 \clearpage
 
@@ -377,7 +376,7 @@ Species collection curve for the ferns of Japan fit with the `r pack("iNEXT")` p
 # Helper function to format resolution labels
 km_lab <- function (x) {
   as.numeric(x) %>% 
-    scales::number(suffix = "km", scale = 1e-3)
+    scales::number(suffix = "", scale = 1e-3)
 }
 
 # Summarize redundancy statistics by grain size
@@ -389,7 +388,7 @@ a <- ggplot(redundancy_summary, aes(x = res, y = percent_above_50)) +
   scale_y_continuous(labels = scales::percent) +
   scale_x_discrete(labels = km_lab) +
   labs(
-    x = "Resolution",
+    x = "Resolution (km)",
     y = "Redundancy > 0.5"
   )
 
@@ -399,7 +398,7 @@ b <- ggplot(redundancy_summary, aes(x = res, y = percent_singletons)) +
   scale_y_continuous(labels = scales::percent) +
   scale_x_discrete(labels = km_lab) +
   labs(
-    x = "Resolution",
+    x = "Resolution (km)",
     y = "Redundancy = 0"
   )
 
@@ -590,7 +589,7 @@ a + b + c +
 
 ### **`r s_figure("raw-lat")`**
 
-(A) Raw taxonomic diversity, (B) phylogenetic diversity, and (C) functional diversity of the ferns of Japan plotted by latitude. For (B) and (C), raw branchlengths were transformed to relative values by dividing each branchlength by the sum of all branchlengths. Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
+(A) Raw taxonomic diversity, (B) phylogenetic diversity, and (C) functional diversity of the ferns of Japan plotted by latitude. For (B) and (C), raw branch lengths were transformed to relative values by dividing each branchlength by the sum of all branch lengths. Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
 \clearpage
 
@@ -642,7 +641,7 @@ ggplot() +
 
 ### **`r s_figure("endemism-restricted")`**
 
-Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleo-endemism), restricted data set including only taxa endemic to Japan. 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
+Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleoendemism), restricted data set including only taxa endemic to Japan. 'neo' indicates neodendemic areas (those with an overabundance of short branches); 'paleo' indicates paleoendemic areas (those with an overabundance of long branches); 'mixed' indicates significantly endemic sites that have neither an overabundance of short nor long branches; 'super' indicates highly significantly endemic sites that have neither an overabundance of short nor long branches. For details, see Materials and Methods.
 
 \clearpage
 
@@ -1062,7 +1061,7 @@ wrap_plots(modelfit_plot_list) +
 
 ### **`r s_figure("modelfit-not-ult")`**
 
-Relationship between (A) phylogenetic diversity (PD) and (B) relative PD and % apomictic taxa, models inferred using phylogeny with branchlengths in units of expected genetic change (untransformed ML tree). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For RPD, the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
+Relationship between (A) phylogenetic diversity (PD) and (B) relative PD and % apomictic taxa, models inferred using phylogeny with branch lengths in units of expected genetic change (untransformed ML tree). Ribbon shows 95% confidence interval of model. Line fit with the focal predictor variable while averaging over other predictors. For RPD, the standard effect size (SES) was calculated by comparing raw values to a null distribution of 999 random values, and significance (*P*-value) calculated using a two-tailed test (see Materials and Methods).
 
 \clearpage
 
