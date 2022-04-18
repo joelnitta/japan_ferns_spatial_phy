@@ -1,6 +1,48 @@
 ---
 references:
 
+- id: Nitta2022b
+  author:
+  - family: Nitta
+    given: Joel H.
+  - family: Schuettpelz
+    given: Eric
+  - family: Ramírez-Barahona
+    given: Santiago
+  - family: Iwasaki
+    given: Wataru
+  container-title: bioRxiv
+  volume: '486640 [Preprint]'
+  DOI: 10.1101/2022.03.31.486640
+  issued:
+  - year: 2022
+    month: 04
+    day: 01
+  language: en
+  publisher: Cold Spring Harbor Laboratory
+  section: New Results
+  source: www.biorxiv.org
+  title: An open and continuously updated fern tree of life (FTOL)
+  type: article-journal
+  URL: https://doi.org/10.1101/2022.03.31.486640 
+
+- id: Ebihara2019c
+  author:
+  - family: Ebihara
+    given: Atsushi
+  - family: Nitta
+    given: Joel H.
+  issued:
+  - year: 2019
+  title: 'Data from: An update and reassessment of fern and lycophyte diversity data in the Japanese Archipelago'
+  type: webpage
+  accessed:
+  - year: 2022
+    month: 1
+    day: 1
+  container-title: Dryad
+  URL: https://doi.org/10.5061/dryad.4362p32
+
 - id: Nitta2022
   type: webpage
   accessed:
@@ -249,7 +291,7 @@ references:
     given: François
   citation-key: Courtiol2017
   container-title: bioRxiv
-  volume: '207662'
+  volume: '207662 [Preprint]'
   DOI: 10.1101/207662
   issued:
   - year: 2017

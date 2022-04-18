@@ -95,7 +95,7 @@ eg <- "e.g."
 #'
 #' @return Name of R package formatted according to journal requirements
 #' 
-pack <- function(x) {glue::glue("'{x}' v.{packageVersion(x)}")}
+pack <- function(x) {glue::glue("{x} v.{packageVersion(x)}")}
 
 #' Format other software names
 #' 
@@ -114,7 +114,7 @@ software <- function(x) {x}
 #'
 #' @return Name of R function formatted according to journal requirements
 #' 
-func <- function(x) {glue::glue("'{x}'")}
+func <- function(x) {glue::glue("{x}")}
 
 # Pagebreaks ----
 
