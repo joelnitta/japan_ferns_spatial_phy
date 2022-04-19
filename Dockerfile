@@ -167,7 +167,6 @@ varwidth\n\
 wrapfig\n\
 xcolor\n\
 xunicode\n\
-T1\n\
 zapfding' >> latex_packages.txt \
   && Rscript -e 'tinytex::tlmgr_update(); tinytex::tlmgr_install(readLines("latex_packages.txt"))'	\
   && rm latex_packages.txt	
