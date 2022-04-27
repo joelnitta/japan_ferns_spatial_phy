@@ -385,7 +385,7 @@ plot_fits <- function(resp_var, resp_var_print, indep_var, signif_var, fit, mode
   } else if (indep_var == "percent_apo") {
     p <- p +
       scale_x_continuous(labels = function(x) scales::percent(x, accuracy = 1)) +
-      labs(x = "% apomictic taxa")
+      labs(x = "% Apomictic taxa")
   }
   
   p
