@@ -98,9 +98,9 @@ The next step uses `tar_load()` to load the dataset from the targets cache. Alte
 # Load the data from the targets workflow
 tar_load(biodiv_ferns_cent_figshare)
 
-# Alternatively, unzip `results.zip`
-# (FIXME: add DOI when available)
-# and read in the data from there
+# Alternatively, download `results.zip` from
+# https://figshare.com/ndownloader/files/34354472
+# unzip it, and read in the data from there
 # biodiv_ferns_cent_figshare <- read_csv(here::here("japan_ferns_biodiv.csv"))
 ```
 
