@@ -10,7 +10,7 @@ Data files need to be downloaded from three locations.
 
 1. Dataset on FigShare for this project: https://doi.org/10.6084/m9.figshare.16655263. Cick on the "Download all" icon, download the zipped dataset, then unzip it and put the contents in the `data/` folder in this repo.
 2. Dataset on Dryad for Ebihara and Nitta 2019: https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32. Download the zipped dataset and put in the `data/` folder directly (without unzipping).
-3. Dataset on FigShare for FTOL v0.0.1 (Nitta et al, in prep): https://doi.org/doi:10.6084/m9.figshare.13256801 (LINK NOT LIVE YET). Download the zipped dataset and put in the `data/` folder directly (without unzipping).
+3. Dataset on FigShare for FTOL v0.0.1 ([Nitta et al, BioRxiv](https://doi.org/10.1101/2022.03.31.486640)): https://doi.org/10.6084/m9.figshare.13251290.v1. Cick on the "Download all" icon, download the zipped dataset, name it "ftol_data_release_v0.0.1.zip", and put in the `data/` folder directly (without unzipping).
 
 For more information about data files, see the READMEs for [raw data](doc/README_data_raw.md) and [processed data](doc/README_data.txt).
 
