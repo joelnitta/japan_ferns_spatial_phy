@@ -248,7 +248,7 @@ biodiv_ferns_cent_no_missing %>%
 
 None of these have an extremely low number of species. 
 
-So we will conservatively only remove the grid-cell with unusually high % apomictic taxa, then run Grubb's test again.
+So we will conservatively only remove the single grid-cell with most % apomictic taxa, and inspect the data.
 
 ```{r remove-apo-outlier-check-grubbs}
 biodiv_ferns_cent_no_outliers <-
@@ -256,11 +256,11 @@ biodiv_ferns_cent_no_outliers <-
   filter(percent_apo != max(percent_apo))
 
 biodiv_ferns_cent_no_outliers %>%
-  pull(percent_apo) %>%
-  grubbs_tidy()
+  arrange(desc(percent_apo)) %>%
+  select(percent_apo, richness)
 ```
 
-OK, no more outliers in `percent_apo`.
+That seems more reasonable.
 
 ## Check for normality
 
