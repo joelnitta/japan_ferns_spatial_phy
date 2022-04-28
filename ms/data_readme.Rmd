@@ -87,12 +87,13 @@ Universal (CC0 1.0)
 
 Recommended citation for the data: Nitta JH, Mishler BD, Iwasaki W, Ebihara A
 (2022) Data from: Spatial phylogenetics of Japanese ferns: Patterns, processes,
-and implications for conservation FIXME: add DOI when available
+and implications for conservation. FigShare. 
+http://doi.org/10.6084/m9.figshare.16655263
 
 Citation for and links to publications that cite or use the data: Nitta JH,
 Mishler BD, Iwasaki W, Ebihara A (2022) Spatial phylogenetics of Japanese ferns:
 Patterns, processes, and implications for conservation.
-American Journal of Botany. FIXME: add DOI, page numbers when available
+American Journal of Botany. https://doi.org/10.1002/ajb2.1848
 
 Code for analyzing the data is available on github:
 https://github.com/joelnitta/japan_ferns_spatial_phy
@@ -133,11 +134,11 @@ Additional data used in analysis not included in current data package:
 breeding system data for native Japanese ferns [@Ebihara2019b] downloaded from 
 https://datadryad.org/stash/dataset/doi:10.5061/dryad.4362p32. 
 MD5 checksum `r tools::md5sum(here::here(ebihara_2019_zip_file))`
-- ftol_data_release_v0.0.1.zip: Fern Tree of Life project global DNA alignment 
-and phylogenetic tree (Nitta et al., in prep.) downloaded from 
-https://figshare.com/s/87b8ec102303bf9f3212.
+- ftol_data_release_v0.0.1.zip: Fern Tree of Life (FTOL) project global DNA 
+alignment and phylogenetic tree v0.0.1 (Nitta et al., in prep 
+https://doi.org/10.1101/2022.03.31.486640) downloaded from 
+https://doi.org/10.6084/m9.figshare.13251290.v1.
 MD5 checksum `r tools::md5sum(here::here(ftol_zip_file))`
-FIXME: replace with DOI when available
 
 Checksums are 32-byte MD5 hashes generated with tools::md5sum() in R.
 
@@ -185,8 +186,7 @@ https://github.com/joelnitta/japan_ferns_spatial_phy/blob/main/R/process_raw_dat
 
 For full methods, see Nitta JH, Mishler BD, Iwasaki W, Ebihara A (2022) Spatial
 phylogenetics of Japanese ferns: Patterns, processes, and implications for
-conservation. American Journal of Botany. 
-FIXME: add DOI, page numbers when available
+conservation. American Journal of Botany. https://doi.org/10.1002/ajb2.1848
 
 --------------------------
 
