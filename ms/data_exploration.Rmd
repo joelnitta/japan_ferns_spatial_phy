@@ -311,7 +311,11 @@ No zeros in our count data (richness).
 Here we plot response variables (row labels) vs. indep variables (column labels) and add a trend line for each to get an idea of the possible model fits.
 
 ```{r plot-raw-data, fig.height = 8}
-ggplot(biodiv_ferns_cent_no_outliers, aes(x = .panel_x, y = .panel_y)) + 
+biodiv_ferns_cent_no_outliers %>%
+  # Convert precipitation to meters so 
+  # the numbers don't overlap on the x-axis
+  mutate(precip = precip/1000) %>%
+  ggplot(aes(x = .panel_x, y = .panel_y)) + 
   geom_point(alpha = 0.5, shape = 16, size = 0.5) + 
   geom_smooth() +
   facet_matrix(
