@@ -108,12 +108,12 @@ references:
     given: Virgilio
   citation-key: Bivand2013
   DOI: 10.1007/978-1-4614-7618-4
-  event-place: New York
+  event-place: NY, NY, USA
   ISBN: 978-1-4614-7618-4
   issued:
   - year: 2013
   publisher: Springer
-  publisher-place: New York
+  publisher-place: NY, NY, USA
   title: Applied spatial data analysis with R, 2nd ed.
   type: book
 - id: Blomberg2003
@@ -183,17 +183,17 @@ references:
 - id: Bryant2008
   author:
   - family: Bryant
-    given: J
+    given: Jessica A.
   - family: Lamanna
-    given: C
+    given: Christine
   - family: Morlon
-    given: H
+    given: Hélène
   - family: Kerkhoff
-    given: A
+    given: Andrew J.
   - family: Enquist
-    given: B
+    given: Brian J.
   - family: Green
-    given: J
+    given: Jessica L.
   citation-key: Bryant2008
   container-title: Proceedings of the National Academy of Sciences, USA
   DOI: 10.1073/pnas.0801920105
@@ -625,6 +625,7 @@ references:
   title: 'Comparative studies of leaf form: Assessing the relative roles of selective
     pressures and phylogenetic constraints'
   type: article-journal
+  volume: '106'
 - id: Gonzalez-Orozco2014b
   accessed:
   - year: 2020
@@ -813,7 +814,7 @@ references:
     year: 2022
     month: 1
     day: 17
-  title: Ikimono-rogu reddo-deta-bukku [Organisms Log, Red Data Book; in Japanese]
+  title: Ikimono-rogu reddo-deta-bukku [Organisms log, Red data book; in Japanese]
   URL: https://ikilog.biodic.go.jp/Rdb/
 - id: Kessler2011a
   author:
@@ -1066,13 +1067,13 @@ references:
   - family: Liu
     given: Hong-Mei
   - family: Dyer
-    given: R
+    given: Robert J.
   - family: Guo
-    given: Z
+    given: Zhi-You
   - family: Meng
-    given: Z
+    given: Zhen
   - family: Li
-    given: J
+    given: Jian-Hui
   - family: Schneider
     given: Harald
   citation-key: Liu2012
@@ -1082,7 +1083,7 @@ references:
   issued:
   - year: 2012
     month: 1
-  page: 1-11
+  page: '510478'
   title: 'The evolutionary dynamics of apomixis in ferns: A case study from polystichoid
     ferns'
   type: article-journal
@@ -1298,13 +1299,13 @@ references:
   - literal: Japan Ministry of the Environment
   issued:
   - year: 2015
-  title: Red data book 2014, Threatened wildlife of Japan, vol. 8 Vascular plants
+  title: Red data book 2014, Threatened wildlife of Japan, vol. 8, Vascular plants
   publisher: Gyosei Co.
   publisher-place: Tokyo, Japan
 - id: Moran2001
   author:
   - family: Moran
-    given: R
+    given: Robbin C.
   - family: Smith
     given: Alan R.
   citation-key: Moran2001
@@ -1473,7 +1474,7 @@ references:
   issued:
   - year: 2011
   language: en
-  page: '535'
+  page: 535-552
   source: DOI.org (Crossref)
   title: The evolution and functional significance of leaf shape in the angiosperms
   type: article-journal
@@ -1543,7 +1544,7 @@ references:
     given: Joel H.
   issued:
   - year: 2022
-  title: 'canaper: Categorical Analysis of Neo- and Paleo-endemism in R, version 0.0.2'
+  title: 'canaper: categorical analysis of neo- and paleo-endemism in R, version 0.0.2'
   URL: https://doi.org/10.5281/zenodo.5885646
 - id: Nitta2022b
   author:
@@ -1781,7 +1782,7 @@ references:
   issue: '10'
   issued:
   - year: 2015
-  page: 1-20
+  page: e0138495
   title: Sporangium exposure and spore release in the Peruvian maidenhair fern (*Adiantum
     peruvianum*, Pteridaceae)
   type: article-journal
@@ -1802,15 +1803,15 @@ references:
 - id: Qian2012
   author:
   - family: Qian
-    given: H
+    given: Hong
   - family: Wang
-    given: S L
+    given: Silong
   - family: Li
-    given: Y L
+    given: Yuanliang
   - family: Xiao
-    given: M
+    given: Ming
   - family: Wang
-    given: X L
+    given: Xianli
   citation-key: Qian2012
   container-title: Plant Ecology
   DOI: 10.1007/s11258-012-0038-0
@@ -1864,7 +1865,7 @@ references:
     year: 2021
     month: 08
     day: 26
-  title: 'Raster: Geographic data analysis and modeling'
+  title: 'Raster: geographic data analysis and modeling'
   title-short: Raster
   note: R package version 3.1-5
   URL: https://CRAN.R-project.org/package=raster
@@ -1878,7 +1879,7 @@ references:
     year: 2021
     month: 09
     day: 1
-  title: 'R: A language and environment for statistical computing. Version 4.1.2.
+  title: 'R: A language and environment for statistical computing, version 4.1.2.
     R Foundation for Statistical Computing, Vienna, Austria'
   URL: https://www.R-project.org/
 - id: Revell2012
@@ -1939,15 +1940,15 @@ references:
 - id: Rosauer2009
   author:
   - family: Rosauer
-    given: Dan F.
+    given: Dan
   - family: Laffan
     given: Shawn W.
   - family: Crisp
-    given: M
+    given: Michael D.
   - family: Donnellan
-    given: S
+    given: Stephen C.
   - family: Cook
-    given: L
+    given: Lyn G.
   citation-key: Rosauer2009
   container-title: Molecular Ecology
   DOI: 10.1111/j.1365-294X.2009.04311.x
@@ -2095,7 +2096,7 @@ references:
     in R'
   title-short: Spatial relationships between two georeferenced variables
   publisher: Springer
-  publisher-place: New York
+  publisher-place: NY, NY, USA
   note: ISBN 978-3-030-56680-7
   URL: http://srb2gv.mat.utfsm.cl/
 - id: Strona2014
@@ -2209,9 +2210,9 @@ references:
 - id: Testo2016a
   author:
   - family: Testo
-    given: Weston L.
+    given: Weston
   - family: Sundue
-    given: Michael A
+    given: Michael
   citation-key: Testo2016a
   container-title: Molecular Phylogenetics and Evolution
   DOI: 10.1016/j.ympev.2016.09.003
@@ -2228,7 +2229,7 @@ references:
   - family: Tokita
     given: Kunihiko
   container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku [Deer
-    eat world heritage sites: Ecology of deer and forests; in Japanese].'
+    eat world heritage sites: Ecology of deer and forests; in Japanese]'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2240,7 +2241,7 @@ references:
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo, Japan
   title: Shizen kouen ni okeru shika mondai [The problem of deer in natural parks;
-    in Japanese].
+    in Japanese]
   type: chapter
 - id: Tryon1970
   author:
@@ -2331,7 +2332,7 @@ references:
   - family: Yahara
     given: Tetsukazu
   container-title: 'Sekai-isan wo shika ga kuu: shika to mori no seitaigaku [Deer
-    eat world heritage sites: Ecology of deer and forests; in Japanese].'
+    eat world heritage sites: Ecology of deer and forests; in Japanese]'
   editor:
   - family: Yumoto
     given: Takakazu
@@ -2343,7 +2344,7 @@ references:
   publisher: Bunichi Sogo Shuppan
   publisher-place: Tokyo, Japan
   title: Shika no zouka to yasei shokubutsu no zetsumetsu risku [Increase in deer
-    population and plant extinction risk; in Japanese].
+    population and plant extinction risk; in Japanese]
   type: chapter
 - id: Zizka2019
   author:
