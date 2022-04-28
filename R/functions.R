@@ -1265,6 +1265,45 @@ drop_empty <- function(comm) {
     column_to_rownames("grids")
 }
 
+#' Collate biodiversity metrics of endemic ferns
+#'
+#' @param comm_ferns_endemic Community matrix of ferns endemic to Japan
+#' @param rand_test_phy_ferns_endemic Results of randomization test
+#'   for ferns endemic to Japan
+#' @param shape_ferns Geographical shape data for ferns of Japan
+#' 
+#' @return Dataframe with shape data and biodiversity metrics
+#'   including richness and endemism type for ferns endemic to Japan
+#'
+collate_endem_biod <- function(
+    comm_ferns_endemic, rand_test_phy_ferns_endemic, shape_ferns) {
+  
+  # Calculate richness for endemic ferns
+  endem_richness <- comm_ferns_endemic %>%
+    vegan::specnumber() %>%
+    tibble(grids = names(.), richness = .)
+  
+  # Join richness to endemicity, categorize endemicity
+  shape_ferns %>%
+    select(grids) %>%
+    inner_join(endem_richness, by = "grids") %>%
+    verify(
+      all.equal(
+        sort(grids),
+        sort(rownames(comm_ferns_endemic))
+      )) %>%
+    assert(not_na, richness) %>%
+    inner_join(format_cpr_res(rand_test_phy_ferns_endemic), by = "grids") %>%
+    verify(
+      all.equal(
+        sort(grids),
+        sort(rownames(comm_ferns_endemic))
+      )) %>%
+    # Classify endemism and significance of randomization tests
+    cpr_classify_endem() %>%
+    classify_signif("pe", one_sided = TRUE, upper = TRUE)
+}
+
 # Traits ----
 
 #' Get the mean value of a numeric trait from data formatted for lucid

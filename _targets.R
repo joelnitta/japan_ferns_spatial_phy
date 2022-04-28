@@ -451,12 +451,8 @@ tar_plan(
     mutate(richness_obs_p_upper = dplyr::percent_rank(richness)),
 
   # - Japan endemics only
-  biodiv_ferns_endemic_spatial =
-    shape_ferns %>%
-    left_join(format_cpr_res(rand_test_phy_ferns_endemic), by = "grids") %>%
-    # Classify endemism and significance of randomization tests
-    cpr_classify_endem() %>%
-    classify_signif("pe", one_sided = TRUE, upper = TRUE),
+  biodiv_ferns_endemic_spatial = collate_endem_biod(
+    comm_ferns_endemic, rand_test_phy_ferns_endemic, shape_ferns),
 
   # - Phylogram (not ultrametric)
   biodiv_ferns_spatial_not_ult =

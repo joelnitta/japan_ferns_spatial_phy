@@ -652,14 +652,19 @@ Relationships between observed phylogenetic and functional diversity and taxonom
 \clearpage
 
 ```{r endemism-restricted, fig.width = 5, fig.height = 5}
+# Drop one grid cell with NA for endem type
+biodiv_ferns_endemic_spatial_no_na <- biodiv_ferns_endemic_spatial %>%
+  filter(!is.na(endem_type))
+
 ggplot() +
-  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) +
-  geom_sf(data = biodiv_ferns_endemic_spatial, aes(fill = endem_type), color = "transparent") +
-  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) + #nolint
+  geom_sf(data = biodiv_ferns_endemic_spatial_no_na, aes(fill = endem_type), color = "transparent") + #nolint
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) + #nolint
   scale_fill_manual(
     values = canape_cols,
+    breaks = names(canape_cols)[names(canape_cols) != "not significant"],
     name = "Endemism type") +
-  annotation_scale(location = "tl", width_hint = 0.2) +
+  annotation_scale(location = "br", width_hint = 0.2) +
   map_theme()
 ```
 
@@ -668,7 +673,6 @@ ggplot() +
 Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleoendemism), restricted data set including only taxa endemic to Japan.
 neo, neodendemic areas (those with an overabundance of short branches); paleo, paleoendemic areas (those with an overabundance of long branches); mixed, significantly endemic sites that have neither an overabundance of short nor long branches; super, highly significantly endemic sites that have neither an overabundance of short nor long branches.
 Grid cells without significant endemism in light grey.
-Grid cells without at least two taxa endemic to Japan in dark grey.
 
 For details, see Materials and Methods.
 
