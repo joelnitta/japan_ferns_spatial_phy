@@ -477,7 +477,7 @@ a + b + c + d + e + f + plot_layout(ncol = 2, nrow = 3)
 ### **`r s_figure("envir")`**
 
 Reproductive mode and environmental data in 20 km × 20 km grid cells for the ferns of Japan.
-(A) Rolling mean area (square km) in 20 km latitudinal bands.
+(A) Rolling mean area (square km) in 100-km latitudinal bands.
 (B) Percentage apomictic taxa.
 (C) Annual precipitation.
 (D) Percipitation seasonality (coefficient of variation).
@@ -658,7 +658,7 @@ a + b + c + d +
 
 ### **`r s_figure("raw-biplot")`**
 
-Relationships between observed phylogenetic and functional diversity and taxonomic richness in the ferns of Japan. (A) Phylogenetic diversity (PD). (B) Relative phylogenetic diversity (RPD). (C) Functional diversity (FD). (D) Relative functional diversity (RFD). Trendlines in (A, C) fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
+Relationships between raw phylogenetic and functional diversity and taxonomic richness in the ferns of Japan. (A) Phylogenetic diversity (PD). (B) Relative phylogenetic diversity (RPD). (C) Functional diversity (FD). (D) Relative functional diversity (RFD). Trendlines in (A, C) fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
 \clearpage
 
@@ -683,9 +683,7 @@ ggplot() +
 
 Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleoendemism), restricted data set including only taxa endemic to Japan.
 neo, neodendemic areas (those with an overabundance of short branches); paleo, paleoendemic areas (those with an overabundance of long branches); mixed, significantly endemic sites that have neither an overabundance of short nor long branches; super, highly significantly endemic sites that have neither an overabundance of short nor long branches.
-Grid cells without significant endemism in light grey.
-
-For details, see Materials and Methods.
+Grid cells without significant endemism in light grey. For details, see Materials and Methods.
 
 \clearpage
 
