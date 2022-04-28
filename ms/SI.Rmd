@@ -609,7 +609,10 @@ a + b + c +
 
 ### **`r s_figure("raw-lat")`**
 
-(A) Raw taxonomic diversity, (B) phylogenetic diversity (PD), and (C) functional diversity (FD) of the ferns of Japan plotted by latitude.
+Raw biodiversity metrics of the ferns of Japan plotted by latitude.
+(A) Raw taxonomic diversity. 
+(B) Phylogenetic diversity (PD).
+(C) Functional diversity (FD).
 For (B) and (C), raw branch lengths were transformed to relative values by dividing each branchlength by the sum of all branch lengths.
 Trendlines fit with general additive model using `r func("geom_smooth")` function in the `r pack("ggplot2")` R package [@Wickham2016].
 
@@ -655,7 +658,6 @@ ggplot() +
   geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) +
   scale_fill_manual(
     values = canape_cols,
-    breaks = names(canape_cols)[names(canape_cols) != "not significant"],
     name = "Endemism type") +
   annotation_scale(location = "tl", width_hint = 0.2) +
   map_theme()
@@ -665,7 +667,9 @@ ggplot() +
 
 Phylogenetic endemism of the ferns of Japan measured using CANAPE (categorical analysis of neo- and paleoendemism), restricted data set including only taxa endemic to Japan.
 neo, neodendemic areas (those with an overabundance of short branches); paleo, paleoendemic areas (those with an overabundance of long branches); mixed, significantly endemic sites that have neither an overabundance of short nor long branches; super, highly significantly endemic sites that have neither an overabundance of short nor long branches.
-Grid cells without significant endemism in grey.
+Grid cells without significant endemism in light grey.
+Grid cells without at least two taxa endemic to Japan in dark grey.
+
 For details, see Materials and Methods.
 
 \clearpage
