@@ -1220,6 +1220,8 @@ biodiv_ferns_spatial <-
     )
   ) %>%
   st_transform(4612)
+
+fig_dpi <- 600
 ```
 
 ```{r japan-map-make}
@@ -1298,8 +1300,8 @@ japan_map_plot <- ggplot(japan) +
 ```{r japan-map-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("japan-map"), "pdf"),
-  japan_map_plot, width = 5, height = 5, units = "in")
+  result_file(figure("japan-map"), "png"),
+  japan_map_plot, width = 5, height = 5, units = "in", dpi = fig_dpi)
 ```
 
 ```{r japan-map-print, fig.width = 5, fig.height = 5, eval = params$doc_type == "pdf"}
@@ -1367,8 +1369,8 @@ raw_diversity_plot <- a + b + c +
 ```{r raw-diversity-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("raw-diversity"), "pdf"),
-  width = 7.25, height = 3.4, units = "in", raw_diversity_plot)
+  result_file(figure("raw-diversity"), "png"),
+  width = 7.25, height = 3.4, units = "in", raw_diversity_plot, dpi = fig_dpi)
 ```
 
 ```{r raw-diversity-print, fig.width = 7.25, fig.height = 3.4, eval = params$doc_type == "pdf"}
@@ -1472,8 +1474,8 @@ rand_diversity_plot <- a + b + c + d +
 ```{r rand-diversity-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("rand-diversity"), "pdf"),
-  rand_diversity_plot, width = 7.25, height = 8, units = "in")
+  result_file(figure("rand-diversity"), "png"),
+  rand_diversity_plot, width = 7.25, height = 8, units = "in", dpi = fig_dpi)
 ```
 
 ```{r rand-diversity-print, fig.width = 7.25, fig.height = 9, eval = params$doc_type == "pdf"}
@@ -1613,8 +1615,8 @@ coeff_plot <- wrap_plots(coeff_subplots) +
 ```{r coeff-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("coeff"), "pdf"),
-  coeff_plot, width = 7.25, height = 5, units = "in")
+  result_file(figure("coeff"), "png"),
+  coeff_plot, width = 7.25, height = 5, units = "in", dpi = fig_dpi)
 ```
 
 ```{r coeff-print, fig.width = 7.25, fig.height = 5, eval = params$doc_type == "pdf"}
@@ -1674,8 +1676,8 @@ modelfit_plot <-
 ```{r modelfit-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("modelfit"), "pdf"),
-  modelfit_plot, width = 7.25, height = 5, units = "in")
+  result_file(figure("modelfit"), "png"),
+  modelfit_plot, width = 7.25, height = 5, units = "in", dpi = fig_dpi)
 ```
 
 ```{r modelfit-print, fig.width = 7.25, fig.height = 5, eval = params$doc_type == "pdf"}
@@ -1703,8 +1705,8 @@ endemism_plot <- ggplot() +
 ```{r endemism-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("endemism"), "pdf"),
-  endemism_plot, width = 5, height = 5, units = "in")
+  result_file(figure("endemism"), "png"),
+  endemism_plot, width = 5, height = 5, units = "in", dpi = fig_dpi)
 ```
 
 ```{r endemism-print, fig.width = 5, fig.height = 5, eval = params$doc_type == "pdf"}
@@ -1752,8 +1754,8 @@ bioregions_plot <- a + b +
 ```{r bioregions-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("bioregions"), "pdf"),
-  bioregions_plot, width = 7.25, height = 4.3, units = "in")
+  result_file(figure("bioregions"), "png"),
+  bioregions_plot, width = 7.25, height = 4.3, units = "in", dpi = fig_dpi)
 ```
 
 ```{r bioregions-print, fig.width = 7.25, fig.height = 4.3, eval = params$doc_type == "pdf"}
@@ -1885,8 +1887,8 @@ div_by_tax_region_plot <- a + b + c + d + e +
 ```{r div-by-tax-region-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("div-by-tax-region"), "pdf"),
-  div_by_tax_region_plot, width = 7.25, height = 7, units = "in")
+  result_file(figure("div-by-tax-region"), "png"),
+  div_by_tax_region_plot, width = 7.25, height = 7, units = "in", dpi = fig_dpi)
 ```
 
 ```{r div-by-tax-region-print, fig.width = 7.25, fig.height = 7, eval = params$doc_type == "pdf"}
@@ -2023,8 +2025,8 @@ conserv_status_plot <- a + b +
 ```{r conserv-status-save, eval = params$doc_type == "doc"}
 # Save plot if rendering to doc
 ggsave(
-  result_file(figure("conserv-status"), "pdf"),
-  conserv_status_plot, width = 7.25, height = 4, units = "in")
+  result_file(figure("conserv-status"), "png"),
+  conserv_status_plot, width = 7.25, height = 4, units = "in", dpi = fig_dpi)
 ```
 
 ```{r conserv-status-print, fig.width = 7.25, fig.height = 4, eval = params$doc_type == "pdf"}
