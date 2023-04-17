@@ -1,0 +1,869 @@
+---
+mainfont: Roboto-Regular.ttf
+fontsize: 11pt
+mainfontoptions:
+  - BoldFont=Roboto-Bold.ttf
+  - ItalicFont=Roboto-Italic.ttf
+  - BoldItalicFont=Roboto-BoldItalic.ttf
+output:
+  bookdown::word_document2:
+    pandoc_args: [ "--csl", "american-journal-of-botany.csl"]
+    toc: no
+    number_sections: no
+    reference_docx: american-journal-of-botany.docx
+  bookdown::pdf_document2:
+    citation_package: default
+    toc: no
+    number_sections: no
+    fig_caption: no
+    latex_engine: xelatex
+    pandoc_args: [ "--csl", "american-journal-of-botany.csl"]
+params:
+  doc_type: doc
+editor_options:
+  chunk_output_type: console
+---
+
+---
+bibliography:
+  - `r here::here("ms/references.yaml")`
+  - `r here::here("ms/references_other.bib")`
+---
+
+```{r manual, include = FALSE, evaluate = FALSE}
+# Run these lines if rendering outside of targets plan
+library(targets)
+library(tarchetypes)
+source(here::here("R/packages.R"))
+source(here::here("R/functions.R"))
+```
+
+```{r setup, include = FALSE, cache = FALSE}
+# Load libraries used for rendering Rmds
+library(flextable)
+library(kableExtra)
+library(ftExtra)
+library(scales)
+library(patchwork)
+library(RColorBrewer)
+library(ggspatial) # for scalebars on maps
+
+# Set knitr options
+knitr::opts_chunk$set(
+  echo = FALSE, message = FALSE, warning = FALSE,
+  results = "hide", cache = FALSE)
+
+# Load functions and variables only used when rendering Rmds
+source(here::here("R/ms_functions.R"), local = TRUE)
+```
+
+```{r load-data}
+# Load objects from targets workflow
+tar_load(c(
+  aic_env_repro,
+  binary_sig_results,
+  biodiv_ferns_cent,
+  biodiv_ferns_spatial,
+  broad_alignment_list,
+  comm_ferns,
+  comm_ferns_full,
+  csl_file,
+  deer_range,
+  fern_traits,
+  green_list,
+  japan_fern_tree,
+  japan_map_points,
+  japan_pterido_tree,
+  japan_rbcL,
+  japan_shp,
+  k_phylogeny,
+  k_taxonomy,
+  lat_span_summary,
+  lrt_results,
+  model_fits,
+  model_params,
+  ms_functions,
+  occ_point_data_summary,
+  phy_sig_results,
+  plastome_calibration_dates,
+  plastome_tree,
+  ppgi,
+  protected_areas,
+  refs_other_yaml,
+  refs_yaml,
+  refs_other_bib,
+  repro_data,
+  signif_cells_protected_area,
+  signif_cells_deer_danger,
+  template_file,
+  traits_summary,
+  biodiv_ferns_spatial_lumped,
+  bioregion_cutoff
+))
+```
+
+```{r plot-prep}
+# (color palettes are set in ms_functions.R)
+
+# Define nicely formatted terms for printing variable names
+resp_var_lookup <- tribble(
+  ~resp_var, ~resp_var_pretty,
+  "fd_obs_z", "SES of FD",
+  "pd_obs_z", "SES of PD",
+  "pe_obs_p_upper", "PE *p*-value",
+  "rfd_obs_z", "SES of RFD",
+  "richness", "Richness",
+  "rpd_obs_z", "SES of RPD",
+)
+
+indep_var_lookup <- tribble(
+  ~term, ~term_pretty,
+  "temp", "Temperature",
+  "precip", "Precipitation",
+  "precip_season", "Precipitation seasonality",
+  "I(temp^2)", "Temperature^2^",
+  "percent_apo", "% apomictic taxa"
+)
+
+# Crop high-res map of Japan to spatial div results area
+japan <- sf::st_crop(japan_shp, sf::st_bbox(biodiv_ferns_spatial)) %>%
+  st_transform(4612)
+
+# Format biodiv_ferns_spatial data for plotting
+biodiv_ferns_spatial <-
+  biodiv_ferns_spatial %>%
+  # Set order of factor levels for plotting
+  mutate(
+    endem_type = factor(
+      endem_type,
+      levels = c("neo", "paleo", "not significant", "mixed", "super")),
+    # can ignore warning about unknown levels, since they don't exist in all
+    # variables but that's OK
+    across(
+      contains("signif"),
+      ~fct_relevel(.x,
+      "< 0.01",  "< 0.025", "not significant", "> 0.975", "> 0.99")
+    )
+  ) %>%
+  st_transform(4612)
+
+fig_dpi <- 600
+
+# For powerpoint presentations, increase base font size
+theme_set(theme_grey(base_size = 20))
+```
+
+```{r raw-diversity-make}
+trend_line_theme <- function () {
+  theme(
+    panel.background = element_blank(),
+    panel.grid.major = element_line(size = 0.1, color = "dark grey"),
+    panel.grid.minor = element_blank(),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.y = element_blank()
+  )
+}
+
+# Convert diversity metrics dataframe to centroids for plotting trends
+ses_div_centroids <-
+  biodiv_ferns_spatial %>%
+  mutate(
+    longitude = sf::st_centroid(geom) %>% st_coordinates %>% magrittr::extract(,1),
+    latitude = sf::st_centroid(geom) %>% st_coordinates %>% magrittr::extract(,2)) %>%
+  as_tibble %>%
+  dplyr::select(-geom)
+# Get min and max latitude for setting common limits between
+# maps and trendlines
+ja_lat_min <- ses_div_centroids %>% pull(latitude) %>% min()
+ja_lat_max <- ses_div_centroids %>% pull(latitude) %>% max()
+
+# Fern richness
+# - map
+a <-
+  ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = richness), color = "transparent", alpha = 0.8) +
+  geom_sf() +
+  scale_fill_scico(palette = "lajolla") +
+  labs(fill = "種数") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1), limits = c(ja_lat_min, ja_lat_max)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme() +
+  theme(
+    legend.title = element_text(size = 30/.pt),
+    legend.text = element_text(size = 24/.pt),
+    legend.justification=c(0,1), legend.position=c(0,1)
+  )
+# - latitudinal trends
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = richness)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_smooth(se = FALSE) +
+  xlim(ja_lat_min, ja_lat_max) +
+  coord_flip() +
+  labs(y = "種数") +
+  trend_line_theme()
+a + b + plot_layout(widths = c(3,1), heights = c(1,1))
+
+ggsave("working/shida-no-kai/richness.png")
+```
+
+```{r rand-diversity-make}
+# PD
+pd_rand <- ggplot() +
+  # white base map, no outline
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) + #nolint
+  # colored cells
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = pd_signif), color = "transparent") + #nolint
+  # label
+  labs(title = "PD") +
+  # light grey coastline
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) + #nolint
+  scale_fill_manual(
+    name = "有意性",
+    values = signif_cols,
+    labels = signif_labels) +
+  map_theme() +
+  theme(
+    legend.position = "right",
+    legend.text = element_markdown()
+  )
+
+ggsave("working/shida-no-kai/pd_rand.png")
+
+# FD
+fd_rand <- ggplot() +
+  # white base map, no outline
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) + #nolint
+  # colored cells
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = fd_signif), color = "transparent") + #nolint
+  # label
+  labs(title = "FD") +
+  # light grey coastline
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) + #nolint
+  scale_fill_manual(
+    name = "有意性",
+    values = signif_cols,
+    labels = signif_labels) +
+  map_theme() +
+  theme(
+    legend.position = "right",
+    legend.text = element_markdown()
+  )
+
+ggsave("working/shida-no-kai/fd_rand.png")
+
+# RPD
+rpd_rand <- ggplot() +
+  # white base map, no outline
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) + #nolint
+  # colored cells
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = rpd_signif), color = "transparent") + #nolint
+  labs(title = "RPD") +
+  # light grey coastline
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) + #nolint
+  scale_fill_manual(
+    name = "有意性",
+    values = signif_cols,
+    labels = signif_labels) +
+  map_theme() +
+  theme(
+    legend.position = "right",
+    legend.text = element_markdown()
+  )
+
+ggsave("working/shida-no-kai/rpd_rand.png")
+```
+
+```{r bioregions-make}
+# Taxonomic bioregions
+a <- ggplot() +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) + #nolint
+  geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = taxonomic_cluster), color = "transparent") + #nolint
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) + #nolint
+  labs(title = "分類学的距離") +
+  labs(fill = "バイオリージョン") +
+  scale_fill_manual(
+    values = bioregion_cols,
+    guide = guide_legend(
+      title.position = "top"
+    )) +
+  map_theme()
+
+# Phylogenetic bioregions
+b <- ggplot() +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) + #nolint
+  geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = phylo_cluster), color = "transparent") + #nolint
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) + #nolint
+  labs(title = "系統的距離") +
+  labs(fill = "バイオリージョン") +
+  scale_fill_manual(
+    values = bioregion_cols,
+    guide = guide_legend(
+      title.position = "top"
+    )) +
+  annotation_scale(location = "br", width_hint = 0.2) +
+  map_theme() +
+  theme(axis.text.y = element_blank())
+
+bioregions_plot <- a + b +
+  plot_layout(ncol = 2)
+
+ggsave("working/shida-no-kai/bioregions.png")
+
+# Taxonomic, plain version
+ggplot() +
+  geom_sf(data = japan, fill = "white", color = "transparent", lwd = coast_lwd) + #nolint
+  geom_sf(data = biodiv_ferns_spatial_lumped, aes(fill = taxonomic_cluster), color = "transparent") + #nolint
+  geom_sf(data = japan, fill = "transparent", color = coast_col, lwd = coast_lwd) + #nolint
+  labs(fill = "バイオリージョン") +
+  scale_fill_manual(
+    values = bioregion_cols,
+    guide = guide_legend(
+      title.position = "top"
+    )) +
+  map_theme()
+
+ggsave("working/shida-no-kai/bioregions_taxonomic.png")
+```
+
+```{r find-top-species}
+# Extract clusters
+clusters <-
+  biodiv_ferns_spatial_lumped %>%
+  as_tibble() %>%
+  select(site = "grids", cluster = taxonomic_cluster, -geom)
+# Convert community df to long format
+comm_ferns_long <-
+  comm_ferns %>%
+  rownames_to_column("site") %>%
+  pivot_longer(names_to = "taxon", values_to = "abun", -site)
+# Find top-scoring species (with high occurrence inside one cluster, and low elsewhere)
+top_species <-
+  comm_ferns_long %>%
+  left_join(clusters, by = "site") %>%
+  filter(cluster %in% 1:4) %>%
+  group_by(taxon, cluster) %>%
+  summarize(
+    abun = sum(abun),
+    total = n()
+  ) %>%
+  mutate(
+    # percent abundance within a bioregion
+    perc_abun = abun / total
+  ) %>%
+  arrange(taxon, desc(perc_abun)) %>%
+  select(taxon, cluster, perc_abun) %>%
+  group_by(taxon) %>%
+  # take top two highest percent abundances per species, calculate their difference
+  slice_max(n = 2, order_by = perc_abun, with_ties = FALSE) %>%
+  mutate(
+    top_cluster = cluster[perc_abun == max(perc_abun)]
+  ) %>%
+  summarize(
+    max_dif = max(perc_abun) - min(perc_abun),
+    cluster = unique(top_cluster)
+  ) %>%
+  # keep only those with greater than 65% difference between top 1st and 2nd 
+  # most abundant bioregions
+  filter(max_dif > 0.5) %>%
+  group_by(cluster) %>%
+  # Choose top three per cluster for plotting
+  slice_max(n = 3, order_by = max_dif, with_ties = FALSE)
+```
+
+```{r plot-top-species-prep}
+# make helper function to plot top-scoring species
+plot_top_taxon <- function (taxon_select, ses_div_ferns_spatial, comm_ferns_long) {
+ses_div_ferns_spatial %>%
+  left_join(
+    filter(comm_ferns_long, taxon == taxon_select),
+    by = c(grids = "site")
+  ) %>%
+  mutate(abun = factor(abun)) %>%
+  ggplot(aes(fill = abun)) +
+  scale_fill_manual(values = c("#404040", "#d01c8b")) +
+  geom_sf(color = "transparent") +
+  labs(
+    subtitle = str_replace_all(taxon_select, "_", " ")
+  ) +
+  map_theme() +
+  theme(
+    plot.subtitle = element_text(face = "italic"),
+    legend.position = "none"
+  )
+}
+```
+
+```{r plot-top-species-cluster-1, out.width = "120%", fig.asp = 0.65}
+focus_region <-
+biodiv_ferns_spatial_lumped %>%
+  mutate(focus = ifelse(taxonomic_cluster == 1, "yes", "no")) %>%
+ggplot(aes(fill = taxonomic_cluster, alpha = focus)) +
+  geom_sf(color = "transparent") +
+  scale_fill_manual(values = bioregion_cols) +
+  scale_alpha_manual(values = c(yes = 1, no = 0.25)) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme() +
+  labs(subtitle = "リージョン 1") +
+  theme(legend.position = "none")
+
+focus_region +
+plot_top_taxon(top_species$taxon[[1]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[2]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[3]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_layout(ncol = 2, nrow = 2)
+
+ggsave("working/shida-no-kai/region_1.png")
+```
+
+```{r plot-top-species-cluster-2, out.width = "120%", fig.asp = 0.65}
+focus_region <-
+biodiv_ferns_spatial_lumped %>%
+  mutate(focus = ifelse(taxonomic_cluster == 2, "yes", "no")) %>%
+ggplot(aes(fill = taxonomic_cluster, alpha = focus)) +
+  geom_sf(color = "transparent") +
+  scale_fill_manual(values = bioregion_cols) +
+  scale_alpha_manual(values = c(yes = 1, no = 0.25)) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme() +
+  labs(subtitle = "リージョン 2") +
+  theme(legend.position = "none")
+
+focus_region +
+plot_top_taxon(top_species$taxon[[4]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[5]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[6]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_layout(ncol = 2, nrow = 2)
+
+ggsave("working/shida-no-kai/region_2.png")
+```
+
+```{r plot-top-species-cluster-3, out.width = "120%", fig.asp = 0.65}
+focus_region <-
+biodiv_ferns_spatial_lumped %>%
+  mutate(focus = ifelse(taxonomic_cluster == 3, "yes", "no")) %>%
+ggplot(aes(fill = taxonomic_cluster, alpha = focus)) +
+  geom_sf(color = "transparent") +
+  scale_fill_manual(values = bioregion_cols) +
+  scale_alpha_manual(values = c(yes = 1, no = 0.25)) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme() +
+  labs(subtitle = "リージョン 3") +
+  theme(legend.position = "none")
+
+focus_region +
+plot_top_taxon(top_species$taxon[[7]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[8]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[9]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_layout(ncol = 2, nrow = 2)
+
+ggsave("working/shida-no-kai/region_3.png")
+```
+
+```{r plot-top-species-cluster-4, out.width = "120%", fig.asp = 0.65}
+focus_region <-
+biodiv_ferns_spatial_lumped %>%
+  mutate(focus = ifelse(taxonomic_cluster == 4, "yes", "no")) %>%
+ggplot(aes(fill = taxonomic_cluster, alpha = focus)) +
+  geom_sf(color = "transparent") +
+  scale_fill_manual(values = bioregion_cols) +
+  scale_alpha_manual(values = c(yes = 1, no = 0.25)) +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme() +
+  labs(subtitle = "リージョン 4") +
+  theme(legend.position = "none")
+
+focus_region +
+plot_top_taxon(top_species$taxon[[10]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[11]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_top_taxon(top_species$taxon[[12]], biodiv_ferns_spatial_lumped, comm_ferns_long) +
+plot_layout(ncol = 2, nrow = 2)
+
+ggsave("working/shida-no-kai/region_4.png")
+```
+
+```{r rpd-vs-apo}
+# Extract dataset used for model, including significance columns
+biodiv_ferns_used_for_model <- biodiv_ferns_spatial %>%
+  # drop geometry (only need centroids for modeling)
+  st_set_geometry(NULL) %>%
+  as_tibble() %>%
+  # filter to only sites used in model
+  inner_join(
+    biodiv_ferns_cent %>% as_tibble() %>% select(grids),
+    by = "grids"
+  )
+
+rpd_vs_apo_data <-
+  model_fits %>%
+  mutate(
+    signif_var = str_replace_all(resp_var, "_obs_z", "_signif"),
+    resp_var_print = case_when(
+      resp_var == "richness" ~ "Richness (no. spp.)",
+      TRUE ~ str_to_upper(resp_var) %>% word(1, 1, "_") %>% paste("SES of", .)
+    ),
+    model_data = list(biodiv_ferns_used_for_model),
+    signif_cols = list(signif_cols)) %>%
+  filter(resp_var == "rpd_obs_z", indep_var == "percent_apo")
+
+ggplot(rpd_vs_apo_data$model_data[[1]], aes(x = percent_apo, y = rpd_obs_z)) +
+  labs(
+    y = "RPDの効果量",
+    x = "無配生殖種の割合") +
+  geom_point(aes(color = rpd_signif), shape = 16, size = 3) +
+  scale_color_manual(values = signif_cols) +
+  scale_x_continuous(labels = function(x) paste0(round(x * 100), "%")) +
+  geom_line(data = rpd_vs_apo_data$fit[[1]], alpha = 0.35, color = "blue") +
+  geom_ribbon(
+    data = rpd_vs_apo_data$fit[[1]],
+    aes(ymin = low, ymax = up), 
+    alpha = 0.15
+  ) +
+  theme(legend.position = "none")
+
+ggsave("working/shida-no-kai/rpd_vs_apo.png")
+```
+
+
+```{r protected-areas, out.width = "120%", fig.asp = 0.65, dev="png", dpi=200}
+japan_box <- sf::st_bbox(biodiv_ferns_spatial)
+
+protection_cols_ja_map <- protection_cols
+names(protection_cols_ja_map) <- str_to_lower(names(protection_cols_ja_map))
+protection_cols_ja_map <- protection_cols_ja_map[c("medium", "high")]
+
+status_labels <-
+protected_areas %>%
+  # area is in sq m, so convert to sq kilom first
+  mutate(area = st_area(.) / 1e6) %>%
+  mutate(
+    area = as.numeric(area),
+    area_chr = area %>% round %>% scales::number(big.mark = ","),
+    area_percent = area %>% magrittr::divide_by(377900) %>% scales::percent(),
+    label = glue::glue("{str_to_sentence(status)} ({area_percent})") %>% set_names(status)
+) %>%
+  pull(label) %>%
+  str_replace_all("High", "高") %>%
+  str_replace_all("Medium", "中") %>%
+  set_names(c("high", "medium"))
+
+ggplot() +
+  geom_sf(data = japan) +
+  geom_sf(data = protected_areas, aes(fill = status), color = "transparent") +
+  coord_sf(xlim = c(japan_box$xmin, japan_box$xmax), ylim = c(japan_box$ymin, japan_box$ymax)) +
+  labs(
+    fill = "保全レベル"
+  ) +
+  scale_fill_manual(values = protection_cols_ja_map, labels = status_labels[names(protection_cols_ja_map)]) +
+  theme(
+    axis.ticks = element_blank()
+  ) + 
+  labs(
+    caption = "環境省\nhttps://www.biodic.go.jp/biodiversity/activity/policy/map/map17/"
+  )
+
+ggsave("working/shida-no-kai/cons_areas.png")
+```
+
+```{r conserv-stats}
+# Convert signif_cells_protected_area to wide format
+signif_cells_protected_area_wide <- #nolint
+  signif_cells_protected_area %>%
+  select(status, metric, percent_protected) %>%
+  pivot_wider(names_from = status, values_from = percent_protected) %>%
+  rowwise %>%
+  mutate(total = sum(medium, high)) %>%
+  ungroup
+
+# Calculate min and max percent area protected overall
+# - define helper functions
+calc_min_pa <- function(signif_cells_protected_area_wide, ...) { # nolint
+  signif_cells_protected_area_wide %>%
+    pull(...) %>%
+    min() %>%
+    scales::percent(accuracy = 0.1)
+}
+calc_max_pa <- function(signif_cells_protected_area_wide, ...) { # nolint
+  signif_cells_protected_area_wide %>%
+    pull(...) %>%
+    max() %>%
+    scales::percent(accuracy = 0.1)
+}
+
+min_protected_med <- calc_min_pa(signif_cells_protected_area_wide, medium)
+max_protected_med <- calc_max_pa(signif_cells_protected_area_wide, medium)
+min_protected_high <- calc_min_pa(signif_cells_protected_area_wide, high)
+max_protected_high <- calc_max_pa(signif_cells_protected_area_wide, high)
+min_protected_total <- calc_min_pa(signif_cells_protected_area_wide, total)
+max_protected_total <- calc_max_pa(signif_cells_protected_area_wide, total)
+
+# Calculate min and max protected area for the best protected category
+signif_cells_protected_area_best <- # nolint
+  signif_cells_protected_area_wide %>%
+  slice_max(total)
+
+# Verify that the best-protected biodiv type is PE
+assertthat::assert_that(signif_cells_protected_area_best$metric == "pe")
+
+best_protected_med <- signif_cells_protected_area_best %>%
+  pull(medium) %>%
+  scales::percent(accuracy = 0.1)
+best_protected_high <- signif_cells_protected_area_best %>%
+  pull(high) %>%
+  scales::percent(accuracy = 0.1)
+best_protected_total <- signif_cells_protected_area_best %>%
+  pull(total) %>%
+  scales::percent(accuracy = 0.1)
+
+# Calculate the total area of Japan
+area_of_japan <-
+  japan_shp %>%
+  mutate(
+    area = st_area(.) %>%
+      units::set_units(km^2)
+  ) %>%
+  pull(area)
+
+# Calculate baseline protection percentage:
+# percent protected areas across the whole country
+total_percent_protected <-
+  protected_areas %>%
+  st_make_valid %>%
+  mutate(
+    area = st_area(.) %>%
+      units::set_units(km^2)
+  ) %>%
+  st_drop_geometry %>%
+  as_tibble() %>%
+  filter(status %in% c("medium", "high")) %>%
+  group_by(status) %>%
+  summarize(
+    total_area = sum(area),
+    .groups = "drop"
+  ) %>%
+  mutate(percent_protected = total_area / area_of_japan) %>%
+  mutate(percent_protected = as.numeric(percent_protected)) %>%
+  # Add sum for high + medium
+  bind_rows(
+    summarize(
+      .,
+      percent_protected = sum(percent_protected),
+      total_area = sum(total_area)
+    ) %>% mutate(status = "total")
+  )
+
+# Extract values for medium and high protection level
+total_percent_protected_medium <- total_percent_protected %>%
+  filter(status == "medium") %>%
+  pull(percent_protected)
+total_percent_protected_high <- total_percent_protected %>%
+  filter(status == "high") %>%
+  pull(percent_protected)
+total_percent_protected_all <- sum(
+  total_percent_protected_medium, total_percent_protected_high)
+
+### Deer ###
+
+# Calculate baseline protection percentage:
+# percent protected areas across the whole country
+total_percent_deer_danger <-
+  deer_range %>%
+  mutate(
+    area = st_area(.) %>% units::set_units(km^2)
+  ) %>%
+  st_drop_geometry %>%
+  as_tibble() %>%
+  group_by(range) %>%
+  summarize(
+    total_area = sum(area),
+    .groups = "drop"
+  ) %>%
+  mutate(percent_danger = total_area / area_of_japan) %>%
+  mutate(percent_danger = as.numeric(percent_danger))
+
+# Convert to a list for easy indexing
+deer_overall <- total_percent_deer_danger %>%
+  mutate(
+    # Format numbers for nice printing
+    area = total_area %>%
+      as.numeric %>%
+      number(accuracy = 1) %>%
+      paste("km^2^"),
+    percent = scales::percent(percent_danger, accuracy = 0.1)
+  ) %>%
+  split(.$range)
+
+deer_in_high_biodiv <-
+signif_cells_deer_danger %>%
+  group_by(range) %>%
+  summarize(percent_danger = mean(percent_danger), .groups = "drop") %>%
+  mutate(
+    # Format numbers for nice printing
+    percent = scales::percent(percent_danger, accuracy = 0.1)) %>%
+  split(.$range)
+
+deer_highest_danger <- signif_cells_deer_danger %>%
+  slice_max(percent_danger) %>%
+  # Make sure biodiv type with greatest danger is richness in estimated dataset
+  verify(metric == "richness") %>%
+  verify(range == "estimated") %>%
+  mutate(
+    # Format numbers for nice printing
+    percent = scales::percent(percent_danger, accuracy = 0.1)) %>%
+  split(.$range)
+```
+
+```{r conserv-status-make}
+# Add total protected area (medium + high)
+signif_cells_protected_area_total <- #nolint
+  signif_cells_protected_area %>%
+  group_by(metric) %>%
+  summarize(percent_protected = sum(percent_protected), .groups = "drop") %>%
+  mutate(status = "total")
+
+total_percent_protected_for_plot <- #nolint
+  total_percent_protected %>%
+  select(status, percent_protected) %>%
+  mutate(status = str_to_sentence(status))
+
+# Plot protected areas
+signif_cells_protected_area %>%
+  select(metric, status, percent_protected) %>%
+  bind_rows(signif_cells_protected_area_total) %>%
+  mutate(
+    metric = case_when(
+      metric == "pd" ~ "PD",
+      metric == "fd" ~ "FD",
+      metric == "pe" ~ "PE",
+      metric == "richness" ~ "種数",
+    ),
+    status = str_to_sentence(status)) %>%
+  mutate(metric = factor(metric, levels = c("PE", "FD", "PD", "種数"))) %>%
+  ggplot(aes(x = percent_protected, y = metric, fill = status)) +
+  geom_col(position = position_dodge()) +
+  geom_vline(
+    data = total_percent_protected_for_plot,
+    aes(xintercept = percent_protected, linetype = status),
+    color = "grey30"
+  ) +
+  scale_linetype_manual(
+    values = protection_lines,
+    labels = c("中", "高", "合計"),
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left"
+    )) +
+  scale_fill_manual(
+    values = protection_cols,
+    labels = c("中", "高", "合計"),
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left"
+    )) +
+  scale_x_continuous(
+    labels = function(x) scales::percent(x, accuracy = 1),
+    expand = expansion(mult = c(0, .05))) +
+  labs(
+    x = "保全されている割合",
+    y = "生物多様性の指標",
+    fill = "保全レベル",
+    linetype = "保全レベル"
+  ) +
+  theme_bw(base_size = 24) +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    legend.position = "right"
+  )
+
+ggsave("working/shida-no-kai/protection_levels.png")
+
+names(deer_lines) <- str_replace_all(
+  names(deer_lines),
+  "Estimated",
+  "予想"
+)
+
+names(deer_cols) <- str_replace_all(
+  names(deer_cols),
+  "Estimated",
+  "予想"
+)
+
+# Plot areas in danger from herbivory by deer
+signif_cells_deer_danger %>%
+  mutate(
+    metric = case_when(
+      metric == "pd" ~ "PD",
+      metric == "fd" ~ "FD",
+      metric == "pe" ~ "PE",
+      metric == "richness" ~ "種数",
+    ),
+    range = str_to_sentence(range) %>%
+      str_replace_all("Estimated", "予想")
+  ) %>%
+  mutate(metric = factor(metric, levels = c("PE", "FD", "PD", "種数"))) %>%
+  ggplot(aes(x = percent_danger, y = metric, fill = range)) +
+  geom_col(position = position_dodge()) +
+  geom_vline(
+    data = total_percent_deer_danger %>% mutate(
+      range = str_to_sentence(range) %>%
+      str_replace_all("Estimated", "予想")),
+    aes(linetype = range, xintercept = percent_danger),
+    color = "grey30"
+  ) +
+  scale_linetype_manual(
+    values = deer_lines,
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left"
+    )) +
+  scale_fill_manual(
+    values = deer_cols,
+    guide = guide_legend(
+      direction = "horizontal",
+      title.position = "top",
+      label.position = "left"
+    )) +
+  scale_x_continuous(
+    labels = function(x) scales::percent(x, accuracy = 1),
+    expand = expansion(mult = c(0, .05))) +
+  labs(
+    x = "シカの面積",
+    y = "生物多様性の指標",
+    fill = "時代",
+    linetype = "時代"
+  ) +
+  theme_bw(base_size = 20) +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "right"
+  )
+
+ggsave("working/shida-no-kai/deer_levels.png")
+```
+
+```{r conserv-status-save, eval = params$doc_type == "doc"}
+# Save plot if rendering to doc
+ggsave(
+  result_file(figure("conserv-status"), "png"),
+  conserv_status_plot, width = 7.25, height = 4, units = "in", dpi = fig_dpi)
+```
+
+```{r conserv-status-print, fig.width = 7.25, fig.height = 4, eval = params$doc_type == "pdf"}
+# Print plot if rendering to PDF
+conserv_status_plot
+```
+
+**`r figure("conserv-status") %>% str_to_upper()`**. Conservation status and threat due to herbivory by deer in areas with high levels of biodiversity for ferns of Japan. (A) Percentage of land area with medium or high protected status for grid cells with significantly high biodiversity by protection status. (B) Percentage of land area occupied by deer for grid cells with significantly high biodiversity by deer range data source (1978 survey, 2003 survey, or range estimated from model based on 2003 survey data). Biodiversity metrics include taxon richness, phylogenetic diversity (PD), functional diversity (FD), and phylogenetic endemism (PE). Significance of PD, FD, and PE assessed by a one-tailed test comparing observed values to a null distribution of 999 random values; for richness, grid cells in the top 5% considered highly diverse (see Materials and Methods). For (A), vertical lines indicate total percentage area protected across Japan (baseline protection rate). For (B), vertical lines indicate total percentage of land area occupied by deer across Japan (baseline threat rate).
