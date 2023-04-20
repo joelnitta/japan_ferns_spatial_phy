@@ -207,6 +207,39 @@ b <- ggplot(ses_div_centroids, aes(x = latitude, y = richness)) +
 a + b + plot_layout(widths = c(3,1), heights = c(1,1))
 
 ggsave("working/shida-no-kai/richness.png")
+
+
+
+# Fern PE
+# - map
+a <-
+  ggplot() +
+  geom_sf(data = japan, fill = "grey90", color = "black", lwd = 0.25) +
+  geom_sf(data = biodiv_ferns_spatial, aes(fill = pe_obs_p_upper), color = "transparent", alpha = 0.8) +
+  geom_sf() +
+  scale_fill_scico(palette = "lajolla") +
+  labs(fill = "PE P-value") +
+  scale_y_continuous(labels = scales::label_number(suffix = "\u00b0N", accuracy = 1), limits = c(ja_lat_min, ja_lat_max)) +
+  scale_x_continuous(labels = scales::label_number(suffix = "\u00b0E", accuracy = 1)) +
+  map_theme() +
+  theme(
+    legend.title = element_text(size = 30/.pt),
+    legend.text = element_text(size = 24/.pt),
+    legend.justification=c(0,1), legend.position=c(0,1)
+  )
+# - latitudinal trends
+b <- ggplot(ses_div_centroids, aes(x = latitude, y = pe_obs_p_upper)) +
+  geom_point(color = "grey50", shape = 1 ) +
+  geom_smooth(se = FALSE) +
+  xlim(ja_lat_min, ja_lat_max) +
+  coord_flip() +
+  labs(y = "PE P-value") +
+  trend_line_theme()
+a + b + plot_layout(widths = c(3,1), heights = c(1,1))
+
+ggsave("working/shida-no-kai/pe.png")
+
+
 ```
 
 ```{r rand-diversity-make}
